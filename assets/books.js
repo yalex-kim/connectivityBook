@@ -10,7 +10,7 @@ window.YB_BOOKS = [
     description: "2.4 GHz 전파와 GFSK, 주파수 도약, 광고와 연결, GATT, 페어링과 보안, 코인 전지로 몇 년 가는 전력 설계, LE 오디오와 Auracast, 채널 사운딩, 메시까지. Bluetooth Core 6.2를 근거로 패킷을 직접 만들고 계산을 돌려 보며 배운다.",
     status: "published",
     chapters: 14,
-    simulators: 36,
+    simulators: 37,
     level: "입문 ~ 엔지니어",
     reference: "Bluetooth Core 6.2",
     color: "#0b62d6",

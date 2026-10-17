@@ -40,6 +40,7 @@
       <li>클래식의 EDR이 위상 변조(π/4-DQPSK, 8DPSK)로 같은 심볼 속도에 2~3배의 비트를 싣는 원리와 대가를 안다.</li>
       <li>LE 1M, LE 2M, LE Coded(S=2, S=8) PHY의 속도·패킷 시간·감도를 비교하고, 컨볼루션 부호와 패턴 매퍼가 하는 일을 직접 돌려 본다.</li>
       <li>속도·거리·전력·충돌 사이에서 PHY를 고르는 기준을 세운다.</li>
+      <li>다음 Core 사양에 들어갈 예정인 HDT(공개 초안)가 같은 원리로 LE를 7.5 Mb/s까지 올리려는 방식을 안다.</li>
     </ul>
   </header>
 
@@ -192,6 +193,39 @@
   </section>
 
   <!-- ============================================================ -->
+  <section id="hdt">
+    <h2>곧 올 PHY: HDT (공개 초안)</h2>
+    <div class="callout warn"><strong>이 절은 Core 6.2 밖의 내용이다</strong><p>HDT는 이 책의 기준인 Core 6.2에 <b>들어 있지 않다</b>. Bluetooth SIG가 Core 6.2를 바탕으로 만든 <b>공개 초안</b>(Change Request)과 SIG의 소개 글(2026년 7월)을 근거로 쓴다. SIG는 다음 Core 사양에 넣을 예정이라고 밝혔다. 정식 사양이 나오면 수치와 이름이 바뀔 수 있다.</p></div>
+    <p>LE 2M의 2 Mb/s는 6장에서 계산해 보면 앱 처리량 약 1.4 Mb/s가 상한이다. 무손실 오디오나 수백 MB 펌웨어에는 모자란다. <span class="term">HDT</span><span class="en">(High Data Throughput)</span>는 LE에 새 PHY를 더해 최대 <b>7.5 Mb/s</b>까지 올리려는 기능이다. 지금까지 이 장에서 본 생각들이 그대로 다시 쓰인다.</p>
+    <ul>
+      <li><b>심볼 속도는 그대로, 심볼당 비트를 늘린다</b>: 모든 HDT 속도는 LE 2M과 같은 <b>2 Msym/s</b>로 보낸다. 대신 GFSK가 아니라 QPSK·QAM 계열의 고차 변조를 쓴다. 클래식 EDR이 1 Msym/s에 위상 변조로 2~3 Mb/s를 실은 것과 같은 발상이다(위 성좌도 시뮬레이터). 7.5 Mb/s면 오류 정정 비트를 빼고도 심볼 하나에 평균 3.75비트를 싣는 셈이다.</li>
+      <li><b>모든 속도에 오류 정정</b>: 성좌점이 촘촘할수록 잡음에 약하다. 그래서 LE Coded처럼 컨볼루션 부호 기반의 FEC를 <b>모든 HDT 속도</b>에 쓴다. 속도는 2, 3, 4, 6, 7.5 Mb/s 다섯 단계이고, 변조와 부호율의 조합으로 정해진다.</li>
+      <li><b>패킷마다 속도 바꾸기</b>: 패킷 머리에 그 패킷의 속도가 적혀 있어, 링크가 나빠지면 다음 패킷부터 바로 낮은 속도로 내려간다. PHY를 한번 정하면 오래 유지하고 바꿀 때마다 갱신 절차(6장)를 거치는 지금 방식과 달리, 패킷 단위로 속도를 고르는 것이다(HDT를 쓰기로 처음 합의하는 방법은 정식 사양에서 확인할 부분이다). EDR이 3 → 2 → 1 Mb/s로 내려가던 것을 더 잘게 나눈 셈이다.</li>
+      <li><b>긴 패킷, 블록 단위 확인</b>: 패킷 하나에 약 8,000바이트까지 싣고, 블록마다 오류 검사를 따로 붙여 깨진 블록만 다시 보낸다. 251바이트 페이로드마다 150 µs 틈과 응답이 붙던 오버헤드(6장)를 크게 줄이려는 설계다.</li>
+      <li><b>더 긴 MIC</b>: 암호화된 패킷의 무결성 코드를 지금의 32비트에서 64비트·128비트로 키울 수 있다(8장).</li>
+    </ul>
+    <div class="sim" id="sim-hdt">
+      <div class="sim-head"><span class="sim-tag">PREVIEW</span><h3>HDT 미리 보기: 같은 파일을 보내는 공중 시간</h3></div>
+      <div class="sim-view"><canvas id="cv-hdt"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>보낼 데이터 <output id="hdt-kb-out"></output></span><input type="range" id="hdt-kb" min="0" max="100" value="60"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">LE 2M (공중 속도만)</span><span class="v" id="hdt-2m">—</span></div>
+        <div class="stat"><span class="k">HDT 7.5 Mb/s (초안)</span><span class="v" id="hdt-75">—</span></div>
+        <div class="stat"><span class="k">LE 2M 실제 상한 (6장, 약 1.4 Mb/s)</span><span class="v" id="hdt-real">—</span></div>
+      </div>
+      <div class="sim-note">막대는 데이터를 공중 속도로 보내는 데 걸리는 시간의 <b>하한</b>이다. 패킷 머리, 응답, 틈, 재전송은 넣지 않았다(HDT 초안의 패킷 형식은 정식 사양에서 확인해 반영할 예정). 맨 아래 막대는 6장 계산기로 구한 LE 2M의 실제 상한이다. 해볼 것: 1 MB 펌웨어를 보내면 LE 2M 실제 상한으로 약 6초, HDT 7.5 Mb/s 공중 속도로 1초 남짓이다. 실제 HDT 처리량은 오버헤드만큼 이보다 낮다. 속도 단계(2·3·4·6·7.5 Mb/s)는 SIG 공개 자료 기준이다.</div>
+    </div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">HDT가 정식 사양이 되면, 지금 쓰는 블루투스 6.0 이어폰도 펌웨어 업데이트로 7.5 Mb/s를 쓸 수 있을까?</p><p class="wi-hint">HDT가 바꾸는 것이 소프트웨어(호스트)인지 무선 회로(PHY)인지 생각해 보자(1장의 스택).</p><div class="opts">
+      <button class="opt">그렇다. 블루투스는 펌웨어로 기능이 추가된다</button>
+      <button class="opt" data-correct>아니다. QAM 변조와 새 FEC를 처리하는 무선 회로가 필요해 새 칩이 있어야 하고, 상대 기기도 지원해야 한다</button>
+      <button class="opt">휴대폰만 업데이트하면 된다</button>
+    </div><div class="quiz-exp">HDT는 PHY, 즉 컨트롤러의 무선 회로를 바꾸는 기능이다. 1장에서 본 것처럼 선택 기능은 양쪽 기기가 모두 지원해야 쓸 수 있다. 첫 제품은 정식 채택 뒤 새 칩을 넣은 기기부터 나온다.</div></div>
+    <p class="spec-ref">Core 6.2에는 없음 · Bluetooth SIG, “Introducing Bluetooth High Data Throughput (HDT)” (2026-07-28)과 공개 초안 <b>HDT Change Request</b>(Core 6.2 기반) · 채택 예정: 다음 Core 사양</p>
+  </section>
+
+  <!-- ============================================================ -->
   <section id="choose">
     <h2>PHY 고르기: 속도·거리·전력·충돌</h2>
     <p>PHY 선택은 결국 2장의 링크 버짓과 9장의 전력 예산 사이의 교환이다. 같은 마진을 확보하는 방법이 “전력을 올리기”, “더 민감한(느린) PHY 쓰기”, “가까이 두기” 셋뿐이기 때문이다.</p>
@@ -217,6 +251,7 @@
       <li>클래식 EDR은 1 Msym/s에 위상 변조로 <b>2 Mb/s(π/4-DQPSK)</b>, <b>3 Mb/s(8DPSK)</b>를 싣는다. 점 간격이 좁아 더 강한 신호가 필요하다. 3-DH5의 최대 처리량은 2,178.1 kb/s다.</li>
       <li>LE PHY는 넷: <b>1M</b>(필수), <b>2M</b>(시간 절반), <b>Coded S=2</b>(500 kb/s), <b>S=8</b>(125 kb/s). Coded는 부호율 ½·K=4 컨볼루션 부호와 패턴 매퍼로 비트를 퍼뜨려 감도를 높인다(사양 최소 −75/−82 dBm).</li>
       <li>가까우면 2M이 가장 경제적이고, 멀면 Coded가 닿는다. 느린 PHY는 전력과 충돌 기회를 늘린다.</li>
+      <li><b>HDT</b>(공개 초안, Core 6.2에는 없음)는 2 Msym/s에 QPSK·QAM 계열 변조와 FEC를 더해 2~7.5 Mb/s를 패킷마다 골라 쓰는 새 LE PHY다. 새 무선 회로가 필요하다.</li>
     </ol>
   </section>
 
@@ -466,6 +501,33 @@
     function draw() {
       const L = 2 + len();
       ["phy-t1", "phy-t2", "phy-t3", "phy-t4"].forEach((id, i) => { const t = airtimeUs(NAMES[i][0], L); BT.stat(id, t >= 1000 ? (t / 1000).toFixed(2) + " ms" : t + " µs"); });
+      cv.redraw();
+    }
+    draw();
+  })();
+  /* ================================================================ 6. HDT 미리 보기 (공개 초안) */
+  /** 데이터를 공중 속도로 보내는 시간의 하한(ms). 헤더·응답·재전송 제외 */
+  function idealAirtimeMs(bytes, mbps) { return (bytes * 8) / (mbps * 1000); }
+  (function () {
+    const kbOf = (v) => Math.round(Math.pow(10, (v / 100) * 4)); // 1 KB ~ 10 MB
+    const kb = BT.range("hdt-kb", (v) => { const k = kbOf(v); return k >= 1000 ? (k / 1000).toFixed(1) + " MB" : k + " KB"; }, draw);
+    const ROWS = [["LE 1M", 1, false], ["LE 2M", 2, false], ["HDT 3", 3, true], ["HDT 4", 4, true], ["HDT 6", 6, true], ["HDT 7.5", 7.5, true], ["LE 2M 실제 상한", 1.4, false]];
+    const fmt = (ms) => (ms >= 1000 ? (ms / 1000).toFixed(2) + " s" : ms.toFixed(ms < 10 ? 2 : 0) + " ms");
+    const cv = BT.canvas($("cv-hdt"), (ctx, w, h) => {
+      const P = BT.palette(), bytes = kbOf(kb()) * 1000, L = 108, Rr = w - 70, top = 8, rh = (h - top - 6) / ROWS.length, mx = idealAirtimeMs(bytes, 1);
+      ROWS.forEach(([name, r, hdt], i) => {
+        const y = top + i * rh, t = idealAirtimeMs(bytes, r), bw = Math.max(2, ((Rr - L) * t) / mx);
+        BT.text(ctx, name, 6, y + rh / 2, { size: 11.5, color: hdt ? P.accent2 : P.text, bold: hdt });
+        ctx.fillStyle = hdt ? P.accent2 : i === ROWS.length - 1 ? P.warn : P.accent; ctx.globalAlpha = hdt ? 0.55 : 0.85;
+        ctx.fillRect(L, y + 5, bw, rh - 10); ctx.globalAlpha = 1;
+        BT.text(ctx, fmt(t), L + bw + 6, y + rh / 2, { size: 11, mono: true, color: P.dim });
+      });
+    }, { aspect: 0.42, minHeight: 220, maxHeight: 300 });
+    function draw() {
+      const bytes = kbOf(kb()) * 1000;
+      BT.stat("hdt-2m", fmt(idealAirtimeMs(bytes, 2)));
+      BT.stat("hdt-75", fmt(idealAirtimeMs(bytes, 7.5)));
+      BT.stat("hdt-real", fmt(idealAirtimeMs(bytes, 1.4)));
       cv.redraw();
     }
     draw();

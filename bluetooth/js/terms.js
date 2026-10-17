@@ -39,6 +39,7 @@ window.BT_TERMS = [
     ["LE 1M", "LE 1M PHY", "1 Msym/s GFSK, 1 Mb/s. 모든 LE 기기가 지원해야 하는 기본 PHY. [Vol 6] Part A §1", "phy"],
     ["LE 2M", "LE 2M PHY", "2 Msym/s, 2 Mb/s. 같은 데이터를 절반 시간에 보낸다. 5.0의 선택 기능.", "phy"],
     ["LE Coded", "LE Coded PHY", "1 Msym/s에 부호화를 더해 S=2(500 kb/s) 또는 S=8(125 kb/s). 감도를 높여 거리를 늘린다. 5.0의 선택 기능. [Vol 6] Part B §2.2·§3.3", "phy"],
+    ["HDT", "High Data Throughput", "LE 최대 속도를 2 Mb/s에서 7.5 Mb/s로 올리는 새 PHY. 2 Msym/s에 QPSK·QAM 계열 변조와 FEC, 2·3·4·6·7.5 Mb/s, 패킷마다 속도 선택. Core 6.2에는 없고 다음 Core 사양에 들어갈 공개 초안(Change Request) 단계다.", "phy"],
     ["컨볼루션 부호", "Convolutional code", "앞의 몇 비트와 섞어 여분의 비트를 만드는 오류 정정 부호. LE Coded는 부호율 ½, 구속장 K=4. [Vol 6] Part B §3.3.1", "phy"],
     ["패턴 매퍼", "Pattern mapper", "LE Coded S=8에서 부호 비트를 4심볼로 펼친다(0 → 0011, 1 → 1100). [Vol 6] Part B §3.3.2", "phy"],
     // 04 hopping

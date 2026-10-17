@@ -65,6 +65,9 @@ const bitsStr = (s) => s.replace(/\s/g, '').split('').map(Number);
   eq(f.airtimeUs('s8', 2 + 255), 17040, 'longest coded S=8 packet');
   ok(f.berNoncoherentFsk(9) / f.berNoncoherentFsk(11) > 8, 'BER grows ~10x for 2 dB');
   close(f.packetErrorRate(0.001, 376), 1 - Math.pow(0.999, 376), 1e-12, 'PER formula');
+  const h = load('phy', ['idealAirtimeMs']);
+  close(h.idealAirtimeMs(1e6, 7.5), 1066.67, 0.01, 'HDT preview: 1 MB at 7.5 Mb/s');
+  close(h.idealAirtimeMs(1e6, 1.4), 5714.29, 0.01, 'LE 2M practical ceiling: 1 MB');
 }
 
 // ---------------------------------------------------------------- 04 hopping
