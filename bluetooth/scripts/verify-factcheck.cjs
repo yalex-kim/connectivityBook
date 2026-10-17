@@ -65,6 +65,9 @@ const bitsStr = (s) => s.replace(/\s/g, '').split('').map(Number);
   eq(f.airtimeUs('s8', 2 + 255), 17040, 'longest coded S=8 packet');
   ok(f.berNoncoherentFsk(9) / f.berNoncoherentFsk(11) > 8, 'BER grows ~10x for 2 dB');
   close(f.packetErrorRate(0.001, 376), 1 - Math.pow(0.999, 376), 1e-12, 'PER formula');
+  const h = load('phy', ['idealAirtimeMs']);
+  close(h.idealAirtimeMs(1e6, 7.5), 1066.67, 0.01, 'HDT preview: 1 MB at 7.5 Mb/s');
+  close(h.idealAirtimeMs(1e6, 1.4), 5714.29, 0.01, 'LE 2M practical ceiling: 1 MB');
 }
 
 // ---------------------------------------------------------------- 04 hopping
@@ -217,6 +220,26 @@ const bitsStr = (s) => s.replace(/\s/g, '').split('').map(Number);
   const nodes = [0, 8, 16, 24].map((x) => ({ x, y: 0, relay: true }));
   eq(Array.from(f.floodSimulate(nodes, 10, 5).hop), [0, 1, 2, 3], 'flood chain hops');
   eq(Array.from(f.floodSimulate(nodes, 10, 2).hop), [0, 1, 2, -1], 'TTL limits relaying');
+}
+
+// ---------------------------------------------------------------- 13 coexistence
+{
+  const f = load('coexistence', ['filterRejection', 'channelGap', 'tddPeriods', 'within', 'usablePairs', 'wciChar', 'inactivityMs'],
+    'const TDD = { 0: "DSUUUDSUUU", 1: "DSUUDDSUUD", 2: "DSUDDDSUDD", 3: "DSUUUDDDDD", 4: "DSUUDDDDDD", 5: "DSUDDDDDDD", 6: "DSUUUDSUUD" };');
+  // [Vol 1] Part A §7.4: 순수 TDM에서 5 ms 프레임은 슬롯 쌍 4개 중 1개, 10 ms는 8개 중 1개만 남는다(경계 하나)
+  const best = (periods, frame) => { let b = 0; for (let o = 0; o < 1250; o += 5) b = Math.max(b, f.usablePairs(periods, frame, o, 'pure').filter((p) => p.ok).length); return b; };
+  eq(best([[0, 2500, 'D'], [2500, 5000, 'U']], 5000), 1, 'pure TDM 5 ms frame: 1 of 4 pairs survive');
+  eq(best([[0, 5000, 'D'], [5000, 10000, 'U']], 10000), 1, 'pure TDM 10 ms frame: 1 of 8 pairs survive');
+  ok(f.usablePairs([[0, 2500, 'D'], [2500, 5000, 'U']], 5000, 0, 'none').every((p) => p.ok), 'uncoordinated: all pairs used');
+  eq(f.tddPeriods(1).reduce((a, p) => a + (p[1] - p[0]), 0), 10000, 'TDD frame sums to 10 ms');
+  // [Vol 7] Part C Table 3.1·3.4·3.10
+  eq(f.wciChar(0, [0, 1, 0, 0, 0]), 0x10, 'WCI-2 real-time MWS_RX → b4');
+  eq(f.wciChar(3, [1, 1, 1, 1, 1]), 0xfb, 'WCI-2 type 3 DURATION 31');
+  eq(f.inactivityMs(31), Infinity, 'DURATION 31 = infinite');
+  eq(f.inactivityMs(0), 0, 'DURATION 0 = cancel');
+  eq(f.inactivityMs(6), 30, 'DURATION × 5 ms');
+  eq(f.channelGap(2402, 2380, 2400), 1, 'gap BT ch37 to band 40 top channel');
+  eq(f.filterRejection(100, 2.5, 50), 50, 'rejection cap');
 }
 
 // ---------------------------------------------------------------- 모든 인라인 스크립트가 문법 오류 없이 컴파일되는가, JSON-LD가 올바른가

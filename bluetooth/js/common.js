@@ -20,8 +20,9 @@
     { slug: "audio",       num: "10", part: "응용",         title: "블루투스 오디오",                  desc: "무선 이어폰 속 일. 코덱과 비트레이트, 지연 예산, 통화 음질, LE 오디오의 등시성 채널과 브로드캐스트(Auracast).", tags: ["응용", "sim"] },
     { slug: "location",    num: "11", part: "응용",         title: "위치 찾기: RSSI에서 채널 사운딩까지", desc: "세기로 거리 짐작하기, 비콘, 도래각(AoA)·발사각(AoD), 6.0의 채널 사운딩: 위상과 왕복 시간으로 재는 거리.", tags: ["응용", "sim"] },
     { slug: "mesh",        num: "12", part: "응용",         title: "메시와 사물 인터넷",               desc: "광고로 소문 퍼뜨리기. 관리된 플러딩과 TTL, 릴레이·프렌드·저전력 노드, 주기적 광고와 응답(PAwR)으로 만드는 전자 가격표.", tags: ["응용", "sim"] },
-    { slug: "design",      num: "13", part: "종합",         title: "블루투스 제품 설계 플레이그라운드",  desc: "이어폰, 심박계, 분실물 태그, 가격표. 파라미터를 고르면 배터리 수명·지연·거리·처리량이 따라온다.", tags: ["종합", "sim"] },
-    { slug: "glossary",    num: "14", part: "종합",         title: "용어집 & 종합 퀴즈",               desc: "블루투스 핵심 용어를 검색하고, 종합 퀴즈로 배운 내용을 점검하자. 용어마다 Core 6.2의 근거 위치를 함께 적었다.", tags: ["정리"] },
+    { slug: "coexistence", num: "13", part: "응용",         title: "공존: 2.4 GHz를 나눠 쓰는 법",        desc: "한 기기 안의 Wi-Fi·LTE·5G·Thread와 함께 사는 법. 필터와 격리, 순수 TDM과 하이브리드, LTE TDD에 시간표 맞추기, Vol 7의 공존 신호와 WCI-2.", tags: ["응용", "sim"] },
+    { slug: "design",      num: "14", part: "종합",         title: "블루투스 제품 설계 플레이그라운드",  desc: "이어폰, 심박계, 분실물 태그, 가격표. 파라미터를 고르면 배터리 수명·지연·거리·처리량이 따라온다.", tags: ["종합", "sim"] },
+    { slug: "glossary",    num: "15", part: "종합",         title: "용어집 & 종합 퀴즈",               desc: "블루투스 핵심 용어를 검색하고, 종합 퀴즈로 배운 내용을 점검하자. 용어마다 Core 6.2의 근거 위치를 함께 적었다.", tags: ["정리"] },
   ];
 
   const BT = (window.BT = {});

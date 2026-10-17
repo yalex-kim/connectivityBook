@@ -39,6 +39,7 @@ window.BT_TERMS = [
     ["LE 1M", "LE 1M PHY", "1 Msym/s GFSK, 1 Mb/s. 모든 LE 기기가 지원해야 하는 기본 PHY. [Vol 6] Part A §1", "phy"],
     ["LE 2M", "LE 2M PHY", "2 Msym/s, 2 Mb/s. 같은 데이터를 절반 시간에 보낸다. 5.0의 선택 기능.", "phy"],
     ["LE Coded", "LE Coded PHY", "1 Msym/s에 부호화를 더해 S=2(500 kb/s) 또는 S=8(125 kb/s). 감도를 높여 거리를 늘린다. 5.0의 선택 기능. [Vol 6] Part B §2.2·§3.3", "phy"],
+    ["HDT", "High Data Throughput", "LE 최대 속도를 2 Mb/s에서 7.5 Mb/s로 올리는 새 PHY. 2 Msym/s에 QPSK·QAM 계열 변조와 FEC, 2·3·4·6·7.5 Mb/s, 패킷마다 속도 선택. Core 6.2에는 없고 다음 Core 사양에 들어갈 공개 초안(Change Request) 단계다.", "phy"],
     ["컨볼루션 부호", "Convolutional code", "앞의 몇 비트와 섞어 여분의 비트를 만드는 오류 정정 부호. LE Coded는 부호율 ½, 구속장 K=4. [Vol 6] Part B §3.3.1", "phy"],
     ["패턴 매퍼", "Pattern mapper", "LE Coded S=8에서 부호 비트를 4심볼로 펼친다(0 → 0011, 1 → 1100). [Vol 6] Part B §3.3.2", "phy"],
     // 04 hopping
@@ -150,7 +151,19 @@ window.BT_TERMS = [
     ["저전력 노드", "Low Power Node (LPN)", "가끔 깨어나 프렌드에게 메시지를 받아 가는 배터리 메시 노드.", "mesh"],
     ["프로비저닝", "Provisioning", "새 기기를 메시 네트워크에 들이는 과정. ECDH로 키를 맺고 네트워크 키와 주소를 준다.", "mesh"],
     ["응답 있는 주기적 광고", "PAwR, Periodic Advertising with Responses", "5.4. 주기적 광고 간격을 최대 128 서브이벤트로 나누고 응답 슬롯을 두어 많은 기기와 주고받는다. [Vol 6] Part B §4.4.2.2.4", "mesh"],
-    // 13 design
+    // 13 coexistence
+    ["공존 배치", "Collocated radios", "같은 제품 안에 있어 서로 활동을 조정할 수 있는 무선들. 그런 제품을 다중 무선 단말(MRT)이라 한다. [Vol 1] Part A §7", "coexistence"],
+    ["대역 외 차단", "Out-of-band blocking", "대역 밖의 강한 신호를 견디는 수신기 성능 요구. LE는 2,003~2,399·2,484~2,997 MHz에서 −35 dBm, BR/EDR은 −27 dBm. [Vol 6] Part A §4.3", "coexistence"],
+    ["순수 TDM 모드", "Pure TDM mode", "블루투스의 송신과 수신을 모두 이동통신의 활동에 맞춰 제한하는 공존 방식. 5 ms 프레임이면 슬롯 쌍 4개 중 3개를 잃을 수 있다. [Vol 1] Part A §7.4", "coexistence"],
+    ["하이브리드 모드", "Hybrid mode", "가파른 필터로 블루투스 송신의 영향을 없애고 블루투스 수신만 시간으로 보호하는 공존 방식. 주파수 보호대가 필요하다. [Vol 1] Part A §7.4", "coexistence"],
+    ["MWS 공존 신호", "MWS Coexistence Logical Signaling", "이동통신 모뎀과 블루투스 컨트롤러가 직접 주고받는 실시간 신호 10가지(FRAME_SYNC, MWS_RX/TX, MWS_PATTERN 등). [Vol 7] Part A", "coexistence"],
+    ["FRAME_SYNC", "Frame synchronization signal", "이동통신 프레임의 시작을 알리는 모뎀 → 블루투스 신호. 블루투스 시간표의 기준점. [Vol 7] Part A §2.1.1", "coexistence"],
+    ["WCI-1", "Wireless Coexistence Interface 1", "공존 신호를 전선 한 가닥의 반이중 UART로 나르는 방식. 모뎀 메시지 앞에 프리앰블 01011. [Vol 7] Part B", "coexistence"],
+    ["WCI-2", "Wireless Coexistence Interface 2", "공존 신호를 전이중 UART(null-modem)로 나르는 방식. 문자 하나 = 종류 3비트 + 내용 5비트. [Vol 7] Part C", "coexistence"],
+    ["SAM", "Slot Availability Mask", "5.0. 두 BR/EDR 기기가 슬롯마다 송신·수신 가능 여부(0~3)를 서로 알려 주는 지도. [Vol 2] Part B §8.6.11", "coexistence"],
+    ["피코넷 시계 조정", "Piconet Clock Adjustment", "4.1. 센트럴이 블루투스 시계를 LTE 같은 외부 프레임에 맞춰 옮기는 기능. [Vol 1] Part A §7.1", "coexistence"],
+    ["외부 프레임 설정", "External Frame Configuration", "호스트가 이동통신 프레임의 길이와 하향·상향·양방향·보호 구간을 컨트롤러에 알려 주는 HCI 명령. [Vol 4] Part E §7.3.81", "coexistence"],
+    // 14 design
     ["기능 교환", "Feature Exchange", "연결 직후 서로 지원하는 링크 계층 기능을 알리는 절차. 선택 기능을 쓸지 정하는 출발점. [Vol 6] Part B §5.1.4", "design"],
     ["PHY 갱신", "PHY Update", "연결 중에 1M·2M·Coded를 바꾸는 절차. [Vol 6] Part B §5.1.10", "design"],
 ];
