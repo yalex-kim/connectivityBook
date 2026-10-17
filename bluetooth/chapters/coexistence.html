@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>공존: 2.4 GHz를 나눠 쓰는 법 · BluetoothBook</title>
+<meta name="description" content="한 기기 안의 블루투스, Wi-Fi, LTE·5G 모뎀, Zigbee·Thread가 서로를 망가뜨리지 않고 함께 사는 법. 주파수 나누기와 시간 나누기, LTE TDD 프레임에 블루투스 시간표 맞추기, Core 6.2 Vol 7의 공존 신호와 WCI-1·WCI-2 메시지, SAM, Wi-Fi와의 중재를 시뮬레이터로 다룬다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/bluetooth/chapters/coexistence.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="BluetoothBook">
+<meta property="og:title" content="공존: 2.4 GHz를 나눠 쓰는 법 · BluetoothBook">
+<meta property="og:description" content="한 기기 안의 블루투스, Wi-Fi, LTE·5G 모뎀, Zigbee·Thread가 서로를 망가뜨리지 않고 함께 사는 법. 주파수 나누기와 시간 나누기, LTE TDD 프레임에 블루투스 시간표 맞추기, Core 6.2 Vol 7의 공존 신호와 WCI-1·WCI-2 메시지, SAM, Wi-Fi와의 중재를 시뮬레이터로 다룬다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/bluetooth/chapters/coexistence.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/bluetooth/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"공존: 2.4 GHz를 나눠 쓰는 법","name":"공존: 2.4 GHz를 나눠 쓰는 법 · BluetoothBook","url":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/coexistence.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/coexistence.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":13,"image":"https://yalex-kim.github.io/yalexBook/bluetooth/og.png","dateModified":"2026-10-17","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/bluetooth/#book","name":"BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth/"},"publisher":{"@type":"Organization","name":"BluetoothBook","url":"https://yalex-kim.github.io/yalexBook/bluetooth/"},"description":"한 기기 안의 블루투스, Wi-Fi, LTE·5G 모뎀, Zigbee·Thread가 서로를 망가뜨리지 않고 함께 사는 법. 주파수 나누기와 시간 나누기, LTE TDD 프레임에 블루투스 시간표 맞추기, Core 6.2 Vol 7의 공존 신호와 WCI-1·WCI-2 메시지, SAM, Wi-Fi와의 중재를 시뮬레이터로 다룬다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook","item":"https://yalex-kim.github.io/yalexBook/bluetooth/"},{"@type":"ListItem","position":2,"name":"13 공존: 2.4 GHz를 나눠 쓰는 법","item":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/coexistence.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<style>
+  .wci-bits { display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px; margin-top: 10px; font-family: var(--mono); font-size: 12px; text-align: center; }
+  .wci-bits span { padding: 6px 0; border-radius: 6px; background: var(--surface); }
+  .wci-bits span.ty { background: color-mix(in srgb, var(--warn) 18%, transparent); }
+  .wci-bits span.on { background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+  .wci-bits small { display: block; font-size: 9.5px; color: var(--text-faint); }
+  .wci-sig { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 8px; }
+  .wci-sig label { font-size: 13.5px; }
+</style>
+</head>
+<body data-chapter="coexistence">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 13</div>
+    <h1>공존: 2.4 GHz를 나눠 쓰는 법</h1>
+    <p class="lead">휴대폰 하나에는 무선 송수신기가 여럿 들어 있다. 블루투스, Wi-Fi, LTE·5G 모뎀, GPS, 요즘은 UWB와 Thread까지. 이들의 안테나는 손바닥만 한 몸체 안에서 몇 cm 떨어져 있을 뿐이다. 무선 이어폰으로 음악을 들으며 Wi-Fi로 영상을 받고, 동시에 LTE로 영상 통화를 하는 일은 사실 아슬아슬한 줄타기다. 4장에서는 바깥의 Wi-Fi를 피하는 주파수 도약을 봤다. 이 장에서는 <b>같은 기기 안의 이웃</b>과 함께 사는 법을 다룬다. 핵심은 두 가지다. 주파수를 떼어 놓거나, 시간을 나눠 쓰거나. 그리고 시간을 나누려면 서로의 시간표를 알려 주는 <b>약속된 신호</b>가 필요하다.</p>
+    <ul class="objectives">
+      <li>2.4 GHz ISM 대역 안팎의 이웃(Wi-Fi, 802.15.4, LTE·5G 대역 40·41·7)과 같은 기기 안의 “공존 배치(collocated)”가 왜 특히 어려운지 안다.</li>
+      <li>사양이 분류한 네 가지 간섭 완화 방식(주파수 분할, 시간 분할, 시간 정렬, 혼합)과 순수 TDM 모드·하이브리드 모드를 구분한다.</li>
+      <li>필터 감쇠와 안테나 격리로 LTE 송신이 블루투스 수신기의 차단(blocking) 한도를 넘는지 계산한다.</li>
+      <li>LTE TDD 프레임에 블루투스 슬롯을 맞추는 FRAME_SYNC, 외부 프레임 설정, 피코넷 시계 조정, SAM의 역할을 시뮬레이터로 확인한다.</li>
+      <li>Core 6.2 Vol 7의 공존 신호 10가지와 WCI-1·WCI-2 메시지를 비트 단위로 만들고, Wi-Fi와의 공존이 사양 밖의 구현(PTA)에 맡겨진 이유를 안다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="neighbors">
+    <h2>이웃은 누구인가: 대역 안과 대역 옆</h2>
+    <p>블루투스의 이웃은 두 부류다. 2장에서 본 대로 <b>같은 2.4 GHz ISM 대역 안</b>에는 Wi-Fi, IEEE 802.15.4(Zigbee·Thread), 무선 키보드 동글, 전자레인지가 있다. 모두 면허 없이 같은 대역을 나눠 쓰는 처지다. 그리고 <b>대역 바로 옆</b>에는 면허 대역의 이동통신이 붙어 있다. LTE·5G의 TDD 대역 40(2,300~2,400 MHz)은 ISM 대역 아래쪽 끝과 맞닿아 있고, TDD 대역 41(2,496~2,690 MHz)과 FDD 대역 7(상향 2,500~2,570 MHz)은 위쪽 끝에서 10~20 MHz 남짓 떨어져 있다(대역 번호와 범위는 3GPP 표준).</p>
+    <p>멀리 있는 이웃은 거리가 손실을 만들어 준다(2장의 링크 버짓). 문제는 <b>같은 기기 안</b>의 이웃이다. 사양은 같은 제품 안에서 활동을 조정할 수 있는 무선들을 <span class="term">공존 배치</span><span class="en">(collocated)</span>되었다고 하고, 그런 제품을 <b>다중 무선 단말</b><span class="en">(MRT, Multi-Radio Terminal)</span>이라 부른다. 휴대폰의 LTE 모뎀이 +23 dBm으로 송신하는 순간, 몇 cm 옆 블루투스 수신기에 들어오는 세기는 안테나 사이의 격리(보통 10~20 dB)만큼만 줄어든다. 2장에서 블루투스가 받으려는 신호는 −70~−95 dBm이었다. 100 dB 가까이 센 이웃이 바로 옆에서 소리치는 셈이다.</p>
+    <div class="callout analogy"><strong>카페 바로 옆 공연장</strong><p>지금까지 블루투스의 카페(2.4 GHz)에는 다른 손님들(Wi-Fi, Zigbee)이 있었다. 이 장의 새 이웃은 벽 하나를 사이에 둔 <b>공연장</b>(LTE·5G)이다. 공연장은 면허를 받은 곳이라 자기 시간표(기지국이 정한다)대로 움직이고, 블루투스 때문에 공연을 멈추지 않는다. 블루투스가 할 수 있는 일은 둘이다. 벽에 방음재를 붙이거나(필터와 격리), 공연이 쉬는 시간에 말하는 것(시간 나누기). 쉬는 시간을 알려면 공연장이 시간표를 알려 줘야 한다(공존 신호).</p></div>
+    <p>사양은 간섭을 줄이는 방법을 네 가지로 나눈다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>방식</th><th>내용</th><th>언제 쓰나</th></tr></thead>
+      <tbody>
+        <tr><td>주파수 분할</td><td>필터와 격리로 여러 무선을 동시에 쓴다</td><td>주파수가 충분히 떨어져 있고 격리가 클 때</td></tr>
+        <tr><td>시간 분할</td><td>스케줄링이나 우선순위로 한 번에 하나만 송수신한다</td><td>격리가 부족하거나 안테나를 나눠 쓸 때</td></tr>
+        <tr><td>시간 정렬</td><td>송신끼리, 수신끼리 같은 시각에 모아 “한쪽 송신 중 다른 쪽 수신”만 피한다</td><td>상대가 고정된 프레임 구조를 가질 때(LTE TDD 등)</td></tr>
+        <tr><td>혼합</td><td>주파수 차이·필터·격리에 따라 위 셋을 섞는다</td><td>대부분의 실제 휴대폰</td></tr>
+      </tbody>
+    </table></div>
+    <p class="spec-ref">공존 배치·MRT, 간섭 완화 방식(Table 7.1): <b>[Vol 1] Part A §7</b> · 격리가 충분하면 FDD, 부족하거나 안테나를 공유하면 TDD 기법이 필요하다는 설명: 같은 절</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="frequency">
+    <h2>주파수로 떼어 놓기: 필터, 격리, 차단 한도</h2>
+    <p>먼저 주파수로 해결할 수 있는지 따져 보자. 블루투스 수신기는 대역 밖의 강한 신호를 어느 정도 견뎌야 한다. 사양은 이를 <span class="term">대역 외 차단</span><span class="en">(out-of-band blocking)</span> 요구로 정한다. LE 수신기는 원하는 신호가 감도보다 3 dB 센 상태에서, 2,003~2,399 MHz와 2,484~2,997 MHz의 방해 신호가 <b>−35 dBm</b>이어도 비트 오류율 0.1% 이하를 지켜야 한다(BR/EDR은 −27 dBm). 이 값을 넘는 이웃이 바로 옆에서 송신하면 수신기가 포화되어 감도가 무너진다.</p>
+    <div class="formula">블루투스 수신기 입력의 LTE 세기 = LTE 송신 전력 − 안테나 격리 − 필터 감쇠(주파수 간격)
+      <div class="where">예: +23 dBm − 격리 15 dB = +8 dBm. 차단 한도 −35 dBm 아래로 내리려면 필터가 43 dB 이상 깎아야 한다. 필터는 통과 대역 끝에서 멀어질수록 더 많이 깎으므로 <b>주파수 간격</b>이 결정적이다. 대역 40의 위쪽 끝(2,400 MHz)과 블루투스 채널 0(2,402 MHz)은 2 MHz밖에 떨어져 있지 않다.</div>
+    </div>
+    <p class="spec-ref">LE 대역 외 차단(Table 4.7: 30~2,000 MHz −30 dBm, 2,003~2,399 MHz −35 dBm, 2,484~2,997 MHz −35 dBm, 3~12.75 GHz −30 dBm): <b>[Vol 6] Part A §4.3</b> · BR/EDR(−27 dBm): <b>[Vol 2] Part A §4</b> · 필터 권고 백서 언급: <b>[Vol 1] Part A §7.4</b></p>
+    <div class="sim" id="sim-band">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>대역 옆 LTE: 필터와 격리로 버틸 수 있나</h3></div>
+      <div class="sim-view"><canvas id="cv-cxband"></canvas></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>이웃 LTE·5G 대역</span><div class="seg" id="cx-band"><button data-value="40" class="on">대역 40 (2300~2400 TDD)</button><button data-value="41">대역 41 (2496~2690 TDD)</button><button data-value="7">대역 7 상향 (2500~2570)</button></div></div>
+        <label class="ctrl"><span>LTE 채널 위치 (대역 끝에서) <output id="cx-off-out"></output></span><input type="range" id="cx-off" min="0" max="80" value="0"></label>
+        <label class="ctrl"><span>블루투스 LE 채널 <output id="cx-ch-out"></output></span><input type="range" id="cx-ch" min="0" max="39" value="37"></label>
+        <label class="ctrl"><span>안테나 격리 <output id="cx-iso-out"></output></span><input type="range" id="cx-iso" min="5" max="35" value="15"></label>
+        <div class="ctrl"><span>블루투스 대역 선택 필터</span><div class="seg" id="cx-flt"><button data-value="0.8">보통 (0.8 dB/MHz)</button><button data-value="2.5" class="on">급한 감쇠 (2.5 dB/MHz)</button></div></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">주파수 간격</span><span class="v" id="cx-gap">—</span></div>
+        <div class="stat"><span class="k">필터 감쇠</span><span class="v" id="cx-rej">—</span></div>
+        <div class="stat"><span class="k">수신기 입력의 LTE 세기</span><span class="v" id="cx-in">—</span></div>
+        <div class="stat"><span class="k">판정</span><span class="v" id="cx-ok">—</span></div>
+      </div>
+      <div class="sim-note">위: 주파수 지도(MHz). 회색 띠가 ISM 대역, 주황 띠가 LTE 채널(20 MHz), 파란 막대가 고른 블루투스 채널. 해볼 것: ① 대역 40에서 LTE 채널을 위쪽 끝(2,380~2,400 MHz)에 두고 블루투스 채널 37(2,402 MHz)을 고르면 간격이 2 MHz뿐이라 필터가 거의 못 깎는다. 채널 39(2,480 MHz)로 옮기면 간격이 80 MHz로 늘어 통과한다. AFH로 대역 끝 채널을 빼는 이유다. ② 대역 41·7은 ISM 위쪽 끝(2,483.5 MHz)과 10 MHz 넘게 떨어져 있어, 급한 필터와 충분한 격리(약 25 dB)가 있으면 버틸 여지가 있다. 이것이 사양이 말하는 “하이브리드 모드”의 조건이다. 가정(단순화 모델): LTE 단말 송신 +23 dBm(3GPP 전력 등급 3). 블루투스 채널과 LTE 채널 사이 간격 × 기울기만큼 감쇠하고 최대 50 dB로 본다. 대역 선택 필터의 감쇠와, 멀어질수록 줄어드는 LTE 송신 잡음을 하나의 숫자로 묶은 것이다. 판정 기준은 사양의 LE 최소 차단 한도 −35 dBm이며, 실제 칩은 이보다 좋은 경우가 많다. 실제 설계에서는 차단과 잡음 유입을 따로 계산한다.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="tdm">
+    <h2>시간으로 나누기: 순수 TDM과 하이브리드</h2>
+    <p>필터와 격리로 부족하면 시간을 나눠야 한다. 그런데 LTE·5G는 블루투스에 맞춰 주지 않는다. 사양이 짚는 대로 이동통신은 <b>면허 대역에서 기지국이 중앙에서 스케줄링</b>한다. 단말의 모뎀은 언제 송신하고 언제 수신할지 스스로 정할 수 없다. 그러니 맞추는 쪽은 블루투스다. 사양은 두 가지 해법을 구분한다.</p>
+    <ul>
+      <li><span class="term">순수 TDM 모드</span><span class="en">(Pure TDM)</span>: 블루투스의 송신과 수신 <b>모두</b> 이동통신의 활동에 맞춰 제한된다. 이동통신이 받는 동안(하향, downlink) 블루투스는 송신하면 안 되고, 이동통신이 보내는 동안(상향, uplink) 블루투스는 받을 수 없다.</li>
+      <li><span class="term">하이브리드 모드</span><span class="en">(Hybrid)</span>: 가파른 대역 선택 필터로 블루투스 송신이 이동통신 수신을 방해하지 않게 만들어, <b>블루투스 수신만</b> 시간으로 보호한다. 주파수 간격과 양쪽 필터에 조건이 붙는다(위 시뮬레이터).</li>
+    </ul>
+    <p>순수 TDM이 왜 아픈지 계산해 보자. 클래식 블루투스의 센트럴은 짝수 슬롯에서 보내고 페리페럴의 답을 다음 슬롯에서 받는다(4장). 이 한 쌍(1.25 ms)이 쓸모 있으려면 센트럴의 송신 슬롯이 이동통신 <b>상향</b> 동안(이동통신은 보내는 중이라 방해받지 않는다)에, 받는 슬롯이 <b>하향</b> 동안(이동통신이 조용하다)에 있어야 한다. 상향에서 하향으로 넘어가는 경계 근처의 한 쌍만 조건을 만족한다. 사양은 그 결과를 이렇게 적는다. 5 ms 프레임이면 슬롯 쌍 <b>네 개 중 세 개</b>, 10 ms 프레임이면 <b>여덟 개 중 일곱 개</b>를 이동통신 때문에 잃을 수 있다.</p>
+    <p class="spec-ref">순수 TDM 모드·하이브리드 모드, 중앙 스케줄링, 4개 중 3개(5 ms)·8개 중 7개(10 ms) 슬롯 쌍 손실: <b>[Vol 1] Part A §7.4</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="align">
+    <h2>시간표 맞추기: FRAME_SYNC와 외부 프레임 설정</h2>
+    <p>손해를 최소로 줄이려면 블루투스의 슬롯 경계를 이동통신의 프레임 경계에 정확히 맞춰야 한다. 그 도구가 다음과 같다.</p>
+    <ol>
+      <li><b>외부 프레임 설정</b>: 호스트가 HCI_Set_External_Frame_Configuration 명령으로 이동통신 프레임의 길이와 구간 목록(하향 0x00, 상향 0x01, 양방향 0x02, 보호 구간 0x03, 각 구간의 µs 길이)을 컨트롤러에 알려 준다. 구간 길이의 합은 프레임 길이와 같아야 한다. 프레임이 1.25 ms의 배수면 블루투스 시계와 안정적으로 맞출 수 있다.</li>
+      <li><b>FRAME_SYNC</b>: 모뎀이 프레임이 시작되는 순간을 실시간 신호로 알린다. 컨트롤러는 이것을 기준점(앵커)으로 삼는다.</li>
+      <li><b>피코넷 시계 조정</b>(4.1): 센트럴이 자기 블루투스 시계를 외부 프레임에 맞춰 옮긴다. 센트럴에게 가장 쓸모 있는 기준점은 “상향 → 다음 하향” 경계다. 상향 동안 보내고 바로 이어지는 하향 동안 받으면 되기 때문이다. 페리페럴은 반대로 “하향 → 상향” 경계가 쓸모 있다.</li>
+      <li><b>SAM</b>(Slot Availability Mask, 5.0): 두 블루투스 기기가 서로에게 “내 슬롯 중 어디서 보낼 수 있고 어디서 받을 수 있는지”를 지도로 알려 준다. 슬롯마다 0(송수신 모두 불가), 1(송신만), 2(수신만), 3(둘 다) 중 하나다. 상대가 내 사정을 알면 쓸 수 없는 슬롯에 보내 헛수고하지 않는다.</li>
+    </ol>
+    <p class="spec-ref">HCI_Set_External_Frame_Configuration(OCF 0x006F, Period_Type 0x00~0x03): <b>[Vol 4] Part E §7.3.81</b> · FRAME_SYNC: <b>[Vol 7] Part A §2.1.1</b> · LTE TDD와 시계 정렬 예: <b>[Vol 1] Part A §7.5</b> · 공존 기능 표(AFH 1.2, 호스트 채널 분류 1.2, eSCO 1.2, MWS 공존 신호 CSA3, 피코넷 시계 조정 4.1, Train Nudging 4.1, Generalized Interlaced Scanning 4.1, SAM 5.0): <b>[Vol 1] Part A §7.1</b> · SAM 슬롯 종류: <b>[Vol 2] Part B §8.6.11</b></p>
+    <div class="sim" id="sim-tdd">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>LTE TDD 프레임 위의 블루투스 슬롯: 몇 쌍이나 살아남나</h3></div>
+      <div class="sim-view"><canvas id="cv-tdd"></canvas></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>LTE TDD 상하향 설정 (3GPP)</span><div class="seg" id="td-cfg"><button data-value="0">#0</button><button data-value="1" class="on">#1</button><button data-value="2">#2</button><button data-value="3">#3</button><button data-value="4">#4</button><button data-value="5">#5</button><button data-value="6">#6</button></div></div>
+        <div class="ctrl"><span>모드</span><div class="seg" id="td-mode"><button data-value="pure" class="on">순수 TDM</button><button data-value="hybrid">하이브리드</button><button data-value="none">조정 없음</button></div></div>
+        <label class="ctrl"><span>블루투스 시계 오프셋 <output id="td-off-out"></output></span><input type="range" id="td-off" min="0" max="1250" step="5" value="400"></label>
+        <div class="ctrl"><span>&nbsp;</span><div class="btn-row"><button class="btn primary" id="td-best">FRAME_SYNC로 최적 정렬</button></div></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">10 ms 안의 슬롯 쌍</span><span class="v">8쌍</span></div>
+        <div class="stat"><span class="k">쓸 수 있는 쌍</span><span class="v" id="td-ok">—</span></div>
+        <div class="stat"><span class="k">LTE 수신을 방해한 송신</span><span class="v" id="td-hurt">—</span></div>
+        <div class="stat"><span class="k">블루투스가 남은 몫</span><span class="v" id="td-share">—</span></div>
+      </div>
+      <div class="sim-note">위 줄: LTE 10 ms 프레임(D = 하향·LTE 수신, U = 상향·LTE 송신, S = 특수 서브프레임). 아래 줄: 블루투스 센트럴의 슬롯 쌍(앞 칸 = 센트럴 송신, 뒤 칸 = 페리페럴 응답 수신). 초록 = 쓸 수 있는 쌍, 빨강 테두리 = LTE 수신 중에 블루투스가 송신(LTE를 방해), 회색 = 쓸 수 없는 쌍. 해볼 것: ① 설정 #1, 순수 TDM에서 오프셋을 움직여 보자. 대부분의 위치에서 한두 쌍만 남는다. “최적 정렬”을 누르면 상향→하향 경계에 슬롯을 맞춰 가장 많은 쌍을 살린다. ② 하이브리드로 바꾸면 송신 제한이 풀려 받는 슬롯만 하향에 있으면 된다. ③ “조정 없음”은 블루투스가 제멋대로 보내는 경우다. 쌍은 많아 보이지만 LTE 수신을 망가뜨린다. 단순화: 특수 서브프레임은 하향 0.64 ms + 보호 0.29 ms + 상향 0.07 ms(특수 서브프레임 설정 #1 근사), 보호 구간은 양쪽 모두 허용, 보호 여유(오프셋 허용 오차) 없음.</div>
+    </div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">순수 TDM 모드에서 블루투스 센트럴의 시계를 LTE 프레임에 가장 잘 맞추려면 기준점(FRAME_SYNC 위치)을 어디에 두는 것이 좋을까?</p><p class="wi-hint">센트럴은 먼저 보내고(송신 슬롯) 바로 다음 슬롯에서 받는다. 보내도 되는 때와 받아도 되는 때를 떠올려 보자.</p><div class="opts">
+      <button class="opt">하향 → 상향 경계</button>
+      <button class="opt" data-correct>상향 → 다음 하향 경계: 상향 끝에서 보내고, 이어지는 하향 시작에서 받는다</button>
+      <button class="opt">프레임 한가운데</button>
+      <button class="opt">어디든 같다</button>
+    </div><div class="quiz-exp">LTE가 보내는 동안(상향)은 LTE 수신을 방해하지 않으니 블루투스가 송신해도 되고, LTE가 조용한 하향 동안은 블루투스가 받을 수 있다. 사양의 예도 센트럴에게는 상향→하향 경계가, 페리페럴에게는 하향→상향 경계가 가장 쓸모 있다고 설명한다([Vol 1] Part A §7.5).</div></div>
+    <h3>찾기와 호출도 망가진다: Train Nudging과 Interlaced Scanning</h3>
+    <p>슬롯을 잃으면 연결뿐 아니라 처음 만나는 과정도 흔들린다. 클래식의 조회(inquiry)와 호출(page)은 16개 채널을 한 묶음으로 반복하는데, 이 반복 주기가 5 ms라 이동통신 프레임과 박자가 맞아 떨어지면 <b>같은 채널들만 계속</b> 구멍이 난다. 4.1의 <b>Train Nudging</b>은 시계 비트에 오프셋을 더해 채널 순서를 밀어 이 맞물림을 깬다. 반대로 스캔하는 쪽은 받는 슬롯의 최대 절반을 잃을 수 있는데, <b>Generalized Interlaced Scanning</b>은 연달아 하는 두 번째 스캔의 위상을 조절해 구멍을 메운다.</p>
+    <p class="spec-ref">조회·호출 실패와 Train Nudging, Generalized Interlaced Scanning: <b>[Vol 1] Part A §7.4</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="signals">
+    <h2>공존 신호: 모뎀과 블루투스가 주고받는 열 가지 신호</h2>
+    <p>시간을 나누려면 모뎀과 블루투스 컨트롤러가 µs 단위로 서로의 상태를 알아야 한다. 호스트(운영체제)를 거치면 수십 ms가 걸리므로, Core 사양 Vol 7은 두 칩 사이에 직접 오가는 <span class="term">MWS 공존 신호</span><span class="en">(MWS Coexistence Logical Signaling)</span>를 정한다. MWS(Mobile Wireless Standards)는 LTE·5G 같은 이동통신 무선을 가리킨다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>신호</th><th>방향</th><th>뜻</th></tr></thead>
+      <tbody>
+        <tr><td>FRAME_SYNC</td><td>MWS → BT</td><td>이동통신 프레임이 시작되는 순간. 블루투스의 기준점</td></tr>
+        <tr><td>MWS_RX</td><td>MWS → BT</td><td>지금 받고 있으니 송신을 멈추고 새로 시작하지 말라. 중요한 송신이면 가끔 무시할 수 있다</td></tr>
+        <tr><td>MWS_TX</td><td>MWS → BT</td><td>지금 송신 중이다 (블루투스 수신이 방해받을 수 있다)</td></tr>
+        <tr><td>MWS_PATTERN</td><td>MWS → BT</td><td>미리 정한 활동 패턴 0·1·2 중 무엇을 쓰는지. 3은 “바뀌지 않음”</td></tr>
+        <tr><td>MWS_INACTIVITY_DURATION</td><td>MWS → BT</td><td>앞으로 얼마 동안 쉬는지(그동안 블루투스가 마음껏 쓸 수 있다)</td></tr>
+        <tr><td>MWS_SCAN_FREQUENCY</td><td>MWS → BT</td><td>다른 주파수를 훑는 중이며 그 주파수의 표 번호. 0이면 끝</td></tr>
+        <tr><td>BLUETOOTH_RX_PRI</td><td>BT → MWS</td><td>중요한 수신을 기다리니 송신을 삼가 달라. 최소한으로 쓰고, 지켜진다는 보장은 없다</td></tr>
+        <tr><td>BLUETOOTH_TX_ON</td><td>BT → MWS</td><td>블루투스가 지금 송신 중이다</td></tr>
+        <tr><td>802_TX_ON</td><td>BT → MWS</td><td>같은 기기의 Wi-Fi가 송신 중이다(모뎀이 Wi-Fi 간섭과 블루투스 간섭을 구분하게 한다)</td></tr>
+        <tr><td>802_RX_PRI</td><td>BT → MWS</td><td>같은 기기의 Wi-Fi가 중요한 수신을 기다린다</td></tr>
+      </tbody>
+    </table></div>
+    <p>앞의 여덟 개를 <b>실시간 공존 신호</b>라 부른다. 신호는 실제 사건보다 조금 일찍 와야 쓸모가 있으므로, 사양은 권장 오프셋과 흔들림(지터) 범위도 정한다. 예를 들어 MWS_RX는 실제 수신 시작보다 2 ms ~ 20 µs 앞서 올리고, BLUETOOTH_TX_ON은 송신 시작보다 최대 100 µs 앞서 올리며, 대부분의 지터는 5 µs 이내다. 신호의 세부 설정(패턴의 모양, 스캔 주파수 표, 이동통신 채널의 중심 주파수와 폭)은 호스트가 HCI 명령으로 미리 알려 준다.</p>
+    <p class="spec-ref">공존 신호(Table 2.1)와 각 신호 정의: <b>[Vol 7] Part A §2.1</b> · 오프셋·지터 권장값(Table 2.2·2.3): <b>§2.2</b> · HCI_Set_MWS_Channel_Parameters(0x006E), Set_MWS_Signaling(§7.3.82), Set_MWS_Transport_Layer(§7.3.83), Set_MWS_Scan_Frequency_Table(§7.3.84), Set_MWS_PATTERN_Configuration(0x0073, 구간 종류 0x00 불가·0x01 송신·0x02 수신·0x03 둘 다·0x04 MWS 프레임): <b>[Vol 4] Part E §7.3.80~§7.3.85</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="wci">
+    <h2>전선 한두 가닥으로: WCI-1과 WCI-2</h2>
+    <p>두 칩을 잇는 물리적인 방법도 사양에 있다. 휴대폰처럼 모뎀과 블루투스가 서로 다른 칩이면 이 핀을 연결하고, 둘을 한 칩에 넣은 제품은 내부에서 처리해도 된다(외부로 신호를 뽑을 필요가 없다).</p>
+    <ul>
+      <li><b>WCI-1</b>: 반이중 UART를 <b>전선 한 가닥</b>에 실은 방식이다. 모뎀은 직접 구동하고 블루투스는 풀업/풀다운으로 구동해, 동시에 말해도 모뎀 쪽이 이긴다. 모뎀 → 블루투스 메시지 앞에는 빠른 속도의 5비트 프리앰블 ‘01011’이 붙는다.</li>
+      <li><b>WCI-2</b>: 송신·수신 선을 엇갈려 연결한(null-modem) <b>표준 전이중 UART</b>다. 두 가닥이면 된다.</li>
+    </ul>
+    <p>두 방식의 <b>전송 계층은 같다</b>. UART 문자 하나(8비트)를 <b>메시지 종류 3비트 + 내용 5비트</b>로 나눈다. 비트 0(최하위)이 먼저 나간다. 종류 0은 실시간 신호(모뎀 → 블루투스는 FRAME_SYNC, MWS_RX, MWS_TX, MWS_PATTERN 2비트를, 블루투스 → 모뎀은 BLUETOOTH_RX_PRI, BLUETOOTH_TX_ON, 802_RX_PRI, 802_TX_ON을 한 문자에 담는다), 1은 전송 제어(실시간 신호를 다시 보내 달라), 2는 투명 데이터(한 바이트를 4비트씩 두 문자로), 3은 쉬는 시간(DURATION × 5 ms, 0은 취소, 31은 무한), 4는 스캔 주파수 표 번호, 6·7은 회사별 용도다.</p>
+    <div class="sim" id="sim-wci">
+      <div class="sim-head"><span class="sim-tag">BUILDER</span><h3>WCI-2 메시지 만들기: UART 문자 한 개에 담긴 공존 신호</h3></div>
+      <div class="sim-view" style="padding:14px">
+        <div class="wci-sig" id="wci-sig"></div>
+        <div class="wci-bits" id="wci-bits"></div>
+        <div class="pk-out" id="wci-out" style="margin-top:10px;font-size:14px;color:var(--text-dim)"></div>
+      </div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>메시지</span><div class="seg" id="wci-type"><button data-value="0m" class="on">종류 0: 실시간 (모뎀→BT)</button><button data-value="0b">종류 0: 실시간 (BT→모뎀)</button><button data-value="3">종류 3: 쉬는 시간</button><button data-value="1">종류 1: 다시 보내 줘</button></div></div>
+        <label class="ctrl"><span>쉬는 시간 DURATION (종류 3) <output id="wci-d-out"></output></span><input type="range" id="wci-d" min="0" max="31" value="4"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">문자 값</span><span class="v" id="wci-hex">—</span></div>
+        <div class="stat"><span class="k">전송 순서 비트</span><span class="v" id="wci-tx">—</span></div>
+        <div class="stat"><span class="k">뜻</span><span class="v" id="wci-mean">—</span></div>
+      </div>
+      <div class="sim-note">주황 칸 = 메시지 종류(b0~b2), 파란 칸 = 켜진 신호 비트. 해볼 것: ① 모뎀 → 블루투스 실시간 메시지에서 MWS_RX를 켜면 b4가 1이 된다(MSG[1]). ② 종류 3에서 DURATION을 31로 두면 “무한히 쉰다”는 뜻이 된다. 4면 20 ms다. ③ 종류 1의 RESEND_REAL_TIME은 인터페이스가 잠에서 깬 뒤 상대의 현재 신호 상태를 요청하는 데 쓴다. 상대가 깨어 있으면 UART 문자 4개 시간 안에 실시간 메시지로 답해야 하고, 답이 없으면 잠든 것으로 본다. 이 빌더는 사양의 Table 3.1·3.4·3.5·3.6·3.10 배치를 그대로 따른다.</div>
+    </div>
+    <p class="spec-ref">WCI-1 물리 계층(단일 선, 프리앰블 01011): <b>[Vol 7] Part B §2</b> · WCI-2 물리 계층(전이중 UART, null-modem): <b>[Vol 7] Part C §2</b> · 전송 계층 형식(Table 3.1), 메시지 종류(Table 3.2), 실시간·전송 제어·투명 데이터·쉬는 시간·스캔 주파수 메시지: <b>[Vol 7] Part B·C §3</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="wifi">
+    <h2>Wi-Fi와의 공존: 사양 밖의 중재</h2>
+    <p>놀랍게도 Core 사양은 <b>블루투스와 Wi-Fi 사이의 신호를 정하지 않는다</b>. 사양의 설명대로 둘의 공존은 전통적으로 AFH(4장)와 각 회사의 독자적인 우선순위 기법의 조합이었다. 이동통신 모뎀은 다른 회사의 칩인 경우가 많아 표준 인터페이스가 필요했지만, Wi-Fi와 블루투스는 대개 한 회사의 콤보 칩에 함께 들어가 내부에서 처리하기 때문이다. 위 표의 802_TX_ON·802_RX_PRI는 블루투스가 <b>모뎀에게</b> Wi-Fi 상태를 대신 알려 주는 신호일 뿐이다.</p>
+    <p>콤보 칩 안의 중재기는 흔히 <span class="term">PTA</span><span class="en">(Packet Traffic Arbitration)</span>라 부른다. 원리는 단순하다. 두 무선이 매 순간 “나 지금 보내고 싶다, 이건 중요하다”를 요청하고, 중재기가 우선순위 규칙에 따라 한쪽에 허락한다. 무엇을 앞세울지는 설계 선택이다. 이어폰 오디오처럼 늦으면 끊기는 블루투스 패킷과, 대역폭은 크지만 조금 늦어도 되는 Wi-Fi 다운로드 사이에서 줄다리기를 한다.</p>
+    <div class="sim" id="sim-pta">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>한 칩 안의 줄다리기: PTA 우선순위 (구현 예)</h3></div>
+      <div class="sim-view"><canvas id="cv-pta"></canvas></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>블루투스 일</span><div class="seg" id="pt-bt"><button data-value="cis" class="on">LE 오디오 (10 ms마다 CIS)</button><button data-value="a2dp">클래식 A2DP 스트림</button><button data-value="hid">마우스 (7.5 ms)</button></div></div>
+        <label class="ctrl"><span>Wi-Fi가 쓰려는 시간 비율 <output id="pt-wl-out"></output></span><input type="range" id="pt-wl" min="0" max="100" step="5" value="70"></label>
+        <div class="ctrl"><span>중재 규칙</span><div class="seg" id="pt-pol"><button data-value="bt">블루투스 항상 우선</button><button data-value="smart" class="on">블루투스 중요 패킷만 우선</button><button data-value="wl">Wi-Fi 우선</button></div></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">블루투스 기한 안 성공</span><span class="v" id="pt-bt-ok">—</span></div>
+        <div class="stat"><span class="k">Wi-Fi가 얻은 시간</span><span class="v" id="pt-wl-got">—</span></div>
+        <div class="stat"><span class="k">판정</span><span class="v" id="pt-verdict">—</span></div>
+      </div>
+      <div class="sim-note">100 ms 동안의 시간표(가로 = 시간). 위 줄 = 블루투스가 원한 시각(진한 칸 = 기한이 있는 중요 패킷, 연한 칸 = 미뤄도 되는 패킷), 아래 줄 = 실제로 공중을 쓴 쪽(파랑 블루투스, 주황 Wi-Fi). 빨간 표시는 기한을 놓친 블루투스 패킷이다. 해볼 것: ① “Wi-Fi 우선”에서 Wi-Fi 비율을 70%로 두면 LE 오디오가 끊긴다. ② “블루투스 항상 우선”은 오디오를 지키지만 Wi-Fi가 잃는 시간이 커진다. ③ “중요 패킷만 우선”은 오디오를 지키면서 Wi-Fi 손실을 줄이는 절충이다. 이 모델은 사양이 아닌 <b>구현 예</b>다(사양은 BT–Wi-Fi 신호를 정하지 않는다). 가정: 공유 안테나·같은 칩이라 둘 중 하나만 공중을 쓸 수 있음, Wi-Fi는 1 ms 단위 전송을 무작위로 요청, 블루투스 패킷 하나의 공중 시간 약 0.6 ms, 중요 패킷은 재전송 기회가 한 번 더 있으며 그 뒤 기한 초과.</div>
+    </div>
+    <p>호스트도 거든다. Wi-Fi가 2.4 GHz의 어느 채널을 쓰는지 아는 운영체제는 HCI_Set_AFH_Host_Channel_Classification(클래식)과 HCI_LE_Set_Host_Channel_Classification(LE)으로 그 범위를 “나쁜 채널”로 알려, 블루투스의 채널 맵에서 빼게 한다(4장). 사양은 이 기능을 1.2의 공존 기능으로 꼽는다.</p>
+    <p class="spec-ref">BT–WLAN 신호는 사양이 정하지 않음, AFH + 독자 우선순위 기법: <b>[Vol 1] Part A §7.3</b> · 호스트 채널 분류: <b>[Vol 4] Part E §7.3.46(BR/EDR), §7.8.19(LE)</b> · AFH 최소 채널(BR/EDR 20, LE 2): <b>[Vol 1] Part A §7.2</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="neighbors-ism">
+    <h2>대역 안의 다른 이웃: 802.15.4, 그리고 블루투스 자신</h2>
+    <p>Zigbee와 Thread가 쓰는 IEEE 802.15.4는 2.4 GHz에서 채널 11~26을 5 MHz 간격(2,405 + 5 × (k − 11) MHz), 폭 약 2 MHz로 쓴다(IEEE 802.15.4 표준). 연결을 자주 바꾸지 않고 한 채널에 머무는 경우가 많아, Wi-Fi 1·6·11번 사이의 틈인 15·20·25번이나 위쪽 끝의 26번을 고르는 것이 흔한 요령이다. 블루투스 LE 입장에서는 이들도 Wi-Fi와 마찬가지로 AFH로 피해 갈 대상이다. 스마트홈 허브처럼 한 기기에 Thread와 블루투스 LE가 함께 있으면, 둘 다 같은 2.4 GHz 무선부와 안테나를 시간으로 나눠 쓰는 설계도 많다.</p>
+    <p>마지막 이웃은 블루투스 자신이다. 휴대폰 하나가 이어폰 오디오(CIS), 시계 연결(ACL), 주변 스캔, 분실물 태그 광고 수신을 동시에 한다. 각 활동의 간격이 제각각이면 언젠가 반드시 같은 순간에 부딪힌다. 사양의 HCI_Set_Ecosystem_Base_Interval 명령은 호스트가 컨트롤러에게 “앞으로의 활동 간격은 대체로 이 값의 배수일 것”이라는 힌트를 준다. 예를 들어 15 ms 연결과 40 ms 주기적 광고를 계획하면 5 ms를 알려, 컨트롤러가 일정을 짜기 쉽게 한다.</p>
+    <p class="spec-ref">HCI_Set_Ecosystem_Base_Interval(OCF 0x0082, 2.5 ms ~ 40.9 s, 15 ms·40 ms → 5 ms 예): <b>[Vol 4] Part E §7.3.100</b> · 802.15.4 채널 배치는 Core 밖(IEEE 802.15.4)</p>
+    <div class="callout tip"><strong>제품을 만든다면: 공존 점검표</strong><p>① 안테나 격리를 먼저 잰다. 격리 몇 dB가 필터 몇 dB보다 싸다. ② 이웃 이동통신 대역과 가장 가까운 블루투스 채널(0번 근처, 39번 근처)을 AFH로 뺄 수 있게 호스트 채널 분류를 연결한다. ③ 모뎀이 다른 칩이면 WCI-2 연결과 FRAME_SYNC·MWS_RX를 지원하는지 확인하고, 외부 프레임 설정을 HCI로 넣는다. ④ 오디오처럼 기한이 있는 블루투스 트래픽은 PTA에서 “중요”로 표시한다. ⑤ 실제 휴대폰과 LTE TDD·Wi-Fi 부하를 동시에 건 상태에서 끊김을 측정한다. 시뮬레이터의 숫자는 출발점일 뿐이다.</p></div>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>블루투스의 이웃은 ISM 대역 안(Wi-Fi, 802.15.4, 전자레인지)과 대역 옆(LTE·5G 대역 40·41·7)이다. 같은 기기 안의 <b>공존 배치</b> 무선이 가장 어렵다. 격리가 10~20 dB뿐이라 이웃의 송신이 수신기에 100 dB 가까이 세게 들어온다.</li>
+      <li>사양의 간섭 완화 방식은 <b>주파수 분할, 시간 분할, 시간 정렬, 혼합</b>. 필터와 격리로 차단 한도(LE −35 dBm, BR/EDR −27 dBm) 아래로 못 내리면 시간을 나눠야 한다.</li>
+      <li>이동통신은 기지국이 시간표를 정하므로 블루투스가 맞춘다. <b>순수 TDM</b>은 송수신 모두, <b>하이브리드</b>는 수신만 제한한다. 순수 TDM에서는 5 ms 프레임마다 슬롯 쌍 4개 중 3개를 잃을 수 있다.</li>
+      <li>시간표 맞추기: <b>외부 프레임 설정</b>(HCI, 하향·상향·양방향·보호 구간) + <b>FRAME_SYNC</b> + <b>피코넷 시계 조정</b>(4.1) + <b>SAM</b>(5.0, 슬롯 종류 0~3). 찾기·호출에는 Train Nudging과 Interlaced Scanning(4.1).</li>
+      <li><b>Vol 7</b>은 모뎀–블루투스 공존 신호 10가지(FRAME_SYNC, MWS_RX/TX, MWS_PATTERN, BLUETOOTH_RX_PRI/TX_ON, 802_TX_ON/RX_PRI, 쉬는 시간, 스캔 주파수)와 전송 방식 <b>WCI-1</b>(한 가닥, 반이중)·<b>WCI-2</b>(UART 전이중)을 정한다. UART 문자 하나 = 종류 3비트 + 내용 5비트.</li>
+      <li>사양은 <b>블루투스–Wi-Fi 신호를 정하지 않는다</b>. AFH·호스트 채널 분류와 칩 내부의 PTA 우선순위(구현 영역)로 푼다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>휴대폰의 LTE 송신(+23 dBm)이 블루투스 수신을 방해하는 정도를 줄이는 방법으로 가장 거리가 먼 것은?</p><div class="opts">
+        <button class="opt">안테나 사이 격리를 키운다</button><button class="opt">가파른 대역 선택 필터를 쓴다</button><button class="opt">LTE 송신 중에는 블루투스 수신을 피한다</button><button class="opt" data-correct>블루투스 송신 전력을 높인다</button>
+      </div><div class="quiz-exp">블루투스 송신을 키워도 블루투스 수신기에 들어오는 LTE 세기는 그대로다. 격리·필터(주파수)나 시간 나누기가 해법이다.</div></div>
+      <div class="quiz-q"><p>Core 6.2가 요구하는 LE 수신기의 대역 외 차단 한도(2,003~2,399 MHz)는?</p><div class="opts">
+        <button class="opt">−70 dBm</button><button class="opt" data-correct>−35 dBm</button><button class="opt">−10 dBm</button><button class="opt">+23 dBm</button>
+      </div><div class="quiz-exp">[Vol 6] Part A Table 4.7. 원하는 신호가 감도보다 3 dB 센 상태에서 −35 dBm의 방해 신호를 견디며 BER 0.1% 이하여야 한다.</div></div>
+      <div class="quiz-q"><p>하이브리드 모드가 순수 TDM 모드와 다른 점은?</p><div class="opts">
+        <button class="opt">블루투스가 이동통신의 시간표를 무시한다</button><button class="opt" data-correct>가파른 필터로 블루투스 송신이 이동통신을 방해하지 않게 해, 블루투스 수신만 시간으로 보호한다</button><button class="opt">이동통신이 블루투스에 맞춰 시간표를 바꾼다</button><button class="opt">블루투스 송신만 막고 수신은 자유롭다</button>
+      </div><div class="quiz-exp">하이브리드는 주파수 보호대와 양쪽 필터 조건이 필요하지만, 블루투스가 이동통신 하향 시간에도 송신할 수 있어 슬롯 손실이 줄어든다([Vol 1] Part A §7.4).</div></div>
+      <div class="quiz-q"><p>WCI-2 UART 문자 하나의 구성은?</p><div class="opts">
+        <button class="opt">시작 비트 + 7비트 데이터</button><button class="opt" data-correct>메시지 종류 3비트(b0~b2) + 내용 5비트(b3~b7)</button><button class="opt">주소 4비트 + 데이터 4비트</button><button class="opt">CRC 8비트</button>
+      </div><div class="quiz-exp">[Vol 7] Part B·C Table 3.1. 비트 0(최하위)이 먼저 전송된다.</div></div>
+      <div class="quiz-q"><p>WCI-2 쉬는 시간 메시지(종류 3)의 DURATION이 6이면?</p><div class="opts">
+        <button class="opt">6 ms</button><button class="opt" data-correct>30 ms</button><button class="opt">무한</button><button class="opt">취소</button>
+      </div><div class="quiz-exp">MWS_INACTIVITY_DURATION = DURATION × 5 ms. 0은 취소, 31은 무한이다.</div></div>
+      <div class="quiz-q"><p>블루투스와 같은 칩의 Wi-Fi 사이 공존 신호에 대해 Core 6.2가 정한 것은?</p><div class="opts">
+        <button class="opt">WCI-2로 Wi-Fi와 블루투스를 연결한다</button><button class="opt">PTA 3선식 인터페이스를 정한다</button><button class="opt" data-correct>정하지 않는다. AFH와 각 회사의 독자적인 우선순위 기법에 맡긴다</button><button class="opt">Wi-Fi가 항상 우선한다</button>
+      </div><div class="quiz-exp">[Vol 1] Part A §7.3: “The specification does not specify signaling between the Bluetooth Controller and a Wireless LAN device.” 802_TX_ON·802_RX_PRI는 모뎀에게 Wi-Fi 상태를 알리는 신호다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const leFreq = (c) => (c === 37 ? 2402 : c === 38 ? 2426 : c === 39 ? 2480 : c <= 10 ? 2404 + 2 * c : 2428 + 2 * (c - 11));
+
+  /** ISM 대역 끝에서 바깥 LTE 채널 가장자리까지의 간격(MHz)과 필터 감쇠 */
+  function filterRejection(gapMHz, slopeDbPerMHz, maxDb) { return Math.min(maxDb, Math.max(0, gapMHz) * slopeDbPerMHz); }
+  /** 블루투스 채널 가장자리와 LTE 채널 가장자리 사이 간격(MHz). 채널 폭: BT 2 MHz, LTE 20 MHz */
+  function channelGap(btCenter, lteLo, lteHi) { const lo = btCenter - 1, hi = btCenter + 1; return lteHi <= lo ? lo - lteHi : lteLo >= hi ? lteLo - hi : 0; }
+
+  /** LTE TDD 상하향 설정(3GPP TS 36.211 Table 4.2-2). 1 ms 서브프레임 10개 */
+  const TDD = { 0: "DSUUUDSUUU", 1: "DSUUDDSUUD", 2: "DSUDDDSUDD", 3: "DSUUUDDDDD", 4: "DSUUDDDDDD", 5: "DSUDDDDDDD", 6: "DSUUUDSUUD" };
+  /** 프레임(10 ms)을 µs 구간 목록으로: [시작, 끝, 종류] 종류 = D(하향), U(상향), G(보호). 특수 서브프레임은 D 643 + G 286 + U 71 µs로 근사 */
+  function tddPeriods(cfg) {
+    const out = []; let t = 0;
+    for (const s of TDD[cfg]) {
+      if (s === "S") { out.push([t, t + 643, "D"]); out.push([t + 643, t + 929, "G"]); out.push([t + 929, t + 1000, "U"]); }
+      else out.push([t, t + 1000, s]);
+      t += 1000;
+    }
+    return out;
+  }
+  /** 한 구간 [a, b)가 모두 허용 종류 안에 있는가 (프레임 반복) */
+  function within(periods, frame, a, b, allowed) {
+    for (const [s, e, k] of periods) for (const base of [-frame, 0, frame]) {
+      const S = s + base, E = e + base;
+      if (E > a && S < b && !allowed.includes(k)) return false;
+    }
+    return true;
+  }
+  /** 블루투스 센트럴 슬롯 쌍(625 µs 송신 + 625 µs 수신)의 사용 가능 여부. mode: pure | hybrid | none */
+  function usablePairs(periods, frame, offsetUs, mode) {
+    const res = [];
+    for (let k = 0; k < frame / 1250; k++) {
+      const tx0 = offsetUs + k * 1250, rx0 = tx0 + 625;
+      const txHurtsMws = !within(periods, frame, tx0, tx0 + 625, ["U", "G"]); // MWS가 받는 중(D)에 송신
+      const rxOk = within(periods, frame, rx0, rx0 + 625, ["D", "G"]);        // MWS가 보내는 중(U)이면 못 받음
+      let ok;
+      if (mode === "pure") ok = !txHurtsMws && rxOk;
+      else if (mode === "hybrid") ok = rxOk;
+      else ok = true;
+      res.push({ ok, hurts: mode === "none" && txHurtsMws, rxOk });
+    }
+    return res;
+  }
+  /** WCI 전송 계층: 종류 3비트(b0..b2) + 내용 5비트(b3..b7) → 문자 값. [Vol 7] Part B·C Table 3.1 */
+  function wciChar(type, msgBits) { let v = type & 7; msgBits.forEach((b, i) => { if (b) v |= 1 << (3 + i); }); return v; }
+  /** 쉬는 시간 메시지 해석(ms). 0 = 취소, 31 = 무한. [Vol 7] Part C §3.1.4 */
+  function inactivityMs(duration) { return duration === 0 ? 0 : duration === 31 ? Infinity : duration * 5; }
+
+  /* ================================================================ 1. 대역 옆 LTE */
+  (function () {
+    const BANDS = { 40: [2300, 2400], 41: [2496, 2690], 7: [2500, 2570] };
+    const band = BT.seg("cx-band", draw), flt = BT.seg("cx-flt", draw);
+    const off = BT.range("cx-off", (v) => v + " MHz", draw), ch = BT.range("cx-ch", (v) => v + " (" + leFreq(v) + " MHz)", draw), iso = BT.range("cx-iso", (v) => v + " dB", draw);
+    const lte = () => { const [lo, hi] = BANDS[band()]; const o = Math.min(off(), hi - lo - 20); return band() === "40" ? [hi - 20 - o, hi - o] : [lo + o, lo + o + 20]; };
+    const cv = BT.canvas($("cv-cxband"), (ctx, w, h) => {
+      const P = BT.palette(), f0 = 2280, f1 = 2710, L = 12, Rr = w - 12, X = (f) => L + ((f - f0) / (f1 - f0)) * (Rr - L), top = 30, base = h - 34;
+      ctx.fillStyle = P.surface; ctx.fillRect(X(2400), top, X(2483.5) - X(2400), base - top);
+      BT.text(ctx, "ISM", X(2441), top - 10, { size: 11, color: P.dim, align: "center", bold: true });
+      const [blo, bhi] = BANDS[band()];
+      ctx.strokeStyle = P.warn; ctx.setLineDash([4, 4]); ctx.strokeRect(X(blo), top + 4, X(bhi) - X(blo), base - top - 8); ctx.setLineDash([]);
+      BT.text(ctx, "대역 " + band(), X((blo + bhi) / 2), top - 10, { size: 11, color: P.warn, align: "center", bold: true });
+      const [lo, hi] = lte(); ctx.fillStyle = P.warn; ctx.globalAlpha = 0.45; ctx.fillRect(X(lo), top + 10, X(hi) - X(lo), base - top - 10); ctx.globalAlpha = 1;
+      BT.text(ctx, "LTE +23 dBm", X((lo + hi) / 2), base - 14, { size: 10.5, color: P.text, align: "center" });
+      const fc = leFreq(ch()); ctx.fillStyle = P.accent; ctx.fillRect(X(fc - 1) - 1, top + 20, Math.max(3, X(fc + 1) - X(fc - 1)), base - top - 20);
+      for (let f = 2300; f <= 2700; f += 50) BT.text(ctx, String(f), X(f), base + 12, { size: 10, mono: true, color: P.dim, align: "center" });
+    }, { aspect: 0.3, minHeight: 170, maxHeight: 230 });
+    function draw() {
+      const [lo, hi] = lte(), fc = leFreq(ch()), gap = channelGap(fc, lo, hi);
+      const rej = filterRejection(gap, +flt(), 50), pin = 23 - iso() - rej, ok = pin <= -35;
+      BT.stat("cx-gap", gap + " MHz");
+      BT.stat("cx-rej", rej.toFixed(0) + " dB");
+      BT.stat("cx-in", (pin > 0 ? "+" : "") + pin.toFixed(0) + " dBm");
+      BT.stat("cx-ok", ok ? '<span style="color:var(--ok)">차단 한도 이내 (동시 동작 가능)</span>' : '<span style="color:var(--bad)">한도 초과 → 시간 나누기 필요</span>');
+      cv.redraw();
+    }
+    draw();
+  })();
+
+  /* ================================================================ 2. TDD 정렬 */
+  (function () {
+    const FRAME = 10000;
+    const cfg = BT.seg("td-cfg", draw), mode = BT.seg("td-mode", draw);
+    const off = BT.range("td-off", (v) => v + " µs", draw);
+    $("td-best").addEventListener("click", () => {
+      const per = tddPeriods(cfg()); let best = 0, bv = -1;
+      for (let o = 0; o < 1250; o += 5) { const n = usablePairs(per, FRAME, o, mode() === "none" ? "pure" : mode()).filter((p) => p.ok).length; if (n > bv) { bv = n; best = o; } }
+      off.set(best);
+    });
+    let res = [];
+    const cv = BT.canvas($("cv-tdd"), (ctx, w, h) => {
+      const P = BT.palette(), L = 52, Rr = w - 8, X = (t) => L + (t / FRAME) * (Rr - L), y1 = 16, y2 = 66, hh = 34;
+      BT.text(ctx, "LTE", 6, y1 + hh / 2, { size: 11, color: P.dim }); BT.text(ctx, "BT", 6, y2 + hh / 2, { size: 11, color: P.dim });
+      tddPeriods(cfg()).forEach(([s, e, k]) => { ctx.fillStyle = k === "D" ? P.accent2 : k === "U" ? P.warn : P.surface; ctx.globalAlpha = 0.55; ctx.fillRect(X(s), y1, X(e) - X(s), hh); ctx.globalAlpha = 1; });
+      TDD[cfg()].split("").forEach((s, i) => BT.text(ctx, s, X(i * 1000 + 500), y1 + hh / 2, { size: 12, bold: true, color: P.text, align: "center" }));
+      res.forEach((p, k) => {
+        for (let half = 0; half < 2; half++) {
+          let a = (off() + k * 1250 + half * 625) % FRAME, b = a + 625;
+          const draw1 = (s, e) => { ctx.fillStyle = p.ok ? P.ok : P.faint; ctx.globalAlpha = p.ok ? (half ? 0.55 : 0.9) : 0.35; ctx.fillRect(X(s) + 0.5, y2, Math.max(1, X(e) - X(s) - 1), hh); ctx.globalAlpha = 1;
+            if (p.hurts && !half) { ctx.strokeStyle = P.bad; ctx.lineWidth = 2; ctx.strokeRect(X(s) + 1, y2 + 1, X(e) - X(s) - 2, hh - 2); } };
+          if (b > FRAME) { draw1(a, FRAME); draw1(0, b - FRAME); } else draw1(a, b);
+        }
+      });
+      BT.text(ctx, "10 ms", Rr, h - 8, { size: 10.5, color: P.dim, align: "right" });
+    }, { aspect: 0.2, minHeight: 120, maxHeight: 150 });
+    function draw() {
+      res = usablePairs(tddPeriods(cfg()), FRAME, off(), mode());
+      const ok = res.filter((p) => p.ok).length, hurt = res.filter((p) => p.hurts).length;
+      BT.stat("td-ok", ok + "쌍"); BT.stat("td-hurt", mode() === "none" ? `<span style="color:var(${hurt ? "--bad" : "--ok"})">${hurt}번</span>` : "0번 (막음)");
+      BT.stat("td-share", Math.round((ok / 8) * 100) + "%");
+      cv.redraw();
+    }
+    draw();
+  })();
+
+  /* ================================================================ 3. WCI-2 */
+  (function () {
+    const SIG = { "0m": ["FRAME_SYNC", "MWS_RX", "MWS_TX", "MWS_PATTERN[0]", "MWS_PATTERN[1]"], "0b": ["BLUETOOTH_RX_PRI", "BLUETOOTH_TX_ON", "802_RX_PRI", "802_TX_ON", "RFU"], 1: ["RESEND_REAL_TIME", "RFU", "RFU", "RFU", "RFU"] };
+    let bits = [0, 1, 0, 0, 0];
+    const type = BT.seg("wci-type", () => { bits = type() === "1" ? [1, 0, 0, 0, 0] : [0, 1, 0, 0, 0]; draw(); });
+    const dur = BT.range("wci-d", (v) => v + (v === 0 ? " (취소)" : v === 31 ? " (무한)" : " → " + v * 5 + " ms"), draw);
+    $("wci-sig").addEventListener("change", (e) => { const i = +e.target.dataset.i; bits[i] = e.target.checked ? 1 : 0; draw(); });
+    function draw() {
+      const t = type(), tv = t === "3" ? 3 : t === "1" ? 1 : 0;
+      let msg;
+      if (t === "3") { const d = dur(); msg = [0, 1, 2, 3, 4].map((i) => (d >> i) & 1); }
+      else msg = bits;
+      const names = t === "3" ? ["DURATION[0]", "DURATION[1]", "DURATION[2]", "DURATION[3]", "DURATION[4]"] : SIG[t];
+      $("wci-sig").innerHTML = t === "3" ? "" : names.map((n, i) => n === "RFU" ? "" : `<label class="check"><input type="checkbox" data-i="${i}" ${bits[i] ? "checked" : ""}> ${n}</label>`).join("");
+      const v = wciChar(tv, msg), all = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => (v >> i) & 1);
+      const lab = ["Type[0]", "Type[1]", "Type[2]", "MSG[0]", "MSG[1]", "MSG[2]", "MSG[3]", "MSG[4]"];
+      $("wci-bits").innerHTML = all.map((b, i) => `<span class="${i < 3 ? "ty" : b ? "on" : ""}">${b}<small>b${i} ${lab[i]}</small></span>`).join("");
+      BT.stat("wci-hex", "0x" + BT.hex(v));
+      BT.stat("wci-tx", all.join(""));
+      let mean;
+      if (t === "3") { const ms = inactivityMs(dur()); mean = ms === 0 ? "쉬는 시간 취소" : ms === Infinity ? "무한히 쉼" : ms + " ms 동안 쉼"; }
+      else if (t === "1") mean = msg[0] ? "실시간 신호 상태를 다시 보내 달라" : "(빈 제어 메시지)";
+      else { const on = names.filter((n, i) => msg[i] && n !== "RFU"); mean = on.length ? on.join(", ") + " 켜짐" : "모든 신호 꺼짐"; }
+      BT.stat("wci-mean", mean);
+      $("wci-out").textContent = `종류 ${tv} (${t === "3" ? "MWS Inactivity Duration" : t === "1" ? "Transport Control" : "Real-time Signal"}) · 문자 값 ${v} = 0b${BT.bin(v, 8)} (UART는 b0부터 보낸다)`;
+    }
+    draw();
+  })();
+
+  /* ================================================================ 4. PTA */
+  (function () {
+    const SPAN = 100, SLOT = 0.5; // ms
+    const bt = BT.seg("pt-bt", draw), pol = BT.seg("pt-pol", draw), wl = BT.range("pt-wl", (v) => v + "%", draw);
+    let R = null;
+    function simulate() {
+      const r = BT.rng(77), n = SPAN / SLOT, air = Array(n).fill(""), want = Array(n).fill(""), wifiWant = Array(n).fill(false);
+      // Wi-Fi 요청: 1 ms(2칸) 단위
+      for (let i = 0; i < n; i += 2) if (r() < wl() / 100) { wifiWant[i] = wifiWant[i + 1] = true; }
+      // 블루투스 요청: [시작칸, 중요?]
+      const reqs = []; const per = bt() === "cis" ? 10 : bt() === "hid" ? 7.5 : 2.5;
+      for (let t = 1; t < SPAN; t += per) reqs.push({ i: Math.round(t / SLOT), crit: bt() === "a2dp" ? r() < 0.25 : true });
+      reqs.forEach((q) => (want[q.i] = q.crit ? "C" : "N"));
+      let ok = 0, total = 0, miss = [];
+      reqs.forEach((q) => {
+        total++;
+        const tries = q.crit ? [q.i, q.i + 3] : [q.i, q.i + 3, q.i + 6]; // 기한 안 재시도 기회
+        let done = false;
+        for (const i of tries) {
+          if (i >= n || air[i]) continue;
+          const btWins = !wifiWant[i] || pol() === "bt" || (pol() === "smart" && q.crit);
+          if (btWins) { air[i] = "B"; done = true; break; }
+        }
+        if (done) ok++; else miss.push(q.i);
+      });
+      let wGot = 0, wWant = 0; for (let i = 0; i < n; i++) { if (wifiWant[i]) { wWant++; if (!air[i]) { air[i] = "W"; wGot++; } } }
+      return { air, want, ok, total, miss, wGot, wWant, n };
+    }
+    const cv = BT.canvas($("cv-pta"), (ctx, w, h) => {
+      if (!R) return;
+      const P = BT.palette(), L = 60, Rr = w - 8, cw = (Rr - L) / R.n, y1 = 14, y2 = 54, hh = 26;
+      BT.text(ctx, "BT 요청", 4, y1 + hh / 2, { size: 11, color: P.dim }); BT.text(ctx, "공중", 4, y2 + hh / 2, { size: 11, color: P.dim });
+      R.want.forEach((k, i) => { if (!k) return; ctx.fillStyle = P.accent; ctx.globalAlpha = k === "C" ? 0.9 : 0.35; ctx.fillRect(L + i * cw, y1, Math.max(1.5, cw), hh); ctx.globalAlpha = 1; });
+      R.air.forEach((k, i) => { if (!k) return; ctx.fillStyle = k === "B" ? P.accent : P.warn; ctx.globalAlpha = k === "B" ? 0.95 : 0.6; ctx.fillRect(L + i * cw, y2, Math.max(1, cw), hh); ctx.globalAlpha = 1; });
+      R.miss.forEach((i) => BT.text(ctx, "✗", L + i * cw, y1 + hh + 8, { size: 12, color: P.bad, bold: true, align: "center" }));
+      BT.text(ctx, "100 ms", Rr, h - 6, { size: 10.5, color: P.dim, align: "right" });
+    }, { aspect: 0.18, minHeight: 110, maxHeight: 130 });
+    function draw() {
+      R = simulate();
+      const okp = R.ok / R.total, wp = R.wWant ? R.wGot / R.wWant : 1;
+      BT.stat("pt-bt-ok", `${R.ok} / ${R.total} (${Math.round(okp * 100)}%)`);
+      BT.stat("pt-wl-got", R.wWant ? Math.round(wp * 100) + "% (원한 시간 대비)" : "—");
+      BT.stat("pt-verdict", okp >= 0.99 ? (wp >= 0.85 ? '<span style="color:var(--ok)">둘 다 양호</span>' : '<span style="color:var(--warn)">오디오는 지켰지만 Wi-Fi 손해</span>') : '<span style="color:var(--bad)">블루투스 끊김</span>');
+      cv.redraw();
+    }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>
