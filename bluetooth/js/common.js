@@ -487,7 +487,6 @@
     const root = body.dataset.root != null ? body.dataset.root : body.dataset.chapter ? "../" : "";
     const curSlug = body.dataset.chapter || "";
     const href = (slug) => (slug ? `${root}chapters/${slug}.html` : `${root}index.html`);
-    const feedbackUrl = "https://books.euiyun.com/feedback.html?book=bluetoothbook&page=" + encodeURIComponent(location.href);
 
     // top bar
     const bar = document.createElement("header");
@@ -496,18 +495,9 @@
       <button class="sb-btn icon" id="sb-menu" aria-label="챕터 목록">${ICON_MENU}</button>
       <a class="sb-logo" href="${href("")}">${LOGO}<span>BluetoothBook <small>블루투스 교과서</small></span></a>
       <span class="spacer"></span>
-      <a class="sb-btn series-link" href="https://books.euiyun.com/" aria-label="전체 책 보기" title="전체 책 보기"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5h6v14H4zM10 5.5h6v14h-6zM17 7l3-1 2 13-3 1z"/></svg><span>전체 책</span></a>
+      <a class="sb-btn series-link" href="${root}../index.html" aria-label="yalexBook 서재로" title="yalexBook 서재로"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5h6v14H4zM10 5.5h6v14h-6zM17 7l3-1 2 13-3 1z"/></svg><span>서재</span></a>
       <button class="sb-btn icon" id="sb-theme" aria-label="테마 전환"></button>
       <div class="sb-progress" id="sb-progress"></div>`;
-    const feedbackButton = document.createElement("a");
-    feedbackButton.className = bar.className.replace("-topbar", "-btn") + " icon feedback-button";
-    feedbackButton.href = feedbackUrl;
-    feedbackButton.target = "_blank";
-    feedbackButton.rel = "noopener";
-    feedbackButton.setAttribute("aria-label", "독자 의견 보내기");
-    feedbackButton.title = "독자 의견 보내기";
-    feedbackButton.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-6 4V6a2 2 0 0 1 2-2z"/><path d="M8 9h8M8 13h5"/></svg>';
-    bar.querySelector("[id$='-theme']").before(feedbackButton);
     body.prepend(bar);
 
     // Search chapter metadata immediately; load section and visual titles on demand.
@@ -694,16 +684,10 @@
     const foot = document.createElement("footer");
     foot.className = "sb-foot";
     foot.innerHTML = `BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서 · 기준 사양: Bluetooth Core 6.2 · 시뮬레이터는 이해를 돕기 위해 단순화한 모델입니다.
-      <br>© 2026 <a href="https://github.com/geniuskey">geniuskey</a> ·
+      <br>© 2026 <a href="https://github.com/yalex-kim">Yalex Kim</a> · <a href="${root}../index.html">yalexBook 서재</a> ·
       콘텐츠 <a href="https://creativecommons.org/licenses/by/4.0/deed.ko" rel="license">CC BY 4.0</a> ·
-      코드 <a href="https://github.com/geniuskey/bluetoothbook/blob/main/LICENSE-MIT">MIT</a> ·
-      <a href="https://github.com/geniuskey/bluetoothbook/blob/main/LICENSE.md">라이선스 안내</a>`;
-    const feedbackLink = document.createElement("a");
-    feedbackLink.href = feedbackUrl;
-    feedbackLink.target = "_blank";
-    feedbackLink.rel = "noopener";
-    feedbackLink.textContent = "독자 의견";
-    foot.append(" · ", feedbackLink);
+      코드 <a href="https://github.com/yalex-kim/yalexBook/blob/main/bluetooth/LICENSE-MIT">MIT</a> ·
+      <a href="https://github.com/yalex-kim/yalexBook/blob/main/bluetooth/LICENSE.md">라이선스 안내</a>`;
     body.appendChild(foot);
 
     // quiz

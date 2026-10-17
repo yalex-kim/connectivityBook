@@ -4,7 +4,7 @@
 
 기여하는 코드는 MIT, 교재 콘텐츠는 CC BY 4.0으로 제공하는 데 동의해야 합니다. HTML 안에 코드와 콘텐츠가 함께 있어도 각 부분에 해당하는 라이선스를 적용합니다. 적용 범위는 [라이선스 안내](LICENSE.md)를 참고하세요.
 
-빌드 과정 없는 정적 사이트다. `index.html` + `chapters/<slug>.html` + 공통 `css/style.css`, `js/common.js`, `js/terms.js`.
+빌드 과정 없는 정적 사이트다. 이 책은 yalexBook 저장소의 `bluetooth/` 폴더에 있고, 아래 경로는 모두 이 폴더 기준이다. `index.html` + `chapters/<slug>.html` + 공통 `css/style.css`, `js/common.js`, `js/terms.js`.
 로컬 실행: `python3 -m http.server 8000` → http://localhost:8000 (file://로 열어도 동작하게 classic script만 사용한다. ES module 금지.)
 
 ## 원칙
@@ -22,11 +22,10 @@
 ## 계산 함수와 검증
 - 시뮬레이터의 계산은 페이지 스크립트 최상위 IIFE 바로 안에 `  function 이름(…) { … }`(들여쓰기 2칸)으로 두고, 그리기 코드와 분리한다. `scripts/verify-factcheck.cjs`가 이 함수를 꺼내 사양 값·샘플 데이터와 맞춰 본다.
 - 사양에 샘플 데이터가 있는 계산(CRC, 화이트닝, 채널 선택, LE Coded 부호기, AES-CMAC·g2·ah 등)은 반드시 샘플로 검증하는 테스트를 추가한다.
-- `npm test`(= `node scripts/verify-factcheck.cjs`)가 통과해야 배포된다(`.github/workflows/pages.yml`).
+- 저장소 루트의 `.github/workflows/pages.yml`이 배포 전에 `node bluetooth/scripts/verify-factcheck.cjs`를 실행한다. 통과해야 배포된다.
 
 ## head 템플릿
 
-모든 HTML 페이지에는 아래 Cloudflare Web Analytics 코드를 `<head>`에 한 번 포함한다. SEO 자동 생성 블록 밖에 두며, 공통 Site Token을 유지한다.
 ```html
 <!doctype html>
 <html lang="ko">
@@ -38,9 +37,6 @@
 <meta name="description" content="한 문장 설명">
 <link rel="stylesheet" href="../css/style.css">
 <script src="../js/common.js"></script>
-<!-- Cloudflare Web Analytics -->
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"3d6151a0abc94ede89285d462527fa80"}'></script>
-<!-- End Cloudflare Web Analytics -->
 </head>
 <body data-chapter="connection">
 <main class="chapter">

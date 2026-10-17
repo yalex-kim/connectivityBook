@@ -6,23 +6,20 @@
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <title>광고와 스캔: 나 여기 있어요 · BluetoothBook</title>
 <meta name="description" content="LE 기기가 서로를 찾는 방법. 광고 채널 37·38·39, 광고 간격과 0~10 ms 무작위 지연, 31바이트 광고 데이터와 AD 구조, 스캔 창과 스캔 간격, 발견에 걸리는 시간, 5.0의 확장 광고와 주기적 광고를 Core 6.2 기준으로 직접 만들어 본다.">
-<link rel="canonical" href="https://bluetoothbook.euiyun.com/chapters/advertising.html">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/bluetooth/chapters/advertising.html">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="BluetoothBook">
 <meta property="og:title" content="광고와 스캔: 나 여기 있어요 · BluetoothBook">
 <meta property="og:description" content="LE 기기가 서로를 찾는 방법. 광고 채널 37·38·39, 광고 간격과 0~10 ms 무작위 지연, 31바이트 광고 데이터와 AD 구조, 스캔 창과 스캔 간격, 발견에 걸리는 시간, 5.0의 확장 광고와 주기적 광고를 Core 6.2 기준으로 직접 만들어 본다.">
-<meta property="og:url" content="https://bluetoothbook.euiyun.com/chapters/advertising.html">
-<meta property="og:image" content="https://bluetoothbook.euiyun.com/og.png">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/bluetooth/chapters/advertising.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/bluetooth/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"광고와 스캔: 나 여기 있어요","name":"광고와 스캔: 나 여기 있어요 · BluetoothBook","url":"https://bluetoothbook.euiyun.com/chapters/advertising.html","mainEntityOfPage":"https://bluetoothbook.euiyun.com/chapters/advertising.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":5,"image":"https://bluetoothbook.euiyun.com/og.png","dateModified":"2026-10-16","isPartOf":{"@type":"Book","@id":"https://bluetoothbook.euiyun.com/#book","name":"BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서","url":"https://bluetoothbook.euiyun.com/"},"publisher":{"@type":"Organization","name":"BluetoothBook","url":"https://bluetoothbook.euiyun.com/"},"description":"LE 기기가 서로를 찾는 방법. 광고 채널 37·38·39, 광고 간격과 0~10 ms 무작위 지연, 31바이트 광고 데이터와 AD 구조, 스캔 창과 스캔 간격, 발견에 걸리는 시간, 5.0의 확장 광고와 주기적 광고를 Core 6.2 기준으로 직접 만들어 본다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook","item":"https://bluetoothbook.euiyun.com/"},{"@type":"ListItem","position":2,"name":"05 광고와 스캔: 나 여기 있어요","item":"https://bluetoothbook.euiyun.com/chapters/advertising.html"}]}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"광고와 스캔: 나 여기 있어요","name":"광고와 스캔: 나 여기 있어요 · BluetoothBook","url":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/advertising.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/advertising.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":5,"image":"https://yalex-kim.github.io/yalexBook/bluetooth/og.png","dateModified":"2026-10-17","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/bluetooth/#book","name":"BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth/"},"publisher":{"@type":"Organization","name":"BluetoothBook","url":"https://yalex-kim.github.io/yalexBook/bluetooth/"},"description":"LE 기기가 서로를 찾는 방법. 광고 채널 37·38·39, 광고 간격과 0~10 ms 무작위 지연, 31바이트 광고 데이터와 AD 구조, 스캔 창과 스캔 간격, 발견에 걸리는 시간, 5.0의 확장 광고와 주기적 광고를 Core 6.2 기준으로 직접 만들어 본다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook","item":"https://yalex-kim.github.io/yalexBook/bluetooth/"},{"@type":"ListItem","position":2,"name":"05 광고와 스캔: 나 여기 있어요","item":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/advertising.html"}]}]}</script>
 <link rel="stylesheet" href="../css/style.css">
 <script src="../js/common.js"></script>
-<!-- Cloudflare Web Analytics -->
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"3d6151a0abc94ede89285d462527fa80"}'></script>
-<!-- End Cloudflare Web Analytics -->
 <style>
   .adv-in { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
   .adv-in input[type=text] { font: inherit; width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-elev); color: var(--text); }
