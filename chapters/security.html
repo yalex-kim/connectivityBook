@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>페어링과 보안 · BluetoothBook</title>
+<meta name="description" content="LE 페어링의 세 단계, 입출력 능력으로 정해지는 Just Works·숫자 비교·패스키·OOB, 레거시 페어링의 약점과 LE Secure Connections의 P-256 타원곡선 키 교환, 본딩과 키 배포, 추적을 막는 RPA를 AES-128·AES-CMAC 실제 계산과 Core 6.2 샘플 데이터로 다룬다.">
+<link rel="canonical" href="https://bluetoothbook.euiyun.com/chapters/security.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="BluetoothBook">
+<meta property="og:title" content="페어링과 보안 · BluetoothBook">
+<meta property="og:description" content="LE 페어링의 세 단계, 입출력 능력으로 정해지는 Just Works·숫자 비교·패스키·OOB, 레거시 페어링의 약점과 LE Secure Connections의 P-256 타원곡선 키 교환, 본딩과 키 배포, 추적을 막는 RPA를 AES-128·AES-CMAC 실제 계산과 Core 6.2 샘플 데이터로 다룬다.">
+<meta property="og:url" content="https://bluetoothbook.euiyun.com/chapters/security.html">
+<meta property="og:image" content="https://bluetoothbook.euiyun.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"페어링과 보안","name":"페어링과 보안 · BluetoothBook","url":"https://bluetoothbook.euiyun.com/chapters/security.html","mainEntityOfPage":"https://bluetoothbook.euiyun.com/chapters/security.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":8,"image":"https://bluetoothbook.euiyun.com/og.png","dateModified":"2026-10-16","isPartOf":{"@type":"Book","@id":"https://bluetoothbook.euiyun.com/#book","name":"BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서","url":"https://bluetoothbook.euiyun.com/"},"publisher":{"@type":"Organization","name":"BluetoothBook","url":"https://bluetoothbook.euiyun.com/"},"description":"LE 페어링의 세 단계, 입출력 능력으로 정해지는 Just Works·숫자 비교·패스키·OOB, 레거시 페어링의 약점과 LE Secure Connections의 P-256 타원곡선 키 교환, 본딩과 키 배포, 추적을 막는 RPA를 AES-128·AES-CMAC 실제 계산과 Core 6.2 샘플 데이터로 다룬다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook","item":"https://bluetoothbook.euiyun.com/"},{"@type":"ListItem","position":2,"name":"08 페어링과 보안","item":"https://bluetoothbook.euiyun.com/chapters/security.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<!-- Cloudflare Web Analytics -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"3d6151a0abc94ede89285d462527fa80"}'></script>
+<!-- End Cloudflare Web Analytics -->
+<style>
+  .pair-in { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .pair-in select { font: inherit; width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-elev); color: var(--text); }
+  .pair-out { margin-top: 12px; padding: 14px 16px; border-radius: 12px; background: var(--surface); line-height: 1.65; font-size: 14.5px; }
+  .pair-out h4 { margin: 0 0 4px; font-size: 18px; }
+  .devs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .dev { border: 1px solid var(--border); border-radius: 12px; padding: 12px; background: var(--bg-elev); text-align: center; }
+  .dev .scr { font-family: var(--mono); font-size: 26px; font-weight: 700; letter-spacing: .08em; margin: 6px 0; }
+  .dev small { color: var(--text-faint); display: block; font-size: 11.5px; word-break: break-all; font-family: var(--mono); }
+  .mono { font-family: var(--mono); font-size: 12.5px; word-break: break-all; }
+  .addr-list { font-family: var(--mono); font-size: 12.5px; line-height: 1.9; max-height: 220px; overflow: auto; background: var(--surface); border-radius: 10px; padding: 8px 12px; margin-top: 10px; }
+  .addr-list .ok { color: var(--ok); } .addr-list .no { color: var(--text-faint); }
+</style>
+</head>
+<body data-chapter="security">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 08</div>
+    <h1>페어링과 보안</h1>
+    <p class="lead">새 키보드를 노트북에 연결하면 “화면의 6자리 숫자를 키보드로 입력하세요”라는 창이 뜬다. 휴대폰 두 대를 연결하면 “두 화면의 숫자가 같습니까?”라고 묻는다. 무선 이어폰은 아무것도 묻지 않고 그냥 연결된다. 같은 블루투스인데 왜 이렇게 다를까? 그리고 이 숫자들은 정말로 무엇을 막아 주는 걸까? 이 장에서는 두 기기가 처음 만나 <b>둘만 아는 키</b>를 만드는 과정(페어링)을 따라가면서, 엿듣는 사람과 중간에 끼어드는 사람을 각각 어떻게 막는지 실제 암호 계산으로 확인한다. 그리고 광고 주소를 바꿔 가며 추적을 피하는 방법도 본다.</p>
+    <ul class="objectives">
+      <li>페어링의 세 단계(기능 교환 → 키 생성 → 키 배포)와 본딩의 뜻을 안다.</li>
+      <li>입출력 능력(IO capability)의 조합으로 Just Works·숫자 비교·패스키 입력·OOB가 정해지는 사양 표를 직접 돌려 본다.</li>
+      <li>레거시 페어링의 키가 왜 엿듣기에 약한지, LE Secure Connections의 P-256 타원곡선 디피-헬먼 교환이 이를 어떻게 막는지 설명한다.</li>
+      <li>숫자 비교와 패스키가 중간자 공격을 100만 분의 1 확률로 줄이는 원리를 g2 함수 계산으로 확인한다.</li>
+      <li>RPA(바뀌는 가명 주소)를 IRK와 AES-128로 만들고 해석하며, 15분 주기와 6.1의 무작위 갱신이 무엇을 막는지 안다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="threats">
+    <h2>무엇을 막아야 하나: 엿듣기, 끼어들기, 따라다니기</h2>
+    <p>무선은 누구나 들을 수 있다. 블루투스 보안은 세 가지 위협을 구분해 다룬다.</p>
+    <ul>
+      <li><b>도청</b><span class="en">(passive eavesdropping)</span>: 근처에서 전파를 녹음해 내용을 알아내는 것. 막으려면 둘만 아는 키로 <b>암호화</b>해야 하고, 그 키를 만드는 과정 자체가 엿들어도 안전해야 한다.</li>
+      <li><b>중간자 공격</b><span class="en">(MITM, man-in-the-middle)</span>: 공격자가 두 기기 사이에 끼어 각각에게 상대인 척하는 것. 양쪽과 따로 키를 만들어 중계하면서 내용을 읽고 바꾼다. 막으려면 “지금 키를 나눈 상대가 정말 저 기기인가”를 사람이 확인하는 <b>인증</b>이 필요하다.</li>
+      <li><b>추적</b><span class="en">(tracking)</span>: 내용은 몰라도 광고의 고정 주소를 따라가 사람의 동선을 알아내는 것. 막으려면 주소를 자주 바꾸되 친구는 알아볼 수 있어야 한다(<b>프라이버시</b>).</li>
+    </ul>
+    <div class="callout analogy"><strong>카페에서 둘만의 암호 정하기</strong><p>처음 만난 두 손님이 시끄러운 카페에서 둘만의 암호를 정하고 싶다. 큰 소리로 암호를 말하면 옆 테이블이 다 듣는다(도청). 그래서 공개해도 되는 재료만 주고받고 각자 머릿속에서 같은 암호를 계산하는 방법을 쓴다(디피-헬먼). 그런데 웨이터가 중간에서 쪽지를 바꿔치기하면, 두 손님은 각자 웨이터와 암호를 정한 줄도 모른다(중간자). 그래서 마지막에 “제 쪽지에서 나온 숫자는 438912인데 당신도 그렇습니까?”라고 <b>얼굴을 보고</b> 확인한다(숫자 비교). 그 뒤 서로를 연락처에 저장하면(본딩) 다음에는 이 과정을 건너뛴다.</p></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="phases">
+    <h2>페어링의 세 단계와 본딩</h2>
+    <p>LE 페어링은 호스트의 <span class="term">SMP</span><span class="en">(Security Manager Protocol)</span>가 맡는다(1장). 연결된 상태에서 L2CAP 고정 채널로 진행된다.</p>
+    <div class="flow">
+      <div><b>① 기능 교환</b>Pairing Request/Response로 입출력 능력, OOB 데이터 유무, MITM 보호 요구, Secure Connections 지원, 본딩 여부, 키 길이(7~16바이트)를 알린다.</div>
+      <div><b>② 키 생성</b>①의 정보로 방식(Just Works, 숫자 비교, 패스키, OOB)을 정하고 키를 만든다. 레거시는 TK → STK, Secure Connections는 ECDH → LTK.</div>
+      <div><b>③ 키 배포</b>링크를 암호화한 뒤 오래 쓸 키를 나눈다. 주소 해석용 IRK와 신원 주소, 서명용 CSRK, (레거시면) LTK.</div>
+    </div>
+    <p>③에서 받은 키를 저장해 두는 것이 <span class="term">본딩</span><span class="en">(bonding)</span>이다. 본딩한 두 기기는 다음 연결 때 페어링 없이 저장된 LTK로 바로 암호화를 시작한다(링크 계층의 Encryption Start, 6장). 휴대폰 블루투스 설정의 “등록된 기기” 목록이 본딩 목록이다. 암호화는 컨트롤러가 AES-CCM으로 하며, 패킷마다 4바이트 MIC(메시지 무결성 코드)를 붙여 위조를 막는다.</p>
+    <p class="spec-ref">페어링 방식·키 생성·배포: <b>[Vol 3] Part H §2.3·§2.4</b> · 키 길이 7~16바이트: <b>§2.3.4</b> · AES-CCM 링크 암호화와 MIC: <b>[Vol 6] Part E §1</b> · LE 보안 모드 1의 네 단계(보안 없음 / 미인증 암호화 / 인증 암호화 / 128비트 LE Secure Connections 인증): <b>[Vol 3] Part C §10.2.1</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="models">
+    <h2>어떤 방식으로 확인할까: 입출력 능력의 조합</h2>
+    <p>사람이 할 수 있는 확인은 기기가 가진 버튼과 화면에 달려 있다. 사양은 입력(없음 / 예·아니요 / 숫자 키보드)과 출력(없음 / 6자리 숫자 표시)을 조합해 기기를 다섯 종류의 <span class="term">입출력 능력</span><span class="en">(IO capability)</span>으로 나눈다. DisplayOnly(시계), DisplayYesNo(휴대폰), KeyboardOnly(키보드), NoInputNoOutput(이어폰, 센서), KeyboardDisplay(노트북). 두 기기의 조합이 방식을 정한다.</p>
+    <ul>
+      <li><span class="term">Just Works</span>: 아무것도 묻지 않는다. 도청은 Secure Connections면 막지만, <b>중간자는 막지 못한다</b>(미인증).</li>
+      <li><span class="term">숫자 비교</span><span class="en">(Numeric Comparison)</span>: 양쪽 화면에 같은 6자리 숫자가 뜨고 사람이 “예”를 누른다. Secure Connections 전용.</li>
+      <li><span class="term">패스키 입력</span><span class="en">(Passkey Entry)</span>: 한쪽이 6자리를 보여 주고 다른 쪽에 입력한다(또는 둘 다 같은 숫자를 입력).</li>
+      <li><span class="term">OOB</span><span class="en">(Out of Band)</span>: NFC 태그 대기 같은 다른 경로로 인증 정보를 나눈다.</li>
+    </ul>
+    <div class="sim" id="sim-pair">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>페어링 방식 판정기 (사양 Table 2.6~2.8 그대로)</h3></div>
+      <div class="sim-view" style="padding:14px">
+        <div class="pair-in">
+          <label>개시자(Initiator, 보통 휴대폰)<br><select id="pr-i"></select></label>
+          <label>응답자(Responder, 보통 액세서리)<br><select id="pr-r"></select></label>
+        </div>
+        <div class="pair-out" id="pr-out" aria-live="polite"></div>
+      </div>
+      <div class="sim-controls">
+        <label class="check"><input type="checkbox" id="pr-sc" checked> 양쪽 모두 LE Secure Connections 지원</label>
+        <label class="check"><input type="checkbox" id="pr-mi" checked> 개시자 MITM 보호 요구</label>
+        <label class="check"><input type="checkbox" id="pr-mr"> 응답자 MITM 보호 요구</label>
+        <label class="check"><input type="checkbox" id="pr-oi"> 개시자가 상대의 OOB 데이터 보유</label>
+        <label class="check"><input type="checkbox" id="pr-or"> 응답자가 상대의 OOB 데이터 보유</label>
+      </div>
+      <div class="sim-note">해볼 것: ① 휴대폰(DisplayYesNo) ↔ 이어폰(NoInputNoOutput): 어떤 설정이든 Just Works다. 이어폰에는 숫자를 보여 줄 화면도, “예”를 누를 버튼도 없기 때문이다. ② 휴대폰 ↔ 휴대폰: Secure Connections면 숫자 비교, 끄면(레거시) Just Works로 떨어진다. ③ 노트북(KeyboardDisplay) ↔ 키보드(KeyboardOnly): 노트북이 보여 주고 키보드로 입력한다. 레거시에서는 같은 패스키 입력이라도 6.2 사양 표가 “미인증” 키로 분류한다는 점을 보자(아래 설명). ④ 한쪽만 OOB 데이터를 가져도 Secure Connections면 OOB, 레거시면 양쪽 모두 가져야 OOB다.</div>
+    </div>
+    <p class="spec-ref">IO 능력 매핑(Table 2.5), 레거시 OOB·MITM 규칙(Table 2.6), Secure Connections 규칙(Table 2.7), 방식 표(Table 2.8): <b>[Vol 3] Part H §2.3.2·§2.3.5.1</b> · 패스키 000000~999999, 0도 포함해 6자리 모두 표시: <b>§2.3.5.3</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="legacy">
+    <h2>레거시 페어링의 약점과 Secure Connections</h2>
+    <p>4.0~4.1의 <span class="term">레거시 페어링</span><span class="en">(LE legacy pairing)</span>은 임시 키 TK에서 단기 키 STK를 만든다. Just Works면 TK = 0, 패스키면 TK = 그 6자리 숫자다. 문제는 STK를 만드는 데 쓰인 나머지 재료(난수 두 개)가 <b>전부 공중으로 오간다</b>는 것이다. 페어링 순간을 녹음한 공격자는 TK 후보 100만 개(000000~999999)를 집에서 하나씩 대입해 보면 된다. 요즘 컴퓨터로 1초도 걸리지 않는다. 그 뒤로는 그 연결의 모든 대화를 풀 수 있다. 이 공격은 2013년 공개 도구로 시연되었다.</p>
+    <p>4.2의 <span class="term">LE Secure Connections</span>는 키를 만드는 방법을 바꿨다. 두 기기가 각자 <b>P-256 타원곡선</b>의 비밀 키와 공개 키를 만들고 공개 키만 교환한다. 각자 “내 비밀 키 × 상대 공개 키”를 계산하면 같은 값(DHKey)이 나오지만, 공개 키 둘만 들은 공격자는 그 값을 계산할 수 없다. 이것이 <span class="term">타원곡선 디피-헬먼</span><span class="en">(ECDH)</span>이다. 그래서 Secure Connections는 <b>Just Works라도 도청에는 안전</b>하다. 남은 위협은 중간자다. 공격자가 양쪽에 자기 공개 키를 끼워 넣으면 양쪽과 각각 다른 DHKey를 만든다. 이를 사람이 잡아내는 것이 숫자 비교와 패스키다.</p>
+    <ul>
+      <li><b>숫자 비교</b>: 양쪽이 g2(PKax, PKbx, Na, Nb) = AES-CMAC의 하위 32비트를 계산하고, 그 10진 하위 6자리를 보여 준다. 공개 키가 바꿔치기되었다면 두 숫자는 <b>0.999999의 확률로 다르다</b>. 사람 눈이 마지막 방어선이다.</li>
+      <li><b>패스키(Secure Connections)</b>: 6자리 숫자는 20비트다. 이를 <b>한 비트씩 20번</b>에 나눠 확약(commit)과 공개를 주고받는다. 공격자는 비트마다 맞힐 확률 1/2로 도박해야 하고, 틀리면 들킨다. 레거시처럼 녹음 뒤 대입하는 길은 막힌다.</li>
+    </ul>
+    <p class="spec-ref">g2와 6자리 비교값(g2 mod 10⁶): <b>[Vol 3] Part H §2.2.9</b> · 숫자 비교에서 단순 MITM이 다른 값을 낼 확률 0.999999: <b>§2.3.5.6.2</b> · 패스키 20라운드: <b>§2.3.5.6.3</b> · 샘플 데이터 D.5(g2), D.7(ah): <b>[Vol 3] Part H Appendix D</b></p>
+
+    <div class="sim" id="sim-nc">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>숫자 비교 직접 해 보기: 진짜 P-256 키와 AES-CMAC</h3></div>
+      <div class="sim-view" style="padding:14px">
+        <div class="devs">
+          <div class="dev"><b>휴대폰 A</b><div class="scr" id="nc-a">——————</div><small id="nc-pka">공개 키 —</small></div>
+          <div class="dev"><b>휴대폰 B</b><div class="scr" id="nc-b">——————</div><small id="nc-pkb">공개 키 —</small></div>
+        </div>
+        <div class="pair-out" id="nc-out" aria-live="polite"></div>
+      </div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>&nbsp;</span><div class="btn-row"><button class="btn primary" id="nc-go">새로 페어링</button><button class="btn" id="nc-vec">사양 샘플 D.5 계산</button></div></div>
+        <label class="check"><input type="checkbox" id="nc-mitm"> 중간자가 공개 키를 바꿔치기</label>
+      </div>
+      <div class="sim-note">“새로 페어링”을 누를 때마다 브라우저의 WebCrypto로 두 기기의 실제 P-256 키 쌍과 128비트 난수 Na·Nb를 만들고, 사양의 g2 = AES-CMAC<sub>Na</sub>(PKax ∥ PKbx ∥ Nb) mod 2³²를 계산해 하위 6자리를 보여 준다(AES-128과 CMAC은 이 페이지가 직접 계산한다). 해볼 것: ① 그냥 누르면 두 화면의 숫자가 같다. ② “중간자”를 켜면 A는 중간자와, B도 중간자와 따로 키를 만든다. 두 화면의 숫자가 다르게 나와 사람이 “아니요”를 누르게 된다. ③ “사양 샘플 D.5 계산”을 누르면 사양의 U·V·X·Y로 계산한 AES-CMAC이 1536d18d…2f9ed5ba와 같은지 확인한다. 단순화: 실제로는 DHKey로 LTK를 만들고(f5), 확인값(f4, f6)도 주고받는다.</div>
+    </div>
+    <div class="callout warn"><strong>6.2가 짚은 것: 레거시 패스키는 “미인증”</strong><p>Core 6.2의 방식 표(Table 2.8)는 같은 패스키 입력이라도 <b>레거시 페어링에서는 미인증(Unauthenticated)</b>, Secure Connections에서는 인증(Authenticated) 키로 분류한다. 위에서 본 것처럼 레거시 패스키는 녹음 뒤 대입으로 풀리므로 “사람이 확인했다”는 보장이 의미가 없기 때문이다. 6.2에는 클래식(BR/EDR)의 Secure Simple Pairing 구현이 약한 패스키를 만들 수 있다는 보안 정정(erratum 24489)도 반영되었다. 클래식에서는 2019년 키 길이 협상을 1바이트까지 낮추는 KNOB 공격이 알려진 뒤, 최소 7바이트 키를 강제하는 것이 권고되었다.</p></div>
+    <p class="spec-ref">레거시 패스키의 Unauthenticated 분류: <b>[Vol 3] Part H Table 2.8</b> · 6.2 보안 정정 24489: <b>[Vol 1] Part C §16.3</b></p>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">LE Secure Connections를 지원하는 휴대폰과 이어폰(입출력 없음)이 페어링한다. 근처에서 녹음만 하는 도청자와, 중간에서 쪽지를 바꾸는 중간자 중 누구를 막을 수 있을까?</p><p class="wi-hint">위 판정기에서 방식을 확인하고, ECDH가 무엇을 막는지 떠올려 보자.</p><div class="opts">
+      <button class="opt">둘 다 막는다</button>
+      <button class="opt" data-correct>도청자는 막지만 중간자는 막지 못한다 (Just Works)</button>
+      <button class="opt">중간자는 막지만 도청자는 막지 못한다</button>
+      <button class="opt">둘 다 막지 못한다</button>
+    </div><div class="quiz-exp">입출력이 없으니 Just Works다. ECDH 덕분에 공개 키만 들은 도청자는 키를 계산할 수 없다. 하지만 사람이 확인할 수단이 없어 중간자의 바꿔치기는 잡지 못한다. 그래서 이어폰은 “케이스를 열었을 때만 페어링 모드”처럼 공격 기회를 줄이는 방식을 쓴다.</div></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="privacy">
+    <h2>바뀌는 이름표: RPA로 추적 막기</h2>
+    <p>5장에서 본 것처럼 광고에는 기기의 주소(AdvA)가 담긴다. 이 주소가 고정이면 거리 곳곳의 수신기가 한 사람의 이어폰을 따라다닐 수 있다. 그래서 LE는 몇 분마다 바뀌는 <span class="term">RPA</span><span class="en">(Resolvable Private Address, 해석 가능한 가명 주소)</span>를 쓴다. 비결은 본딩 때 나눈 <span class="term">IRK</span><span class="en">(Identity Resolving Key)</span>다.</p>
+    <ul>
+      <li>RPA 48비트 = 상위 24비트 <b>prand</b>(맨 위 두 비트는 01, 나머지 22비트는 난수) + 하위 24비트 <b>hash</b>.</li>
+      <li>hash = ah(IRK, prand) = AES-128<sub>IRK</sub>(0…0 ∥ prand)의 하위 24비트.</li>
+      <li>IRK를 가진 친구는 받은 주소의 prand로 hash를 계산해 보고, 맞으면 “아, 그 이어폰이구나” 하고 알아본다. IRK가 없는 사람에게는 매번 다른 무작위 주소로 보인다.</li>
+    </ul>
+    <p>주소를 얼마나 자주 바꿀까? GAP는 TGAP(private_addr_int)를 <b>15분</b>(주소를 바꾸는 최대 간격)으로 권장한다. 그런데 모든 기기가 정확히 15분마다 바꾸면, 주소가 바뀌는 순간의 박자로 다시 이어 붙여 추적할 수 있다. 6.1은 컨트롤러가 <b>최소~최대 범위 안의 무작위 시간</b>마다 주소를 바꾸게 했다(HCI 기본값 8~15분).</p>
+    <p class="spec-ref">무작위 주소 종류(상위 2비트 00 비해석, 01 RPA, 11 정적): <b>[Vol 6] Part B §1.3.2</b> · RPA 생성과 해석: <b>§1.3.2.2·§1.3.2.3</b> · ah 함수: <b>[Vol 3] Part H §2.2.2</b> · TGAP(private_addr_int) 15 min: <b>[Vol 3] Part C Appendix A</b> · 무작위 RPA 갱신(RPA_Timeout_Min/Max, 기본 480~900 s): <b>[Vol 4] Part E</b> HCI_LE_Set_Resolvable_Private_Address_Timeout [v2]</p>
+    <div class="sim" id="sim-rpa">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>가명 주소 만들고 알아보기: AES-128로 계산하는 RPA</h3></div>
+      <div class="sim-view" style="padding:14px">
+        <div class="mono" id="rpa-irk"></div>
+        <div class="addr-list" id="rpa-list" aria-live="polite"></div>
+      </div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>&nbsp;</span><div class="btn-row"><button class="btn primary" id="rpa-next">시간이 흐름: 새 주소 만들기</button><button class="btn" id="rpa-vec">사양 샘플 D.7</button></div></div>
+        <div class="ctrl"><span>주소를 보는 사람</span><div class="seg" id="rpa-who"><button data-value="friend" class="on">IRK를 가진 친구(본딩한 휴대폰)</button><button data-value="stranger">IRK 없는 낯선 수신기</button></div></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">본 주소 수</span><span class="v" id="rpa-n">—</span></div>
+        <div class="stat"><span class="k">같은 기기로 알아본 수</span><span class="v" id="rpa-ok">—</span></div>
+        <div class="stat"><span class="k">사양 샘플 ah</span><span class="v" id="rpa-v">—</span></div>
+      </div>
+      <div class="sim-note">이어폰이 시간이 지날 때마다 새 RPA를 만든다. 주소의 파란 부분이 prand, 청록 부분이 hash다. 해볼 것: ① “친구”로 보면 모든 주소가 ✓(같은 이어폰)으로 해석된다. ② “낯선 수신기”는 다른 IRK로 계산하므로 하나도 연결하지 못한다. ③ “사양 샘플 D.7”은 IRK ec0234a3…7d9b, prand 0x708194로 hash 0x0dfbaa가 나오는지 확인한다. AES-128은 이 페이지에 구현된 코드로 계산하며 FIPS-197 예제로도 검증되어 있다.</div>
+    </div>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>보안의 세 위협: <b>도청</b>(암호화로), <b>중간자</b>(사람의 인증으로), <b>추적</b>(바뀌는 주소로).</li>
+      <li>페어링 = <b>기능 교환 → 키 생성 → 키 배포</b>. 키를 저장하면 <b>본딩</b>. 암호화는 AES-CCM, 키 길이 7~16바이트.</li>
+      <li>방식은 두 기기의 <b>입출력 능력</b>으로 정해진다: Just Works(미인증), 숫자 비교(SC 전용), 패스키, OOB. 한쪽이 NoInputNoOutput이면 Just Works다.</li>
+      <li><b>레거시</b>는 TK가 0 또는 6자리라 녹음 뒤 대입으로 풀린다(6.2 표에서 레거시 패스키도 미인증). <b>Secure Connections</b>(4.2)는 <b>P-256 ECDH</b>로 도청을 막고, 숫자 비교(g2 하위 6자리, MITM 성공 10⁻⁶)와 비트 단위 20라운드 패스키로 중간자를 막는다.</li>
+      <li><b>RPA</b> = prand(상위 2비트 01) ∥ ah(IRK, prand). IRK를 가진 친구만 알아본다. 15분 이내마다 바꾸며, 6.1부터 바꾸는 시점을 무작위로 흩뜨린다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>휴대폰(DisplayYesNo)과 스마트워치(DisplayYesNo)가 LE Secure Connections로 MITM 보호를 요구하며 페어링한다. 방식은?</p><div class="opts">
+        <button class="opt">Just Works</button><button class="opt" data-correct>숫자 비교</button><button class="opt">패스키 입력</button><button class="opt">OOB</button>
+      </div><div class="quiz-exp">둘 다 6자리를 보여 주고 예/아니요를 누를 수 있으므로 숫자 비교다. 레거시였다면 같은 조합이 Just Works가 된다.</div></div>
+      <div class="quiz-q"><p>레거시 Just Works 페어링을 녹음한 공격자가 키를 알아내는 데 필요한 것은?</p><div class="opts">
+        <button class="opt">P-256 이산 로그 문제를 푸는 것</button><button class="opt">100만 번 대입</button><button class="opt" data-correct>사실상 아무 대입도 필요 없다(TK = 0)</button><button class="opt">IRK</button>
+      </div><div class="quiz-exp">레거시 Just Works의 TK는 0이고 나머지 재료는 공중으로 오가므로, 녹음만으로 STK를 계산할 수 있다. 패스키라도 후보가 100만 개뿐이다.</div></div>
+      <div class="quiz-q"><p>LE Secure Connections의 Just Works가 막지 못하는 것은?</p><div class="opts">
+        <button class="opt">페어링을 녹음한 도청</button><button class="opt" data-correct>공개 키를 바꿔치기하는 중간자</button><button class="opt">암호화된 패킷 위조</button><button class="opt">CRC 오류</button>
+      </div><div class="quiz-exp">ECDH는 도청을 막지만, 상대 공개 키가 진짜인지 확인할 수단이 없으면 중간자를 잡지 못한다. 그래서 Just Works 키는 “미인증”이다.</div></div>
+      <div class="quiz-q"><p>Secure Connections의 패스키 입력이 6자리를 한 번에 확인하지 않고 20번에 나눠 확인하는 이유는?</p><div class="opts">
+        <button class="opt">입력을 빠르게 하려고</button><button class="opt" data-correct>공격자가 비트마다 추측을 걸어야 하고 틀리면 바로 드러나, 녹음 뒤 대입 같은 길을 막으려고</button><button class="opt">20개 채널에서 동시에 보내려고</button><button class="opt">6자리가 20바이트라서</button>
+      </div><div class="quiz-exp">999999 = 0xF423F로 20비트다. 비트마다 확약을 먼저 받고 공개하므로, 공격자는 각 비트를 1/2 확률로 맞혀야 하고 한 번 틀리면 페어링이 실패한다.</div></div>
+      <div class="quiz-q"><p>RPA 주소의 최상위 두 비트는?</p><div class="opts">
+        <button class="opt">00</button><button class="opt" data-correct>01</button><button class="opt">10</button><button class="opt">11</button>
+      </div><div class="quiz-exp">무작위 주소의 상위 두 비트: 00 비해석 가명, 01 해석 가능 가명(RPA), 11 정적 주소, 10 예약.</div></div>
+      <div class="quiz-q"><p>6.1의 “무작위 RPA 갱신”이 막으려는 것은?</p><div class="opts">
+        <button class="opt">IRK 유출</button><button class="opt" data-correct>주소가 정확히 같은 주기로 바뀌는 박자를 이용해 바뀌기 전후 주소를 이어 붙이는 추적</button><button class="opt">광고 충돌</button><button class="opt">페어링 실패</button>
+      </div><div class="quiz-exp">교체 시점이 규칙적이면 “이 주소가 사라진 순간 저 주소가 나타났다”로 이어 붙일 수 있다. 최소~최대 사이 무작위 시간에 바꾸면 그 단서가 흐려진다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const IO = [["DisplayOnly", "DisplayOnly (화면만: 시계, 디스플레이)"], ["DisplayYesNo", "DisplayYesNo (화면 + 예/아니요: 휴대폰)"], ["KeyboardOnly", "KeyboardOnly (숫자 키보드)"], ["NoInputNoOutput", "NoInputNoOutput (없음: 이어폰, 센서)"], ["KeyboardDisplay", "KeyboardDisplay (키보드 + 화면: 노트북)"]];
+
+  /** 페어링 방식 결정. [Vol 3] Part H §2.3.5.1, Table 2.6·2.7·2.8 */
+  function pairingMethod(ini, res, sc, oobI, oobR, mitmI, mitmR) {
+    if (sc ? oobI || oobR : oobI && oobR) return { method: "OOB", auth: "OOB 경로가 도청에 안전하면 인증" };
+    if (!mitmI && !mitmR) return { method: "Just Works", auth: "미인증", why: "양쪽 모두 MITM 보호를 요구하지 않아 입출력 능력을 무시한다" };
+    if (ini === "NoInputNoOutput" || res === "NoInputNoOutput") return { method: "Just Works", auth: "미인증" };
+    const PK = (who) => ({ method: "패스키 입력", who, auth: sc ? "인증" : "미인증 (레거시)" });
+    const NC = { method: "숫자 비교", auth: "인증" };
+    const JW = { method: "Just Works", auth: "미인증" };
+    const k = ini + "/" + res;
+    switch (k) {
+      case "DisplayOnly/DisplayOnly": case "DisplayOnly/DisplayYesNo": case "DisplayYesNo/DisplayOnly": return JW;
+      case "DisplayYesNo/DisplayYesNo": return sc ? NC : JW;
+      case "KeyboardOnly/DisplayOnly": case "KeyboardDisplay/DisplayOnly": case "KeyboardOnly/DisplayYesNo": case "KeyboardOnly/KeyboardDisplay": return PK("응답자가 보여 주고 개시자가 입력");
+      case "KeyboardDisplay/DisplayYesNo": return sc ? NC : PK("응답자가 보여 주고 개시자가 입력");
+      case "DisplayOnly/KeyboardOnly": case "DisplayYesNo/KeyboardOnly": case "KeyboardDisplay/KeyboardOnly": case "DisplayOnly/KeyboardDisplay": return PK("개시자가 보여 주고 응답자가 입력");
+      case "DisplayYesNo/KeyboardDisplay": case "KeyboardDisplay/KeyboardDisplay": return sc ? NC : PK("개시자가 보여 주고 응답자가 입력");
+      case "KeyboardOnly/KeyboardOnly": return PK("사용자가 같은 숫자를 양쪽에 입력");
+    }
+    return JW;
+  }
+
+  /* ---------------- AES-128 (FIPS-197) 과 AES-CMAC (RFC 4493) ---------------- */
+  const SBOX = (() => { const s = new Array(256); let p = 1, q = 1; do { p = p ^ ((p << 1) & 0xff) ^ (p & 0x80 ? 0x1b : 0); q ^= q << 1; q ^= q << 2; q ^= q << 4; q &= 0xff; if (q & 0x80) q ^= 0x09; const x = q ^ (((q << 1) | (q >> 7)) & 0xff) ^ (((q << 2) | (q >> 6)) & 0xff) ^ (((q << 3) | (q >> 5)) & 0xff) ^ (((q << 4) | (q >> 4)) & 0xff); s[p] = (x ^ 0x63) & 0xff; } while (p !== 1); s[0] = 0x63; return s; })();
+  /** AES-128 암호화. key·block = 16바이트 배열(가장 중요한 바이트 먼저). [Vol 3] Part H §2.2.1의 e */
+  function aes128(key, block) {
+    const xt = (a) => ((a << 1) ^ (a & 0x80 ? 0x1b : 0)) & 0xff;
+    const w = key.slice(); let rc = 1;
+    for (let i = 16; i < 176; i += 4) { let t = w.slice(i - 4, i); if (i % 16 === 0) { t = [SBOX[t[1]] ^ rc, SBOX[t[2]], SBOX[t[3]], SBOX[t[0]]]; rc = xt(rc); } for (let j = 0; j < 4; j++) w[i + j] = w[i - 16 + j] ^ t[j]; }
+    let s = block.map((b, i) => b ^ w[i]);
+    for (let r = 1; r <= 10; r++) {
+      s = s.map((b) => SBOX[b]);
+      s = [0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12, 1, 6, 11].map((i) => s[i]);
+      if (r < 10) { const o = []; for (let c = 0; c < 4; c++) { const a = s.slice(4 * c, 4 * c + 4), x = a[0] ^ a[1] ^ a[2] ^ a[3]; for (let i = 0; i < 4; i++) o.push(a[i] ^ x ^ xt(a[i] ^ a[(i + 1) % 4])); } s = o; }
+      s = s.map((b, i) => b ^ w[16 * r + i]);
+    }
+    return s;
+  }
+  /** AES-CMAC (RFC 4493). [Vol 3] Part H §2.2.5 */
+  function aesCmac(key, msg) {
+    const L = aes128(key, new Array(16).fill(0));
+    const dbl = (a) => { const o = a.map((b, i) => ((b << 1) | (i < 15 ? a[i + 1] >> 7 : 0)) & 0xff); if (a[0] & 0x80) o[15] ^= 0x87; return o; };
+    const K1 = dbl(L), K2 = dbl(K1), n = Math.max(1, Math.ceil(msg.length / 16)), full = msg.length > 0 && msg.length % 16 === 0;
+    let last = msg.slice((n - 1) * 16);
+    if (full) last = last.map((b, i) => b ^ K1[i]); else { last = last.concat([0x80]); while (last.length < 16) last.push(0); last = last.map((b, i) => b ^ K2[i]); }
+    let x = new Array(16).fill(0);
+    for (let i = 0; i < n - 1; i++) x = aes128(key, x.map((b, j) => b ^ msg[16 * i + j]));
+    return aes128(key, x.map((b, j) => b ^ last[j]));
+  }
+  /** g2(U, V, X, Y) = AES-CMAC_X(U || V || Y) mod 2^32. [Vol 3] Part H §2.2.9 */
+  function g2(U, V, X, Y) { const m = aesCmac(X, U.concat(V, Y)); return ((m[12] << 24) | (m[13] << 16) | (m[14] << 8) | m[15]) >>> 0; }
+  /** ah(k, r) = e(k, 0^104 || r) mod 2^24. r = 24비트 정수. [Vol 3] Part H §2.2.2 */
+  function ah(k, r) { const p = new Array(13).fill(0).concat([(r >> 16) & 255, (r >> 8) & 255, r & 255]); const e = aes128(k, p); return (e[13] << 16) | (e[14] << 8) | e[15]; }
+  const H = (s) => s.replace(/\s/g, "").match(/../g).map((x) => parseInt(x, 16));
+  const X = (a) => a.map((b) => BT.hex(b)).join("");
+  const rand = (n) => { const a = new Uint8Array(n); (window.crypto || {}).getRandomValues ? crypto.getRandomValues(a) : a.forEach((_, i) => (a[i] = Math.floor(Math.random() * 256))); return Array.from(a); };
+
+  /* ================================================================ 1. 방식 판정 */
+  (function () {
+    const si = $("pr-i"), sr = $("pr-r");
+    [si, sr].forEach((s) => (s.innerHTML = IO.map(([v, t]) => `<option value="${v}">${t}</option>`).join("")));
+    si.value = "DisplayYesNo"; sr.value = "NoInputNoOutput";
+    const UX = {
+      "Just Works": "사용자에게 아무것도 묻지 않거나, 휴대폰에 “연결할까요?” 확인만 뜬다(이 확인은 상대가 진짜인지 증명하지 않는다).",
+      "숫자 비교": "두 기기에 같은 6자리 숫자가 뜨고, 사용자가 같으면 “예”를 누른다.",
+      "패스키 입력": "",
+      OOB: "NFC를 대거나 QR을 찍는 등 블루투스 밖의 경로로 인증 정보를 주고받는다.",
+    };
+    function draw() {
+      const r = pairingMethod(si.value, sr.value, $("pr-sc").checked, $("pr-oi").checked, $("pr-or").checked, $("pr-mi").checked, $("pr-mr").checked);
+      const sc = $("pr-sc").checked;
+      const col = /^인증/.test(r.auth) ? "--ok" : /^OOB/.test(r.auth) ? "--warn" : "--bad";
+      $("pr-out").innerHTML = `<h4>${r.method}</h4><div>키: <b style="color:var(${col})">${r.auth}</b> · 도청 방어: <b style="color:var(${sc || r.method === "OOB" ? "--ok" : "--bad"})">${sc ? "ECDH로 안전" : r.method === "OOB" ? "OOB 키가 비밀이면 안전" : "약함 (레거시)"}</b></div><div style="margin-top:6px">${r.who ? r.who + "한다. " : ""}${UX[r.method]}${r.why ? " (" + r.why + ")" : ""}</div>`;
+    }
+    [si, sr].forEach((s) => s.addEventListener("change", draw));
+    ["pr-sc", "pr-mi", "pr-mr", "pr-oi", "pr-or"].forEach((id) => $(id).addEventListener("change", draw));
+    draw();
+  })();
+
+  /* ================================================================ 2. 숫자 비교 */
+  (function () {
+    const out = $("nc-out");
+    const subtle = window.crypto && crypto.subtle;
+    async function keypair() {
+      const kp = await subtle.generateKey({ name: "ECDH", namedCurve: "P-256" }, true, ["deriveBits"]);
+      const raw = new Uint8Array(await subtle.exportKey("raw", kp.publicKey));
+      return { kp, x: Array.from(raw.slice(1, 33)) };
+    }
+    async function dh(priv, pubX, pubKey) { return Array.from(new Uint8Array(await subtle.deriveBits({ name: "ECDH", public: pubKey }, priv, 256))); }
+    const six = (v) => String(v % 1000000).padStart(6, "0");
+    async function go() {
+      if (!subtle) { out.innerHTML = "이 브라우저 환경(파일로 열기 등)에서는 WebCrypto를 쓸 수 없어 키를 만들 수 없다. https 주소나 로컬 서버로 열어 보자."; return; }
+      const A = await keypair(), B = await keypair(), M1 = await keypair(), M2 = await keypair();
+      const Na = rand(16), Nb = rand(16), mitm = $("nc-mitm").checked;
+      // A가 받은 B의 공개 키, B가 받은 A의 공개 키
+      const pkB_seenByA = mitm ? M1 : B, pkA_seenByB = mitm ? M2 : A;
+      const vA = g2(A.x, pkB_seenByA.x, Na, Nb), vB = g2(pkA_seenByB.x, B.x, Na, Nb);
+      const dA = await dh(A.kp.privateKey, null, pkB_seenByA.kp.publicKey), dB = await dh(B.kp.privateKey, null, pkA_seenByB.kp.publicKey);
+      $("nc-a").textContent = six(vA); $("nc-b").textContent = six(vB);
+      $("nc-pka").textContent = "PKax " + X(A.x).slice(0, 16) + "…"; $("nc-pkb").textContent = "PKbx " + X(B.x).slice(0, 16) + "…";
+      const same = vA === vB;
+      out.innerHTML = `${mitm ? "중간자가 A에게는 자기 키 M1, B에게는 M2를 보냈다. " : "두 기기가 공개 키 X좌표와 난수만 주고받았다. "}각자 계산한 DHKey: A ${X(dA).slice(0, 12)}… / B ${X(dB).slice(0, 12)}… → <b>${X(dA) === X(dB) ? "같다" : "다르다"}</b>.<br>` +
+        `화면 숫자 = g2(PKax, PKbx, Na, Nb) mod 10⁶ → <b style="color:var(${same ? "--ok" : "--bad"})">${same ? "같다 → 사용자가 “예”" : "다르다 → 사용자가 “아니요”, 중간자 발각"}</b>`;
+    }
+    $("nc-go").addEventListener("click", go);
+    $("nc-mitm").addEventListener("change", go);
+    $("nc-vec").addEventListener("click", () => {
+      const U = H("20b003d2 f297be2c 5e2c83a7 e9f9a5b9 eff49111 acf4fddb cc030148 0e359de6"), V = H("55188b3d 32f6bb9a 900afcfb eed4e72a 59cb9ac2 f19d7cfb 6b4fdd49 f47fc5fd");
+      const Xk = H("d5cb8454 d177733e ffffb2ec 712baeab"), Y = H("a6e8e7cc 25a75f6e 216583f7 ff3dc4cf");
+      const m = aesCmac(Xk, U.concat(V, Y)), v = g2(U, V, Xk, Y);
+      const ok = X(m).toLowerCase() === "1536d18de3d20df99b7044c12f9ed5ba";
+      out.innerHTML = `사양 D.5: AES-CMAC = <span class="mono">${X(m)}</span> <b style="color:var(${ok ? "--ok" : "--bad"})">${ok ? "✓ 사양과 일치" : "✗ 불일치"}</b><br>g2 = 0x${BT.hex(v, 8)} → 비교값 <b>${six(v)}</b>`;
+      $("nc-a").textContent = six(v); $("nc-b").textContent = six(v);
+    });
+    if (subtle) go(); else out.innerHTML = "WebCrypto를 쓸 수 없는 환경이다. “사양 샘플 D.5 계산”은 동작한다.";
+  })();
+
+  /* ================================================================ 3. RPA */
+  (function () {
+    const IRK = rand(16), OTHER = rand(16);
+    let addrs = [];
+    const who = BT.seg("rpa-who", render);
+    $("rpa-irk").innerHTML = `이어폰의 IRK: ${X(IRK)} <span style="color:var(--text-faint)">(본딩 때 휴대폰에게만 전달됨)</span>`;
+    function newAddr() {
+      const r = rand(3); let prand = ((r[0] & 0x3f) | 0x40) << 16 | (r[1] << 8) | r[2]; // 상위 2비트 = 01
+      addrs.push({ prand, hash: ah(IRK, prand), t: addrs.length * 15 });
+      render();
+    }
+    const fmtAddr = (p, h) => { const v = [(p >> 16) & 255, (p >> 8) & 255, p & 255, (h >> 16) & 255, (h >> 8) & 255, h & 255].map((b) => BT.hex(b)); return `<span style="color:var(--accent)">${v.slice(0, 3).join(":")}</span>:<span style="color:var(--accent-2)">${v.slice(3).join(":")}</span>`; };
+    function render() {
+      const key = who() === "friend" ? IRK : OTHER; let ok = 0;
+      $("rpa-list").innerHTML = addrs.slice().reverse().map((a) => { const m = ah(key, a.prand) === a.hash; if (m) ok++; return `<div>${a.t}분 · ${fmtAddr(a.prand, a.hash)} <span class="${m ? "ok" : "no"}">${m ? "✓ 내 이어폰" : "? 처음 보는 기기"}</span></div>`; }).join("");
+      BT.stat("rpa-n", addrs.length + "개"); BT.stat("rpa-ok", ok + "개");
+    }
+    $("rpa-next").addEventListener("click", newAddr);
+    $("rpa-vec").addEventListener("click", () => {
+      const h = ah(H("ec0234a3 57c8ad05 341010a6 0a397d9b"), 0x708194);
+      BT.stat("rpa-v", `0x${BT.hex(h, 6)} ${h === 0x0dfbaa ? '<span style="color:var(--ok)">✓ 사양 D.7</span>' : '<span style="color:var(--bad)">✗</span>'}`);
+    });
+    for (let i = 0; i < 4; i++) newAddr();
+  })();
+})();
+</script>
+</body>
+</html>

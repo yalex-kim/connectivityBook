@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>주파수 도약과 공존 · BluetoothBook</title>
+<meta name="description" content="블루투스가 채널을 계속 옮겨 다니는 이유와 방법. 클래식의 초당 1,600번 도약과 적응형 주파수 도약(AFH), LE의 채널 맵과 채널 선택 알고리즘 #1·#2를 Core 6.2의 샘플 데이터로 검증하며 직접 돌리고, Wi-Fi와 한 공간에서 함께 사는 법을 익힌다.">
+<link rel="canonical" href="https://bluetoothbook.euiyun.com/chapters/hopping.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="BluetoothBook">
+<meta property="og:title" content="주파수 도약과 공존 · BluetoothBook">
+<meta property="og:description" content="블루투스가 채널을 계속 옮겨 다니는 이유와 방법. 클래식의 초당 1,600번 도약과 적응형 주파수 도약(AFH), LE의 채널 맵과 채널 선택 알고리즘 #1·#2를 Core 6.2의 샘플 데이터로 검증하며 직접 돌리고, Wi-Fi와 한 공간에서 함께 사는 법을 익힌다.">
+<meta property="og:url" content="https://bluetoothbook.euiyun.com/chapters/hopping.html">
+<meta property="og:image" content="https://bluetoothbook.euiyun.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"주파수 도약과 공존","name":"주파수 도약과 공존 · BluetoothBook","url":"https://bluetoothbook.euiyun.com/chapters/hopping.html","mainEntityOfPage":"https://bluetoothbook.euiyun.com/chapters/hopping.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":4,"image":"https://bluetoothbook.euiyun.com/og.png","dateModified":"2026-10-16","isPartOf":{"@type":"Book","@id":"https://bluetoothbook.euiyun.com/#book","name":"BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서","url":"https://bluetoothbook.euiyun.com/"},"publisher":{"@type":"Organization","name":"BluetoothBook","url":"https://bluetoothbook.euiyun.com/"},"description":"블루투스가 채널을 계속 옮겨 다니는 이유와 방법. 클래식의 초당 1,600번 도약과 적응형 주파수 도약(AFH), LE의 채널 맵과 채널 선택 알고리즘 #1·#2를 Core 6.2의 샘플 데이터로 검증하며 직접 돌리고, Wi-Fi와 한 공간에서 함께 사는 법을 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook","item":"https://bluetoothbook.euiyun.com/"},{"@type":"ListItem","position":2,"name":"04 주파수 도약과 공존","item":"https://bluetoothbook.euiyun.com/chapters/hopping.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<!-- Cloudflare Web Analytics -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"3d6151a0abc94ede89285d462527fa80"}'></script>
+<!-- End Cloudflare Web Analytics -->
+<style>
+  .chmap { display: grid; grid-template-columns: repeat(auto-fill, minmax(30px, 1fr)); gap: 3px; }
+  .chmap button { font: inherit; font-family: var(--mono); font-size: 11.5px; padding: 6px 0; border-radius: 6px; border: 1px solid var(--accent); background: var(--accent-soft); color: var(--accent); cursor: pointer; }
+  .chmap button.off { border-color: var(--border); background: var(--surface); color: var(--text-faint); text-decoration: line-through; }
+  .seq { font-family: var(--mono); font-size: 13px; display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .seq span { padding: 3px 7px; border-radius: 6px; background: var(--surface); }
+  .seq span.rm { background: color-mix(in srgb, var(--warn) 22%, transparent); }
+  .seq-h { font-size: 13px; color: var(--text-dim); margin-top: 12px; }
+</style>
+</head>
+<body data-chapter="hopping">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 04</div>
+    <h1>주파수 도약과 공존</h1>
+    <p class="lead">거실에서 노트북은 2.4 GHz Wi-Fi로 영상을 내려받고, 같은 휴대폰이 블루투스로 이어폰에 음악을 보낸다. 두 신호는 같은 주파수 대역을 쓰는데도 음악은 끊기지 않고 영상도 멈추지 않는다. 같은 방에 블루투스 기기가 열 개, 스무 개가 있어도 마찬가지다. 비결은 블루투스가 <b>한 채널에 머물지 않는다</b>는 데 있다. 이 장에서는 블루투스가 언제, 어느 채널로, 어떤 규칙에 따라 옮겨 가는지, 그리고 시끄러운 채널을 어떻게 알아내 피하는지 따라간다.</p>
+    <ul class="objectives">
+      <li>주파수 도약이 간섭과 다중 경로 페이딩을 동시에 줄이는 원리를 확률로 설명한다.</li>
+      <li>클래식(BR/EDR)의 625 µs 슬롯과 초당 1,600번 도약, 1.2에서 추가된 적응형 주파수 도약(AFH)과 최소 20채널 규칙을 안다.</li>
+      <li>LE의 채널 맵(최소 2채널)과 채널 선택 알고리즘 #1(더하기 규칙)·#2(의사 난수)를 직접 계산하고, 사양의 샘플 데이터와 맞춰 본다.</li>
+      <li>Wi-Fi 1·6·11번 채널이 블루투스 채널 어디를 덮는지 알고, 한 기기 안에서 Wi-Fi와 블루투스가 시간을 나눠 쓰는 공존 방식을 이해한다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="why">
+    <h2>왜 옮겨 다니나: 한 테이블에 앉으면 생기는 일</h2>
+    <p>한 채널에만 머무는 무선 링크를 생각해 보자. 그 채널이 마침 옆집 Wi-Fi와 겹치면 Wi-Fi가 말하는 동안 블루투스 패킷은 계속 깨진다. 2장에서 본 다중 경로 페이딩의 골짜기에 빠져도 그 위치에 있는 한 계속 끊긴다. 재수 없는 채널을 고르면 <b>계속</b> 재수가 없다.</p>
+    <p>채널을 계속 바꾸면 이야기가 달라진다. 79개(또는 37개) 채널 가운데 Wi-Fi가 덮는 것이 20개라면, 무작위로 고른 다음 채널이 막혀 있을 확률은 20/79, 약 25%다. 하지만 그 손해는 <b>그 패킷 하나</b>로 끝나고, 다음 패킷은 다른 채널에서 성공할 가능성이 높다. 재전송 한 번이면 대부분 복구된다. 나쁜 채널의 피해를 모든 시간에 고르게 나눠, 큰 사고를 작은 손해 여러 번으로 바꾸는 것이다. 이것이 <span class="term">주파수 도약</span><span class="en">(frequency hopping)</span>이다.</p>
+    <div class="callout analogy"><strong>테이블을 옮겨 다니는 약속</strong><p>시끄러운 카페에서 둘이 대화한다. 한 테이블에만 앉아 있으면 옆 테이블의 단체 손님(Wi-Fi)이 떠드는 동안 아무 말도 들리지 않는다. 그래서 두 사람은 “말 한마디 할 때마다 정해진 순서로 테이블을 옮기자”고 약속한다. 어떤 테이블은 시끄럽지만 다음 테이블은 조용하다. 엿듣는 사람도 다음 테이블이 어디인지 모르면 대화를 따라가기 어렵다. 그리고 단체 손님이 늘 앉는 테이블을 알게 되면, 아예 그 테이블들을 순서에서 <b>빼고</b> 옮겨 다닌다(AFH).</p></div>
+    <p>도약에는 숨은 장점이 하나 더 있다. 같은 방에 블루투스 연결이 여럿 있어도 각자 <b>다른 순서</b>로 도약하므로, 두 연결이 같은 순간 같은 채널에 있을 확률은 낮다. 특별한 조정 없이도 수십 개 연결이 한 공간에서 산다. 다만 기기 수가 늘수록 이 우연한 충돌도 늘어난다.</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="classic">
+    <h2>클래식: 625 µs마다 한 번, 79개 채널</h2>
+    <p>클래식 블루투스의 시간은 <b>625 µs 슬롯</b>으로 나뉜다. 연결을 이끄는 센트럴(예전 용어로 마스터)이 짝수 슬롯에서 보내고, 페리페럴은 그다음 홀수 슬롯에서 답한다. 패킷이 한 슬롯짜리면 슬롯마다 채널을 바꾸므로 1초에 1/0.000625 = <b>1,600번</b> 도약한다. 3슬롯, 5슬롯짜리 긴 패킷은 그동안 한 채널에 머문다.</p>
+    <p>도약 순서는 센트럴의 블루투스 주소와 시계로 정해진다. 같은 연결(피코넷)의 기기는 센트럴의 주소와 시계를 알기 때문에 다음 채널을 똑같이 계산할 수 있고, 다른 피코넷은 다른 순서를 따른다.</p>
+    <figure class="diagram">
+      <div style="overflow-x:auto">
+      <svg viewBox="0 0 760 250" role="img" aria-label="시간-주파수 격자 위에서 슬롯마다 채널을 바꾸는 클래식 블루투스와 고정된 Wi-Fi 띠" style="min-width:560px">
+        <text x="20" y="20" class="t-mono">주파수(채널)</text>
+        <line x1="60" y1="30" x2="60" y2="220" class="s-axis"/><line x1="60" y1="220" x2="740" y2="220" class="s-axis"/>
+        <text x="740" y="240" text-anchor="end" class="t-mono">시간 → (한 칸 = 625 µs 슬롯)</text>
+        <rect x="60" y="150" width="680" height="40" fill="var(--warn)" opacity=".16"/>
+        <text x="66" y="175" class="t-dim" style="fill:var(--warn)">Wi-Fi 6번 채널이 차지한 띠 (약 20 MHz)</text>
+        <g fill="var(--accent)">
+          <rect x="64" y="60" width="36" height="12" rx="3"/><rect x="104" y="128" width="36" height="12" rx="3"/><rect x="144" y="40" width="36" height="12" rx="3"/>
+          <rect x="184" y="196" width="36" height="12" rx="3"/><rect x="224" y="96" width="36" height="12" rx="3"/>
+          <rect x="304" y="74" width="36" height="12" rx="3"/><rect x="344" y="118" width="116" height="12" rx="3"/>
+          <rect x="464" y="50" width="36" height="12" rx="3"/><rect x="504" y="200" width="36" height="12" rx="3"/><rect x="584" y="86" width="36" height="12" rx="3"/>
+          <rect x="624" y="138" width="36" height="12" rx="3"/><rect x="704" y="66" width="36" height="12" rx="3"/>
+        </g>
+        <g fill="var(--bad)"><rect x="264" y="164" width="36" height="12" rx="3"/><rect x="544" y="158" width="36" height="12" rx="3"/><rect x="664" y="172" width="36" height="12" rx="3"/></g>
+        <text x="402" y="114" text-anchor="middle" class="t-mono">3슬롯 패킷</text>
+        <text x="282" y="160" text-anchor="middle" class="t-mono" style="fill:var(--bad)">충돌</text>
+      </svg>
+      </div>
+      <figcaption><b>그림 4-1.</b> 클래식 블루투스의 시간-주파수 지도. 파란 칸이 슬롯마다 다른 채널로 간 패킷이고, 주황 띠는 Wi-Fi가 계속 쓰는 주파수다. 도약 순서가 우연히 Wi-Fi 띠에 들어간 패킷(빨강)만 깨지고, 다음 슬롯은 다른 채널에서 성공한다.</figcaption>
+    </figure>
+    <h3>적응형 주파수 도약 (AFH)</h3>
+    <p>2000년대 초 802.11b/g Wi-Fi가 퍼지자 무작위 도약만으로는 손해가 커졌다. Wi-Fi 하나가 20 MHz, 즉 클래식 채널 79개 중 20개 남짓을 막고, 공유기 세 대가 1·6·11번을 쓰면 60개 가까이가 시끄러워진다. 그래서 1.2(2003)에 <span class="term">AFH</span><span class="en">(Adaptive Frequency Hopping)</span>가 들어왔다. 센트럴이 채널별로 패킷 오류율이나 잡음을 재서 나쁜 채널을 표시한 <b>채널 맵</b>을 만들고, 페리페럴에게 알린 뒤 둘 다 나쁜 채널을 빼고 도약한다. 단 너무 적은 채널로 도약하면 도약의 장점이 사라지고 규제(일부 지역의 도약 방식 요건)에도 걸리므로, 사양은 <b>최소 20개</b> 채널은 쓰도록 한다.</p>
+    <p class="spec-ref">625 µs 슬롯: <b>[Vol 2] Part B §2.2.3</b> · AFH 최소 채널 N<sub>min</sub> = 20: <b>[Vol 2] Part B §2.3.1</b> · 1.2의 새 기능 AFH: <b>[Vol 1] Part C §2.1</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="sim">
+    <h2>간섭 실험: 고정, 도약, 적응형 도약</h2>
+    <p>세 방식이 Wi-Fi와 섞였을 때 얼마나 손해를 보는지 직접 비교해 보자. 시뮬레이터는 LE 연결(범용 채널 37개)을 기준으로, Wi-Fi가 쓰는 채널은 일정 비율의 시간 동안 막혀 있다고 본다.</p>
+    <div class="sim" id="sim-hop">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>Wi-Fi 옆에서 도약하기: 시간-주파수 지도</h3></div>
+      <div class="sim-view"><canvas id="cv-hop"></canvas></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>블루투스 방식</span><div class="seg" id="hp-mode"><button data-value="fixed">고정 채널</button><button data-value="hop">무작위 도약</button><button data-value="afh" class="on">적응형 도약</button></div></div>
+        <div class="ctrl"><span>이웃 Wi-Fi (2.4 GHz)</span><div class="seg" id="hp-wifi"><button data-value="0">없음</button><button data-value="1">6번 하나</button><button data-value="3" class="on">1·6·11번</button></div></div>
+        <label class="ctrl"><span>Wi-Fi가 말하는 시간 비율 <output id="hp-duty-out"></output></span><input type="range" id="hp-duty" min="0" max="100" step="5" value="50"></label>
+        <label class="ctrl"><span>고정 채널 번호 <output id="hp-fix-out"></output></span><input type="range" id="hp-fix" min="0" max="36" value="10"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">패킷 손실 (이 화면)</span><span class="v" id="hp-loss">—</span></div>
+        <div class="stat"><span class="k">기대 손실률</span><span class="v" id="hp-exp">—</span></div>
+        <div class="stat"><span class="k">쓰는 채널 수</span><span class="v" id="hp-n">—</span></div>
+        <div class="stat"><span class="k">연속 2번 이상 실패</span><span class="v" id="hp-burst">—</span></div>
+      </div>
+      <div class="sim-note">가로는 연결 이벤트(시간), 세로는 LE 범용 채널 0~36이다. 주황 칸은 Wi-Fi가 그 순간 말하고 있던 칸, 파랑은 성공한 패킷, 빨강은 Wi-Fi와 부딪혀 깨진 패킷이다. 해볼 것: ① “고정 채널”에서 채널 번호를 Wi-Fi 띠 안(예: 10)과 밖(예: 36)으로 옮겨 보자. 운에 따라 0%와 50%를 오간다. ② “무작위 도약”은 손실률이 Wi-Fi가 덮는 채널 비율 × 말하는 시간 비율로 수렴한다. ③ “적응형 도약”은 Wi-Fi 채널을 빼므로 손실이 거의 0이다. 연속 실패가 적다는 것이 오디오처럼 기다려 주지 않는 데이터에 특히 중요하다. 가정: Wi-Fi는 중심 ±10 MHz를 막고, 주어진 비율의 시간 동안 무작위로 말한다. 적응형 도약은 Wi-Fi 채널을 완벽히 알아냈다고 보았다.</div>
+    </div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">이웃 Wi-Fi 1·6·11번이 모두 시간의 50%씩 말한다. 무작위 도약하는 블루투스의 패킷 손실률은 대략 얼마일까?</p><p class="wi-hint">시뮬레이터에서 “무작위 도약”, “1·6·11번”, 50%로 맞추고 기대 손실률을 보자. 2장의 대역 지도에서 Wi-Fi 세 채널이 LE 채널을 몇 개나 덮는지도 떠올려 보자.</p><div class="opts">
+      <button class="opt">약 3% — Wi-Fi 채널은 셋뿐이니까</button>
+      <button class="opt" data-correct>약 15% 안팎 — 37개 중 약 1/3이 Wi-Fi에 덮이고, 그중 절반의 시간만 막히므로</button>
+      <button class="opt">약 50% — Wi-Fi가 절반의 시간 동안 말하니까</button>
+      <button class="opt">0% — 도약하면 간섭은 없다</button>
+    </div><div class="quiz-exp">20 MHz짜리 Wi-Fi 하나가 LE 채널(2 MHz) 9~10개를 덮는다. 세 개면 37개 중 약 1/3이다. 막힐 확률 ≈ 1/3 × 50% ≈ 15%. 적응형 도약은 그 채널을 빼서 이 손해를 없앤다.</div></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="le">
+    <h2>LE의 도약: 연결 이벤트마다 한 번</h2>
+    <p>LE는 클래식처럼 슬롯마다 뛰지 않는다. 6장에서 보겠지만 LE 연결은 정해진 <b>연결 간격</b>마다 짧게 깨어나 이야기하는 <span class="term">연결 이벤트</span><span class="en">(connection event)</span>로 이루어진다. LE는 <b>연결 이벤트마다 한 번</b> 채널을 바꾸고, 한 이벤트 안에서 주고받는 패킷들은 같은 채널을 쓴다. 광고 채널 37·38·39를 뺀 범용 채널 37개(0~36)가 도약 대상이다.</p>
+    <p>LE에서 AFH는 <b>필수</b>다. 센트럴은 범용 채널마다 “좋음·나쁨·알 수 없음”을 분류하고, 이를 바탕으로 쓸 채널(used)과 안 쓸 채널(unused)을 표시한 <span class="term">채널 맵</span><span class="en">(channel map)</span>을 만든다. 채널 맵은 연결을 맺을 때(CONNECT_IND) 페리페럴에게 전달되고, 바뀌면 LL_CHANNEL_MAP_IND로 알린다. 사양이 요구하는 최소 사용 채널은 <b>2개</b>뿐이라 클래식보다 훨씬 공격적으로 나쁜 채널을 뺄 수 있다. 5.3부터는 페리페럴도 자기 쪽에서 본 채널 상태를 센트럴에게 보고할 수 있다(LL_CHANNEL_STATUS_IND).</p>
+    <p class="spec-ref">범용 채널 AFH 필수, 채널 분류(unknown/bad/good), 최소 사용 채널 2개: <b>[Vol 6] Part B §4.5.8.1</b> · 채널 맵 갱신 절차: <b>[Vol 6] Part B §5.1.2</b></p>
+    <h3>채널 선택 알고리즘 #1: 일정한 걸음</h3>
+    <p>4.0부터 있던 방식이다. 연결을 맺을 때 5~16 사이의 무작위 수 <b>hopIncrement</b>를 정하고, 이벤트마다 그만큼 더한다.</p>
+    <div class="formula">unmappedChannel = (lastUnmappedChannel + hopIncrement) mod 37
+      <div class="where">결과가 쓰는 채널이면 그대로 쓴다. 안 쓰는 채널이면 remappingIndex = unmappedChannel mod (쓰는 채널 수)로 다시 계산해, 쓰는 채널을 오름차순으로 늘어놓은 표에서 고른다. 37은 소수라서 어떤 hopIncrement를 골라도 37번 만에 모든 채널을 한 번씩 거친다.</div>
+    </div>
+    <p>알고리즘 #1은 단순하지만 약점이 있다. 순서가 너무 규칙적이라 엿듣는 쪽이 두세 개의 채널만 보고도 다음 채널을 예측할 수 있고, 같은 hopIncrement를 고른 두 연결은 한번 부딪히면 계속 같이 움직인다. 또 안 쓰는 채널을 다시 매핑할 때 일부 채널에 몰리는 치우침이 생긴다.</p>
+    <h3>채널 선택 알고리즘 #2: 의사 난수</h3>
+    <p>5.0에서 추가된 방식이다. 연결마다 고유한 접근 주소(6장)에서 16비트 <b>channelIdentifier</b>를 만들고(위 16비트 XOR 아래 16비트), 이를 <b>이벤트 카운터</b>와 섞어 의사 난수 prn_e를 만든다. 섞는 방법은 8비트씩 비트 순서를 뒤집기(permutation)와 “17을 곱하고 더한 뒤 2<sup>16</sup>으로 나눈 나머지”(MAM)를 세 번 반복하는 것이다. unmappedChannel = prn_e mod 37이고, 그 채널이 안 쓰는 채널이면 ⌊쓰는 채널 수 × prn_e ÷ 2<sup>16</sup>⌋번째 쓰는 채널로 바꾼다. 카운터만 알면 어느 이벤트의 채널이든 바로 계산할 수 있어서, 주기적 광고와 등시성 채널(10장)처럼 많은 수신자가 따라가야 하는 곳에 쓰기 좋다.</p>
+    <p class="spec-ref">알고리즘 #1(hopIncrement 5~16): <b>[Vol 6] Part B §4.5.8.2</b> · 알고리즘 #2: <b>[Vol 6] Part B §4.5.8.3</b> · 샘플 데이터(Table 3.1·3.2): <b>[Vol 6] Part C §3</b></p>
+
+    <div class="sim" id="sim-csa">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>채널 선택 알고리즘 #1·#2 계산기 (사양 샘플 데이터로 검증)</h3></div>
+      <div class="sim-view" style="padding:14px">
+        <div class="chmap" id="cs-map" aria-label="채널 맵: 눌러서 쓰는 채널/안 쓰는 채널 바꾸기"></div>
+        <div class="seq-h">알고리즘 #1 (hopIncrement <b id="cs-hop-v"></b>) · 이벤트 0부터 20개</div>
+        <div class="seq" id="cs-seq1"></div>
+        <div class="seq-h">알고리즘 #2 (접근 주소 <b id="cs-aa-v"></b>, channelIdentifier <b id="cs-id-v"></b>) · 이벤트 카운터 0부터 20개</div>
+        <div class="seq" id="cs-seq2"></div>
+        <canvas id="cv-csa" style="margin-top:12px"></canvas>
+      </div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>hopIncrement (#1) <output id="cs-hop-out"></output></span><input type="range" id="cs-hop" min="5" max="16" value="10"></label>
+        <div class="ctrl"><span>채널 맵 미리 설정</span><div class="seg" id="cs-preset"><button data-value="all" class="on">37개 모두</button><button data-value="wifi">Wi-Fi 1·6·11 제외</button><button data-value="spec2">사양 샘플 2 (9개)</button></div></div>
+        <div class="ctrl"><span>접근 주소 (#2)</span><div class="seg" id="cs-aa"><button data-value="8E89BED6" class="on">0x8E89BED6 (샘플)</button><button data-value="random">무작위 연결</button></div></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">#1 다시 매핑된 비율</span><span class="v" id="cs-r1">—</span></div>
+        <div class="stat"><span class="k">#2 다시 매핑된 비율</span><span class="v" id="cs-r2">—</span></div>
+        <div class="stat"><span class="k">사양 샘플과 일치</span><span class="v" id="cs-ok">—</span></div>
+      </div>
+      <div class="sim-note">위 칸을 눌러 채널을 빼거나 넣어 보자(최소 2개). 주황 칸은 원래 계산된 채널이 안 쓰는 채널이라 다시 매핑된 경우다. 아래 그래프는 이벤트 3,700번 동안 각 채널이 쓰인 횟수(#1 파랑, #2 청록)다. 해볼 것: ① 37개 모두일 때 #1은 숫자가 일정한 걸음(hopIncrement)으로 증가하는 것이 눈에 보인다. #2는 불규칙하다. ② “사양 샘플 2”를 고르고 접근 주소를 샘플로 두면, #2의 이벤트 6·7·8이 사양 Table 3.2의 값(23, 9, 34)과 일치하는지 표시된다. 이 계산기는 사양의 절차를 그대로 구현했다. ③ Wi-Fi 채널을 뺀 맵에서 #1의 막대가 고르지 않은 것을 보자(다시 매핑이 일부 채널에 몰린다).</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="coex">
+    <h2>공존: 한 휴대폰 안의 Wi-Fi와 블루투스</h2>
+    <p>지금까지는 남의 Wi-Fi였다. 더 까다로운 경우는 <b>같은 휴대폰 안의</b> Wi-Fi와 블루투스다. 요즘 휴대폰은 Wi-Fi와 블루투스를 칩 하나(콤보 칩)에 넣고 안테나도 나눠 쓰는 경우가 많다. 안테나가 몇 cm 떨어져 있어도, 한쪽이 +15 dBm으로 보내는 순간 다른 쪽 수신기에는 수신 감도보다 100 dB 가까이 센 신호가 들어온다. 이때는 도약으로도 피할 수 없다. 해결책은 <b>시간을 나눠 쓰는 것</b>이다.</p>
+    <ul>
+      <li><b>패킷 교통 정리</b><span class="en">(PTA, Packet Traffic Arbitration)</span>: 칩 안의 중재기가 매 순간 누가 말할지 정한다. 블루투스 오디오 패킷처럼 늦으면 안 되는 것을 먼저 보내고, Wi-Fi는 그 틈을 쓴다.</li>
+      <li><b>AFH 연동</b>: Wi-Fi가 지금 쓰는 2.4 GHz 채널을 블루투스 쪽에 알려 그 범위를 채널 맵에서 뺀다. 사양은 호스트가 컨트롤러에게 나쁜 채널을 알려 주는 명령(HCI_LE_Set_Host_Channel_Classification)을 둔다.</li>
+      <li><b>다른 무선과의 신호</b>: LTE·5G 모뎀의 일부 대역(예: 2.3 GHz, 2.5~2.6 GHz)은 2.4 GHz 바로 옆이다. Core 사양 Vol 7은 블루투스 칩과 셀룰러 모뎀이 “지금 송신 중” 같은 신호를 주고받는 공존 인터페이스를 정의한다.</li>
+    </ul>
+    <div class="callout tip"><strong>집에서 블루투스를 편하게 해 주는 법</strong><p>집 공유기가 2.4 GHz와 5 GHz를 둘 다 지원한다면 휴대폰·노트북은 5 GHz(또는 6 GHz)에 붙이자. Wi-Fi가 2.4 GHz를 떠나면 블루투스는 채널 맵을 넓게 쓸 수 있고, 같은 칩 안의 시간 나누기도 줄어든다. 2.4 GHz를 꼭 써야 한다면 1·6·11번 중 하나로 고정하는 것이 이웃에게도 블루투스에게도 낫다.</p></div>
+    <p class="spec-ref">호스트 채널 분류 명령: <b>[Vol 4] Part E §7.8.19</b>(HCI_LE_Set_Host_Channel_Classification) · 무선 공존 신호: <b>[Vol 7]</b></p>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>주파수 도약은 나쁜 채널(간섭·페이딩)의 피해를 <b>짧고 드문 손해</b>로 바꾼다. 재전송 한 번이면 대부분 복구되고, 여러 연결이 조정 없이 공존한다.</li>
+      <li>클래식은 <b>625 µs 슬롯</b>, 1슬롯 패킷이면 초당 <b>1,600번</b> 79채널을 도약한다. 1.2의 <b>AFH</b>는 나쁜 채널을 빼되 <b>최소 20채널</b>은 쓴다.</li>
+      <li>LE는 <b>연결 이벤트마다</b> 범용 채널 37개 중 하나로 옮긴다. AFH는 필수이고 채널 맵은 <b>최소 2채널</b>이면 된다.</li>
+      <li>채널 선택 알고리즘 <b>#1</b>은 (이전 + hopIncrement) mod 37의 규칙적인 걸음, <b>#2</b>(5.0)는 접근 주소와 이벤트 카운터로 만든 의사 난수다. #2는 예측하기 어렵고 고르게 퍼지며, 카운터만으로 아무 이벤트의 채널이나 계산할 수 있다.</li>
+      <li>Wi-Fi 20 MHz 하나는 LE 채널 9~10개를 덮는다. 같은 기기 안의 Wi-Fi와 블루투스는 도약으로 피할 수 없어 <b>시간을 나눠</b> 쓰고(PTA), Wi-Fi 채널을 채널 맵에서 뺀다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>클래식 블루투스가 1슬롯 패킷만 주고받을 때 1초에 도약하는 횟수는?</p><div class="opts">
+        <button class="opt">79번</button><button class="opt">625번</button><button class="opt" data-correct>1,600번</button><button class="opt">2,400번</button>
+      </div><div class="quiz-exp">슬롯이 625 µs이므로 1 ÷ 0.000625 = 1,600. 3·5슬롯 패킷은 그동안 한 채널에 머물러 도약 횟수가 줄어든다.</div></div>
+      <div class="quiz-q"><p>AFH가 있어도 클래식 블루투스가 최소 20개 채널은 쓰도록 하는 이유로 가장 적절한 것은?</p><div class="opts">
+        <button class="opt">20개 미만이면 데이터 속도가 떨어져서</button>
+        <button class="opt" data-correct>너무 적은 채널로 도약하면 도약의 이점(간섭·페이딩 분산)이 사라지고 도약 방식에 대한 규제 요건과도 맞지 않아서</button>
+        <button class="opt">Wi-Fi가 항상 20개 채널만 쓰기 때문</button>
+        <button class="opt">페어링에 20개 채널이 필요해서</button>
+      </div><div class="quiz-exp">사양은 N<sub>min</sub> = 20을 정한다([Vol 2] Part B §2.3.1). LE는 이 하한이 2로 훨씬 낮다.</div></div>
+      <div class="quiz-q"><p>LE 연결에서 채널 선택 알고리즘 #1, hopIncrement = 7, 모든 채널 사용. 이벤트 0의 채널은?</p><div class="opts">
+        <button class="opt">0</button><button class="opt" data-correct>7</button><button class="opt">14</button><button class="opt">37</button>
+      </div><div class="quiz-exp">첫 이벤트의 lastUnmappedChannel은 0이므로 (0 + 7) mod 37 = 7. 다음은 14, 21, 28, 35, 5(=42 mod 37)…</div></div>
+      <div class="quiz-q"><p>채널 선택 알고리즘 #2가 #1보다 나은 점이 아닌 것은?</p><div class="opts">
+        <button class="opt">순서를 예측하기 어렵다</button>
+        <button class="opt">안 쓰는 채널을 다시 매핑할 때 덜 치우친다</button>
+        <button class="opt">이벤트 카운터만 알면 그 이벤트의 채널을 바로 계산할 수 있다</button>
+        <button class="opt" data-correct>Wi-Fi 채널을 자동으로 찾아 빼 준다</button>
+      </div><div class="quiz-exp">어느 알고리즘이든 “어떤 채널을 쓸지”는 채널 맵이 정한다. 채널 맵을 만드는 방법(채널 분류)은 구현에 맡겨져 있다.</div></div>
+      <div class="quiz-q"><p>같은 휴대폰의 Wi-Fi(2.4 GHz)와 블루투스가 서로를 방해하는 문제를 주파수 도약만으로 해결하기 어려운 이유는?</p><div class="opts">
+        <button class="opt">같은 칩에서는 도약이 금지되어서</button>
+        <button class="opt" data-correct>안테나가 가까워, 한쪽이 송신하는 순간 다른 쪽 수신기에 아주 강한 신호가 들어와 채널이 달라도 받기 어려워서</button>
+        <button class="opt">Wi-Fi도 같은 순서로 도약해서</button>
+        <button class="opt">블루투스가 Wi-Fi 채널을 쓸 수 없어서</button>
+      </div><div class="quiz-exp">가까운 송신기는 옆 채널이라도 수신기를 포화시킨다. 그래서 칩 안에서 시간을 나누는 중재(PTA)를 쓴다.</div></div>
+      <div class="quiz-q"><p>LE의 채널 맵에 대한 설명으로 옳은 것은?</p><div class="opts">
+        <button class="opt">광고 채널 37·38·39도 채널 맵에서 뺄 수 있다</button>
+        <button class="opt">페리페럴이 채널 맵을 정해 센트럴에게 알린다</button>
+        <button class="opt" data-correct>센트럴이 범용 채널을 분류해 정하며, 최소 2개 채널은 사용해야 한다</button>
+        <button class="opt">한번 정하면 연결이 끝날 때까지 바꿀 수 없다</button>
+      </div><div class="quiz-exp">센트럴이 정하고 CONNECT_IND로 전달하며, LL_CHANNEL_MAP_IND로 언제든 바꿀 수 있다. 페리페럴은 5.3부터 채널 상태를 보고할 수 있지만 결정은 센트럴이 한다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  /** LE 범용 채널 번호(0~36) → 주파수(MHz). [Vol 6] Part B Table 1.3 */
+  function dataChFreq(ch) { return ch <= 10 ? 2404 + 2 * ch : 2428 + 2 * (ch - 11); }
+  /** Wi-Fi 채널(20 MHz)과 겹치는 LE 범용 채널 목록 */
+  function wifiBlocked(wifiChannels) {
+    const out = new Set();
+    wifiChannels.forEach((w) => { const fc = 2407 + 5 * w; for (let c = 0; c < 37; c++) if (Math.abs(dataChFreq(c) - fc) < 11) out.add(c); });
+    return out;
+  }
+  /** 채널 선택 알고리즘 #1. [Vol 6] Part B §4.5.8.2 */
+  function csa1Sequence(hop, map, n) {
+    const used = []; for (let c = 0; c < 37; c++) if (map[c]) used.push(c);
+    const out = []; let last = 0;
+    for (let i = 0; i < n; i++) {
+      const un = (last + hop) % 37; last = un;
+      out.push(map[un] ? { ch: un, remap: false } : { ch: used[un % used.length], remap: true });
+    }
+    return out;
+  }
+  /** 8비트씩 비트 순서 뒤집기 */
+  function perm16(v) {
+    const rev8 = (b) => { let r = 0; for (let i = 0; i < 8; i++) if (b & (1 << i)) r |= 1 << (7 - i); return r; };
+    return (rev8((v >> 8) & 0xff) << 8) | rev8(v & 0xff);
+  }
+  /** 채널 선택 알고리즘 #2의 이벤트 채널. [Vol 6] Part B §4.5.8.3 */
+  function csa2Channel(counter, chId, map) {
+    let u = (counter ^ chId) & 0xffff;
+    for (let i = 0; i < 3; i++) { u = perm16(u); u = (17 * u + chId) & 0xffff; }
+    const prnE = (u ^ chId) & 0xffff, un = prnE % 37;
+    if (map[un]) return { ch: un, remap: false, prnE };
+    const used = []; for (let c = 0; c < 37; c++) if (map[c]) used.push(c);
+    return { ch: used[Math.floor((used.length * prnE) / 65536)], remap: true, prnE };
+  }
+
+  /* ================================================================ 1. 간섭 실험 */
+  (function () {
+    const EV = 60;
+    const mode = BT.seg("hp-mode", draw), wifi = BT.seg("hp-wifi", draw);
+    const duty = BT.range("hp-duty", (v) => v + "%", draw);
+    const fix = BT.range("hp-fix", (v) => v + " (" + dataChFreq(v) + " MHz)", draw);
+    let res = {};
+    const cv = BT.canvas($("cv-hop"), (ctx, w, h) => {
+      const P = BT.palette(), L = 38, Rr = w - 8, T = 8, B = h - 26, cw = (Rr - L) / EV, chh = (B - T) / 37;
+      const wch = { 0: [], 1: [6], 3: [1, 6, 11] }[wifi()], blocked = wifiBlocked(wch), d = duty() / 100, r = BT.rng(42);
+      const map = []; for (let c = 0; c < 37; c++) map[c] = mode() === "afh" ? !blocked.has(c) : true;
+      const used = map.reduce((a, b) => a + (b ? 1 : 0), 0) >= 2 ? map : Array(37).fill(true);
+      let lost = 0, burst = 0, prevLost = false;
+      for (let e = 0; e < EV; e++) {
+        const busy = []; blocked.forEach((c) => { if (r() < d) busy.push(c); });
+        busy.forEach((c) => { ctx.fillStyle = P.warn; ctx.globalAlpha = 0.28; ctx.fillRect(L + e * cw, T + (36 - c) * chh, cw, chh); ctx.globalAlpha = 1; });
+        let ch;
+        if (mode() === "fixed") ch = fix(); else ch = csa2Channel(e, 0x305f + 13, used).ch;
+        const hit = busy.includes(ch); if (hit) { lost++; if (prevLost) burst++; } prevLost = hit;
+        ctx.fillStyle = hit ? P.bad : P.accent; BT.rrect(ctx, L + e * cw + 0.5, T + (36 - ch) * chh + 0.5, Math.max(1, cw - 1), Math.max(1, chh - 1), 1.5); ctx.fill();
+      }
+      ctx.strokeStyle = P.axis; ctx.beginPath(); ctx.moveTo(L, T); ctx.lineTo(L, B); ctx.lineTo(Rr, B); ctx.stroke();
+      [0, 10, 20, 36].forEach((c) => BT.text(ctx, String(c), L - 4, T + (36 - c + 0.5) * chh, { size: 10, mono: true, color: P.dim, align: "right" }));
+      BT.text(ctx, "연결 이벤트 →", Rr, B + 14, { size: 11, color: P.dim, align: "right" });
+      BT.text(ctx, "채널", 2, T + 6, { size: 10, color: P.dim });
+      res = { lost, burst, used: used.filter(Boolean).length, blocked: blocked.size };
+    }, { aspect: 0.55, minHeight: 280, maxHeight: 420 });
+    function draw() {
+      cv.redraw();
+      const d = duty() / 100, nb = res.blocked;
+      let exp;
+      if (mode() === "fixed") exp = wifiBlocked({ 0: [], 1: [6], 3: [1, 6, 11] }[wifi()]).has(fix()) ? d : 0;
+      else if (mode() === "hop") exp = (nb / 37) * d;
+      else exp = nb > 35 ? (nb / 37) * d : 0;
+      BT.stat("hp-loss", `${res.lost} / ${EV} (${Math.round((res.lost / EV) * 100)}%)`);
+      BT.stat("hp-exp", (exp * 100).toFixed(1) + "%");
+      BT.stat("hp-n", mode() === "fixed" ? "1개" : res.used + "개");
+      BT.stat("hp-burst", res.burst + "번");
+    }
+    draw();
+  })();
+
+  /* ================================================================ 2. CSA 계산기 */
+  (function () {
+    let map = Array(37).fill(true), aa = 0x8e89bed6;
+    const grid = $("cs-map");
+    const hop = BT.range("cs-hop", (v) => String(v), draw);
+    const preset = BT.seg("cs-preset", (v) => {
+      if (v === "all") map = Array(37).fill(true);
+      else if (v === "wifi") { const b = wifiBlocked([1, 6, 11]); map = Array.from({ length: 37 }, (_, c) => !b.has(c)); }
+      else { map = Array(37).fill(false); [9, 10, 21, 22, 23, 33, 34, 35, 36].forEach((c) => (map[c] = true)); }
+      draw();
+    });
+    const aaSel = BT.seg("cs-aa", (v) => { aa = v === "random" ? ((Math.random() * 0xffffffff) >>> 0) : 0x8e89bed6; draw(); });
+    grid.addEventListener("click", (e) => {
+      const b = e.target.closest("button"); if (!b) return; const c = +b.dataset.c;
+      if (map[c] && map.filter(Boolean).length <= 2) return; // 최소 2개
+      map[c] = !map[c]; draw();
+    });
+    let hist1 = [], hist2 = [];
+    const cv = BT.canvas($("cv-csa"), (ctx, w, h) => {
+      const P = BT.palette(), L = 30, Rr = w - 8, T = 10, B = h - 22, bw = (Rr - L) / 37;
+      const mx = Math.max(1, ...hist1, ...hist2);
+      for (let c = 0; c < 37; c++) {
+        const h1 = ((B - T) * hist1[c]) / mx, h2 = ((B - T) * hist2[c]) / mx;
+        ctx.fillStyle = P.accent; ctx.globalAlpha = 0.8; ctx.fillRect(L + c * bw + 1, B - h1, bw / 2 - 1, h1);
+        ctx.fillStyle = P.accent2; ctx.fillRect(L + c * bw + bw / 2, B - h2, bw / 2 - 1, h2); ctx.globalAlpha = 1;
+        if (c % 6 === 0 || c === 36) BT.text(ctx, String(c), L + (c + 0.5) * bw, B + 10, { size: 10, mono: true, color: P.dim, align: "center" });
+      }
+      ctx.strokeStyle = P.axis; ctx.beginPath(); ctx.moveTo(L, B); ctx.lineTo(Rr, B); ctx.stroke();
+      BT.text(ctx, String(mx), L - 4, T + 4, { size: 10, mono: true, color: P.dim, align: "right" });
+    }, { aspect: 0.22, minHeight: 120, maxHeight: 170 });
+    function draw() {
+      grid.innerHTML = map.map((u, c) => `<button type="button" data-c="${c}" class="${u ? "" : "off"}" title="채널 ${c} · ${dataChFreq(c)} MHz">${c}</button>`).join("");
+      const chId = ((aa >>> 16) ^ (aa & 0xffff)) & 0xffff;
+      $("cs-hop-v").textContent = hop(); $("cs-aa-v").textContent = "0x" + BT.hex(aa, 8); $("cs-id-v").textContent = "0x" + BT.hex(chId, 4);
+      const s1 = csa1Sequence(hop(), map, 20);
+      $("cs-seq1").innerHTML = s1.map((x) => `<span class="${x.remap ? "rm" : ""}">${x.ch}</span>`).join("");
+      const s2 = Array.from({ length: 20 }, (_, i) => csa2Channel(i, chId, map));
+      $("cs-seq2").innerHTML = s2.map((x) => `<span class="${x.remap ? "rm" : ""}">${x.ch}</span>`).join("");
+      const N = 3700; hist1 = Array(37).fill(0); hist2 = Array(37).fill(0);
+      let r1 = 0, r2 = 0;
+      csa1Sequence(hop(), map, N).forEach((x) => { hist1[x.ch]++; if (x.remap) r1++; });
+      for (let i = 0; i < N; i++) { const x = csa2Channel(i, chId, map); hist2[x.ch]++; if (x.remap) r2++; }
+      BT.stat("cs-r1", ((r1 / N) * 100).toFixed(1) + "%"); BT.stat("cs-r2", ((r2 / N) * 100).toFixed(1) + "%");
+      // 사양 샘플 비교 (Table 3.1: 37채널, 카운터 0~3 → 25, 20, 6, 21 / Table 3.2: 9채널, 카운터 6~8 → 23, 9, 34)
+      let ok = "—";
+      if (aa === 0x8e89bed6) {
+        const all = map.every(Boolean), s2map = map.map((u, c) => u === [9, 10, 21, 22, 23, 33, 34, 35, 36].includes(c)).every(Boolean);
+        if (all) ok = [0, 1, 2, 3].map((c) => csa2Channel(c, chId, map).ch).join(",") === "25,20,6,21" ? "✓ Table 3.1 (25, 20, 6, 21)" : "✗";
+        else if (s2map) ok = [6, 7, 8].map((c) => csa2Channel(c, chId, map).ch).join(",") === "23,9,34" ? "✓ Table 3.2 (23, 9, 34)" : "✗";
+        else ok = "샘플 맵이 아님";
+      } else ok = "샘플 주소가 아님";
+      BT.stat("cs-ok", ok);
+      cv.redraw();
+    }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

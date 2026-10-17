@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>비트를 전파에 싣기: GFSK와 PHY · BluetoothBook</title>
+<meta name="description" content="블루투스가 0과 1을 전파에 싣는 방법. 가우시안 필터를 거친 주파수 편이 변조(GFSK)와 변조 지수, 잡음 속 비트 판정과 수신 감도, EDR의 위상 변조, LE 1M·2M·Coded PHY의 속도와 거리 교환을 Core 6.2 기준으로 다룬다.">
+<link rel="canonical" href="https://bluetoothbook.euiyun.com/chapters/phy.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="BluetoothBook">
+<meta property="og:title" content="비트를 전파에 싣기: GFSK와 PHY · BluetoothBook">
+<meta property="og:description" content="블루투스가 0과 1을 전파에 싣는 방법. 가우시안 필터를 거친 주파수 편이 변조(GFSK)와 변조 지수, 잡음 속 비트 판정과 수신 감도, EDR의 위상 변조, LE 1M·2M·Coded PHY의 속도와 거리 교환을 Core 6.2 기준으로 다룬다.">
+<meta property="og:url" content="https://bluetoothbook.euiyun.com/chapters/phy.html">
+<meta property="og:image" content="https://bluetoothbook.euiyun.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"비트를 전파에 싣기: GFSK와 PHY","name":"비트를 전파에 싣기: GFSK와 PHY · BluetoothBook","url":"https://bluetoothbook.euiyun.com/chapters/phy.html","mainEntityOfPage":"https://bluetoothbook.euiyun.com/chapters/phy.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":3,"image":"https://bluetoothbook.euiyun.com/og.png","dateModified":"2026-10-16","isPartOf":{"@type":"Book","@id":"https://bluetoothbook.euiyun.com/#book","name":"BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서","url":"https://bluetoothbook.euiyun.com/"},"publisher":{"@type":"Organization","name":"BluetoothBook","url":"https://bluetoothbook.euiyun.com/"},"description":"블루투스가 0과 1을 전파에 싣는 방법. 가우시안 필터를 거친 주파수 편이 변조(GFSK)와 변조 지수, 잡음 속 비트 판정과 수신 감도, EDR의 위상 변조, LE 1M·2M·Coded PHY의 속도와 거리 교환을 Core 6.2 기준으로 다룬다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook","item":"https://bluetoothbook.euiyun.com/"},{"@type":"ListItem","position":2,"name":"03 비트를 전파에 싣기: GFSK와 PHY","item":"https://bluetoothbook.euiyun.com/chapters/phy.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<!-- Cloudflare Web Analytics -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"3d6151a0abc94ede89285d462527fa80"}'></script>
+<!-- End Cloudflare Web Analytics -->
+<style>
+  .bits { display: flex; flex-wrap: wrap; gap: 4px; }
+  .bits .bit { min-width: 30px; }
+  .fec-out { font-family: var(--mono); font-size: 13px; line-height: 1.9; word-break: break-all; padding: 10px 12px; background: var(--surface); border-radius: 10px; }
+  .fec-out b { color: var(--accent); }
+  .fec-out i { font-style: normal; color: var(--accent-2); }
+</style>
+</head>
+<body data-chapter="phy">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 03</div>
+    <h1>비트를 전파에 싣기: GFSK와 PHY</h1>
+    <p class="lead">무선 이어폰 광고에는 “블루투스 5.3”이, 분실물 태그 광고에는 “최대 4배 먼 거리”가 적혀 있다. 그런데 2장에서 본 것처럼 송신 전력은 법과 배터리가 정하는 한계가 있다. 같은 전력으로 더 멀리 가려면 무엇을 바꿔야 할까? 답은 <b>비트를 전파에 싣는 방식</b>, 즉 물리 계층(PHY)에 있다. 이 장에서는 블루투스가 주파수를 아주 조금 올리고 내리는 것만으로 0과 1을 보내는 방법(GFSK)부터, 같은 방식을 느리고 꼼꼼하게 바꿔 거리를 늘리는 LE Coded PHY까지 따라간다.</p>
+    <ul class="objectives">
+      <li>주파수 편이 변조(FSK)에 가우시안 필터를 더한 GFSK가 왜 쓰이는지, BT와 변조 지수 h가 무엇을 뜻하는지 안다.</li>
+      <li>잡음 때문에 비트가 뒤집히는 과정과, 사양이 수신 감도를 “비트 오류율 0.1%가 되는 세기”로 정의하는 방식을 이해한다.</li>
+      <li>클래식의 EDR이 위상 변조(π/4-DQPSK, 8DPSK)로 같은 심볼 속도에 2~3배의 비트를 싣는 원리와 대가를 안다.</li>
+      <li>LE 1M, LE 2M, LE Coded(S=2, S=8) PHY의 속도·패킷 시간·감도를 비교하고, 컨볼루션 부호와 패턴 매퍼가 하는 일을 직접 돌려 본다.</li>
+      <li>속도·거리·전력·충돌 사이에서 PHY를 고르는 기준을 세운다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="fsk">
+    <h2>주파수를 살짝 흔들어 0과 1을 보내기</h2>
+    <p>전파는 일정한 주파수로 진동하는 파동, <span class="term">반송파</span><span class="en">(carrier)</span>다. 여기에 정보를 실으려면 무언가를 바꿔야 한다. 세기를 바꾸면 AM, 위상을 바꾸면 PSK, 주파수를 바꾸면 FSK다. 블루투스는 <b>주파수</b>를 바꾼다. 1을 보낼 때는 채널 중심보다 조금 높은 주파수, 0을 보낼 때는 조금 낮은 주파수를 낸다. 이것이 <span class="term">주파수 편이 변조</span><span class="en">(FSK, Frequency Shift Keying)</span>다.</p>
+    <p>FSK는 단순해서 좋다. 신호의 세기가 일정하므로 송신기의 전력 증폭기를 효율이 가장 좋은 포화 상태로 돌릴 수 있고, 수신기는 세기가 출렁여도 “지금 주파수가 높은가 낮은가”만 보면 된다. 작은 칩과 코인 전지에 딱 맞는 성질이다. 문제는 주파수를 0과 1 사이에서 <b>갑자기</b> 바꾸면 그 순간 넓은 주파수 범위로 에너지가 튀어 옆 채널을 방해한다는 것이다. 그래서 비트 열을 먼저 종 모양의 <span class="term">가우시안 필터</span><span class="en">(Gaussian filter)</span>로 부드럽게 다듬은 뒤 주파수를 바꾼다. 이것이 블루투스 클래식과 LE가 모두 쓰는 <span class="term">GFSK</span><span class="en">(Gaussian FSK)</span>다.</p>
+    <p>GFSK를 정하는 숫자는 두 개다.</p>
+    <ul>
+      <li><b>BT</b>(대역폭·비트 시간 곱): 가우시안 필터가 얼마나 부드러운지. BT가 작을수록 더 부드럽고(옆 채널에 덜 새고) 대신 앞뒤 비트가 서로 번져 섞인다(<span class="term">심볼 간 간섭</span><span class="en">(ISI)</span>). 블루투스는 클래식·LE 모두 <b>BT = 0.5</b>다.</li>
+      <li><b>변조 지수 h</b>: 주파수를 얼마나 크게 흔드는지. 최대 편이 Δf = h × 심볼 속도 ÷ 2다. 클래식은 h = 0.28~0.35(1 Msym/s에서 약 ±140~175 kHz), LE는 h = 0.45~0.55(1 Msym/s에서 약 ±250 kHz)다. h가 크면 0과 1의 차이가 커서 잡음에 강하지만 신호가 차지하는 폭이 넓어진다.</li>
+    </ul>
+    <p class="spec-ref">LE GFSK BT = 0.5, h = 0.45~0.55, 1은 양의 편이: <b>[Vol 6] Part A §3.1</b> · BR GFSK BT = 0.5, h = 0.28~0.35, 최소 편이 115 kHz: <b>[Vol 2] Part A §3.1.1</b></p>
+
+    <div class="sim" id="sim-gfsk">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>GFSK 만들기: 비트 → 부드러운 주파수 곡선</h3></div>
+      <div class="sim-view"><canvas id="cv-gfsk"></canvas></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>방식</span><div class="seg" id="gf-sys"><button data-value="br">클래식 BR (h≈0.32)</button><button data-value="le" class="on">LE 1M (h=0.5)</button><button data-value="le2">LE 2M (h=0.5)</button></div></div>
+        <div class="ctrl"><span>가우시안 필터 BT</span><div class="seg" id="gf-bt"><button data-value="0.3">0.3</button><button data-value="0.5" class="on">0.5 (사양)</button><button data-value="1">1.0</button><button data-value="99">필터 없음</button></div></div>
+        <label class="ctrl"><span>변조 지수 h <output id="gf-h-out"></output></span><input type="range" id="gf-h" min="0.2" max="0.8" step="0.01" value="0.5"></label>
+        <div class="ctrl"><span>&nbsp;</span><div class="btn-row"><button class="btn" id="gf-new">새 비트</button><button class="btn" id="gf-alt">1010… 패턴</button></div></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">최대 편이 Δf</span><span class="v" id="gf-df">—</span></div>
+        <div class="stat"><span class="k">1010에서 최소 편이</span><span class="v" id="gf-min">—</span></div>
+        <div class="stat"><span class="k">점유 대역폭(근사)</span><span class="v" id="gf-bw">—</span></div>
+      </div>
+      <div class="sim-note">위: 보낼 비트(NRZ, ±1). 아래: 가우시안 필터를 거친 뒤의 주파수 편이(kHz). 해볼 것: ① “필터 없음”이면 주파수가 계단처럼 꺾이고, 0.3이면 1010처럼 자주 바뀌는 곳에서 곡선이 최대 편이에 다 닿지 못한다(ISI). 사양이 0.5를 고른 이유가 이 둘 사이의 타협이다. ② “1010… 패턴”으로 바꾸고 BT를 바꿔 보자. 클래식 사양은 1010 패턴의 최소 편이가 00001111 패턴 편이의 80% 이상, 그리고 115 kHz 이상이길 요구한다. 점유 대역폭은 카슨 규칙 2(Δf + R/2)로 어림했다.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="noise">
+    <h2>잡음 속에서 0과 1 판정하기</h2>
+    <p>수신기는 들어온 신호의 주파수를 재서(주파수 판별기) 중심보다 높으면 1, 낮으면 0으로 판정한다. 신호가 강하면 쉽다. 하지만 2장의 링크 버짓에서 마진이 줄어들수록 신호는 잡음에 묻히고, 잡음이 판정선을 넘기는 순간 비트가 뒤집힌다. 신호 대 잡음비(SNR)가 몇 dB 떨어지면 <span class="term">비트 오류율</span><span class="en">(BER, Bit Error Rate)</span>은 몇 배가 아니라 몇 자릿수씩 뛴다.</p>
+    <p>블루투스 패킷에는 오류를 찾는 24비트 CRC가 붙어 있다(6장). 비트가 하나라도 틀리면 CRC 검사에 걸려 패킷 전체를 버리고 다시 보낸다. 그래서 중요한 것은 BER 자체보다 <b>패킷 오류율</b>이다. 패킷이 길수록 그 안에 틀린 비트가 하나라도 있을 확률이 커진다.</p>
+    <div class="formula">패킷 오류율 ≈ 1 − (1 − BER)<sup>비트 수</sup>
+      <div class="where">예: BER 0.1%, 47바이트 패킷(376비트)이면 1 − 0.999<sup>376</sup> ≈ 31%. 사양은 수신 감도를 “BER이 0.1%가 되는 세기”로 정의하되, 긴 패킷을 지원하는 기기는 같은 패킷 오류율이 되도록 더 엄격한 BER(최대 255바이트 지원 시 0.017%)을 적용한다.</div>
+    </div>
+    <p class="spec-ref">감도 측정 BER(Table 4.1: 페이로드 1~37바이트 0.1%, 38~63 0.064%, 64~127 0.034%, 128~255 0.017%): <b>[Vol 6] Part A §4.1</b></p>
+
+    <div class="sim" id="sim-ber">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>잡음 속 판정: SNR → 비트 오류 → 패킷 오류</h3></div>
+      <div class="sim-view"><canvas id="cv-ber"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>SNR (비트당) <output id="ber-snr-out"></output></span><input type="range" id="ber-snr" min="0" max="20" step="0.5" value="11"></label>
+        <label class="ctrl"><span>페이로드 길이 <output id="ber-len-out"></output></span><input type="range" id="ber-len" min="0" max="251" value="27"></label>
+        <div class="ctrl"><span>&nbsp;</span><div class="btn-row"><button class="btn" id="ber-run">다시 보내기</button></div></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">측정 BER (4,000비트)</span><span class="v" id="ber-m">—</span></div>
+        <div class="stat"><span class="k">이론 BER</span><span class="v" id="ber-t">—</span></div>
+        <div class="stat"><span class="k">패킷 오류율</span><span class="v" id="ber-per">—</span></div>
+      </div>
+      <div class="sim-note">왼쪽: 비트 중앙에서 잰 판별기 출력(점 하나가 비트 하나). 판정선(0)을 넘어간 점이 오류(빨강)다. 오른쪽: SNR에 따른 이론 BER 곡선(로그 눈금)과 현재 위치. 해볼 것: ① SNR을 11 dB에서 9 dB로 2 dB만 내려 보자. BER은 열 배 가까이 뛴다. 무선 링크가 “조금 나빠지다가 갑자기 끊기는” 이유다. ② 같은 SNR에서 페이로드를 27 → 251바이트로 늘리면 패킷 오류율이 크게 오른다. 모델: 비동기 FSK 판정의 이론식 BER = ½·exp(−SNR/2)를 쓰고, 측정값은 같은 BER이 나오도록 만든 가우시안 잡음 판정 실험이다. 실제 GFSK 수신기는 구현에 따라 이보다 수 dB 좋거나 나쁘다.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="edr">
+    <h2>클래식의 가속 장치: EDR과 위상 변조</h2>
+    <p>클래식 블루투스의 기본(Basic Rate)은 1 Msym/s의 GFSK로, 심볼 하나에 1비트, 공중 속도 1 Mb/s다. 2004년의 2.0+EDR은 심볼 속도는 그대로 두고 <b>심볼 하나에 더 많은 비트</b>를 싣는 방법으로 속도를 올렸다. 주파수 대신 반송파의 <b>위상</b>(파동이 어느 각도에 있는가)을 바꾸고, 그 변화량에 비트를 대응시킨다.</p>
+    <ul>
+      <li><b>π/4-DQPSK</b>: 위상을 ±45°, ±135° 중 하나만큼 돌린다. 네 가지이므로 심볼당 2비트, <b>2 Mb/s</b>.</li>
+      <li><b>8DPSK</b>: 위상 변화가 여덟 가지(45° 간격). 심볼당 3비트, <b>3 Mb/s</b>.</li>
+    </ul>
+    <p>“D”(Differential)는 절대 위상이 아니라 직전 심볼과의 <b>차이</b>에 비트를 싣는다는 뜻이다. 수신기가 송신기의 위상을 정확히 맞출 필요가 없어 회로가 단순해진다. 대가는 잡음 내성이다. 성좌도에서 점들의 간격이 좁아질수록 같은 잡음에도 옆 점으로 잘못 읽히기 쉽다. 그래서 EDR 패킷은 앞부분(접근 코드와 헤더)을 여전히 튼튼한 GFSK로 보내고, 약 5 µs의 보호 시간과 11 µs의 동기 신호 뒤에 페이로드만 DPSK로 보낸다. 링크가 나빠지면 기기는 3 Mb/s → 2 Mb/s → 1 Mb/s 패킷으로 스스로 낮춘다.</p>
+    <div class="sim" id="sim-edr">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>성좌도: 한 심볼에 몇 비트를 실을 수 있나</h3></div>
+      <div class="sim-body side">
+        <div class="sim-view"><canvas id="cv-edr"></canvas></div>
+        <div class="sim-controls">
+          <div class="ctrl"><span>변조</span><div class="seg" id="edr-m"><button data-value="2">2위상 (1비트)</button><button data-value="4" class="on">π/4-DQPSK (2비트)</button><button data-value="8">8DPSK (3비트)</button></div></div>
+          <label class="ctrl"><span>SNR <output id="edr-snr-out"></output></span><input type="range" id="edr-snr" min="0" max="25" step="0.5" value="14"></label>
+        </div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">공중 속도</span><span class="v" id="edr-rate">—</span></div>
+        <div class="stat"><span class="k">이웃 점 간격</span><span class="v" id="edr-gap">—</span></div>
+        <div class="stat"><span class="k">심볼 오류 (600개 중)</span><span class="v" id="edr-err">—</span></div>
+      </div>
+      <div class="sim-note">원 위의 큰 점이 이상적인 위상 위치(위상 변화의 종류), 작은 점이 잡음을 겪은 수신 심볼이다. 가장 가까운 큰 점과 다른 영역에 떨어지면 오류(빨강). 해볼 것: SNR 14 dB에서 변조를 바꿔 보자. 2비트까지는 거의 오류가 없지만 8DPSK는 눈에 띄게 틀린다. 8DPSK로 같은 오류율을 내려면 약 5 dB 더 강한 신호가 필요하다. 단순화: 차동 검출의 추가 손실은 빼고 위상 판정만 그렸다.</div>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>가장 긴 ACL 패킷</th><th>변조</th><th>페이로드 최대</th><th>최대 속도(한쪽 방향)</th><th>대칭 속도</th></tr></thead>
+      <tbody>
+        <tr><td>DH5</td><td>GFSK</td><td class="num">339바이트</td><td class="num">723.2 kb/s</td><td class="num">433.9 kb/s</td></tr>
+        <tr><td>2-DH5</td><td>π/4-DQPSK</td><td class="num">679바이트</td><td class="num">1,448.5 kb/s</td><td class="num">869.1 kb/s</td></tr>
+        <tr><td>3-DH5</td><td>8DPSK</td><td class="num">1,021바이트</td><td class="num">2,178.1 kb/s</td><td class="num">1,306.9 kb/s</td></tr>
+      </tbody>
+    </table></div>
+    <p class="spec-ref">EDR 변조와 심볼 속도 1 Msym/s: <b>[Vol 2] Part A §1·§3.2</b> · EDR 패킷 구성: <b>[Vol 2] Part B §6.1.2</b> · 보호 시간 4.75~5.25 µs, 동기 신호 11 µs: <b>[Vol 2] Part B §6.6.1</b> · ACL 패킷 표(Table 6.8): <b>[Vol 2] Part B §6.7</b></p>
+    <p>공중 속도 3 Mb/s가 실제로는 2.18 Mb/s가 되는 이유는 5슬롯 패킷 뒤에 상대가 1슬롯 응답을 보내야 하고, 패킷마다 접근 코드·헤더·보호 시간이 붙기 때문이다. 6장의 LE에서도 같은 계산을 한다. 무선 이어폰의 음악(수백 kb/s)은 이 범위에 넉넉히 들어간다(10장).</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="lephy">
+    <h2>LE의 PHY 넷: 1M, 2M, Coded S=2, Coded S=8</h2>
+    <p>LE는 4.0에서 <b>LE 1M</b> 하나로 시작했다. 1 Msym/s GFSK, 1 Mb/s. 모든 LE 기기가 반드시 지원해야 하는 기본이다. 5.0에서 두 가지 선택 PHY가 더해졌다.</p>
+    <ul>
+      <li><b>LE 2M</b>: 심볼 속도를 2 Msym/s로 두 배. 같은 데이터를 절반의 시간에 보낸다. 무선부가 켜져 있는 시간이 줄어 전력이 줄고, 다른 신호와 부딪힐 확률도 준다. 대신 신호가 차지하는 폭이 넓어지고 비트 하나에 쓰는 에너지가 절반이라 감도가 몇 dB 나빠진다.</li>
+      <li><b>LE Coded</b>: 심볼 속도는 1 Msym/s 그대로 두고, 비트 하나를 여러 심볼에 <b>나눠 싣는다</b>. 먼저 <span class="term">컨볼루션 부호</span><span class="en">(convolutional code)</span>로 비트를 두 배로 늘리고(부호율 ½), 이어서 패턴 매퍼가 S=8이면 각 부호 비트를 4개의 심볼로 펼친다. 결과적으로 비트 하나에 심볼 2개(S=2, <b>500 kb/s</b>) 또는 8개(S=8, <b>125 kb/s</b>)를 쓴다. 수신기는 일부 심볼이 틀려도 부호의 규칙을 이용해 원래 비트를 되살린다.</li>
+    </ul>
+    <p>사양이 요구하는 감도도 PHY마다 다르다. LE 1M·2M은 −70 dBm 이하, Coded S=2는 −75 dBm 이하, S=8은 −82 dBm 이하다. 실제 칩에서 S=8은 1M보다 대략 8~12 dB 좋은 감도를 낸다. 트인 곳(거리 2배당 6 dB)이라면 12 dB는 <b>거리 4배</b>다. “블루투스 5는 4배 멀리”라는 문구의 근거다. 실내에서는 경로 손실 지수가 커서 2~3배 정도로 줄어든다.</p>
+    <p class="spec-ref">PHY 정의(LE 1M 필수, LE Coded 선택, LE 2M·LE 2M 2BT): <b>[Vol 6] Part A §1</b> · 감도 Table 4.2: <b>[Vol 6] Part A §4.1</b> · FEC 부호기(부호율 ½, K=4, G0 = 1+x+x²+x³, G1 = 1+x²+x³)와 패턴 매퍼(S=8: 0 → 0011, 1 → 1100): <b>[Vol 6] Part B §3.3</b></p>
+
+    <div class="sim" id="sim-fec">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>LE Coded 부호기 들여다보기: 비트 하나가 심볼 8개가 되기까지</h3></div>
+      <div class="sim-view" style="padding:14px">
+        <div class="bits" id="fec-bits" aria-label="입력 비트"></div>
+        <div style="height:12px"></div>
+        <div class="fec-out" id="fec-out"></div>
+      </div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>부호화 방식</span><div class="seg" id="fec-s"><button data-value="2">S=2 (500 kb/s)</button><button data-value="8" class="on">S=8 (125 kb/s)</button></div></div>
+        <label class="check"><input type="checkbox" id="fec-term" checked> 끝에 종료 비트 000 붙이기 (TERM)</label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">입력 비트</span><span class="v" id="fec-n">—</span></div>
+        <div class="stat"><span class="k">부호 비트 (×2)</span><span class="v" id="fec-c">—</span></div>
+        <div class="stat"><span class="k">공중 심볼</span><span class="v" id="fec-sym">—</span></div>
+        <div class="stat"><span class="k">걸리는 시간</span><span class="v" id="fec-t">—</span></div>
+      </div>
+      <div class="sim-note">위의 비트를 눌러 0/1을 바꿔 보자. 아래 첫 줄은 컨볼루션 부호기의 출력(입력 비트마다 a0 a1 두 비트, <b>파랑</b> = G0, <i>청록</i> = G1), 둘째 줄은 패턴 매퍼를 거친 공중 심볼이다. 해볼 것: ① 입력 비트 하나만 바꿔도 부호 비트가 최대 4쌍(구속장 K=4)에 걸쳐 바뀐다. 이 “퍼짐” 덕분에 공중에서 심볼 몇 개가 깨져도 전후 관계로 복원할 수 있다. ② S=8에서 1은 1100, 0은 0011이 된다. 공중 심볼은 1 µs마다 하나이므로 입력 비트 하나가 8 µs를 차지한다. 이 계산은 사양 §3.3의 부호기를 그대로 구현한 것이다.</div>
+    </div>
+
+    <div class="sim" id="sim-phy">
+      <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>PHY 비교: 같은 데이터, 다른 시간과 거리</h3></div>
+      <div class="sim-view"><canvas id="cv-phy"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>페이로드 <output id="phy-l-out"></output></span><input type="range" id="phy-l" min="0" max="251" value="20"></label>
+        <div class="ctrl"><span>경로 손실 지수 (2장)</span><div class="seg" id="phy-n"><button data-value="2" class="on">트인 곳 n=2</button><button data-value="2.7">집 n=2.7</button><button data-value="3.3">사무실 n=3.3</button></div></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">LE 1M 패킷 시간</span><span class="v" id="phy-t1">—</span></div>
+        <div class="stat"><span class="k">LE 2M</span><span class="v" id="phy-t2">—</span></div>
+        <div class="stat"><span class="k">Coded S=2</span><span class="v" id="phy-t3">—</span></div>
+        <div class="stat"><span class="k">Coded S=8</span><span class="v" id="phy-t4">—</span></div>
+      </div>
+      <div class="sim-note">왼쪽 막대: 패킷 하나를 보내는 데 걸리는 시간(무선부가 켜져 있는 시간, 즉 전력에 비례). 오른쪽 막대: LE 1M 대비 도달 거리 배수. 해볼 것: ① 페이로드 251바이트에서 S=8은 1M보다 약 8배 오래 걸린다. 같은 정보를 보내는 데 전력도 대략 8배, 다른 신호와 부딪힐 기회도 8배다. ② 경로 손실 지수를 바꾸면 Coded의 거리 이득이 줄어든다. 패킷 시간은 사양 §2.1·§2.2의 필드 길이로 계산했다(LE 1M: 프리앰블 1 + 접근 주소 4 + 헤더 2 + 페이로드 + CRC 3바이트, 1 µs/비트. LE 2M: 프리앰블 2바이트, 0.5 µs/비트. Coded: 프리앰블 80 µs + FEC 블록1 296 µs + (헤더·페이로드·CRC 비트 + TERM2 3비트) × S µs). 거리 배수는 칩 감도 대표값(1M −97, 2M −94, S=2 −100, S=8 −104 dBm)의 차이를 10·n·log₁₀으로 환산했다.</div>
+    </div>
+
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">이어폰과 휴대폰이 30 cm 거리에서 LE로 많은 데이터를 주고받는다. 배터리를 가장 아끼려면 어떤 PHY가 좋을까?</p><p class="wi-hint">PHY 비교 계산기에서 페이로드 251바이트의 패킷 시간을 보자. 가까운 거리에서는 감도 차이가 문제 되지 않는다.</p><div class="opts">
+      <button class="opt">Coded S=8 — 가장 튼튼하니 재전송이 없다</button>
+      <button class="opt" data-correct>LE 2M — 같은 데이터를 가장 짧은 시간에 보내 무선부를 일찍 끌 수 있다</button>
+      <button class="opt">어느 것이나 같다 — 송신 전력이 같으니까</button>
+    </div><div class="quiz-exp">무선부가 쓰는 전류는 PHY와 거의 무관하게 비슷하므로 에너지는 “켜져 있는 시간”에 비례한다. 마진이 넉넉한 가까운 거리에서는 2M이 가장 경제적이다. Coded는 멀리 가야 할 때만 쓴다. 연결 중에도 PHY 업데이트 절차로 상황에 맞게 바꿀 수 있다(6장).</div></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="choose">
+    <h2>PHY 고르기: 속도·거리·전력·충돌</h2>
+    <p>PHY 선택은 결국 2장의 링크 버짓과 9장의 전력 예산 사이의 교환이다. 같은 마진을 확보하는 방법이 “전력을 올리기”, “더 민감한(느린) PHY 쓰기”, “가까이 두기” 셋뿐이기 때문이다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>PHY</th><th>데이터 속도</th><th>사양 최소 감도</th><th>좋은 곳</th><th>대가</th></tr></thead>
+      <tbody>
+        <tr><td>LE 1M</td><td class="num">1 Mb/s</td><td class="num">≤ −70 dBm</td><td>광고·호환성(모든 기기가 지원)</td><td>—</td></tr>
+        <tr><td>LE 2M</td><td class="num">2 Mb/s</td><td class="num">≤ −70 dBm</td><td>펌웨어 업데이트, 오디오, 가까운 대용량</td><td>감도 몇 dB 손해, 선택 기능</td></tr>
+        <tr><td>LE Coded S=2</td><td class="num">500 kb/s</td><td class="num">≤ −75 dBm</td><td>집 전체를 덮는 센서</td><td>패킷 시간 약 2배</td></tr>
+        <tr><td>LE Coded S=8</td><td class="num">125 kb/s</td><td class="num">≤ −82 dBm</td><td>마당·주차장·창고, 장거리 비콘</td><td>패킷 시간 약 8배, 전력·충돌 증가</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout analogy"><strong>카페에서 또박또박 말하기</strong><p>시끄러운 카페에서 멀리 앉은 친구에게 말을 전하는 방법은 세 가지다. 더 크게 외치거나(송신 전력), 더 가까이 가거나(거리), <b>한 글자씩 천천히 여러 번 반복해서</b> 말하는 것이다(Coded PHY). 마지막 방법은 목소리를 키우지 않아도 되지만 한 문장에 시간이 오래 걸리고, 그동안 다른 손님의 말과 겹칠 가능성도 커진다. 바로 옆자리 친구에게는 빠르게 말하는 편이 낫다(2M).</p></div>
+    <p>한 가지 더. LE 2M과 Coded는 <b>선택 기능</b>이고 상대도 지원해야 쓸 수 있다. 그래서 처음 만날 때는 모든 기기가 아는 LE 1M을 쓰고(광고 채널의 레거시 광고는 1M만 쓴다), 연결된 뒤 서로의 기능을 확인하고 바꾸는 것이 일반적이다. 처음부터 장거리로 찾게 하려면 5.0의 <b>확장 광고</b>로 광고 채널에서도 Coded PHY를 쓴다(5장).</p>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>블루투스는 주파수를 살짝 올리고 내려 1과 0을 보내는 <b>GFSK</b>를 쓴다. 신호 세기가 일정해 증폭기 효율이 좋고 수신기가 단순하다. 가우시안 필터(<b>BT = 0.5</b>)가 급한 변화를 다듬어 옆 채널 간섭을 줄인다.</li>
+      <li>변조 지수는 클래식 h = 0.28~0.35, LE h = 0.45~0.55. 최대 편이 Δf = h × 심볼 속도 ÷ 2(LE 1M에서 약 ±250 kHz).</li>
+      <li>SNR이 몇 dB만 떨어져도 BER은 자릿수로 뛴다. 패킷 오류율은 길이에 따라 커지며, 사양은 감도를 BER 0.1%(긴 패킷은 더 엄격)로 정의한다.</li>
+      <li>클래식 EDR은 1 Msym/s에 위상 변조로 <b>2 Mb/s(π/4-DQPSK)</b>, <b>3 Mb/s(8DPSK)</b>를 싣는다. 점 간격이 좁아 더 강한 신호가 필요하다. 3-DH5의 최대 처리량은 2,178.1 kb/s다.</li>
+      <li>LE PHY는 넷: <b>1M</b>(필수), <b>2M</b>(시간 절반), <b>Coded S=2</b>(500 kb/s), <b>S=8</b>(125 kb/s). Coded는 부호율 ½·K=4 컨볼루션 부호와 패턴 매퍼로 비트를 퍼뜨려 감도를 높인다(사양 최소 −75/−82 dBm).</li>
+      <li>가까우면 2M이 가장 경제적이고, 멀면 Coded가 닿는다. 느린 PHY는 전력과 충돌 기회를 늘린다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>블루투스가 진폭 변조 대신 FSK 계열을 쓰는 이유로 가장 적절한 것은?</p><div class="opts">
+        <button class="opt">FSK가 같은 대역폭에 가장 많은 비트를 싣기 때문</button>
+        <button class="opt" data-correct>신호 세기가 일정해 전력 증폭기를 효율 좋게 쓰고, 수신기가 세기 변화에 덜 민감하기 때문</button>
+        <button class="opt">FSK는 잡음의 영향을 전혀 받지 않기 때문</button>
+        <button class="opt">2.4 GHz에서는 FSK만 허용되기 때문</button>
+      </div><div class="quiz-exp">일정한 포락선 덕분에 저렴하고 효율적인 송신기와 단순한 수신기를 만들 수 있다. 작은 배터리 기기에 맞는 선택이다.</div></div>
+      <div class="quiz-q"><p>LE 1M에서 변조 지수 h = 0.5일 때 최대 주파수 편이는?</p><div class="opts">
+        <button class="opt">±50 kHz</button><button class="opt" data-correct>±250 kHz</button><button class="opt">±500 kHz</button><button class="opt">±1 MHz</button>
+      </div><div class="quiz-exp">Δf = h × 심볼 속도 ÷ 2 = 0.5 × 1 MHz ÷ 2 = 250 kHz. LE 2M에서는 같은 h로 ±500 kHz다.</div></div>
+      <div class="quiz-q"><p>가우시안 필터의 BT를 0.5에서 0.3으로 낮추면?</p><div class="opts">
+        <button class="opt">옆 채널로 새는 에너지가 늘고 ISI는 준다</button>
+        <button class="opt" data-correct>스펙트럼은 더 좁아지지만 앞뒤 비트가 더 번져 ISI가 커진다</button>
+        <button class="opt">데이터 속도가 두 배가 된다</button>
+        <button class="opt">아무 변화 없다</button>
+      </div><div class="quiz-exp">필터가 부드러울수록 주파수 변화가 완만해져 스펙트럼이 좁아지지만, 1010처럼 빠르게 바뀌는 비트에서 편이가 끝까지 닿지 못한다.</div></div>
+      <div class="quiz-q"><p>LE Coded S=8이 125 kb/s인 이유는?</p><div class="opts">
+        <button class="opt">심볼 속도를 125 ksym/s로 낮춰서</button>
+        <button class="opt" data-correct>1 Msym/s는 그대로이고, 부호율 ½ 부호(×2)와 패턴 매퍼(×4)로 비트 하나에 심볼 8개를 써서</button>
+        <button class="opt">패킷마다 8번 재전송해서</button>
+        <button class="opt">8개 채널을 동시에 써서</button>
+      </div><div class="quiz-exp">1 Msym/s ÷ 8 = 125 kb/s. S=2는 부호화만 하고 패턴 매핑은 1:1이라 500 kb/s다.</div></div>
+      <div class="quiz-q"><p>EDR 3 Mb/s 패킷을 쓰던 링크가 거리가 멀어지자 2 Mb/s 패킷으로 바뀌었다. 이유는?</p><div class="opts">
+        <button class="opt">2 Mb/s가 더 넓은 대역폭을 써서</button>
+        <button class="opt" data-correct>8DPSK는 성좌점 간격이 좁아 같은 SNR에서 오류가 더 많기 때문</button>
+        <button class="opt">3 Mb/s는 암호화를 지원하지 않아서</button>
+        <button class="opt">클래식은 거리가 멀면 LE로 바뀌어서</button>
+      </div><div class="quiz-exp">심볼당 비트를 늘리면 점 사이 간격이 줄어 잡음 여유가 줄어든다. 링크가 나빠지면 더 튼튼한 변조로 내려간다.</div></div>
+      <div class="quiz-q"><p>Core 6.2 사양이 LE Coded S=8 수신기에 요구하는 최소 감도는?</p><div class="opts">
+        <button class="opt">≤ −70 dBm</button><button class="opt">≤ −75 dBm</button><button class="opt" data-correct>≤ −82 dBm</button><button class="opt">≤ −104 dBm</button>
+      </div><div class="quiz-exp">[Vol 6] Part A Table 4.2: 비부호화 −70, S=2 −75, S=8 −82 dBm. −104 dBm 같은 값은 좋은 상용 칩의 실제 성능이다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+
+  /** 가우시안 필터를 거친 NRZ 비트열의 주파수 편이(−1~+1 정규화). sps = 비트당 표본 수 */
+  function gfskTrace(bits, BT, sps) {
+    const nrz = []; bits.forEach((b) => { for (let i = 0; i < sps; i++) nrz.push(b ? 1 : -1); });
+    if (BT > 10) return nrz;
+    const sigma = Math.sqrt(Math.log(2)) / (2 * Math.PI * BT); // 비트 시간 단위
+    const half = Math.ceil(3 * sigma * sps), g = [];
+    let sum = 0; for (let k = -half; k <= half; k++) { const t = k / sps; const v = Math.exp(-(t * t) / (2 * sigma * sigma)); g.push(v); sum += v; }
+    return nrz.map((_, i) => { let acc = 0; for (let k = -half; k <= half; k++) { const j = Math.min(nrz.length - 1, Math.max(0, i + k)); acc += nrz[j] * g[k + half]; } return acc / sum; });
+  }
+  /** 비동기 이진 FSK의 BER 근사 */
+  function berNoncoherentFsk(snrDb) { return 0.5 * Math.exp(-Math.pow(10, snrDb / 10) / 2); }
+  /** 패킷 오류율: 비트 수 n */
+  function packetErrorRate(ber, nBits) { return 1 - Math.pow(1 - ber, nBits); }
+  /** LE Coded FEC 부호기: 부호율 1/2, K=4, G0=1+x+x^2+x^3, G1=1+x^2+x^3. Core 6.2 [Vol 6] Part B §3.3.1 */
+  function fecEncode(bits) {
+    let s1 = 0, s2 = 0, s3 = 0; const out = [];
+    bits.forEach((b) => {
+      const a0 = b ^ s1 ^ s2 ^ s3, a1 = b ^ s2 ^ s3;
+      out.push(a0, a1); s3 = s2; s2 = s1; s1 = b;
+    });
+    return out;
+  }
+  /** 패턴 매퍼: S=8이면 0→0011, 1→1100. S=2이면 그대로. [Vol 6] Part B §3.3.2 */
+  function patternMap(coded, S) {
+    if (S === 2) return coded.slice();
+    const out = []; coded.forEach((c) => out.push(...(c ? [1, 1, 0, 0] : [0, 0, 1, 1]))); return out;
+  }
+  /** 패킷 하나의 공중 시간(µs). pduBytes = 헤더 2 + 페이로드 (+MIC). [Vol 6] Part B §2.1·§2.2 */
+  function airtimeUs(phy, pduBytes) {
+    if (phy === "1m") return (1 + 4 + pduBytes + 3) * 8;
+    if (phy === "2m") return (2 + 4 + pduBytes + 3) * 4;
+    const S = phy === "s8" ? 8 : 2;
+    return 80 + 256 + 16 + 24 + (pduBytes * 8 + 24 + 3) * S;
+  }
+
+  /* ================================================================ 1. GFSK */
+  (function () {
+    const R = BT.rng(3);
+    let bits = Array.from({ length: 16 }, () => (R() < 0.5 ? 1 : 0));
+    const sys = BT.seg("gf-sys", (v) => { h.set(v === "br" ? 0.32 : 0.5); });
+    const btv = BT.seg("gf-bt", draw);
+    const h = BT.range("gf-h", (v) => v.toFixed(2), draw);
+    $("gf-new").addEventListener("click", () => { bits = Array.from({ length: 16 }, () => (R() < 0.5 ? 1 : 0)); draw(); });
+    $("gf-alt").addEventListener("click", () => { bits = [0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1]; draw(); });
+    const rate = () => (sys() === "le2" ? 2e6 : 1e6);
+    const SPS = 24;
+    const cv = BT.canvas($("cv-gfsk"), (ctx, w, h0) => {
+      const P = BT.palette(), L = 52, Rr = w - 12, n = bits.length, bw = (Rr - L) / n;
+      const yb = 28, ya = h0 * 0.62, amp = h0 * 0.26;
+      bits.forEach((b, i) => {
+        ctx.strokeStyle = P.dim; ctx.lineWidth = 1.5; ctx.beginPath();
+        const y = b ? yb - 10 : yb + 10; ctx.moveTo(L + i * bw, y); ctx.lineTo(L + (i + 1) * bw, y);
+        if (i < n - 1 && bits[i + 1] !== b) ctx.lineTo(L + (i + 1) * bw, bits[i + 1] ? yb - 10 : yb + 10);
+        ctx.stroke();
+        BT.text(ctx, String(b), L + (i + 0.5) * bw, yb + 26, { size: 11, mono: true, color: P.faint, align: "center" });
+      });
+      BT.text(ctx, "비트", 6, yb, { size: 11, color: P.dim });
+      const tr = gfskTrace(bits, +btv(), SPS), df = (h() * rate()) / 2 / 1e3;
+      ctx.strokeStyle = P.grid; ctx.lineWidth = 1;
+      [-1, 0, 1].forEach((k) => { ctx.beginPath(); ctx.moveTo(L, ya - k * amp); ctx.lineTo(Rr, ya - k * amp); ctx.stroke(); });
+      BT.text(ctx, "+" + Math.round(df) + " kHz", L - 4, ya - amp, { size: 10.5, mono: true, color: P.dim, align: "right" });
+      BT.text(ctx, "0", L - 4, ya, { size: 10.5, mono: true, color: P.dim, align: "right" });
+      BT.text(ctx, "−" + Math.round(df), L - 4, ya + amp, { size: 10.5, mono: true, color: P.dim, align: "right" });
+      ctx.strokeStyle = P.accent; ctx.lineWidth = 2.4; ctx.beginPath();
+      tr.forEach((v, i) => { const x = L + (i / tr.length) * (Rr - L), y = ya - v * amp; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke();
+      for (let i = 1; i < n; i++) { ctx.strokeStyle = P.grid; ctx.setLineDash([2, 4]); ctx.beginPath(); ctx.moveTo(L + i * bw, yb - 16); ctx.lineTo(L + i * bw, ya + amp + 6); ctx.stroke(); ctx.setLineDash([]); }
+      BT.text(ctx, "주파수 편이", 6, ya - amp - 14, { size: 11, color: P.dim });
+    }, { aspect: 0.42, minHeight: 240, maxHeight: 330 });
+    function draw() {
+      const df = (h() * rate()) / 2;
+      const alt = gfskTrace([0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], +btv(), SPS);
+      let mn = 1; for (let i = 9; i < 16; i++) mn = Math.min(mn, Math.abs(alt[Math.round((i + 0.5) * SPS)]));
+      BT.stat("gf-df", "±" + Math.round(df / 1e3) + " kHz");
+      BT.stat("gf-min", `${Math.round((mn * df) / 1e3)} kHz <small style="color:var(--text-faint)">(${Math.round(mn * 100)}%)</small>`);
+      BT.stat("gf-bw", "≈ " + BT.si(2 * (df + rate() / 2), "Hz"));
+      cv.redraw();
+    }
+    draw();
+  })();
+
+  /* ================================================================ 2. BER */
+  (function () {
+    const snr = BT.range("ber-snr", (v) => v.toFixed(1) + " dB", run);
+    const len = BT.range("ber-len", (v) => v + "바이트", show);
+    $("ber-run").addEventListener("click", () => { seed++; run(); });
+    let seed = 1, pts = [], meas = 0;
+    // 측정: 같은 BER이 나오도록 판별기 출력의 잡음 σ를 정한다 (Q(1/σ) = BER)
+    const Qinv = (p) => { let lo = 0, hi = 40; for (let i = 0; i < 80; i++) { const m = (lo + hi) / 2; (0.5 * erfc(m / Math.SQRT2) > p ? (lo = m) : (hi = m)); } return (lo + hi) / 2; };
+    function erfc(x) { const t = 1 / (1 + 0.5 * Math.abs(x)); const y = t * Math.exp(-x * x - 1.26551223 + t * (1.00002368 + t * (0.37409196 + t * (0.09678418 + t * (-0.18628806 + t * (0.27886807 + t * (-1.13520398 + t * (1.48851587 + t * (-0.82215223 + t * 0.17087277))))))))); return x >= 0 ? y : 2 - y; }
+    function run() {
+      const ber = berNoncoherentFsk(snr()), sg = 1 / Math.max(Qinv(ber), 1e-6), r = BT.rng(seed * 7919);
+      const randn = () => { let u = 0, v = 0; while (!u) u = r(); while (!v) v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+      pts = []; meas = 0;
+      for (let i = 0; i < 4000; i++) { const b = r() < 0.5 ? 1 : -1, y = b + sg * randn(); const e = Math.sign(y) !== b; if (e) meas++; if (i < 500) pts.push([b, y, e]); }
+      show();
+    }
+    const cv = BT.canvas($("cv-ber"), (ctx, w, h) => {
+      const P = BT.palette(), split = Math.min(w * 0.42, 300), cy = h / 2 - 8;
+      // 왼쪽: 판별기 출력
+      const X = (y) => 20 + ((y + 3) / 6) * (split - 30);
+      ctx.strokeStyle = P.axis; ctx.beginPath(); ctx.moveTo(X(0), 14); ctx.lineTo(X(0), h - 30); ctx.stroke();
+      BT.text(ctx, "판정선", X(0), h - 18, { size: 11, color: P.dim, align: "center" });
+      BT.text(ctx, "0 으로", X(-2), 12, { size: 11, color: P.dim, align: "center" }); BT.text(ctx, "1 로", X(2), 12, { size: 11, color: P.dim, align: "center" });
+      pts.forEach(([b, y, e], i) => { const yy = 28 + ((i * 37) % 97) / 97 * (h - 70); ctx.fillStyle = e ? P.bad : b > 0 ? P.accent : P.accent2; ctx.globalAlpha = e ? 1 : 0.5; ctx.beginPath(); ctx.arc(X(Math.max(-3, Math.min(3, y))), yy, e ? 3.2 : 2, 0, 7); ctx.fill(); });
+      ctx.globalAlpha = 1;
+      // 오른쪽: BER 곡선
+      const data = []; for (let s = 0; s <= 20; s += 0.25) data.push([s, berNoncoherentFsk(s)]);
+      const box = { x: split + 54, y: 14, w: w - split - 54 - 14, h: h - 14 - 46 };
+      const ch = BT.chart(ctx, box, { x: [0, 20], y: [1e-8, 1], logY: true, xLabel: "SNR (dB)", series: [{ data, color: P.accent, width: 2 }], hlines: [{ y: 1e-3, color: P.warn, label: "BER 0.1%" }], yFmt: (v) => "1e" + Math.round(Math.log10(v)) });
+      const b = berNoncoherentFsk(snr()); ctx.fillStyle = P.text; ctx.beginPath(); ctx.arc(ch.X(snr()), ch.Y(Math.max(b, 1e-8)), 5, 0, 7); ctx.fill();
+    }, { aspect: 0.45, minHeight: 250, maxHeight: 340 });
+    function show() {
+      const ber = berNoncoherentFsk(snr()), nb = (1 + 4 + 2 + len() + 3) * 8;
+      BT.stat("ber-m", meas + "개 (" + ((meas / 4000) * 100).toFixed(2) + "%)");
+      BT.stat("ber-t", ber < 1e-6 ? ber.toExponential(1) : (ber * 100).toPrecision(2) + "%");
+      const per = packetErrorRate(ber, nb);
+      BT.stat("ber-per", `<span style="color:var(${per > 0.3 ? "--bad" : per > 0.05 ? "--warn" : "--ok"})">${(per * 100).toPrecision(per < 0.01 ? 2 : 3)}%</span> <small style="color:var(--text-faint)">(${nb}비트)</small>`);
+      cv.redraw();
+    }
+    run();
+  })();
+
+  /* ================================================================ 3. 성좌도 */
+  (function () {
+    const m = BT.seg("edr-m", draw);
+    const snr = BT.range("edr-snr", (v) => v.toFixed(1) + " dB", draw);
+    let res = { err: 0 };
+    const cv = BT.canvas($("cv-edr"), (ctx, w, h) => {
+      const P = BT.palette(), M = +m(), cx = w / 2, cy = h / 2, R = Math.min(w, h) * 0.36;
+      ctx.strokeStyle = P.grid; ctx.beginPath(); ctx.arc(cx, cy, R, 0, 7); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx - R * 1.25, cy); ctx.lineTo(cx + R * 1.25, cy); ctx.moveTo(cx, cy - R * 1.25); ctx.lineTo(cx, cy + R * 1.25); ctx.stroke();
+      const off = M === 4 ? Math.PI / 4 : M === 2 ? 0 : 0;
+      const sg = 1 / Math.sqrt(2 * Math.pow(10, snr() / 10)), r = BT.rng(11);
+      const randn = () => { let u = 0, v = 0; while (!u) u = r(); while (!v) v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+      let err = 0;
+      for (let i = 0; i < 600; i++) {
+        const k = Math.floor(r() * M), a = off + (2 * Math.PI * k) / M;
+        const x = Math.cos(a) + sg * randn(), y = Math.sin(a) + sg * randn();
+        let ang = Math.atan2(y, x) - off; ang = ((ang % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+        const kk = Math.round(ang / ((2 * Math.PI) / M)) % M, e = kk !== k; if (e) err++;
+        ctx.fillStyle = e ? P.bad : P.accent; ctx.globalAlpha = e ? 0.95 : 0.35;
+        ctx.beginPath(); ctx.arc(cx + x * R, cy - y * R, e ? 2.6 : 1.8, 0, 7); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      for (let k = 0; k < M; k++) { const a = off + (2 * Math.PI * k) / M; ctx.fillStyle = P.text; ctx.beginPath(); ctx.arc(cx + Math.cos(a) * R, cy - Math.sin(a) * R, 5.5, 0, 7); ctx.fill(); }
+      res.err = err;
+    }, { aspect: 0.8, minHeight: 260, maxHeight: 360 });
+    function draw() {
+      cv.redraw();
+      const M = +m();
+      BT.stat("edr-rate", Math.log2(M) + " Mb/s");
+      BT.stat("edr-gap", (2 * Math.sin(Math.PI / M)).toFixed(2) + " × 반지름");
+      BT.stat("edr-err", `<span style="color:var(${res.err > 6 ? "--bad" : "--text"})">${res.err}개 (${((res.err / 600) * 100).toFixed(1)}%)</span>`);
+    }
+    draw();
+  })();
+
+  /* ================================================================ 4. FEC */
+  (function () {
+    let bits = [1, 0, 1, 1, 0, 0, 1, 0];
+    const box = $("fec-bits");
+    const S = BT.seg("fec-s", draw);
+    $("fec-term").addEventListener("change", draw);
+    function render() { box.innerHTML = bits.map((b, i) => `<button type="button" class="bit${b ? " on" : ""}" data-i="${i}">${b}<small>b${i}</small></button>`).join(""); }
+    box.addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; bits[+b.dataset.i] ^= 1; draw(); });
+    function draw() {
+      render();
+      const s = +S(), inp = $("fec-term").checked ? bits.concat([0, 0, 0]) : bits;
+      const c = fecEncode(inp), sym = patternMap(c, s);
+      let a = ""; for (let i = 0; i < c.length; i += 2) a += `<b>${c[i]}</b><i>${c[i + 1]}</i> `;
+      let p = ""; const g = s === 8 ? 4 : 1; for (let i = 0; i < sym.length; i += g) p += sym.slice(i, i + g).join("") + " ";
+      $("fec-out").innerHTML = `<div>부호기 출력 a0a1: ${a}</div><div style="margin-top:6px">공중 심볼 (S=${s}): ${p}</div>`;
+      BT.stat("fec-n", inp.length + "비트");
+      BT.stat("fec-c", c.length + "비트");
+      BT.stat("fec-sym", sym.length + "심볼");
+      BT.stat("fec-t", sym.length + " µs");
+    }
+    draw();
+  })();
+
+  /* ================================================================ 5. PHY 비교 */
+  (function () {
+    const SENS = { "1m": -97, "2m": -94, s2: -100, s8: -104 };
+    const NAMES = [["1m", "LE 1M"], ["2m", "LE 2M"], ["s2", "Coded S=2"], ["s8", "Coded S=8"]];
+    const len = BT.range("phy-l", (v) => v + "바이트", draw);
+    const n = BT.seg("phy-n", draw);
+    const cv = BT.canvas($("cv-phy"), (ctx, w, h) => {
+      const P = BT.palette(), cols = [P.accent, P.ok, P.warn, P.bad], half = w / 2, top = 30, rowH = (h - top - 16) / 4;
+      const tmax = airtimeUs("s8", 2 + 251);
+      BT.text(ctx, "패킷 시간", 10, 14, { size: 12, bold: true, color: P.dim });
+      BT.text(ctx, "1M 대비 거리", half + 10, 14, { size: 12, bold: true, color: P.dim });
+      NAMES.forEach(([k, name], i) => {
+        const y = top + i * rowH, t = airtimeUs(k, 2 + len()), bw = Math.max(2, ((half - 110) * t) / tmax);
+        BT.text(ctx, name, 10, y + rowH / 2, { size: 12, color: P.text });
+        ctx.fillStyle = cols[i]; ctx.globalAlpha = 0.85; ctx.fillRect(86, y + 6, bw, rowH - 12); ctx.globalAlpha = 1;
+        BT.text(ctx, t >= 1000 ? (t / 1000).toFixed(2) + " ms" : t + " µs", 90 + bw, y + rowH / 2, { size: 11, mono: true, color: P.dim });
+        const rf = Math.pow(10, (SENS["1m"] - SENS[k]) / (10 * +n())), rw = ((half - 80) * rf) / 4;
+        ctx.fillStyle = cols[i]; ctx.globalAlpha = 0.55; ctx.fillRect(half + 10, y + 6, rw, rowH - 12); ctx.globalAlpha = 1;
+        BT.text(ctx, "×" + rf.toFixed(2), half + 14 + rw, y + rowH / 2, { size: 11, mono: true, color: P.dim });
+      });
+    }, { aspect: 0.42, minHeight: 220, maxHeight: 300 });
+    function draw() {
+      const L = 2 + len();
+      ["phy-t1", "phy-t2", "phy-t3", "phy-t4"].forEach((id, i) => { const t = airtimeUs(NAMES[i][0], L); BT.stat(id, t >= 1000 ? (t / 1000).toFixed(2) + " ms" : t + " µs"); });
+      cv.redraw();
+    }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

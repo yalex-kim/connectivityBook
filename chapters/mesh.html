@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>메시와 사물 인터넷 · BluetoothBook</title>
+<meta name="description" content="일대일 연결을 넘어 수백 대를 잇는 블루투스. 광고로 소문을 퍼뜨리는 메시의 관리된 플러딩과 TTL, 릴레이·프렌드·저전력 노드, 발행·구독, 그리고 5.4의 응답 있는 주기적 광고(PAwR)로 수천 개의 전자 가격표를 관리하는 방법을 시뮬레이터로 익힌다.">
+<link rel="canonical" href="https://bluetoothbook.euiyun.com/chapters/mesh.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="BluetoothBook">
+<meta property="og:title" content="메시와 사물 인터넷 · BluetoothBook">
+<meta property="og:description" content="일대일 연결을 넘어 수백 대를 잇는 블루투스. 광고로 소문을 퍼뜨리는 메시의 관리된 플러딩과 TTL, 릴레이·프렌드·저전력 노드, 발행·구독, 그리고 5.4의 응답 있는 주기적 광고(PAwR)로 수천 개의 전자 가격표를 관리하는 방법을 시뮬레이터로 익힌다.">
+<meta property="og:url" content="https://bluetoothbook.euiyun.com/chapters/mesh.html">
+<meta property="og:image" content="https://bluetoothbook.euiyun.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"메시와 사물 인터넷","name":"메시와 사물 인터넷 · BluetoothBook","url":"https://bluetoothbook.euiyun.com/chapters/mesh.html","mainEntityOfPage":"https://bluetoothbook.euiyun.com/chapters/mesh.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":12,"image":"https://bluetoothbook.euiyun.com/og.png","dateModified":"2026-10-16","isPartOf":{"@type":"Book","@id":"https://bluetoothbook.euiyun.com/#book","name":"BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서","url":"https://bluetoothbook.euiyun.com/"},"publisher":{"@type":"Organization","name":"BluetoothBook","url":"https://bluetoothbook.euiyun.com/"},"description":"일대일 연결을 넘어 수백 대를 잇는 블루투스. 광고로 소문을 퍼뜨리는 메시의 관리된 플러딩과 TTL, 릴레이·프렌드·저전력 노드, 발행·구독, 그리고 5.4의 응답 있는 주기적 광고(PAwR)로 수천 개의 전자 가격표를 관리하는 방법을 시뮬레이터로 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook","item":"https://bluetoothbook.euiyun.com/"},{"@type":"ListItem","position":2,"name":"12 메시와 사물 인터넷","item":"https://bluetoothbook.euiyun.com/chapters/mesh.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<!-- Cloudflare Web Analytics -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"3d6151a0abc94ede89285d462527fa80"}'></script>
+<!-- End Cloudflare Web Analytics -->
+</head>
+<body data-chapter="mesh">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 12</div>
+    <h1>메시와 사물 인터넷</h1>
+    <p class="lead">사무실 천장의 조명 300개를 벽 스위치 하나로 한꺼번에 끄고 싶다. 스위치에서 가장 먼 조명까지는 40 m, 벽도 몇 개 있다. 2장의 링크 버짓으로는 한 번에 닿지 않는다. 대형 마트의 전자 가격표 5,000개를 밤사이 모두 바꾸고 싶다. 6장의 연결을 하나씩 맺으면 몇 시간이 걸리고 가격표의 배터리가 남아나지 않는다. 이 장에서는 블루투스가 일대일 연결을 넘어 <b>많은 기기</b>를 다루는 두 가지 방법을 본다. 기기들이 서로 소문을 전하는 <b>메시</b>, 그리고 하나의 송신기가 시간표를 짜서 수천 기기와 주고받는 5.4의 <b>PAwR</b>이다.</p>
+    <ul class="objectives">
+      <li>블루투스 메시가 연결 없이 광고 패킷으로 메시지를 퍼뜨리는 관리된 플러딩과, TTL·메시지 캐시가 폭주를 막는 원리를 안다.</li>
+      <li>릴레이·프록시·프렌드·저전력 노드의 역할과 발행·구독, 그룹 주소의 쓸모를 이해한다.</li>
+      <li>릴레이 비율과 TTL이 도달률과 전송 횟수(공중 혼잡)를 어떻게 맞바꾸는지 시뮬레이터로 확인한다.</li>
+      <li>5.4의 응답 있는 주기적 광고(PAwR)의 서브이벤트·응답 슬롯 구조로 많은 기기를 관리하는 계산을 한다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="flood">
+    <h2>소문 퍼뜨리기: 관리된 플러딩</h2>
+    <p><span class="term">블루투스 메시</span><span class="en">(Bluetooth Mesh)</span>는 Core 위에 얹힌 별도의 사양(Mesh Protocol)이다. 2017년 처음 나왔고, 기본 아이디어는 단순하다. 메시지를 <b>광고 패킷</b>에 실어 뿌리고(5장의 비연결 광고, 메시 메시지 전용 AD 구조), 그것을 들은 이웃 노드가 다시 뿌린다. 경로를 계산하지 않고 모두가 조금씩 중계하므로 이를 <span class="term">플러딩</span><span class="en">(flooding)</span>이라 한다. 연결을 맺고 유지할 필요가 없어서 노드가 수백 개여도 구조가 단순하고, 노드 하나가 꺼져도 다른 길로 전해진다.</p>
+    <p>무작정 다시 뿌리면 메시지가 끝없이 돌며 공중을 가득 채운다(6장의 이더넷 브로드캐스트 폭풍과 같다). 그래서 “관리된” 플러딩이다.</p>
+    <ul>
+      <li><b>TTL</b>(Time To Live): 메시지마다 7비트(0~127)의 남은 홉 수가 있다. 중계할 때마다 1씩 줄이고, 2 미만이면 더 중계하지 않는다.</li>
+      <li><b>메시지 캐시</b>: 노드는 최근에 본 메시지(출발지 주소와 일련번호)를 기억해 두고, 같은 메시지를 다시 들으면 무시한다. 같은 소문을 두 번 전하지 않는다.</li>
+      <li><b>릴레이 선택</b>: 모든 노드가 중계할 필요는 없다. 전원에 연결된 조명 같은 일부 노드만 <b>릴레이</b> 기능을 켠다. 너무 많으면 공중이 혼잡해지고, 너무 적으면 끊긴 곳이 생긴다.</li>
+    </ul>
+    <div class="callout analogy"><strong>카페의 소문</strong><p>카페 한쪽 끝에서 누가 “3번 테이블 손님, 주문 나왔어요!”라고 외친다. 반대쪽 끝까지는 안 들린다. 그래서 중간중간 앉은 몇몇 손님(릴레이)이 들은 말을 한 번씩만 다시 외쳐 준다. 이미 들은 말은 다시 전하지 않고(캐시), 너무 멀리 퍼지지 않도록 “앞으로 다섯 번만 전해 주세요”라는 꼬리표(TTL)를 단다. 모두가 다 외치면 카페가 시끄러워 오히려 아무것도 안 들린다.</p></div>
+    <div class="sim" id="sim-flood">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>메시 플러딩: 릴레이와 TTL로 사무실 전체에 닿기</h3></div>
+      <div class="sim-view"><canvas id="cv-flood"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>노드 수 <output id="fl-n-out"></output></span><input type="range" id="fl-n" min="20" max="200" step="10" value="80"></label>
+        <label class="ctrl"><span>릴레이로 켠 비율 <output id="fl-r-out"></output></span><input type="range" id="fl-r" min="0" max="100" step="5" value="30"></label>
+        <label class="ctrl"><span>처음 TTL <output id="fl-t-out"></output></span><input type="range" id="fl-t" min="1" max="12" value="5"></label>
+        <label class="ctrl"><span>한 번 전송의 도달 거리 <output id="fl-d-out"></output></span><input type="range" id="fl-d" min="5" max="20" value="10"></label>
+        <div class="ctrl"><span>&nbsp;</span><div class="btn-row"><button class="btn primary" id="fl-go">스위치 누르기 (애니메이션)</button><button class="btn" id="fl-new">배치 바꾸기</button></div></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">도달한 노드</span><span class="v" id="fl-reach">—</span></div>
+        <div class="stat"><span class="k">총 전송 횟수</span><span class="v" id="fl-tx">—</span></div>
+        <div class="stat"><span class="k">최대 홉</span><span class="v" id="fl-hop">—</span></div>
+        <div class="stat"><span class="k">캐시로 무시한 수신</span><span class="v" id="fl-dup">—</span></div>
+      </div>
+      <div class="sim-note">50 m × 30 m 사무실. 왼쪽 위 사각형이 스위치(출발지), 테두리 있는 점이 릴레이, 색은 메시지를 받은 홉 수(진할수록 늦게 받음), 회색은 못 받은 노드다. 해볼 것: ① 릴레이 0%에서는 스위치 주변만 받는다. ② 릴레이를 100%로 올리면 도달률은 조금 오르지만 전송 횟수가 크게 는다(공중 혼잡, 충돌 증가). 대개 20~40%면 충분하다. ③ TTL을 2~3으로 낮추면 먼 구석이 끊긴다. TTL은 건물 크기에 맞춰 정한다. 단순화: 원판 모양의 도달 거리, 충돌·손실 없음, 노드는 받은 즉시 한 번 중계(실제로는 무작위 지연과 반복 전송을 쓴다).</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="roles">
+    <h2>노드의 역할과 주소: 발행과 구독</h2>
+    <p>메시의 노드는 기능을 골라 켠다.</p>
+    <ul>
+      <li><b>릴레이</b><span class="en">(relay)</span>: 위에서 본 중계 노드. 보통 전원이 있는 기기.</li>
+      <li><b>프록시</b><span class="en">(proxy)</span>: 메시 기능이 없는 휴대폰이 일반 GATT 연결(7장)로 메시에 메시지를 넣고 받게 해 주는 다리.</li>
+      <li><b>저전력 노드</b><span class="en">(LPN)</span>와 <b>프렌드</b><span class="en">(friend)</span>: 배터리로 도는 센서(LPN)는 늘 깨어 있을 수 없다. 이웃의 전원 노드(프렌드)가 LPN 앞으로 온 메시지를 대신 받아 두었다가, LPN이 가끔 깨어나 “내 것 있어?”라고 물으면 건넨다. 9장의 원리를 메시에 적용한 것이다.</li>
+    </ul>
+    <p>메시지는 특정 노드가 아니라 <b>주소</b>로 보낸다. 노드마다 고유한 유니캐스트 주소가 있고, 여럿이 함께 듣는 <b>그룹 주소</b>가 있다. 스위치는 “3층 회의실 조명” 그룹 주소로 <b>발행</b>(publish)하고, 조명들은 그 그룹을 <b>구독</b>(subscribe)한다. 조명을 새로 달면 그 조명이 그룹을 구독하게 설정하기만 하면 되고, 스위치는 바꿀 필요가 없다.</p>
+    <p>새 기기를 메시에 들이는 과정은 <b>프로비저닝</b>이다. 휴대폰 같은 프로비저너가 기기와 ECDH(8장)로 키를 맺고 네트워크 키와 주소를 건넨다. 메시의 모든 메시지는 네트워크 키로 암호화되고 애플리케이션 키로 한 번 더 암호화되므로, 중계 노드는 메시지를 전달하되 내용(예: 도어락 명령)은 볼 수 없게 할 수 있다.</p>
+    <p class="spec-ref">메시의 플러딩·TTL·역할·프로비저닝·키는 Core 밖의 <b>Mesh Protocol</b> 사양에 있다. 메시가 쓰는 Core 기능: 비연결 광고와 AD 구조(<b>[Vol 3] Part C §11</b>), GATT(<b>[Vol 3] Part G</b>), ECDH와 AES-CMAC(<b>[Vol 3] Part H §2.2</b>)</p>
+    <div class="callout deep"><strong>Matter와 블루투스</strong><p>스마트홈 표준 Matter는 기기가 Wi-Fi나 Thread로 동작하지만, 처음 설정할 때(커미셔닝) 휴대폰과 기기 사이의 통로로 블루투스 LE를 쓰는 경우가 많다. 아직 네트워크에 붙지 않은 기기도 LE 광고로 “설정 대기 중”을 알릴 수 있고, 휴대폰은 거의 모두 LE를 지원하기 때문이다. 블루투스는 여기서 메시가 아니라 5~7장의 광고·연결·GATT로 일한다.</p></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="pawr">
+    <h2>5.4의 PAwR: 시간표로 수천 기기와 주고받기</h2>
+    <p>전자 가격표(ESL)는 메시와 반대 문제다. 가격표끼리는 이야기할 필요가 없고, 천장의 송신기 하나가 수천 개에게 각자 다른 명령(“이 가격으로 바꿔”)을 보내고, 결과(“바꿨음, 배터리 70%”)를 받아야 한다. 연결을 수천 개 유지할 수는 없고, 그냥 방송하면 응답을 받을 수 없다.</p>
+    <p>5.4의 <span class="term">응답 있는 주기적 광고</span><span class="en">(PAwR, Periodic Advertising with Responses)</span>는 5장의 주기적 광고에 <b>서브이벤트</b>와 <b>응답 슬롯</b>을 더했다.</p>
+    <ul>
+      <li>주기적 광고 간격 하나(예: 몇 초)를 최대 <b>128개 서브이벤트</b>로 나눈다. 서브이벤트 간격은 7.5~318.75 ms다.</li>
+      <li>각 가격표는 자기에게 배정된 <b>서브이벤트 하나만</b> 깨어나 듣는다. 나머지 시간은 잔다.</li>
+      <li>서브이벤트마다 송신기가 AUX_SYNC_SUBEVENT_IND로 여러 가격표에게 명령을 보내고, 정해진 지연 뒤의 <b>응답 슬롯</b>에서 가격표들이 하나씩 AUX_SYNC_SUBEVENT_RSP로 답한다. 응답은 같은 채널에서 이루어진다.</li>
+      <li>필요하면 응답 슬롯 안에서 바로 연결을 맺을 수도 있다(AUX_CONNECT_REQ).</li>
+    </ul>
+    <p class="spec-ref">PAwR 간격 7.5 ms ~ 81.91875 s, 서브이벤트 간격 7.5 ~ 318.75 ms, 최대 128 서브이벤트, 응답 슬롯: <b>[Vol 6] Part B §4.4.2.2.4</b> · 서브이벤트 채널은 알고리즘 #2(paEventCounter ⊕ paSubEventCounter): <b>§4.4.2.1</b> · 5.4 새 기능: <b>[Vol 1] Part C §13.1</b> · 전자 가격표 프로파일(ESL)은 Core 밖</p>
+    <div class="sim" id="sim-pawr">
+      <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>가격표 5,000개 바꾸기: PAwR 시간표 계산</h3></div>
+      <div class="sim-view"><canvas id="cv-pawr"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>가격표 수 <output id="pw-n-out"></output></span><input type="range" id="pw-n" min="100" max="20000" step="100" value="5000"></label>
+        <label class="ctrl"><span>서브이벤트 수 (≤ 128) <output id="pw-s-out"></output></span><input type="range" id="pw-s" min="1" max="128" value="128"></label>
+        <label class="ctrl"><span>서브이벤트 간격 <output id="pw-si-out"></output></span><input type="range" id="pw-si" min="6" max="255" value="24"></label>
+        <label class="ctrl"><span>서브이벤트당 응답 슬롯 <output id="pw-r-out"></output></span><input type="range" id="pw-r" min="1" max="20" value="10"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">주기적 광고 간격</span><span class="v" id="pw-int">—</span></div>
+        <div class="stat"><span class="k">간격 한 번에 바꾸는 가격표</span><span class="v" id="pw-per">—</span></div>
+        <div class="stat"><span class="k">전체 갱신 시간</span><span class="v" id="pw-all">—</span></div>
+        <div class="stat"><span class="k">가격표가 깨어 있는 비율</span><span class="v" id="pw-duty">—</span></div>
+      </div>
+      <div class="sim-note">한 줄이 주기적 광고 간격 하나, 칸 하나가 서브이벤트다(진한 칸 = 명령 + 응답 슬롯). 가격표 하나는 자기 서브이벤트만 듣는다. 해볼 것: ① 서브이벤트를 128개로, 응답 슬롯을 10개로 두면 간격 한 번에 1,280개를 바꾼다. 5,000개는 간격 네 번이면 된다. ② 서브이벤트 간격을 늘리면 간격 전체가 길어져 갱신은 느려지지만 가격표가 깨는 비율(배터리)은 그대로다. 가격표는 간격마다 한 서브이벤트만 듣기 때문이다. 가정: 응답 슬롯 하나 = 가격표 하나의 갱신(명령은 서브이벤트 패킷에 함께 실림), 손실 없음. 가격표가 깨어 있는 시간은 서브이벤트당 약 3 ms로 잡았다.</div>
+    </div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">같은 일을 블루투스 메시로 하면 어떨까? 가격표 5,000개가 모두 메시 노드라면 무엇이 가장 문제일까?</p><p class="wi-hint">메시는 메시지가 플러딩으로 퍼지고, 노드가 중계하려면 늘 듣고 있어야 한다.</p><div class="opts">
+      <button class="opt">가격표끼리 거리가 멀어서</button>
+      <button class="opt" data-correct>배터리 가격표가 늘 듣거나(릴레이) 프렌드에 기대야 하고, 가격표마다 다른 명령 5,000개가 건물 전체로 플러딩되어 공중이 혼잡해진다</button>
+      <button class="opt">메시는 암호화를 지원하지 않아서</button>
+    </div><div class="quiz-exp">메시는 “여럿이 같은 명령을 받는” 조명 제어에 강하고, 각자 다른 데이터를 많이 받는 일에는 약하다. PAwR은 중앙의 시간표로 각자에게 짧게 말해 배터리와 공중을 모두 아낀다. 문제에 맞는 구조를 고르는 것이 설계다(13장).</div></div>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li><b>블루투스 메시</b>(Core 밖의 Mesh Protocol)는 연결 없이 광고 패킷으로 메시지를 뿌리고 이웃이 다시 뿌리는 <b>관리된 플러딩</b>이다. <b>TTL</b>(7비트)과 <b>메시지 캐시</b>가 폭주를 막고, 일부 노드만 <b>릴레이</b>를 켠다.</li>
+      <li>역할: 릴레이, 프록시(GATT로 휴대폰 연결), <b>프렌드–저전력 노드</b>(대신 받아 두기). 메시지는 유니캐스트·<b>그룹 주소</b>로 <b>발행·구독</b>한다. 프로비저닝은 ECDH, 메시지는 네트워크 키·애플리케이션 키로 두 번 암호화한다.</li>
+      <li>릴레이와 TTL은 도달률과 전송 횟수(혼잡)의 교환이다.</li>
+      <li>5.4의 <b>PAwR</b>은 주기적 광고 간격을 최대 <b>128 서브이벤트</b>(간격 7.5~318.75 ms)로 나누고 응답 슬롯을 두어, 송신기 하나가 수천 기기에게 각자 명령을 보내고 답을 받는다. 각 기기는 자기 서브이벤트만 깨어 듣는다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>메시 메시지가 노드 사이를 끝없이 도는 것을 막는 두 장치는?</p><div class="opts">
+        <button class="opt">CRC와 화이트닝</button><button class="opt" data-correct>TTL과 메시지 캐시</button><button class="opt">채널 맵과 hopIncrement</button><button class="opt">CCCD와 ATT_MTU</button>
+      </div><div class="quiz-exp">TTL은 홉 수를 제한하고, 캐시는 이미 본 메시지를 다시 중계하지 않게 한다.</div></div>
+      <div class="quiz-q"><p>모든 노드에서 릴레이를 켜면 생기는 일로 가장 적절한 것은?</p><div class="opts">
+        <button class="opt">도달률이 크게 떨어진다</button><button class="opt" data-correct>도달률은 조금 오르지만 같은 메시지의 전송이 크게 늘어 공중이 혼잡해지고 충돌이 는다</button><button class="opt">TTL이 자동으로 늘어난다</button><button class="opt">아무 변화 없다</button>
+      </div><div class="quiz-exp">릴레이가 충분히 촘촘하면 더 늘려도 도달률은 거의 그대로고 전송만 는다. 메시 설계의 핵심은 필요한 만큼만 릴레이를 켜는 것이다.</div></div>
+      <div class="quiz-q"><p>배터리로 동작하는 메시 센서가 자기 앞으로 온 메시지를 놓치지 않는 방법은?</p><div class="opts">
+        <button class="opt">항상 스캔한다</button><button class="opt" data-correct>이웃 프렌드 노드가 대신 받아 두었다가 센서(LPN)가 깨어나 물을 때 건넨다</button><button class="opt">TTL을 0으로 둔다</button><button class="opt">릴레이 기능을 켠다</button>
+      </div><div class="quiz-exp">프렌드십은 저전력 노드가 잠을 자면서도 메시에 속할 수 있게 해 준다. 릴레이는 오히려 늘 들어야 하므로 배터리 기기에 맞지 않는다.</div></div>
+      <div class="quiz-q"><p>Core 6.2에서 PAwR 주기적 광고 간격 하나에 둘 수 있는 서브이벤트의 최대 수는?</p><div class="opts">
+        <button class="opt">31</button><button class="opt">37</button><button class="opt" data-correct>128</button><button class="opt">255</button>
+      </div><div class="quiz-exp">“Up to 128 subevents can be used in a Periodic Advertising Interval”([Vol 6] Part B §4.4.2.2.4). 31은 BIG의 최대 BIS 수, 37은 범용 채널 수다.</div></div>
+      <div class="quiz-q"><p>건물의 조명 300개를 스위치 하나로 동시에 켜는 일에 더 잘 맞는 구조는?</p><div class="opts">
+        <button class="opt" data-correct>메시 — 스위치가 그룹 주소로 한 번 발행하면 릴레이를 타고 모두에게 퍼진다</button><button class="opt">조명마다 따로 LE 연결</button><button class="opt">PAwR 응답 슬롯마다 조명 하나</button><button class="opt">클래식 A2DP</button>
+      </div><div class="quiz-exp">같은 명령을 많은 기기가 받는 일, 그리고 한 번에 닿지 않는 넓은 공간에는 메시의 그룹 발행이 맞다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  /** 관리된 플러딩. nodes = [{x,y,relay}], 0번이 출발지. 반환: 노드별 받은 홉(-1 = 못 받음), 전송 수, 중복 수신 수 */
+  function floodSimulate(nodes, range, ttl) {
+    const hop = nodes.map(() => -1); hop[0] = 0;
+    let frontier = [0], tx = 0, dup = 0;
+    const ttlAt = nodes.map(() => -1); ttlAt[0] = ttl;
+    while (frontier.length) {
+      const next = [];
+      frontier.forEach((i) => {
+        if (i !== 0 && (!nodes[i].relay || ttlAt[i] < 2)) return; // 출발지는 보냄, 다른 노드는 릴레이이고 TTL ≥ 2일 때만 중계
+        tx++;
+        const sendTtl = i === 0 ? ttl : ttlAt[i] - 1;
+        nodes.forEach((n, j) => {
+          if (j === i || Math.hypot(n.x - nodes[i].x, n.y - nodes[i].y) > range) return;
+          if (hop[j] >= 0) { dup++; return; }
+          hop[j] = hop[i] + 1; ttlAt[j] = sendTtl; next.push(j);
+        });
+      });
+      frontier = next;
+    }
+    return { hop, tx, dup };
+  }
+
+  /* ================================================================ 1. 플러딩 */
+  (function () {
+    const W = 50, Hh = 30;
+    let seed = 3, nodes = [], res = null, anim = -1;
+    const n = BT.range("fl-n", (v) => v + "개", build), r = BT.range("fl-r", (v) => v + "%", build), t = BT.range("fl-t", (v) => String(v), run), d = BT.range("fl-d", (v) => v + " m", run);
+    $("fl-new").addEventListener("click", () => { seed++; build(); });
+    $("fl-go").addEventListener("click", () => { anim = 0; tick(); });
+    function build() {
+      const rr = BT.rng(seed * 7);
+      nodes = [{ x: 2, y: 2, relay: true }];
+      for (let i = 1; i < n(); i++) nodes.push({ x: rr() * W, y: rr() * Hh, relay: rr() < r() / 100 });
+      run();
+    }
+    function run() {
+      res = floodSimulate(nodes, d(), t());
+      const got = res.hop.filter((h) => h >= 0).length;
+      BT.stat("fl-reach", `${got} / ${nodes.length} (${Math.round((got / nodes.length) * 100)}%)`);
+      BT.stat("fl-tx", res.tx + "번"); BT.stat("fl-hop", Math.max(...res.hop) + "홉"); BT.stat("fl-dup", res.dup + "번");
+      anim = -1; cv.redraw();
+    }
+    function tick() { if (anim < 0) return; cv.redraw(); anim++; if (anim <= Math.max(...res.hop) + 1) setTimeout(tick, 450); else { anim = -1; cv.redraw(); } }
+    const cv = BT.canvas($("cv-flood"), (ctx, w, h) => {
+      if (!res) return;
+      const P = BT.palette(), s = Math.min((w - 20) / W, (h - 20) / Hh), ox = (w - W * s) / 2, oy = (h - Hh * s) / 2, X = (x) => ox + x * s, Y = (y) => oy + y * s;
+      ctx.strokeStyle = P.border; ctx.strokeRect(ox, oy, W * s, Hh * s);
+      const maxH = Math.max(1, ...res.hop);
+      nodes.forEach((nd, i) => {
+        const hh = res.hop[i], show = anim < 0 ? hh >= 0 : hh >= 0 && hh <= anim;
+        if (i === 0) { ctx.fillStyle = P.bad; ctx.fillRect(X(nd.x) - 6, Y(nd.y) - 6, 12, 12); return; }
+        ctx.fillStyle = show ? P.accent : P.faint; ctx.globalAlpha = show ? 1 - 0.65 * (hh / maxH) : 0.35;
+        ctx.beginPath(); ctx.arc(X(nd.x), Y(nd.y), 4.5, 0, 7); ctx.fill(); ctx.globalAlpha = 1;
+        if (nd.relay) { ctx.strokeStyle = P.text; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(X(nd.x), Y(nd.y), 6.5, 0, 7); ctx.stroke(); }
+      });
+      if (anim >= 0) BT.text(ctx, "홉 " + anim, ox + 8, oy + 14, { size: 12, bold: true, color: P.text });
+      BT.text(ctx, "50 m", ox + W * s, oy + Hh * s + 10, { size: 10, color: P.dim, align: "right" });
+    }, { aspect: 0.62, minHeight: 240, maxHeight: 400 });
+    build();
+  })();
+
+  /* ================================================================ 2. PAwR */
+  (function () {
+    const n = BT.range("pw-n", (v) => v.toLocaleString() + "개", draw), s = BT.range("pw-s", (v) => String(v), draw);
+    const si = BT.range("pw-si", (v) => (v * 1.25).toFixed(2).replace(/\.?0+$/, "") + " ms", draw), r = BT.range("pw-r", (v) => String(v), draw);
+    const cv = BT.canvas($("cv-pawr"), (ctx, w, h) => {
+      const P = BT.palette(), S = s(), rows = Math.min(6, Math.ceil(n() / (S * r()))), L = 60, Rr = w - 8, cw = (Rr - L) / S, rh = Math.min(26, (h - 20) / Math.max(rows, 1));
+      let left = n();
+      for (let k = 0; k < rows; k++) {
+        BT.text(ctx, "간격 " + (k + 1), 6, 10 + k * rh + rh / 2, { size: 11, color: P.dim });
+        for (let j = 0; j < S; j++) { const used = Math.min(r(), Math.max(0, left)); left -= used; ctx.fillStyle = used ? P.accent : P.surface; ctx.globalAlpha = used ? 0.35 + 0.65 * (used / r()) : 1; ctx.fillRect(L + j * cw, 10 + k * rh, Math.max(1, cw - 1), rh - 4); ctx.globalAlpha = 1; }
+      }
+      if (Math.ceil(n() / (S * r())) > rows) BT.text(ctx, "… 총 " + Math.ceil(n() / (S * r())) + "번의 간격", Rr, h - 6, { size: 11, color: P.dim, align: "right" });
+    }, { aspect: 0.32, minHeight: 150, maxHeight: 220 });
+    function draw() {
+      const intMs = s() * si() * 1.25, per = s() * r(), rounds = Math.ceil(n() / per);
+      BT.stat("pw-int", intMs >= 1000 ? (intMs / 1000).toFixed(2) + " s" : intMs.toFixed(1) + " ms");
+      BT.stat("pw-per", per.toLocaleString() + "개");
+      const all = (rounds * intMs) / 1000; BT.stat("pw-all", all >= 60 ? (all / 60).toFixed(1) + "분" : all.toFixed(1) + " s");
+      BT.stat("pw-duty", ((3 / intMs) * 100).toFixed(2) + "%");
+      cv.redraw();
+    }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>블루투스란 무엇인가 · BluetoothBook</title>
+<meta name="description" content="케이블을 없애려던 작은 무전기에서 시작한 블루투스. 이름의 유래, 클래식(BR/EDR)과 저전력(LE)의 차이, 1.2부터 6.2까지의 버전, 호스트와 컨트롤러로 나뉜 프로토콜 스택과 Core 사양서 읽는 법을 다룬다.">
+<link rel="canonical" href="https://bluetoothbook.euiyun.com/chapters/intro.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="BluetoothBook">
+<meta property="og:title" content="블루투스란 무엇인가 · BluetoothBook">
+<meta property="og:description" content="케이블을 없애려던 작은 무전기에서 시작한 블루투스. 이름의 유래, 클래식(BR/EDR)과 저전력(LE)의 차이, 1.2부터 6.2까지의 버전, 호스트와 컨트롤러로 나뉜 프로토콜 스택과 Core 사양서 읽는 법을 다룬다.">
+<meta property="og:url" content="https://bluetoothbook.euiyun.com/chapters/intro.html">
+<meta property="og:image" content="https://bluetoothbook.euiyun.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"블루투스란 무엇인가","name":"블루투스란 무엇인가 · BluetoothBook","url":"https://bluetoothbook.euiyun.com/chapters/intro.html","mainEntityOfPage":"https://bluetoothbook.euiyun.com/chapters/intro.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":1,"image":"https://bluetoothbook.euiyun.com/og.png","dateModified":"2026-10-16","isPartOf":{"@type":"Book","@id":"https://bluetoothbook.euiyun.com/#book","name":"BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서","url":"https://bluetoothbook.euiyun.com/"},"publisher":{"@type":"Organization","name":"BluetoothBook","url":"https://bluetoothbook.euiyun.com/"},"description":"케이블을 없애려던 작은 무전기에서 시작한 블루투스. 이름의 유래, 클래식(BR/EDR)과 저전력(LE)의 차이, 1.2부터 6.2까지의 버전, 호스트와 컨트롤러로 나뉜 프로토콜 스택과 Core 사양서 읽는 법을 다룬다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook","item":"https://bluetoothbook.euiyun.com/"},{"@type":"ListItem","position":2,"name":"01 블루투스란 무엇인가","item":"https://bluetoothbook.euiyun.com/chapters/intro.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<!-- Cloudflare Web Analytics -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"3d6151a0abc94ede89285d462527fa80"}'></script>
+<!-- End Cloudflare Web Analytics -->
+<style>
+  .dev-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; }
+  .dev-grid button { font: inherit; text-align: left; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-elev); color: var(--text); cursor: pointer; font-size: 14px; line-height: 1.35; }
+  .dev-grid button small { display: block; color: var(--text-faint); font-size: 11.5px; margin-top: 2px; }
+  .dev-grid button.on { border-color: var(--accent); background: var(--accent-soft); }
+  .dev-info { margin-top: 12px; padding: 14px 16px; border-radius: 12px; background: var(--surface); font-size: 14.5px; line-height: 1.65; }
+  .dev-info h4 { margin: 0 0 6px; font-size: 15.5px; }
+  .dev-info .pills { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0; }
+  .dev-info .pills span { font-size: 12px; padding: 2px 9px; border-radius: 999px; background: var(--bg-elev); border: 1px solid var(--border); color: var(--text-dim); }
+  .dev-info .pills span.br { border-color: var(--accent-2); color: var(--accent-2); }
+  .dev-info .pills span.le { border-color: var(--accent); color: var(--accent); }
+  .tl { display: flex; gap: 6px; overflow-x: auto; padding: 4px 2px 10px; }
+  .tl button { flex: none; font: inherit; font-family: var(--mono); font-size: 13px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-elev); color: var(--text); cursor: pointer; text-align: center; min-width: 64px; }
+  .tl button small { display: block; font-size: 11px; color: var(--text-faint); }
+  .tl button.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+  .tl button.big { border-width: 2px; }
+  .stack-svg .ly { cursor: pointer; }
+  .stack-svg .ly rect { transition: fill .15s, stroke .15s; }
+  .stack-svg .ly:hover rect, .stack-svg .ly.on rect { fill: var(--accent-soft); stroke: var(--accent); }
+  .rune { font-size: 46px; line-height: 1; }
+</style>
+</head>
+<body data-chapter="intro">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 01</div>
+    <h1>블루투스란 무엇인가</h1>
+    <p class="lead">출근길 지하철에서 무선 이어폰을 귀에 꽂으면 음악이 이어서 흘러나온다. 손목의 시계는 심박수를 휴대폰에 보내고, 차에 타면 휴대폰이 알아서 차 스피커와 연결된다. 가방 속 분실물 태그는 몇 달째 배터리 교체 없이 “나 여기 있어요”를 외치고 있다. 이 모든 일을 같은 이름의 기술, <b>블루투스</b>가 한다. 그런데 이어폰과 분실물 태그는 사실 꽤 다른 방식으로 말한다. 이 장에서는 블루투스가 어디서 왔고, 왜 두 갈래(클래식과 저전력)로 나뉘었으며, 기기 안에서 어떤 층들이 일을 나눠 맡는지 큰 그림을 그린다.</p>
+    <ul class="objectives">
+      <li>블루투스가 “케이블을 없애려는” 목적에서 출발했다는 것과 이름·로고의 유래를 안다.</li>
+      <li>클래식 블루투스(BR/EDR)와 저전력 블루투스(LE)의 채널·속도·전력·쓰임새 차이를 설명한다.</li>
+      <li>1.2부터 6.2까지 버전마다 무엇이 추가되었는지, 그리고 “블루투스 5.3 지원”이라는 문구가 무엇을 뜻하고 무엇을 뜻하지 않는지 안다.</li>
+      <li>호스트·컨트롤러·HCI로 나뉜 프로토콜 스택에서 각 층이 맡는 일을 구분한다.</li>
+      <li>이 책이 기준으로 삼는 Bluetooth Core 6.2 사양서의 구성(Vol·Part·절)과 shall/should/may의 뜻을 안다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="origin">
+    <h2>케이블을 없애려던 작은 무전기</h2>
+    <p>1990년대 중반, 휴대폰과 헤드셋, 휴대폰과 노트북을 잇는 데는 제각각 모양이 다른 <b>케이블</b>이 필요했다. 스웨덴 룬드의 에릭슨 연구진은 1994년 이 선들을 짧은 거리의 값싼 무선 링크로 바꾸는 연구를 시작했다. 목표는 분명했다. 칩 하나에 들어갈 만큼 단순하고, 배터리로 오래 가며, 허가 없이 전 세계 어디서나 쓸 수 있는 전파를 쓸 것. 그래서 고른 것이 누구나 면허 없이 쓰는 <span class="term">2.4 GHz ISM 대역</span><span class="en">(Industrial, Scientific and Medical)</span>이다(2장).</p>
+    <p>혼자서는 표준이 될 수 없으므로 1998년 에릭슨, IBM, 인텔, 노키아, 도시바가 모여 <span class="term">블루투스 SIG</span><span class="en">(Special Interest Group)</span>를 만들었다. 지금은 수만 개 회사가 회원으로 참여해 사양을 만들고, 제품이 사양을 지키는지 인증한다. 이 책이 기준으로 삼는 문서도 SIG가 2025년 11월 채택한 <b>Bluetooth Core Specification 6.2</b>다.</p>
+    <figure class="diagram">
+      <div style="overflow-x:auto">
+      <svg viewBox="0 0 760 210" role="img" aria-label="하랄 왕의 머리글자 룬 두 개가 합쳐져 블루투스 로고가 되는 그림" style="min-width:560px">
+        <g transform="translate(40,30)">
+          <rect x="0" y="0" width="150" height="150" rx="16" class="f-elev"/>
+          <text x="75" y="92" text-anchor="middle" class="t" style="font-size:72px">ᚼ</text>
+          <text x="75" y="134" text-anchor="middle" class="t-mono">Hagall · H</text>
+        </g>
+        <text x="225" y="112" text-anchor="middle" class="t" style="font-size:34px">+</text>
+        <g transform="translate(260,30)">
+          <rect x="0" y="0" width="150" height="150" rx="16" class="f-elev"/>
+          <text x="75" y="92" text-anchor="middle" class="t" style="font-size:72px">ᛒ</text>
+          <text x="75" y="134" text-anchor="middle" class="t-mono">Bjarkan · B</text>
+        </g>
+        <text x="445" y="112" text-anchor="middle" class="t" style="font-size:34px">=</text>
+        <g transform="translate(480,30)">
+          <rect x="0" y="0" width="150" height="150" rx="16" class="f-acc-soft"/>
+          <path d="M52 52 98 98 75 120V30l23 22-46 46" fill="none" stroke="var(--accent)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="75" y="142" text-anchor="middle" class="t-acc">블루투스 로고</text>
+        </g>
+        <text x="650" y="80" class="t-dim">Harald</text>
+        <text x="650" y="100" class="t-dim">Blåtand</text>
+        <text x="650" y="120" class="t-dim">(파란 이빨)</text>
+      </svg>
+      </div>
+      <figcaption><b>그림 1-1.</b> 블루투스 로고는 10세기 덴마크 왕 하랄 블로탄(Harald Blåtand, 영어로 Bluetooth)의 머리글자 H와 B를 고대 북유럽 문자(룬)로 겹친 것이다. 흩어진 부족을 하나로 통일한 왕처럼, 제각각인 기기를 하나의 무선 규칙으로 묶자는 뜻이 담긴 임시 코드명이 그대로 정식 이름이 되었다.</figcaption>
+    </figure>
+    <p>블루투스의 세 가지 설계 목표, <b>짧은 거리 · 낮은 전력 · 낮은 가격</b>은 지금도 그대로다. Wi-Fi가 “집 전체를 덮는 빠른 인터넷”을 노린다면, 블루투스는 “내 몸 주변 몇 미터 안의 기기들을 배터리 걱정 없이 잇는 것”을 노린다. 이 차이가 이 책 전체에서 반복해서 등장한다. 블루투스의 거의 모든 설계 결정은 <b>“어떻게 하면 무선부를 최대한 오래 꺼 둘 수 있을까”</b>라는 질문에 대한 답이다(9장).</p>
+    <div class="callout analogy"><strong>시끄러운 카페에서의 대화</strong><p>이 책은 블루투스를 <b>시끄러운 카페에서 나누는 대화</b>에 빗대어 설명한다. 2.4 GHz 대역은 Wi-Fi, 전자레인지, 남의 블루투스가 함께 떠드는 <b>카페</b>다. 채널은 카페의 <b>테이블</b>이고, 기기는 손님이다. 처음 만나는 손님은 입구 근처 세 테이블(광고 채널)에서 “저 여기 있어요” 하고 <b>자기소개를 외치고</b>(광고, 5장), 관심 있는 손님은 <b>귀를 기울인다</b>(스캔). 서로 알게 되면 “앞으로 30 ms마다, 정해진 순서로 테이블을 옮겨 가며 잠깐씩 만나자”고 <b>약속</b>한다(연결과 도약, 4·6장). 대화 내용은 <b>메뉴판</b>처럼 정리되어 있고(GATT, 7장), 둘만 아는 <b>암호</b>를 정하면 엿듣는 사람이 알아들을 수 없다(페어링, 8장).</p></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="two">
+    <h2>두 개의 블루투스: 클래식과 저전력</h2>
+    <p>오늘날 “블루투스”라는 이름 아래에는 사실상 서로 다른 무선 시스템 두 개가 들어 있다. 사양서도 둘을 나눠, 같은 2.4 GHz 대역을 쓰지만 다른 채널 배치와 다른 패킷, 다른 연결 규칙을 정의한다.</p>
+    <ul>
+      <li><b>클래식 블루투스</b>는 사양서에서 <span class="term">BR/EDR</span><span class="en">(Basic Rate / Enhanced Data Rate)</span>이라 부른다. 1 MHz 폭 채널 79개를 초당 최대 1,600번 옮겨 다니며, 한번 연결되면 계속 말을 주고받는 데 강하다. 무선 이어폰의 음악 스트리밍(A2DP), 차량 핸즈프리 통화(HFP)가 대표적이다.</li>
+      <li><b>저전력 블루투스</b>는 <span class="term">LE</span><span class="en">(Low Energy, 흔히 BLE)</span>라 부른다. 2010년 4.0에서 추가되었다. 2 MHz 폭 채널 40개를 쓰고, 그중 3개는 처음 만나는 기기끼리 서로를 찾는 데만 쓴다. 대부분의 시간을 자다가 수 ms만 깨어나 짧게 말하므로 코인 전지 하나로 몇 년을 간다. 시계, 체중계, 분실물 태그, 도어락, 그리고 요즘의 LE 오디오가 여기에 속한다.</li>
+    </ul>
+    <div class="table-wrap"><table>
+      <thead><tr><th></th><th>클래식 (BR/EDR)</th><th>저전력 (LE)</th></tr></thead>
+      <tbody>
+        <tr><td>등장</td><td class="num">1999년 (1.0)</td><td class="num">2010년 (4.0)</td></tr>
+        <tr><td>채널</td><td class="num">1 MHz × 79개 (2402~2480 MHz)</td><td class="num">2 MHz × 40개 (2402~2480 MHz)</td></tr>
+        <tr><td>변조와 공중 속도</td><td>GFSK 1 Mb/s, EDR은 π/4-DQPSK 2 Mb/s · 8DPSK 3 Mb/s</td><td>GFSK 1 Mb/s(LE 1M), 2 Mb/s(LE 2M), 부호화 125·500 kb/s(LE Coded)</td></tr>
+        <tr><td>처음 찾기</td><td>조회(inquiry)·호출(page)</td><td>광고 채널 3개에서 광고·스캔</td></tr>
+        <tr><td>연결 뒤</td><td>625 µs 슬롯마다 주고받음</td><td>연결 간격마다 짧게 깨어남 (6.2 기준 375 µs ~ 4 s)</td></tr>
+        <tr><td>강점</td><td>연속 스트림 (음악, 통화)</td><td>저전력, 많은 기기, 방송, 위치</td></tr>
+        <tr><td>사양서 위치</td><td>[Vol 2] BR/EDR Controller</td><td>[Vol 6] Low Energy Controller</td></tr>
+      </tbody>
+    </table></div>
+    <p class="spec-ref">BR/EDR 채널 f = 2402 + k MHz, k = 0~78: <b>[Vol 2] Part A §2</b> · LE 40채널 2 MHz 간격: <b>[Vol 6] Part A §2</b> · 연결 간격 375 µs ~ 4 s: <b>[Vol 6] Part B §4.5.1</b></p>
+    <p>휴대폰과 노트북은 두 가지를 모두 갖춘 <span class="term">듀얼 모드</span><span class="en">(dual-mode)</span> 칩을 쓴다. 반면 심박계나 태그처럼 작은 기기는 LE만 넣은 <b>싱글 모드</b> 칩을 쓴다. 두 방식은 같은 안테나와 무선 회로를 나눠 쓰지만 서로 직접 대화하지는 못한다. LE만 되는 체중계는 클래식만 되는 옛날 휴대폰과 연결할 수 없다.</p>
+
+    <div class="sim" id="sim-dev">
+      <div class="sim-head"><span class="sim-tag">INTERACTIVE</span><h3>내 주변 블루투스 기기는 어느 쪽을 쓸까</h3></div>
+      <div class="sim-view" style="padding:14px">
+        <div class="dev-grid" id="dev-grid"></div>
+        <div class="dev-info" id="dev-info"></div>
+      </div>
+      <div class="sim-note">기기를 눌러 보자. 파란 표시는 LE, 청록 표시는 클래식(BR/EDR)으로 하는 일이다. 해볼 것: ① 무선 이어폰을 누르면 두 가지를 모두 쓰는 것을 볼 수 있다. 음악은 오래된 클래식 방식으로, 배터리 잔량이나 버튼 설정은 LE로 주고받는 제품이 많다. ② 분실물 태그와 체중계는 LE만 쓴다. 단순화: 제품마다 구현이 다르므로 “요즘 흔한 구성”을 보여 준다.</div>
+    </div>
+
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">LE는 클래식보다 “저전력”이다. 그렇다면 무선 이어폰도 처음부터 LE로 음악을 보내면 되지 않았을까? 2010년 LE가 처음 나왔을 때 음악을 못 보낸 가장 큰 이유는?</p><p class="wi-hint">위 표의 “연결 뒤”와 “강점” 줄, 그리고 10장의 LE 오디오를 떠올려 보자.</p><div class="opts">
+      <button class="opt">LE는 2.4 GHz가 아닌 다른 대역을 써서</button>
+      <button class="opt" data-correct>초기 LE는 짧은 데이터를 가끔 보내는 용도로 설계되어, 일정한 시각에 끊김 없이 소리를 보내는 규칙(등시성 채널)이 없었다</button>
+      <button class="opt">LE는 속도가 10 kb/s 수준이라서</button>
+      <button class="opt">LE는 암호화를 지원하지 않아서</button>
+    </div><div class="quiz-exp">LE 1M도 공중 속도는 1 Mb/s로 클래식과 같다. 부족했던 것은 속도가 아니라 “정해진 시각에 반드시 도착해야 하는 데이터”를 다루는 규칙이었다. 5.2(2019년 말)에서 등시성 채널(LE Isochronous Channels)이 추가되고 나서야 LE 오디오가 가능해졌다(10장).</div></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="versions">
+    <h2>버전의 역사: 1.2에서 6.2까지</h2>
+    <p>블루투스 버전은 “신제품 이름”이 아니라 <b>사양서의 개정판 번호</b>다. 새 판이 나올 때마다 기능이 더해지고 오류가 고쳐진다. 2025년부터 SIG는 1년에 두 번 정도 판을 내고 있다. 아래에서 버전을 눌러 그때 추가된 주요 기능을 확인해 보자. 굵은 테두리는 이 책에서 특히 자주 등장하는 판이다.</p>
+    <div class="sim" id="sim-ver">
+      <div class="sim-head"><span class="sim-tag">TIMELINE</span><h3>Core 사양 변경 이력 탐색기</h3></div>
+      <div class="sim-view" style="padding:12px 12px 4px">
+        <div class="tl" id="ver-tl"></div>
+        <div class="dev-info" id="ver-info"></div>
+      </div>
+      <div class="sim-note">출처: Core 6.2 <b>[Vol 1] Part C, Core Specification Change History</b>의 “New features” 목록과 [Vol 0] Part C의 채택일. 기능 이름은 사양서 표기를 옮겼고, 괄호 안에 이 책의 해당 장을 적었다. 해볼 것: 4.0(LE 탄생), 5.0(2M·Coded PHY), 5.2(등시성 채널), 6.0(채널 사운딩), 6.2(짧은 연결 간격)를 차례로 눌러 보자.</div>
+    </div>
+    <div class="callout warn"><strong>“블루투스 5.3 지원”의 함정</strong><p>제품 상자에 적힌 버전은 그 제품이 <b>어느 판의 사양에 맞춰 인증받았는지</b>를 뜻할 뿐, 그 판의 모든 기능을 갖췄다는 뜻이 아니다. 사양서의 기능 대부분은 <b>선택 사항</b>이다. 예를 들어 LE 2M PHY나 LE Coded PHY(3장), 채널 사운딩(11장)은 지원하지 않아도 최신 버전 인증을 받을 수 있다. 또 두 기기가 함께 쓰려면 <b>양쪽 모두</b> 그 기능을 지원해야 한다. 그래서 “블루투스 5.3 이어폰”을 4.2 휴대폰에 연결하면 4.2 수준의 기능만 쓴다.</p></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="stack">
+    <h2>프로토콜 스택: 호스트와 컨트롤러</h2>
+    <p>블루투스는 하나의 거대한 프로그램이 아니라 <b>층층이 쌓은 규칙</b>이다. 아래층은 전파를 다루고 위층은 “심박수 72”나 “노래 다음 곡” 같은 의미를 다룬다. 블루투스 스택의 가장 큰 특징은 이 층들을 <b>두 덩어리</b>로 나눈다는 점이다.</p>
+    <ul>
+      <li><span class="term">컨트롤러</span><span class="en">(Controller)</span>: 무선 칩 안에서 µs 단위로 정확하게 돌아가야 하는 일. 전파를 내고 받는 <b>물리 계층(PHY)</b>과, 언제 어느 채널로 무엇을 보낼지 정하는 <b>링크 계층(LL)</b>(클래식에서는 베이스밴드와 링크 매니저)이다.</li>
+      <li><span class="term">호스트</span><span class="en">(Host)</span>: 휴대폰 운영체제나 작은 기기의 펌웨어에서 돌아가는 일. 데이터를 채널별로 나누는 <b>L2CAP</b>, 값을 주고받는 <b>ATT/GATT</b>, 보안을 맡는 <b>SMP</b>, 기기의 역할과 발견·연결 절차를 정하는 <b>GAP</b>가 있다.</li>
+      <li><span class="term">HCI</span><span class="en">(Host Controller Interface)</span>: 둘 사이의 표준 명령 창구. 휴대폰에서는 운영체제가 HCI 명령으로 별도의 블루투스 칩을 부린다. HCI 덕분에 칩 회사와 운영체제 회사가 따로 만들어도 맞물린다.</li>
+    </ul>
+    <figure class="diagram">
+      <div style="overflow-x:auto">
+      <svg class="stack-svg" viewBox="0 0 760 430" role="img" aria-label="블루투스 프로토콜 스택: 앱과 프로파일, 호스트, HCI, 컨트롤러, 안테나" style="min-width:600px">
+        <defs><marker id="st-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--text-dim)"/></marker></defs>
+        <g class="ly" data-k="app"><rect x="40" y="10" width="520" height="44" rx="10" class="f-elev" stroke="var(--border)"/><text x="300" y="38" text-anchor="middle" class="t">앱 · 프로파일 (심박계, 오디오, 파일 전송 …)</text></g>
+        <text x="580" y="38" class="t-mono">프로파일 사양</text>
+        <rect x="30" y="66" width="540" height="196" rx="14" fill="none" stroke="var(--accent-2)" stroke-dasharray="5 5"/>
+        <text x="580" y="96" class="t" style="fill:var(--accent-2);font-weight:700">호스트</text><text x="580" y="116" class="t-mono">[Vol 3]</text>
+        <g class="ly" data-k="gap"><rect x="40" y="78" width="120" height="172" rx="10" class="f-elev" stroke="var(--border)"/><text x="100" y="160" text-anchor="middle" class="t">GAP</text><text x="100" y="180" text-anchor="middle" class="t-dim">역할·발견</text></g>
+        <g class="ly" data-k="gatt"><rect x="170" y="78" width="180" height="50" rx="10" class="f-elev" stroke="var(--border)"/><text x="260" y="108" text-anchor="middle" class="t">GATT</text></g>
+        <g class="ly" data-k="att"><rect x="170" y="136" width="180" height="50" rx="10" class="f-elev" stroke="var(--border)"/><text x="260" y="166" text-anchor="middle" class="t">ATT</text></g>
+        <g class="ly" data-k="smp"><rect x="360" y="78" width="90" height="108" rx="10" class="f-elev" stroke="var(--border)"/><text x="405" y="136" text-anchor="middle" class="t">SMP</text></g>
+        <g class="ly" data-k="sdp"><rect x="460" y="78" width="100" height="108" rx="10" class="f-elev" stroke="var(--border)"/><text x="510" y="128" text-anchor="middle" class="t">SDP·RFCOMM</text><text x="510" y="148" text-anchor="middle" class="t-dim">(클래식)</text></g>
+        <g class="ly" data-k="l2cap"><rect x="170" y="196" width="390" height="54" rx="10" class="f-elev" stroke="var(--border)"/><text x="365" y="228" text-anchor="middle" class="t">L2CAP</text></g>
+        <g class="ly" data-k="hci"><rect x="40" y="272" width="520" height="34" rx="8" class="f-acc-soft"/><text x="300" y="294" text-anchor="middle" class="t-acc">HCI (호스트 ↔ 컨트롤러 표준 창구)</text></g>
+        <text x="580" y="294" class="t-mono">[Vol 4]</text>
+        <rect x="30" y="316" width="540" height="104" rx="14" fill="none" stroke="var(--accent)" stroke-dasharray="5 5"/>
+        <text x="580" y="346" class="t" style="fill:var(--accent);font-weight:700">컨트롤러</text><text x="580" y="366" class="t-mono">[Vol 2] BR/EDR</text><text x="580" y="384" class="t-mono">[Vol 6] LE</text>
+        <g class="ly" data-k="ll"><rect x="40" y="326" width="520" height="40" rx="10" class="f-elev" stroke="var(--border)"/><text x="300" y="351" text-anchor="middle" class="t">링크 계층 · 베이스밴드 · 링크 매니저 · 등시성 적응 계층</text></g>
+        <g class="ly" data-k="phy"><rect x="40" y="374" width="520" height="38" rx="10" class="f-elev" stroke="var(--border)"/><text x="300" y="398" text-anchor="middle" class="t">물리 계층 (PHY): 2.4 GHz 무선</text></g>
+        <path d="M570 393 h40 l14 -14 m-14 14 l14 14" class="s-line" fill="none"/>
+        <text x="640" y="398" class="t-dim">)))</text>
+      </svg>
+      </div>
+      <figcaption><b>그림 1-2.</b> 블루투스 스택. 위의 호스트(청록 점선)는 운영체제·펌웨어의 소프트웨어, 아래의 컨트롤러(파란 점선)는 무선 칩 안의 하드웨어·펌웨어다. 둘 사이는 HCI로 잇는다. 오른쪽은 각 부분을 정의한 Core 6.2 사양서의 권(Volume)이다. 상자를 누르면 아래 설명이 바뀐다.</figcaption>
+    </figure>
+    <div class="dev-info" id="stack-info" aria-live="polite"></div>
+    <p>왜 이렇게 나눴을까? 컨트롤러는 150 µs 같은 아주 짧은 시간 안에 응답해야 한다(6장). 운영체제는 다른 일도 하느라 그런 정확도를 보장할 수 없다. 그래서 시간에 민감한 일은 무선 칩에 맡기고, 운영체제는 “이 기기와 연결해”, “이 값을 보내” 같은 큰 명령만 HCI로 내린다. 덕분에 무선 칩은 운영체제가 잠든 사이에도 혼자 깨어나 광고를 보내거나 연결을 유지할 수 있다. 저전력의 비밀 중 하나다.</p>
+    <div class="callout analogy"><strong>카페의 손님과 비서</strong><p>호스트는 대화 내용을 정하는 <b>손님</b>, 컨트롤러는 손님 대신 정확히 약속 시각에 테이블로 가서 말을 전하는 <b>비서</b>다. 손님은 “저 사람에게 심박수를 알려 줘”라고만 하면 되고, 몇 시 몇 분 몇 초에 몇 번 테이블로 갈지는 비서가 안다. HCI는 둘이 주고받는 <b>정해진 양식의 메모지</b>다.</p></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="spec">
+    <h2>사양서 읽는 법: Core 6.2의 지도</h2>
+    <p>이 책의 수치와 규칙은 SIG가 무료로 공개하는 <b>Bluetooth Core Specification 6.2</b>를 근거로 한다. 본문 곳곳의 <span class="spec-ref" style="display:inline;margin:0">[Vol 6] Part B §4.5.1</span> 같은 표시는 “6권 B부 4.5.1절에 이 내용이 있다”는 뜻이다. 사양서는 수천 쪽이지만 구조를 알면 원하는 곳을 금방 찾을 수 있다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>권</th><th>이름</th><th>이 책에서 주로 쓰는 부분</th></tr></thead>
+      <tbody>
+        <tr><td class="num">Vol 0</td><td>목차·코어 구성</td><td>버전 채택일, 어떤 기능이 필수인지(Core Configurations)</td></tr>
+        <tr><td class="num">Vol 1</td><td>구조·변경 이력·용어</td><td>Part A 구조 개요, Part C 버전별 새 기능(이 장), 채널 사운딩 거리 식(11장)</td></tr>
+        <tr><td class="num">Vol 2</td><td>BR/EDR 컨트롤러</td><td>Part A 무선(2·3장), Part B 베이스밴드·AFH(4장), Part H 보안</td></tr>
+        <tr><td class="num">Vol 3</td><td>호스트</td><td>Part A L2CAP, Part C GAP(5·8장), Part F ATT·Part G GATT(7장), Part H SMP(8장)</td></tr>
+        <tr><td class="num">Vol 4</td><td>HCI</td><td>호스트가 컨트롤러에 내리는 명령(예: RPA 교체 시간, 8장)</td></tr>
+        <tr><td class="num">Vol 6</td><td>LE 컨트롤러</td><td>Part A 무선(2·3장), Part B 링크 계층(4~6장), Part C 샘플 데이터, Part G 등시성(10장), Part H 채널 사운딩(11장)</td></tr>
+        <tr><td class="num">Vol 7</td><td>무선 공존</td><td>LTE 등 다른 무선과의 신호 교환</td></tr>
+      </tbody>
+    </table></div>
+    <p>사양서의 동사에도 정해진 뜻이 있다. <b>shall</b>은 반드시 지켜야 하는 요구 사항, <b>should</b>는 권장 사항, <b>may</b>는 허용되는 선택이다. 예를 들어 “광고 지연(advDelay)은 0~10 ms의 (의사)난수<b>여야 한다(shall)</b>”는 모든 기기가 지켜야 하지만, “스캔할 때는 창마다 다른 광고 채널을 <b>듣는 것이 좋다(should)</b>”는 구현에 따라 다를 수 있다(5장). 이 책에서 “사양은 ~이다”라고 쓸 때는 shall을, “보통 ~한다”라고 쓸 때는 should나 실제 제품의 관행을 가리킨다.</p>
+    <div class="callout spec"><strong>사양서 밖의 블루투스</strong><p>Core 사양은 무선과 연결, 보안, 데이터 구조의 <b>공통 기반</b>만 정한다. 심박계가 값을 어떤 형식으로 보내는지(Heart Rate Service), 이어폰이 음악을 어떤 코덱으로 압축하는지(A2DP, LC3), 메시 네트워크의 규칙(Mesh Protocol) 같은 것은 <b>별도의 프로파일·서비스 사양</b>에 있다. 광고 데이터의 형식 번호(AD type)나 UUID 번호는 <b>Core Specification Supplement</b>와 <b>Assigned Numbers</b> 문서에 있다. 이 책은 이런 내용을 다룰 때 “Core 밖의 사양”이라고 밝힌다.</p></div>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>블루투스는 1994년 에릭슨의 <b>케이블 대체</b> 연구에서 시작해 1998년 SIG가 표준으로 키웠다. 목표는 <b>짧은 거리·낮은 전력·낮은 가격</b>, 대역은 면허 없는 <b>2.4 GHz ISM</b>이다.</li>
+      <li>블루투스는 사실상 두 시스템이다. <b>클래식(BR/EDR)</b>은 1 MHz × 79채널로 연속 스트림에 강하고, <b>LE</b>(4.0, 2010)는 2 MHz × 40채널로 대부분의 시간을 자며 짧게 말한다. 휴대폰은 둘 다(듀얼 모드), 작은 기기는 LE만 쓴다.</li>
+      <li>버전은 사양서 개정판 번호다. 4.0 LE, 5.0 2M·Coded PHY·확장 광고, 5.1 방향 찾기, 5.2 등시성 채널, 6.0 채널 사운딩, 6.2 짧은 연결 간격. 대부분 <b>선택 기능</b>이며 양쪽이 모두 지원해야 쓸 수 있다.</li>
+      <li>스택은 <b>호스트</b>(GAP, GATT/ATT, SMP, L2CAP)와 <b>컨트롤러</b>(링크 계층, PHY)로 나뉘고 <b>HCI</b>로 잇는다. 시간에 민감한 일은 컨트롤러가 맡는다.</li>
+      <li>이 책의 근거는 <b>Core 6.2</b>다. [Vol·Part·§] 표기로 위치를 밝히며, shall은 필수, should는 권장, may는 허용이다. 코덱·메시·서비스 형식은 Core 밖의 사양에 있다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>블루투스가 2.4 GHz 대역을 고른 가장 큰 이유는?</p><div class="opts">
+        <button class="opt">2.4 GHz가 가장 멀리 가는 주파수라서</button>
+        <button class="opt" data-correct>전 세계 대부분 지역에서 면허 없이 쓸 수 있는 ISM 대역이라서</button>
+        <button class="opt">Wi-Fi가 쓰지 않는 조용한 대역이라서</button>
+        <button class="opt">휴대폰 통신과 같은 대역이라 안테나를 공유할 수 있어서</button>
+      </div><div class="quiz-exp">면허 없이 어디서나 팔 수 있는 제품을 만들려면 ISM 대역이 필요했다. 대신 Wi-Fi·전자레인지와 같은 “시끄러운 카페”를 나눠 써야 해서 주파수 도약 같은 장치가 생겼다(4장).</div></div>
+      <div class="quiz-q"><p>LE만 지원하는 체중계를 클래식(BR/EDR)만 지원하는 오래된 휴대폰과 연결하려 한다. 어떻게 될까?</p><div class="opts">
+        <button class="opt">같은 2.4 GHz라 문제없이 연결된다</button>
+        <button class="opt">연결은 되지만 속도가 느리다</button>
+        <button class="opt" data-correct>서로의 채널 배치와 패킷 규칙이 달라 서로를 찾지도 못한다</button>
+        <button class="opt">휴대폰이 자동으로 LE로 바꿔 준다</button>
+      </div><div class="quiz-exp">BR/EDR과 LE는 이름만 같을 뿐 채널(79개 vs 40개)과 발견 절차(조회 vs 광고)가 다른 별개의 시스템이다. 그래서 요즘 휴대폰은 두 가지를 모두 넣은 듀얼 모드 칩을 쓴다.</div></div>
+      <div class="quiz-q"><p>“블루투스 6.0 지원” 분실물 태그와 “블루투스 6.0 지원” 휴대폰이 있다. 두 기기로 채널 사운딩(cm급 거리 측정)을 반드시 쓸 수 있을까?</p><div class="opts">
+        <button class="opt">그렇다. 6.0의 대표 기능이므로 인증을 받았다면 반드시 있다</button>
+        <button class="opt" data-correct>그렇지 않다. 채널 사운딩은 선택 기능이라 두 기기가 모두 지원할 때만 쓸 수 있다</button>
+        <button class="opt">휴대폰만 지원하면 된다</button>
+        <button class="opt">펌웨어를 업데이트하면 어떤 기기든 생긴다</button>
+      </div><div class="quiz-exp">버전 번호는 인증 기준이 된 사양서 판을 뜻한다. 대부분의 기능은 선택이며 양쪽이 모두 지원해야 한다. 채널 사운딩은 무선 회로의 위상 측정 능력이 필요해 하드웨어가 받쳐 줘야 한다(11장).</div></div>
+      <div class="quiz-q"><p>블루투스 스택을 호스트와 컨트롤러로 나누는 주된 이유는?</p><div class="opts">
+        <button class="opt">호스트가 더 빠른 칩이라서</button>
+        <button class="opt">컨트롤러에는 메모리가 없어서</button>
+        <button class="opt" data-correct>µs 단위로 정확해야 하는 무선 타이밍은 무선 칩이 맡고, 운영체제는 HCI로 큰 명령만 내리게 하려고</button>
+        <button class="opt">보안상 암호를 호스트에서만 다루려고</button>
+      </div><div class="quiz-exp">운영체제는 다른 일도 하느라 150 µs 안에 응답한다는 보장을 할 수 없다. 시간에 민감한 링크 계층을 컨트롤러에 두면 운영체제가 잠든 사이에도 연결을 유지할 수 있다.</div></div>
+      <div class="quiz-q"><p>사양서에서 “should”로 쓰인 문장은?</p><div class="opts">
+        <button class="opt">반드시 지켜야 하는 요구 사항</button>
+        <button class="opt" data-correct>권장 사항. 지키지 않아도 사양 위반은 아니다</button>
+        <button class="opt">금지 사항</button>
+        <button class="opt">이전 버전의 규칙</button>
+      </div><div class="quiz-exp">shall = 필수, should = 권장, may = 허용. 스캔 창마다 다른 광고 채널을 듣는 것은 should, 광고 지연이 0~10 ms 난수인 것은 shall이다.</div></div>
+      <div class="quiz-q"><p>심박계가 심박수를 몇 바이트, 어떤 단위로 보내는지는 어디에 정해져 있을까?</p><div class="opts">
+        <button class="opt">Core 사양 Vol 6 링크 계층</button>
+        <button class="opt">Core 사양 Vol 2 무선</button>
+        <button class="opt" data-correct>Core 밖의 서비스 사양(Heart Rate Service 등)</button>
+        <button class="opt">각 제조사가 마음대로 정하며 표준이 없다</button>
+      </div><div class="quiz-exp">Core는 ATT/GATT라는 “메뉴판의 틀”만 정한다. 메뉴에 무엇이 어떤 형식으로 올라가는지는 서비스·프로파일 사양이 정한다(7장).</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+
+  /* ================================================================ 1. 주변 기기 */
+  (function () {
+    // [이름, 부제, 무선(br/le/both), 설명, 쓰는 일들 [[le|br, 설명]]]
+    const DEV = [
+      ["무선 이어폰", "TWS", "both", "음악은 오래전부터 쓰던 클래식의 A2DP로, 통화는 HFP로 보내는 제품이 대부분이다. 배터리 잔량, 터치 설정, 귀에서 빼면 멈추기 같은 부가 기능은 LE로 주고받는 경우가 많다. 최신 제품은 음악까지 LE 오디오(LC3)로 보낸다(10장).", [["br", "A2DP 음악"], ["br", "HFP 통화"], ["le", "설정·배터리"], ["le", "LE 오디오(최신)"]]],
+      ["스마트워치", "시계", "le", "알림, 심박수, 걸음 수를 수 초~수 분마다 조금씩 보낸다. 대부분 LE 연결 하나를 하루 종일 유지하며, 데이터가 없을 때는 거의 잠든다(9장).", [["le", "알림 동기화"], ["le", "심박수(GATT)"]]],
+      ["분실물 태그", "태그", "le", "몇 초마다 광고 패킷 하나를 내보내는 것이 일의 전부다. 지나가는 휴대폰들이 이 광고를 듣고 위치를 대신 알려 준다. 6.0 이후 일부 태그는 채널 사운딩으로 cm급 거리를 잰다(11장).", [["le", "광고(비콘)"], ["le", "근거리 찾기"]]],
+      ["차량 오디오", "자동차", "both", "통화(HFP)와 음악(A2DP), 연락처 내려받기(PBAP)는 클래식으로 한다. 최근 디지털 키는 LE와 UWB를 함께 쓴다.", [["br", "핸즈프리 통화"], ["br", "음악·연락처"], ["le", "디지털 키"]]],
+      ["무선 마우스", "키보드·마우스", "le", "LE 위의 HID(HOGP) 프로파일을 쓴다. 손이 움직일 때는 짧은 연결 간격으로 빠르게, 가만히 있으면 거의 잠든다. 6.2의 짧은 연결 간격(375 µs~)은 게임용 입력 장치 같은 곳을 노린다(6장).", [["le", "HID 입력"]]],
+      ["체중계·혈압계", "건강", "le", "측정할 때만 깨어나 몇 바이트를 보내고 다시 잠든다. 측정값 형식은 Weight Scale, Blood Pressure 같은 서비스 사양이 정한다(7장).", [["le", "측정값 전송"]]],
+      ["보청기", "청각", "le", "LE 오디오의 대표 수혜자다. 양쪽 귀에 따로 소리를 보내는 등시성 채널(CIS), 공공장소 안내 방송을 바로 듣는 브로드캐스트(Auracast)를 쓴다(10장).", [["le", "LE 오디오"], ["le", "브로드캐스트 수신"]]],
+      ["전자 가격표", "매장", "le", "매장의 수천 개 가격표를 하나의 송신기가 관리한다. 5.4의 응답 있는 주기적 광고(PAwR)가 이를 위한 기능이다(12장).", [["le", "PAwR"]]],
+      ["스마트 전구", "조명", "le", "앱에서 직접 연결하거나, 블루투스 메시로 여러 전구가 서로 명령을 전달한다. Matter 기기는 처음 설정할 때 LE를 쓴다(12장).", [["le", "메시"], ["le", "초기 설정"]]],
+      ["옛날 휴대폰", "2000년대", "br", "블루투스 2.x 시절 휴대폰은 클래식만 있었다. 헤드셋, 파일 전송(OBEX), 테더링에 썼다.", [["br", "헤드셋"], ["br", "파일 전송"]]],
+    ];
+    const grid = $("dev-grid"), info = $("dev-info");
+    const lab = { br: "클래식", le: "LE", both: "클래식 + LE" };
+    grid.innerHTML = DEV.map((d, i) => `<button type="button" data-i="${i}">${d[0]}<small>${d[1]} · ${lab[d[2]]}</small></button>`).join("");
+    const show = (i) => {
+      const d = DEV[i];
+      grid.querySelectorAll("button").forEach((b) => b.classList.toggle("on", +b.dataset.i === i));
+      info.innerHTML = `<h4>${d[0]} <span style="color:var(--text-faint);font-weight:400;font-size:13px">· ${lab[d[2]]}</span></h4>${d[3]}<div class="pills">${d[4].map(([k, t]) => `<span class="${k}">${k === "le" ? "LE" : "BR/EDR"} · ${t}</span>`).join("")}</div>`;
+    };
+    grid.addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) show(+b.dataset.i); });
+    show(0);
+  })();
+
+  /* ================================================================ 2. 버전 타임라인 */
+  (function () {
+    // Core 6.2 [Vol 1] Part C 변경 이력과 [Vol 0] Part C 채택일
+    const V = [
+      ["1.2", "2003", false, ["적응형 주파수 도약 AFH (4장)", "확장 SCO(eSCO) 음성 링크", "더 빠른 연결"], "같은 2.4 GHz의 Wi-Fi(802.11b/g)가 퍼지면서 간섭이 심해지자, 시끄러운 채널을 빼고 도는 AFH가 들어왔다."],
+      ["2.0+EDR", "2004", false, ["Enhanced Data Rate: 2 Mb/s(π/4-DQPSK), 3 Mb/s(8DPSK) (3장)"], "같은 1 Msym/s 심볼 속도에 위상 변조로 더 많은 비트를 실어 공중 속도를 2~3배로 올렸다."],
+      ["2.1+EDR", "2007", false, ["Secure Simple Pairing (8장)", "Extended Inquiry Response", "Sniff Subrating"], "PIN 코드를 직접 넣던 페어링을 숫자 비교 같은 쉬운 방식으로 바꿨다."],
+      ["3.0+HS", "2009", false, ["Alternative MAC/PHY(AMP): 큰 데이터는 802.11로 전송"], "블루투스로 연결을 맺고 대용량은 Wi-Fi 무선으로 보내는 방식. 거의 쓰이지 않아 5.3에서 삭제되었다."],
+      ["4.0", "2010", true, ["Bluetooth Low Energy: LE PHY·링크 계층 (2~6장)", "ATT·GATT (7장)", "Security Manager (8장)", "AES 암호화"], "블루투스의 두 번째 탄생. 코인 전지로 몇 년 가는 LE가 추가되었다."],
+      ["4.1", "2013", false, ["LE L2CAP 연결 지향 채널", "LE 프라이버시 1.1", "저듀티 directed 광고", "LE 이중 역할 토폴로지"], "한 기기가 센트럴과 페리페럴을 동시에 할 수 있게 되었다."],
+      ["4.2", "2014", true, ["LE Data Packet Length Extension: 페이로드 27 → 251바이트 (6장)", "LE Secure Connections: 타원곡선 키 교환 (8장)", "링크 계층 프라이버시"], "LE의 속도와 보안이 한 단계 올라갔다. 오늘날 LE 보안의 기본이 이 판에서 나왔다."],
+      ["5.0", "2016", true, ["LE 2M PHY (3장)", "LE Long Range = Coded PHY (3장)", "LE 광고 확장 (5장)", "채널 선택 알고리즘 #2 (4장)", "고출력(최대 +20 dBm)"], "“2배 빠르게, 4배 멀리, 8배 많이 광고”라는 구호로 알려진 판."],
+      ["5.1", "2019", false, ["도래각(AoA)·발사각(AoD) 방향 찾기 (11장)", "GATT 캐싱", "주기적 광고 동기 전달"], "안테나 배열로 신호가 오는 방향을 재는 기능이 들어왔다."],
+      ["5.2", "2019", true, ["LE 등시성 채널 CIS·BIS (10장)", "Enhanced ATT (7장)", "LE 전력 제어 (9장)"], "LE 오디오의 토대. 정해진 시각에 꼭 도착해야 하는 데이터를 위한 채널이 생겼다."],
+      ["5.3", "2021", false, ["연결 서브레이팅 (6장)", "채널 분류 강화 (4장)", "주기적 광고의 AdvDataInfo"], "필요할 때만 빠르게, 평소에는 느리게 연결 주기를 바꾸는 기능이 생겼다."],
+      ["5.4", "2023", false, ["응답 있는 주기적 광고 PAwR (12장)", "암호화된 광고 데이터 (5장)", "광고 부호화 선택"], "전자 가격표처럼 수천 기기와 양방향으로 주고받는 방송형 통신."],
+      ["6.0", "2024", true, ["채널 사운딩: 위상·왕복 시간 거리 측정 (11장)", "결정 기반 광고 필터링", "Frame Space Update (6장)", "광고자 모니터링", "LL 확장 기능 집합"], "블루투스만으로 cm~수십 cm 정확도의 거리를 잰다."],
+      ["6.1", "2025", false, ["무작위 RPA 갱신 (8장)"], "주소를 바꾸는 시점까지 무작위로 흩어 추적을 더 어렵게 했다."],
+      ["6.2", "2025", true, ["짧은 연결 간격: 최소 375 µs (6장)", "채널 사운딩 진폭 기반 공격 대응 (11장)", "HCI USB LE 등시성 지원", "LE 테스트 모드 강화"], "이 책의 기준 판. 2025년 11월 3일 채택."],
+    ];
+    const tl = $("ver-tl"), info = $("ver-info");
+    tl.innerHTML = V.map((v, i) => `<button type="button" class="${v[2] ? "big" : ""}" data-i="${i}">${v[0]}<small>${v[1]}</small></button>`).join("");
+    const show = (i) => {
+      const v = V[i];
+      tl.querySelectorAll("button").forEach((b) => b.classList.toggle("on", +b.dataset.i === i));
+      info.innerHTML = `<h4>Core ${v[0]} <span style="color:var(--text-faint);font-weight:400;font-size:13px">· ${v[1]}년</span></h4><p style="margin:0 0 6px">${v[4]}</p><ul style="margin:0;padding-left:20px">${v[3].map((f) => `<li>${f}</li>`).join("")}</ul>`;
+    };
+    tl.addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) show(+b.dataset.i); });
+    show(V.length - 1);
+    tl.scrollLeft = tl.scrollWidth;
+  })();
+
+  /* ================================================================ 3. 스택 탐색 */
+  (function () {
+    const L = {
+      app: ["앱 · 프로파일", "사용자가 보는 기능. “심박수 보여 주기”, “음악 재생”. 프로파일은 특정 용도를 위해 아래층을 어떻게 쓸지 정한 약속이다(예: Heart Rate Profile, A2DP).", "Core 밖 프로파일 사양", "7·10장"],
+      gap: ["GAP · Generic Access Profile", "기기의 역할(센트럴·페리페럴·브로드캐스터·옵서버)과 발견·연결·보안 절차, 광고 간격 권장값, 주소 교체 주기 같은 “모든 블루투스 기기가 지키는 기본 예절”.", "[Vol 3] Part C", "5·8장"],
+      gatt: ["GATT · Generic Attribute Profile", "ATT로 저장된 속성을 서비스·특성·디스크립터라는 계층 구조로 묶고, 찾기·읽기·쓰기·알림 절차를 정한다. LE 데이터 교환의 공통 언어.", "[Vol 3] Part G", "7장"],
+      att: ["ATT · Attribute Protocol", "핸들(번호)·UUID(종류)·값·권한으로 이루어진 속성을 클라이언트가 서버에게 읽고 쓰는 단순한 요청·응답 규칙.", "[Vol 3] Part F", "7장"],
+      smp: ["SMP · Security Manager Protocol", "LE 페어링(입출력 능력 교환, 키 생성)과 키 배포를 맡는다. 암호화 자체는 컨트롤러의 AES-CCM이 한다.", "[Vol 3] Part H", "8장"],
+      sdp: ["SDP · RFCOMM (클래식)", "클래식에서 상대가 어떤 서비스를 제공하는지 묻는 SDP, 직렬 포트를 흉내 내는 RFCOMM. 오디오·핸즈프리 같은 클래식 프로파일이 쓴다.", "[Vol 3] Part B 등", "10장"],
+      l2cap: ["L2CAP", "여러 상위 프로토콜의 데이터를 채널 번호(CID)로 구분해 하나의 링크에 싣고, 큰 데이터를 쪼개고 다시 합친다. ATT는 LE에서 고정 채널 0x0004를 쓴다.", "[Vol 3] Part A", "7장"],
+      hci: ["HCI · Host Controller Interface", "호스트와 컨트롤러 사이의 표준 명령·이벤트·데이터 형식. UART, USB, SD 같은 물리 연결 방식도 정의한다.", "[Vol 4]", "1·8장"],
+      ll: ["링크 계층 (LE) · 베이스밴드·링크 매니저 (BR/EDR)", "언제, 어느 채널에서, 어떤 패킷을 보낼지 정하는 상태 기계. 광고·스캔·연결 상태, 채널 선택, 재전송, 암호화, 등시성 스트림이 여기 있다.", "[Vol 6] Part B · [Vol 2] Part B·C", "4~6장"],
+      phy: ["물리 계층 (PHY)", "비트를 2.4 GHz 전파로 바꾸고 되돌린다. 변조(GFSK, DPSK), 송신 전력, 수신 감도, 채널 주파수를 정한다.", "[Vol 6] Part A · [Vol 2] Part A", "2·3장"],
+    };
+    const info = $("stack-info"), svg = document.querySelector(".stack-svg");
+    const show = (k) => {
+      const l = L[k];
+      svg.querySelectorAll(".ly").forEach((g) => g.classList.toggle("on", g.dataset.k === k));
+      info.innerHTML = `<h4>${l[0]}</h4>${l[1]}<div class="pills"><span class="le">사양서 · ${l[2]}</span><span>이 책 · ${l[3]}</span></div>`;
+    };
+    svg.querySelectorAll(".ly").forEach((g) => g.addEventListener("click", () => show(g.dataset.k)));
+    show("ll");
+  })();
+})();
+</script>
+</body>
+</html>

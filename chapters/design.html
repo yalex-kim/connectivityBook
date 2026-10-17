@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>블루투스 제품 설계 플레이그라운드 · BluetoothBook</title>
+<meta name="description" content="지금까지의 모든 계산을 한 화면에. 이어폰, 심박계, 분실물 태그, 게임 컨트롤러를 골라 PHY, 송신 전력, 간격, 지연, 데이터 양을 정하면 배터리 수명, 반응 지연, 도달 거리, 처리량 여유와 Core 6.2 규칙 위반 여부가 따라온다.">
+<link rel="canonical" href="https://bluetoothbook.euiyun.com/chapters/design.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="BluetoothBook">
+<meta property="og:title" content="블루투스 제품 설계 플레이그라운드 · BluetoothBook">
+<meta property="og:description" content="지금까지의 모든 계산을 한 화면에. 이어폰, 심박계, 분실물 태그, 게임 컨트롤러를 골라 PHY, 송신 전력, 간격, 지연, 데이터 양을 정하면 배터리 수명, 반응 지연, 도달 거리, 처리량 여유와 Core 6.2 규칙 위반 여부가 따라온다.">
+<meta property="og:url" content="https://bluetoothbook.euiyun.com/chapters/design.html">
+<meta property="og:image" content="https://bluetoothbook.euiyun.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"블루투스 제품 설계 플레이그라운드","name":"블루투스 제품 설계 플레이그라운드 · BluetoothBook","url":"https://bluetoothbook.euiyun.com/chapters/design.html","mainEntityOfPage":"https://bluetoothbook.euiyun.com/chapters/design.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":13,"image":"https://bluetoothbook.euiyun.com/og.png","dateModified":"2026-10-16","isPartOf":{"@type":"Book","@id":"https://bluetoothbook.euiyun.com/#book","name":"BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서","url":"https://bluetoothbook.euiyun.com/"},"publisher":{"@type":"Organization","name":"BluetoothBook","url":"https://bluetoothbook.euiyun.com/"},"description":"지금까지의 모든 계산을 한 화면에. 이어폰, 심박계, 분실물 태그, 게임 컨트롤러를 골라 PHY, 송신 전력, 간격, 지연, 데이터 양을 정하면 배터리 수명, 반응 지연, 도달 거리, 처리량 여유와 Core 6.2 규칙 위반 여부가 따라온다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook","item":"https://bluetoothbook.euiyun.com/"},{"@type":"ListItem","position":2,"name":"13 블루투스 제품 설계 플레이그라운드","item":"https://bluetoothbook.euiyun.com/chapters/design.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<!-- Cloudflare Web Analytics -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"3d6151a0abc94ede89285d462527fa80"}'></script>
+<!-- End Cloudflare Web Analytics -->
+<style>
+  .chk { list-style: none; padding: 0; margin: 10px 0 0; font-size: 14px; }
+  .chk li { padding: 6px 0 6px 26px; position: relative; border-bottom: 1px dashed var(--border); line-height: 1.5; }
+  .chk li::before { position: absolute; left: 2px; top: 6px; font-weight: 700; }
+  .chk li.ok::before { content: "✓"; color: var(--ok); } .chk li.bad::before { content: "✗"; color: var(--bad); } .chk li.warn::before { content: "!"; color: var(--warn); }
+  .chk small { color: var(--text-faint); font-family: var(--mono); font-size: 11.5px; }
+</style>
+</head>
+<body data-chapter="design">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 13</div>
+    <h1>블루투스 제품 설계 플레이그라운드</h1>
+    <p class="lead">지금까지 각 장에서 따로 계산했던 것들은 사실 한 제품 안에서 서로 얽혀 있다. 연결 간격을 줄이면 반응은 빨라지지만 배터리가 줄고, Coded PHY로 거리를 늘리면 공중 시간이 늘어 처리량과 배터리가 줄며, 송신 전력을 올리면 거리는 늘지만 2장에서 봤듯 몸이 가리는 손실 앞에서는 효과가 작다. 이 장에서는 제품 하나를 골라 직접 파라미터를 정하고, 그 결과가 요구 사항과 Core 6.2의 규칙을 함께 만족하는지 확인한다. 정답은 하나가 아니다. 무엇을 포기할지 고르는 것이 설계다.</p>
+    <ul class="objectives">
+      <li>제품의 요구 사항(배터리 수명, 반응 시간, 거리, 데이터 양)을 블루투스 파라미터로 옮긴다.</li>
+      <li>2~12장의 계산(링크 버짓, 패킷 시간, 연결 규칙, 처리량, 전류)을 함께 돌려 교환 관계를 체감한다.</li>
+      <li>선택한 기능이 어느 Core 버전과 양쪽 기기의 지원을 필요로 하는지 점검한다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="play">
+    <h2>설계해 보기</h2>
+    <p>제품을 고르면 그 제품의 요구 사항(가로 점선)과 흔한 출발점 설정이 채워진다. 슬라이더를 움직여 네 막대가 모두 점선을 넘게 만들어 보자. 아래 목록은 Core 6.2 규칙과 호환성 점검이다.</p>
+    <div class="sim" id="sim-design">
+      <div class="sim-head"><span class="sim-tag">PLAYGROUND</span><h3>제품 설계: 수명 · 반응 · 거리 · 처리량</h3></div>
+      <div class="sim-view"><canvas id="cv-design"></canvas><ul class="chk" id="dz-chk"></ul></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>제품</span><div class="seg" id="dz-prod"><button data-value="hr" class="on">심박계</button><button data-value="tag">분실물 태그</button><button data-value="pad">게임 컨트롤러</button><button data-value="ear">LE 오디오 이어폰</button></div></div>
+        <div class="ctrl"><span>PHY</span><div class="seg" id="dz-phy"><button data-value="1m" class="on">1M</button><button data-value="2m">2M</button><button data-value="s2">Coded S=2</button><button data-value="s8">Coded S=8</button></div></div>
+        <label class="ctrl"><span>송신 전력 <output id="dz-tx-out"></output></span><input type="range" id="dz-tx" min="0" max="5" value="3"></label>
+        <label class="ctrl"><span>연결 간격 (태그는 광고 간격) <output id="dz-int-out"></output></span><input type="range" id="dz-int" min="0" max="100" value="45"></label>
+        <label class="ctrl"><span>페리페럴 지연 <output id="dz-lat-out"></output></span><input type="range" id="dz-lat" min="0" max="20" value="0"></label>
+        <label class="ctrl"><span>감독 타임아웃 <output id="dz-to-out"></output></span><input type="range" id="dz-to" min="10" max="3200" step="10" value="2000"></label>
+        <label class="ctrl"><span>전지 용량 <output id="dz-cap-out"></output></span><input type="range" id="dz-cap" min="20" max="1000" step="10" value="180"></label>
+        <label class="check"><input type="checkbox" id="dz-body" checked> 사람 몸이 가리는 손실 포함 (−12 dB)</label>
+        <label class="check"><input type="checkbox" id="dz-sci"> 양쪽 모두 6.2 짧은 연결 간격(SCI) 지원</label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">배터리 수명</span><span class="v" id="dz-life">—</span></div>
+        <div class="stat"><span class="k">반응 지연 (최악)</span><span class="v" id="dz-lat2">—</span></div>
+        <div class="stat"><span class="k">도달 거리 (집, n=2.7)</span><span class="v" id="dz-range">—</span></div>
+        <div class="stat"><span class="k">처리량 여유</span><span class="v" id="dz-tp">—</span></div>
+      </div>
+      <div class="sim-note">막대 길이는 요구 사항 대비 비율(1 = 점선 = 딱 맞음, 로그 눈금)이다. 해볼 것: ① 심박계: 1초에 한 번 심박을 보내면 되므로 연결 간격을 늘리고 지연을 쓰면 수명이 크게 늘지만, 휴대폰 → 심박계 명령 반응이 늦어진다. ② 분실물 태그: 광고 간격과 송신 전력, Coded PHY의 교환을 보자. Coded로 광고하려면 확장 광고(5.0)를 써야 하고 휴대폰도 Coded 스캔을 지원해야 한다. ③ 게임 컨트롤러: 반응 4 ms를 맞추려면 7.5 ms 간격으로는 부족하다. SCI(6.2)를 켜면 짧은 간격이 허용된다. ④ LE 오디오 이어폰: 처리량 여유와 배터리(충전식 60 mAh)를 맞춰 보자. 모델: 2·3·6·9장의 식과 같은 대표 수치(칩 감도 1M −97, 2M −94, S=2 −100, S=8 −104 dBm, 수면 2 µA, 송신·수신 전류 표). 오디오는 LC3 96 kb/s 스트림 + 재전송 여유를 처리량 요구로 본다.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="checklist">
+    <h2>설계 체크리스트: 요구 사항에서 기능으로</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>요구 사항</th><th>먼저 볼 손잡이</th><th>필요한 Core 기능 (버전)</th><th>이 책</th></tr></thead>
+      <tbody>
+        <tr><td>코인 전지로 수년</td><td>간격·지연, 데이터 묶기, 수면 전류, 수정 발진기</td><td>LE (4.0), 서브레이팅 (5.3)</td><td>6·9장</td></tr>
+        <tr><td>버튼 반응 수 ms</td><td>짧은 연결 간격, 지연 0</td><td>짧은 연결 간격 SCI (6.2)</td><td>6장</td></tr>
+        <tr><td>마당·창고 끝까지</td><td>Coded PHY, 안테나·배치</td><td>LE Coded (5.0), 확장 광고 (5.0)</td><td>2·3·5장</td></tr>
+        <tr><td>펌웨어 업데이트 빠르게</td><td>2M, DLE, MTU, 이벤트 길이</td><td>LE 2M (5.0), DLE (4.2)</td><td>6·7장</td></tr>
+        <tr><td>엿듣기·끼어들기 방지</td><td>Secure Connections, 입출력, OOB</td><td>LE Secure Connections (4.2)</td><td>8장</td></tr>
+        <tr><td>추적 방지</td><td>RPA, 광고 내용</td><td>LL 프라이버시 (4.2), 무작위 RPA 갱신 (6.1)</td><td>5·8장</td></tr>
+        <tr><td>무선 오디오 저지연·양쪽 귀</td><td>CIS, LC3, NSE·FT</td><td>등시성 채널 (5.2)</td><td>10장</td></tr>
+        <tr><td>여러 명에게 소리 방송</td><td>BIS, 주기적 광고</td><td>등시성 채널 (5.2), 주기적 광고 (5.0)</td><td>10장</td></tr>
+        <tr><td>방향 찾기</td><td>안테나 배열, CTE</td><td>AoA/AoD (5.1)</td><td>11장</td></tr>
+        <tr><td>cm급 거리</td><td>CS 보정·안테나</td><td>채널 사운딩 (6.0), 진폭 공격 대응 (6.2)</td><td>11장</td></tr>
+        <tr><td>수천 기기 관리</td><td>서브이벤트·응답 슬롯</td><td>PAwR (5.4)</td><td>12장</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout warn"><strong>“둘 다 지원해야 한다”를 잊지 말 것</strong><p>표의 기능 대부분은 선택 사항이다(1장). 내 제품이 지원해도 상대(대개 사용자의 휴대폰)가 지원하지 않으면 쓸 수 없다. 그래서 제품은 기본 경로(LE 1M, 레거시 광고, 7.5 ms 이상 간격)로도 동작하게 만들고, 상대가 지원할 때만 더 나은 경로로 올라가도록 설계한다. 연결 직후의 기능 교환(Feature Exchange 절차, [Vol 6] Part B §5.1.4)이 그 출발점이다.</p></div>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>블루투스 설계는 <b>배터리 · 반응 · 거리 · 처리량</b>의 교환이다. 간격·지연은 배터리와 반응을, PHY와 송신 전력은 거리와 배터리·처리량을 맞바꾼다.</li>
+      <li>요구 사항을 먼저 숫자로 정하고(“1초마다 2바이트, 반응 100 ms, 10 m, 1년”), 그 숫자를 각 장의 식으로 파라미터에 옮긴다.</li>
+      <li>사양 규칙(감독 타임아웃 &gt; (1 + 지연) × 간격 × 2 등)과 <b>양쪽의 기능 지원</b>을 함께 점검하고, 기본 경로로도 동작하게 만든다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>심박계의 배터리 수명을 늘리면서 심박 알림(심박계 → 휴대폰)의 반응은 유지하고 싶다. 가장 알맞은 손잡이는?</p><div class="opts">
+        <button class="opt">연결 간격을 4 s로 늘린다</button><button class="opt" data-correct>연결 간격은 적당히 두고 페리페럴 지연을 키운다</button><button class="opt">Coded S=8로 바꾼다</button><button class="opt">송신 전력을 +8 dBm으로 올린다</button>
+      </div><div class="quiz-exp">지연은 페리페럴이 보낼 것이 없을 때만 건너뛰게 하므로 알림 방향의 반응은 그대로다. 대신 휴대폰 → 심박계 방향이 느려진다(6장).</div></div>
+      <div class="quiz-q"><p>분실물 태그를 Coded PHY로 광고하려 한다. 꼭 필요한 것은?</p><div class="opts">
+        <button class="opt">레거시 ADV_IND</button><button class="opt" data-correct>확장 광고(ADV_EXT_IND)와 Coded 스캔을 지원하는 휴대폰</button><button class="opt">6.2 SCI</button><button class="opt">AoA 안테나 배열</button>
+      </div><div class="quiz-exp">레거시 광고 PDU는 LE 1M에서만 보낼 수 있다. ADV_EXT_IND는 광고 채널에서 1M 또는 Coded를 쓴다(5장 Table 2.3).</div></div>
+      <div class="quiz-q"><p>게임 컨트롤러가 6.2의 짧은 연결 간격을 지원하지만 사용자의 휴대폰은 6.0이다. 어떻게 해야 하나?</p><div class="opts">
+        <button class="opt">연결을 거부한다</button><button class="opt" data-correct>7.5 ms 이상(BCV)의 간격으로 동작하고, 상대가 SCI를 지원할 때만 짧은 간격으로 올라간다</button><button class="opt">펌웨어로 휴대폰을 6.2로 바꾼다</button><button class="opt">Coded PHY로 대신한다</button>
+      </div><div class="quiz-exp">모든 컨트롤러는 BCV를 지원해야 하고, 연결 생성 시에도 BCV를 쓴다. 짧은 간격은 양쪽이 지원할 때 Connection Rate 절차로 옮겨 간다(6장).</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const C = 299792458;
+  const TXP = [-20, -8, -4, 0, 4, 8], TXI = [2.9, 3.6, 4.3, 5.0, 7.0, 11.0];
+  const SENS = { "1m": -97, "2m": -94, s2: -100, s8: -104 };
+  const RATE = { "1m": 1000, "2m": 2000, s2: 500, s8: 125 };
+  const pktUs = (phy, pdu) => (phy === "1m" ? (1 + 4 + pdu + 3) * 8 : phy === "2m" ? (2 + 4 + pdu + 3) * 4 : 376 + (pdu * 8 + 27) * (phy === "s8" ? 8 : 2));
+  const fspl1 = 20 * Math.log10((4 * Math.PI * 2.44e9) / C);
+  /** 제품 요구 사항과 출발 설정 */
+  const PROD = {
+    hr: { name: "심박계", need: { lifeD: 365, latMs: 1000, rangeM: 10, kbps: 0.1 }, mode: "conn", phy: "1m", tx: 3, iv: 45, lat: 0, to: 2000, cap: 180, payload: 6, perS: 1 },
+    tag: { name: "분실물 태그", need: { lifeD: 365, latMs: 4000, rangeM: 30, kbps: 0 }, mode: "adv", phy: "1m", tx: 3, iv: 80, lat: 0, to: 2000, cap: 180, payload: 0, perS: 0 },
+    pad: { name: "게임 컨트롤러", need: { lifeD: 20, latMs: 4, rangeM: 5, kbps: 30 }, mode: "conn", phy: "2m", tx: 3, iv: 0, lat: 0, to: 500, cap: 600, payload: 12, perS: 250 },
+    ear: { name: "LE 오디오 이어폰", need: { lifeD: 0.25, latMs: 40, rangeM: 10, kbps: 140 }, mode: "audio", phy: "2m", tx: 3, iv: 20, lat: 0, to: 1000, cap: 60, payload: 120, perS: 100 },
+  };
+  /** 연결 규칙 검사 (6장과 같음). [Vol 6] Part B §4.5.1·§4.5.2 */
+  function checkConn(intervalUs, latency, timeoutMs, sci) {
+    const e = [];
+    if (!sci && (intervalUs < 7500 || intervalUs % 1250)) e.push("SCI 없이 쓸 수 있는 간격은 1.25 ms 단위 7.5 ms 이상 (§4.5.1)");
+    if (latency + 1 > 500) e.push("subrate × (지연 + 1) ≤ 500 (§4.5.1)");
+    if (!(timeoutMs * 1000 > (1 + latency) * intervalUs * 2)) e.push("감독 타임아웃 > (1 + 지연) × 간격 × 2 (§4.5.2)");
+    return e;
+  }
+  const prod = BT.seg("dz-prod", (v) => load(v));
+  const phy = BT.seg("dz-phy", draw);
+  const tx = BT.range("dz-tx", (v) => (TXP[v] > 0 ? "+" : "") + TXP[v] + " dBm", draw);
+  const ivUs = (v) => { const p = PROD[prod()]; if (p.mode === "adv") return Math.round((20000 * Math.pow(500, v / 100)) / 625) * 625; const lo = $("dz-sci").checked ? 375 : 7500, us = lo * Math.pow(4e6 / lo, v / 100); return us < 7500 ? Math.round(us / 125) * 125 : Math.round(us / 1250) * 1250; };
+  const fmtUs = (us) => (us >= 1e6 ? (us / 1e6).toFixed(2) + " s" : us >= 1000 ? +(us / 1000).toFixed(3) + " ms" : us + " µs");
+  const iv = BT.range("dz-int", (v) => fmtUs(ivUs(v)), draw);
+  const lat = BT.range("dz-lat", (v) => String(v), draw);
+  const to = BT.range("dz-to", (v) => (v >= 1000 ? (v / 1000).toFixed(2) + " s" : v + " ms"), draw);
+  const cap = BT.range("dz-cap", (v) => v + " mAh", draw);
+  ["dz-body", "dz-sci"].forEach((id) => $(id).addEventListener("change", () => { iv.el.dispatchEvent(new Event("input")); }));
+  function load(k) {
+    const p = PROD[k]; phy.set(p.phy, false);
+    [[tx, p.tx], [iv, p.iv], [lat, p.lat], [to, p.to], [cap, p.cap]].forEach(([g, v]) => { g.el.value = v; g.el.dispatchEvent(new Event("input")); });
+    draw();
+  }
+  let R = {};
+  function compute() {
+    const p = PROD[prod()], ph = phy(), I = ivUs(iv()), L = lat(), txMa = TXI[tx()];
+    // 거리: 링크 버짓 (2장)
+    const extra = $("dz-body").checked ? 12 : 0, range = Math.pow(10, (TXP[tx()] - extra - SENS[ph] - fspl1) / (10 * 2.7));
+    // 전류 (9장)
+    const wake = (150 * 2 + 200 * 2.5) / 1000;
+    let avgUa, latMs, tpNeed = p.need.kbps, tpHave;
+    if (p.mode === "adv") {
+      const advPkt = ph === "1m" ? pktUs("1m", 2 + 6 + 20) : pktUs("1m", 2 + 6 + 3) + 300 + pktUs(ph, 2 + 6 + 3 + 20); // Coded·2M은 확장 광고(ADV_EXT_IND + AUX)
+      const q = wake + 3 * (advPkt * txMa) / 1000 + 3 * (60 * 5.4) / 1000;
+      avgUa = 2 + q / (I / 1e6); latMs = I / 1000 + 10; tpHave = 0;
+    } else {
+      const wakeUs = I * (L + 1), ww = (100 / 1e6) * wakeUs + 16;
+      const qEv = wake + ((2 * ww + pktUs(ph, 2) + 150) * 5.4 + pktUs(ph, 2 + 4 + 3 + p.payload) * txMa) / 1000;
+      avgUa = 2 + qEv / (wakeUs / 1e6);
+      if (p.mode === "audio") { avgUa += 3500; } // 오디오 디코딩·증폭기 등 (대표값)
+      latMs = (I / 1000) * (p.mode === "audio" ? 2 : 1);
+      // 처리량: 이벤트 안에 들어가는 패킷
+      const pair = pktUs(ph, 2 + 251 + 4) + 150 + pktUs(ph, 2) + 150, n = Math.max(1, Math.floor((I - 150) / pair));
+      tpHave = (Math.min(n, 6) * 244 * 8) / (I / 1000);
+    }
+    const lifeD = (cap() / (avgUa / 1000)) / 24;
+    R = { lifeD, latMs, range, tpHave, tpNeed, I, p };
+  }
+  const cv = BT.canvas($("cv-design"), (ctx, w, h) => {
+    if (!R.p) return;
+    const P = BT.palette(), need = R.p.need;
+    const bars = [["배터리 수명", R.lifeD / need.lifeD], ["반응 지연", need.latMs / Math.max(R.latMs, 0.01)], ["도달 거리", R.range / need.rangeM], ["처리량 여유", need.kbps ? R.tpHave / need.kbps : NaN]];
+    const L = 96, Rr = w - 60, top = 10, rh = (h - top - 20) / bars.length, lg = (v) => Math.log10(Math.max(0.01, Math.min(100, v))), X = (v) => L + ((lg(v) + 2) / 4) * (Rr - L);
+    bars.forEach(([name, v], i) => {
+      const y = top + i * rh;
+      BT.text(ctx, name, 6, y + rh / 2, { size: 12, color: P.text });
+      if (!isFinite(v)) { BT.text(ctx, "해당 없음", L + 4, y + rh / 2, { size: 11, color: P.faint }); return; }
+      ctx.fillStyle = v >= 1 ? P.ok : P.bad; ctx.globalAlpha = 0.8; ctx.fillRect(L, y + 6, Math.max(2, X(v) - L), rh - 12); ctx.globalAlpha = 1;
+      BT.text(ctx, "×" + (v >= 10 ? Math.round(v) : v.toFixed(2)), X(v) + 6, y + rh / 2, { size: 11, mono: true, color: P.dim });
+    });
+    ctx.strokeStyle = P.text; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(X(1), top); ctx.lineTo(X(1), h - 18); ctx.stroke(); ctx.setLineDash([]);
+    BT.text(ctx, "요구 사항", X(1), h - 8, { size: 10.5, color: P.dim, align: "center" });
+  }, { aspect: 0.34, minHeight: 190, maxHeight: 250 });
+  function draw() {
+    compute();
+    const p = R.p, need = p.need;
+    const fmtLife = (d) => (d >= 365 ? (d / 365).toFixed(1) + "년" : d >= 30 ? (d / 30).toFixed(1) + "개월" : d >= 1 ? d.toFixed(1) + "일" : (d * 24).toFixed(1) + "시간");
+    BT.stat("dz-life", fmtLife(R.lifeD) + ` <small style="color:var(--text-faint)">(목표 ${fmtLife(need.lifeD)})</small>`);
+    BT.stat("dz-lat2", (R.latMs >= 1000 ? (R.latMs / 1000).toFixed(2) + " s" : R.latMs.toFixed(R.latMs < 10 ? 2 : 0) + " ms") + ` <small style="color:var(--text-faint)">(목표 ${need.latMs} ms)</small>`);
+    BT.stat("dz-range", (R.range >= 10 ? Math.round(R.range) : R.range.toFixed(1)) + ` m <small style="color:var(--text-faint)">(목표 ${need.rangeM} m)</small>`);
+    BT.stat("dz-tp", need.kbps ? Math.round(R.tpHave) + ` kb/s <small style="color:var(--text-faint)">(필요 ${need.kbps})</small>` : "—");
+    const items = [];
+    if (p.mode !== "adv") {
+      const e = checkConn(R.I, lat(), to(), $("dz-sci").checked);
+      if (e.length) e.forEach((x) => items.push(["bad", x, "[Vol 6] Part B"])); else items.push(["ok", "연결 파라미터가 사양 규칙을 만족", "[Vol 6] Part B §4.5.1·§4.5.2"]);
+      if (R.I < 7500) items.push(["warn", "7.5 ms 미만 간격: 양쪽 모두 SCI(6.2) 지원 필요, 연결 생성은 BCV로 한 뒤 Connection Rate 절차로 전환", "[Vol 6] Part B §4.5.1, §5.1.32"]);
+    } else {
+      if (R.I < 20000) items.push(["bad", "광고 간격은 20 ms 이상", "[Vol 6] Part B §4.4.2.2.1"]); else items.push(["ok", "광고 간격 20 ms ~ 10,485.76 s 범위", "[Vol 6] Part B §4.4.2.2.1"]);
+      if (phy() !== "1m") items.push(["warn", "1M 외의 PHY로 광고하려면 확장 광고(5.0)가 필요하고, 휴대폰이 그 PHY로 스캔해야 발견된다", "[Vol 6] Part B §2.3 Table 2.3"]);
+    }
+    if (phy() !== "1m") items.push(["warn", (phy() === "2m" ? "LE 2M" : "LE Coded") + "은 선택 기능(5.0). 상대가 지원하지 않으면 1M으로 동작해야 한다", "[Vol 6] Part A §1"]);
+    if (p.mode === "audio") items.push(["warn", "LE 오디오: 등시성 채널(5.2)과 LC3·BAP 프로파일을 양쪽이 지원해야 한다", "[Vol 6] Part B §4.5.13"]);
+    if (TXP[tx()] > 4) items.push(["warn", "+4 dBm 초과: LE 전력 등급 1.5 이상. 가까운 거리에서는 상대 수신기 포화 주의 — LE 전력 제어 고려", "[Vol 6] Part A §3"]);
+    $("dz-chk").innerHTML = items.map(([c, t, r]) => `<li class="${c}">${t} <small>${r}</small></li>`).join("");
+    cv.redraw();
+  }
+  load("hr");
+})();
+</script>
+</body>
+</html>

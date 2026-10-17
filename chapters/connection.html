@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>연결: 약속된 시각의 짧은 만남 · BluetoothBook</title>
+<meta name="description" content="LE 연결의 시간표. 연결 이벤트와 앵커 포인트, 6.2의 짧은 연결 간격(375 µs~4 s), 페리페럴 지연·서브레이팅·감독 타임아웃 규칙, 데이터 PDU 헤더와 24비트 CRC·화이트닝을 사양 샘플로 검증하는 패킷 해부, SN/NESN 재전송, 처리량 계산을 다룬다.">
+<link rel="canonical" href="https://bluetoothbook.euiyun.com/chapters/connection.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="BluetoothBook">
+<meta property="og:title" content="연결: 약속된 시각의 짧은 만남 · BluetoothBook">
+<meta property="og:description" content="LE 연결의 시간표. 연결 이벤트와 앵커 포인트, 6.2의 짧은 연결 간격(375 µs~4 s), 페리페럴 지연·서브레이팅·감독 타임아웃 규칙, 데이터 PDU 헤더와 24비트 CRC·화이트닝을 사양 샘플로 검증하는 패킷 해부, SN/NESN 재전송, 처리량 계산을 다룬다.">
+<meta property="og:url" content="https://bluetoothbook.euiyun.com/chapters/connection.html">
+<meta property="og:image" content="https://bluetoothbook.euiyun.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"연결: 약속된 시각의 짧은 만남","name":"연결: 약속된 시각의 짧은 만남 · BluetoothBook","url":"https://bluetoothbook.euiyun.com/chapters/connection.html","mainEntityOfPage":"https://bluetoothbook.euiyun.com/chapters/connection.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":6,"image":"https://bluetoothbook.euiyun.com/og.png","dateModified":"2026-10-16","isPartOf":{"@type":"Book","@id":"https://bluetoothbook.euiyun.com/#book","name":"BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서","url":"https://bluetoothbook.euiyun.com/"},"publisher":{"@type":"Organization","name":"BluetoothBook","url":"https://bluetoothbook.euiyun.com/"},"description":"LE 연결의 시간표. 연결 이벤트와 앵커 포인트, 6.2의 짧은 연결 간격(375 µs~4 s), 페리페럴 지연·서브레이팅·감독 타임아웃 규칙, 데이터 PDU 헤더와 24비트 CRC·화이트닝을 사양 샘플로 검증하는 패킷 해부, SN/NESN 재전송, 처리량 계산을 다룬다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook","item":"https://bluetoothbook.euiyun.com/"},{"@type":"ListItem","position":2,"name":"06 연결: 약속된 시각의 짧은 만남","item":"https://bluetoothbook.euiyun.com/chapters/connection.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<!-- Cloudflare Web Analytics -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"3d6151a0abc94ede89285d462527fa80"}'></script>
+<!-- End Cloudflare Web Analytics -->
+<style>
+  .pk-in { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .pk-in input[type=text] { font: inherit; font-family: var(--mono); font-size: 13px; width: 100%; box-sizing: border-box; padding: 7px 9px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-elev); color: var(--text); }
+  .pk-in label { font-size: 13px; color: var(--text-dim); }
+  .pk-rows { margin-top: 12px; font-family: var(--mono); font-size: 12.5px; line-height: 1.75; }
+  .pk-rows div { display: grid; grid-template-columns: 116px 1fr; gap: 8px; padding: 3px 0; border-bottom: 1px dashed var(--border); }
+  .pk-rows div > span:first-child { color: var(--text-dim); font-family: var(--font); font-size: 12.5px; }
+  .pk-rows span.b { word-break: break-all; }
+  .pk-rows .pre { color: var(--text-faint); } .pk-rows .aa { color: var(--accent-2); } .pk-rows .hd { color: var(--warn); } .pk-rows .pl { color: var(--accent); } .pk-rows .crc { color: var(--bad); }
+  .hdrbits { display: grid; grid-template-columns: repeat(16, 1fr); gap: 2px; margin-top: 10px; font-family: var(--mono); font-size: 11px; text-align: center; }
+  .hdrbits span { padding: 4px 0; border-radius: 4px; background: var(--surface); }
+  .hdrbits small { display: block; font-size: 9.5px; color: var(--text-faint); }
+  .ev-log { font-family: var(--mono); font-size: 12.5px; max-height: 170px; overflow: auto; background: var(--surface); border-radius: 10px; padding: 8px 10px; margin-top: 10px; line-height: 1.7; }
+  .ev-log .x { color: var(--bad); } .ev-log .r { color: var(--warn); } .ev-log .k { color: var(--ok); }
+</style>
+</head>
+<body data-chapter="connection">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 06</div>
+    <h1>연결: 약속된 시각의 짧은 만남</h1>
+    <p class="lead">스마트워치는 하루 종일 휴대폰과 “연결되어” 있다. 그런데 정말 하루 종일 전파를 주고받는 것일까? 아니다. 둘은 예를 들어 50 ms마다 1 ms도 안 되는 순간만 깨어나 몇 바이트를 주고받고, 나머지 98% 넘는 시간은 무선부를 끈 채 잔다. LE의 “연결”이란 끊기지 않는 선이 아니라 <b>정확한 시간 약속</b>이다. 이 장에서는 그 약속의 내용(연결 간격, 지연, 타임아웃), 약속 시각에 오가는 패킷의 비트 하나하나, 잃어버린 패킷을 되찾는 방법, 그리고 이 구조에서 나오는 처리량의 한계를 계산한다.</p>
+    <ul class="objectives">
+      <li>연결 이벤트·앵커 포인트·연결 간격의 관계와, 6.2에서 넓어진 연결 간격 범위(375 µs ~ 4 s)를 안다.</li>
+      <li>페리페럴 지연, 연결 서브레이팅, 감독 타임아웃 사이의 사양 규칙을 계산해 유효한 연결 파라미터를 고른다.</li>
+      <li>데이터 PDU 헤더(LLID, NESN, SN, MD, CP, Length)와 24비트 CRC, 화이트닝을 비트 단위로 만들고 사양 샘플 데이터와 맞춰 본다.</li>
+      <li>1비트 SN/NESN만으로 확인 응답과 재전송이 이루어지는 원리를 따라간다.</li>
+      <li>PHY, 데이터 길이 확장(DLE), ATT_MTU, 연결 간격으로 실제 처리량을 계산한다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="event">
+    <h2>연결 이벤트: 정해진 시각에 깨어나기</h2>
+    <p>5장의 CONNECT_IND로 연결이 맺어지면 두 기기는 광고 채널을 떠난다. 이제부터 시간은 <span class="term">연결 간격</span><span class="en">(connInterval)</span>으로 잘린다. 간격마다 한 번 <span class="term">연결 이벤트</span><span class="en">(connection event)</span>가 열리고, 그 시작점을 <span class="term">앵커 포인트</span><span class="en">(anchor point)</span>라 한다. 앵커 포인트에서 센트럴이 먼저 패킷을 보내고, 페리페럴은 받은 패킷 끝에서 정확히 <b>T_IFS(기본 150 µs)</b> 뒤에 답한다. 둘 중 하나라도 더 보낼 것이 있으면(헤더의 MD 비트) 같은 채널에서 핑퐁을 이어 가고, 둘 다 없으면 이벤트를 닫고 다음 앵커 포인트까지 잔다. 다음 이벤트는 4장의 채널 선택 알고리즘이 고른 새 채널에서 열린다.</p>
+    <figure class="diagram">
+      <div style="overflow-x:auto">
+      <svg viewBox="0 0 760 210" role="img" aria-label="연결 간격마다 열리는 연결 이벤트와 그 안의 센트럴-페리페럴 패킷 교환" style="min-width:600px">
+        <defs><marker id="ce-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--text-dim)"/></marker></defs>
+        <text x="8" y="58" class="t-mono">센트럴</text><text x="8" y="108" class="t-mono">페리페럴</text>
+        <line x1="70" y1="70" x2="750" y2="70" class="s-axis"/><line x1="70" y1="120" x2="750" y2="120" class="s-axis"/>
+        <g fill="var(--accent)"><rect x="80" y="46" width="40" height="22" rx="3"/><rect x="190" y="46" width="70" height="22" rx="3"/><rect x="330" y="46" width="40" height="22" rx="3"/><rect x="560" y="46" width="40" height="22" rx="3"/></g>
+        <g fill="var(--accent-2)"><rect x="135" y="96" width="40" height="22" rx="3"/><rect x="275" y="96" width="40" height="22" rx="3"/><rect x="615" y="96" width="40" height="22" rx="3"/></g>
+        <text x="100" y="40" text-anchor="middle" class="t-mono">⚓</text><text x="580" y="40" text-anchor="middle" class="t-mono">⚓</text>
+        <path d="M120 74 L135 92" class="s-line" marker-end="url(#ce-ar)"/><text x="148" y="86" class="t-mono">150 µs</text>
+        <rect x="76" y="140" width="300" height="20" rx="6" class="f-acc-soft"/><text x="226" y="155" text-anchor="middle" class="t-acc">연결 이벤트 k (채널 21) · MD=1이라 계속</text>
+        <rect x="556" y="140" width="104" height="20" rx="6" class="f-acc-soft"/><text x="608" y="155" text-anchor="middle" class="t-acc">이벤트 k+1 (채널 7)</text>
+        <path d="M100 178 H578" class="s-acc" marker-end="url(#ce-ar)" marker-start="url(#ce-ar)"/><text x="340" y="196" text-anchor="middle" class="t">connInterval (예: 30 ms)</text>
+        <text x="470" y="108" text-anchor="middle" class="t-dim">무선부 꺼짐 (잠)</text>
+      </svg>
+      </div>
+      <figcaption><b>그림 6-1.</b> 연결 이벤트. 앵커 포인트(⚓)에서 센트럴이 먼저 말하고 페리페럴이 150 µs 뒤에 답한다. 더 보낼 것이 있으면 같은 채널에서 이어 가고, 없으면 다음 앵커 포인트까지 둘 다 잔다. 다음 이벤트는 다른 채널에서 열린다.</figcaption>
+    </figure>
+    <p>6.2 사양에서 연결 간격은 <b>125 µs 단위로 375 µs ~ 4 s</b>다. 다만 모든 컨트롤러가 이 전체를 지원하는 것은 아니다. 사양은 세 집합을 구분한다.</p>
+    <ul>
+      <li><b>BCV</b>(baseline): 1.25 ms의 배수이면서 7.5 ms 이상인 값. 6.1까지의 연결 간격과 같고, <b>모든 컨트롤러가 지원</b>해야 한다. 연결을 처음 맺을 때도 이 값을 쓴다.</li>
+      <li><b>RCV</b>(rounded): 1.25 ms의 배수인 모든 값(1.25 ms, 2.5 ms, 3.75 ms, 5 ms 포함).</li>
+      <li><b>ECV</b>(extended): 375 µs부터 125 µs 단위의 모든 값.</li>
+    </ul>
+    <p>6.2의 새 기능 <span class="term">짧은 연결 간격</span><span class="en">(Shorter Connection Intervals, SCI)</span>을 지원하는 컨트롤러는 RCV 전체를 지원해야 하고 ECV의 다른 값도 지원할 수 있다. 연결된 뒤 새로 생긴 Connection Rate Update/Request 절차로 짧은 간격으로 옮겨 간다. 고성능 게임 입력 장치나 실시간 제어처럼 수 ms의 지연도 아까운 곳을 겨냥한 기능이다.</p>
+    <p class="spec-ref">connInterval 125 µs 단위 375 µs ~ 4 s, ECV·RCV·BCV, 연결 생성 시 BCV: <b>[Vol 6] Part B §4.5.1</b> · T_IFS_ACL_CP/PC 기본 150 µs, Frame Space Update로 변경 가능: <b>§4.1.1</b> · 6.2 새 기능: <b>[Vol 1] Part C §16.1</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="params">
+    <h2>쉬어도 되는 횟수와 포기하는 시간</h2>
+    <p>연결 간격이 짧으면 반응이 빠르지만, 페리페럴이 매번 깨어나야 해서 배터리가 빨리 닳는다. 길면 배터리는 좋지만 버튼을 눌렀을 때 늦게 반응한다. 이 딜레마를 푸는 손잡이가 둘 있다.</p>
+    <ul>
+      <li><span class="term">페리페럴 지연</span><span class="en">(connPeripheralLatency)</span>: 보낼 것이 없을 때 페리페럴이 <b>연속으로 건너뛰어도 되는</b> 이벤트 수. 지연 4이면 다섯 번에 한 번만 깨어나도 된다. 하지만 보낼 것이 생기면 바로 다음 이벤트에서 말할 수 있다. 센트럴은 매 이벤트 앵커에서 기다리므로, 페리페럴 쪽 반응은 빠르고 배터리는 아낀다. 반대 방향(센트럴 → 페리페럴)은 페리페럴이 깨어날 때까지 기다려야 한다.</li>
+      <li><span class="term">연결 서브레이팅</span><span class="en">(connection subrating)</span>: 5.3에서 추가. 두 기기가 합의해 평소에는 N번째 이벤트만 쓰다가(subrate factor), 데이터가 오가면 그 뒤 몇 이벤트(continuation number)를 연달아 쓴다. 연결 간격 자체를 바꾸는 협상 없이 빠른 모드와 느린 모드를 오간다.</li>
+    </ul>
+    <p>그리고 안전장치가 하나 있다. <span class="term">감독 타임아웃</span><span class="en">(connSupervisionTimeout)</span>은 유효한 패킷을 하나도 받지 못한 채 이 시간이 지나면 연결이 끊어졌다고 판단하는 시간이다. 사양은 이 값들 사이에 규칙을 둔다.</p>
+    <div class="formula">connSupervisionTimeout &gt; (1 + connPeripheralLatency) × connSubrateFactor × connInterval × 2
+      <div class="where">감독 타임아웃은 10 ms 단위로 100 ms ~ 32 s. subrateFactor × (latency + 1) ≤ 500. 즉 “페리페럴이 쉬어도 되는 최대 시간”의 두 배보다 길게 기다려야, 정상적으로 쉬는 페리페럴을 끊긴 것으로 오해하지 않는다. 연결을 맺고 첫 6개 이벤트 안에 성립하지 않으면 바로 실패로 본다.</div>
+    </div>
+    <p class="spec-ref">페리페럴 지연·서브레이팅 규칙(subrate × (latency + 1) ≤ 500, 그 시간 × 2 &lt; 타임아웃): <b>[Vol 6] Part B §4.5.1</b> · 감독 타임아웃 100 ms ~ 32 s와 6 이벤트 규칙: <b>§4.5.2</b></p>
+
+    <div class="sim" id="sim-cp">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>연결 파라미터 설계기: 반응 속도, 배터리, 규칙 검사</h3></div>
+      <div class="sim-view"><canvas id="cv-cp"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>연결 간격 <output id="cp-int-out"></output></span><input type="range" id="cp-int" min="0" max="100" value="40"></label>
+        <label class="ctrl"><span>페리페럴 지연 <output id="cp-lat-out"></output></span><input type="range" id="cp-lat" min="0" max="20" value="4"></label>
+        <label class="ctrl"><span>감독 타임아웃 <output id="cp-to-out"></output></span><input type="range" id="cp-to" min="10" max="3200" step="10" value="400"></label>
+        <label class="check"><input type="checkbox" id="cp-sci"> 6.2 짧은 연결 간격(SCI) 지원 컨트롤러</label>
+        <div class="ctrl"><span>&nbsp;</span><div class="btn-row"><button class="btn" id="cp-press">페리페럴 버튼 누르기</button><button class="btn" id="cp-cmd">센트럴이 명령 보내기</button></div></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">사양 규칙</span><span class="v" id="cp-ok">—</span></div>
+        <div class="stat"><span class="k">페리페럴 → 센트럴 최대 지연</span><span class="v" id="cp-up">—</span></div>
+        <div class="stat"><span class="k">센트럴 → 페리페럴 최대 지연</span><span class="v" id="cp-down">—</span></div>
+        <div class="stat"><span class="k">페리페럴이 깨는 횟수</span><span class="v" id="cp-wake">—</span></div>
+      </div>
+      <div class="sim-note">가로는 시간, 위 줄은 센트럴, 아래 줄은 페리페럴. 진한 칸은 실제로 깨어나 주고받은 이벤트, 흐린 칸은 페리페럴이 지연으로 건너뛴 이벤트다. 버튼을 누르면 그 순간부터 상대에게 전달되는 시점이 표시된다. 해볼 것: ① 지연을 0 → 9로 올리면 페리페럴이 깨는 횟수가 1/10로 줄지만, 페리페럴 쪽 버튼 반응은 그대로 빠르다. ② 같은 상태에서 “센트럴이 명령 보내기”를 누르면 최대 (지연 + 1) × 간격을 기다린다. ③ 타임아웃을 줄여 규칙을 깨 보자. 빨간 경고가 뜬다. SCI를 끄면 간격은 7.5 ms 이상, 1.25 ms 단위로만 고를 수 있다(서브레이팅은 1로 가정).</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="packet">
+    <h2>데이터 패킷 해부: 헤더 16비트와 CRC 24비트</h2>
+    <p>연결 중에 오가는 패킷은 5장의 광고 패킷과 겉모양이 같다. 프리앰블, 이 연결만의 접근 주소(CONNECT_IND에서 정한 무작위 32비트), PDU, CRC. 다른 것은 PDU 안이다. 데이터 PDU의 헤더 16비트에는 다음이 들어 있다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>필드</th><th>비트</th><th>뜻</th></tr></thead>
+      <tbody>
+        <tr><td>LLID</td><td class="num">2</td><td>01 = 이어지는 조각 또는 빈 PDU, 10 = L2CAP 메시지의 시작(또는 전체), 11 = 링크 계층 제어 PDU</td></tr>
+        <tr><td>NESN</td><td class="num">1</td><td>다음에 받기를 기대하는 일련번호 (= 확인 응답)</td></tr>
+        <tr><td>SN</td><td class="num">1</td><td>이 패킷의 일련번호</td></tr>
+        <tr><td>MD</td><td class="num">1</td><td>More Data: 보낼 것이 더 있다</td></tr>
+        <tr><td>CP</td><td class="num">1</td><td>CTEInfo가 있음(방향 찾기용 일정 톤, 11장)</td></tr>
+        <tr><td>(RFU)</td><td class="num">2</td><td>예약</td></tr>
+        <tr><td>Length</td><td class="num">8</td><td>페이로드(+ MIC) 길이. 페이로드는 최대 251바이트, 암호화하면 MIC 4바이트가 붙는다</td></tr>
+      </tbody>
+    </table></div>
+    <p>PDU 뒤에는 오류를 찾는 <span class="term">CRC</span><span class="en">(Cyclic Redundancy Check)</span> 24비트가 붙는다. 다항식은 x<sup>24</sup> + x<sup>10</sup> + x<sup>9</sup> + x<sup>6</sup> + x<sup>4</sup> + x<sup>3</sup> + x + 1이고, 시프트 레지스터의 초깃값은 광고 채널이면 0x555555, 연결이면 CONNECT_IND에서 정한 CRCInit이다. 마지막으로 PDU와 CRC에 <span class="term">화이트닝</span><span class="en">(data whitening)</span>을 한다. 채널 번호로 초기화한 7비트 LFSR(x<sup>7</sup> + x<sup>4</sup> + 1)의 출력과 XOR해서, 0이나 1이 길게 이어지지 않게 섞는 것이다. 3장의 수신기는 주파수 중심과 비트 타이밍을 비트 변화에서 계속 맞추는데, 같은 비트가 오래 이어지면 기준을 잃기 쉽다.</p>
+    <p class="spec-ref">데이터 PDU 헤더(Table 2.21), 페이로드 ≤ 251바이트, MIC 4바이트: <b>[Vol 6] Part B §2.4</b> · CRC: <b>§3.1.1</b> · 화이트닝: <b>§3.2</b> · 샘플 패킷: <b>[Vol 6] Part C §4</b></p>
+
+    <div class="sim" id="sim-pk">
+      <div class="sim-head"><span class="sim-tag">BUILDER</span><h3>패킷 만들기: 헤더 → CRC → 화이트닝 (사양 샘플로 검증)</h3></div>
+      <div class="sim-view" style="padding:14px">
+        <div class="pk-in">
+          <label>접근 주소 (hex)<br><input type="text" id="pk-aa" value="AA08192B"></label>
+          <label>CRCInit (hex)<br><input type="text" id="pk-crc" value="C4C181"></label>
+          <label>페이로드 (hex 바이트)<br><input type="text" id="pk-pl" value="01 02 03 04 05"></label>
+          <label>채널 번호 (0~39)<br><input type="text" id="pk-ch" value="16"></label>
+        </div>
+        <div class="hdrbits" id="pk-hdr"></div>
+        <div class="pk-rows" id="pk-rows"></div>
+      </div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>LLID</span><div class="seg" id="pk-llid"><button data-value="1">01 이어짐</button><button data-value="2" class="on">10 시작</button><button data-value="3">11 제어</button></div></div>
+        <label class="check"><input type="checkbox" id="pk-nesn" checked> NESN = 1</label>
+        <label class="check"><input type="checkbox" id="pk-sn"> SN = 1</label>
+        <label class="check"><input type="checkbox" id="pk-md" checked> MD = 1</label>
+        <div class="ctrl"><span>&nbsp;</span><div class="btn-row"><button class="btn" id="pk-sample">사양 샘플 4.3.1 불러오기</button></div></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">CRC (전송 순서)</span><span class="v" id="pk-crcv">—</span></div>
+        <div class="stat"><span class="k">패킷 길이 / 공중 시간 (1M)</span><span class="v" id="pk-len">—</span></div>
+        <div class="stat"><span class="k">사양 샘플과 비교</span><span class="v" id="pk-ok">—</span></div>
+      </div>
+      <div class="sim-note">모든 비트는 <b>전송 순서</b>(바이트마다 최하위 비트 먼저)로 적었다. 색: 회색 프리앰블, 청록 접근 주소, 주황 헤더, 파랑 페이로드, 빨강 CRC. 마지막 줄은 PDU+CRC에 화이트닝을 한 실제 공중 비트다. 해볼 것: ① 처음 값은 사양 [Vol 6] Part C §4.3.1의 LL 데이터 PDU 예제다. CRC가 10100010 00001011 01001011, 화이트닝 결과가 사양과 비트 단위로 같은지 “사양 샘플과 비교”에 표시된다. ② 페이로드 한 비트만 바꿔도 CRC 24비트가 완전히 달라진다. ③ 채널만 바꾸면 화이트닝 결과가 바뀐다. 같은 데이터라도 채널마다 공중 비트는 다르다.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="ack">
+    <h2>1비트로 하는 확인 응답: SN과 NESN</h2>
+    <p>무선은 패킷을 잃는다. 4장의 간섭, 2장의 페이딩 때문이다. LE는 따로 ACK 패킷을 보내지 않고, 다음에 보내는 패킷 헤더의 1비트 두 개로 확인 응답을 한다.</p>
+    <ul>
+      <li>각자 보낼 패킷에 <b>SN</b>(0 또는 1)을 붙인다. 새 패킷을 보낼 때마다 SN을 뒤집는다.</li>
+      <li>받는 쪽은 받은 패킷의 SN이 기대하던 값이면 새 패킷으로 받아들이고, 기대값(<b>NESN</b>)을 뒤집어 다음 답장 헤더에 실어 보낸다.</li>
+      <li>보낸 쪽은 상대의 NESN이 뒤집혀 왔으면 “잘 받았구나” 하고 다음 패킷으로 넘어가고, 그대로면 “못 받았구나” 하고 <b>같은 패킷을 다시</b> 보낸다.</li>
+      <li>CRC가 틀린 패킷은 받지 않은 것으로 친다. 같은 SN이 다시 오면 중복이므로 버리되 확인 응답은 해 준다.</li>
+    </ul>
+    <p>이 방식은 “한 번에 하나씩 보내고, 확인되면 다음”(stop-and-wait)이다. 연결 이벤트 안에서 핑퐁이 150 µs 간격으로 빠르게 오가므로 손해가 작다. 패킷이 깨지면 이벤트가 닫힐 수 있고, 그러면 다음 이벤트(다른 채널!)에서 재전송한다. 감독 타임아웃까지 아무것도 받지 못하면 연결을 끊는다.</p>
+    <p class="spec-ref">확인 응답과 흐름 제어(transmitSeqNum, nextExpectedSeqNum): <b>[Vol 6] Part B §4.5.9</b> · 이벤트 닫기·MD: <b>§4.5.6</b></p>
+    <div class="sim" id="sim-ack">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>SN/NESN 따라가기: 잃어버린 패킷은 어떻게 돌아오나</h3></div>
+      <div class="sim-view"><canvas id="cv-ack"></canvas><div class="ev-log" id="ack-log" aria-live="polite"></div></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>패킷 손실률 <output id="ack-p-out"></output></span><input type="range" id="ack-p" min="0" max="60" step="5" value="25"></label>
+        <div class="ctrl"><span>&nbsp;</span><div class="btn-row"><button class="btn primary" id="ack-step">한 번 주고받기</button><button class="btn" id="ack-run">20번 자동</button><button class="btn" id="ack-reset">처음부터</button></div></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">센트럴이 보낸 메시지</span><span class="v" id="ack-sent">—</span></div>
+        <div class="stat"><span class="k">페리페럴이 받은 메시지</span><span class="v" id="ack-got">—</span></div>
+        <div class="stat"><span class="k">재전송</span><span class="v" id="ack-re">—</span></div>
+        <div class="stat"><span class="k">중복 수신(버림)</span><span class="v" id="ack-dup">—</span></div>
+      </div>
+      <div class="sim-note">센트럴은 메시지 A, B, C…를 보내고 페리페럴은 빈 PDU로 답한다. 화살표의 숫자는 그 패킷 헤더의 SN/NESN이고, ✗는 잃어버린 패킷이다. 해볼 것: ① 센트럴 → 페리페럴 패킷을 잃으면 페리페럴의 NESN이 그대로 와서 센트럴이 다시 보낸다. ② 페리페럴의 답장을 잃으면 센트럴은 다시 보내지만 페리페럴은 이미 받았으므로 “중복”으로 버린다. 어느 경우든 페리페럴이 받은 메시지는 빠짐없이, 순서대로, 한 번씩이다. 손실률을 높여도 이 성질은 깨지지 않는다(대신 느려진다).</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="throughput">
+    <h2>처리량: 2 Mb/s PHY에서 몇 Mb/s가 나올까</h2>
+    <p>LE 2M의 공중 속도는 2 Mb/s다. 하지만 앱이 실제로 옮기는 데이터는 그보다 훨씬 적다. 이유를 하나씩 쌓아 보자.</p>
+    <ul>
+      <li><b>패킷 머리와 꼬리</b>: 데이터 패킷마다 프리앰블·접근 주소·헤더·CRC로 10~11바이트가 붙는다.</li>
+      <li><b>반이중과 응답</b>: 데이터 패킷 하나마다 상대가 빈 PDU라도 답해야 하고, 사이사이 150 µs씩 쉰다.</li>
+      <li><b>상위 계층 헤더</b>: L2CAP 헤더 4바이트, ATT 알림 헤더 3바이트(7장).</li>
+      <li><b>데이터 길이</b>: 4.2 이전에는 페이로드가 27바이트였다. 4.2의 <span class="term">데이터 길이 확장</span><span class="en">(DLE, Data Length Extension)</span>으로 251바이트까지 늘었다. 27바이트면 L2CAP·ATT 헤더를 빼고 20바이트만 남는다.</li>
+      <li><b>이벤트 길이</b>: 한 이벤트에 몇 번 주고받을지는 센트럴(휴대폰 운영체제)이 정한다. 많은 휴대폰이 이벤트당 패킷 수에 상한을 둔다.</li>
+    </ul>
+    <div class="sim" id="sim-tp">
+      <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>LE 처리량 계산기: 공중 2 Mb/s에서 앱까지</h3></div>
+      <div class="sim-view"><canvas id="cv-tp"></canvas></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>PHY (3장)</span><div class="seg" id="tp-phy"><button data-value="1m">LE 1M</button><button data-value="2m" class="on">LE 2M</button><button data-value="s2">Coded S=2</button><button data-value="s8">Coded S=8</button></div></div>
+        <div class="ctrl"><span>링크 계층 페이로드</span><div class="seg" id="tp-dle"><button data-value="27">27 B (4.1 이전)</button><button data-value="251" class="on">251 B (DLE)</button></div></div>
+        <div class="ctrl"><span>ATT_MTU (7장)</span><div class="seg" id="tp-mtu"><button data-value="23">23 (기본)</button><button data-value="247" class="on">247</button><button data-value="517">517</button></div></div>
+        <label class="ctrl"><span>연결 간격 <output id="tp-int-out"></output></span><input type="range" id="tp-int" min="6" max="320" value="24"></label>
+        <label class="ctrl"><span>이벤트당 최대 패킷 <output id="tp-max-out"></output></span><input type="range" id="tp-max" min="1" max="41" value="41"></label>
+        <label class="check"><input type="checkbox" id="tp-enc" checked> 암호화 (MIC 4바이트)</label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">앱 처리량</span><span class="v" id="tp-app">—</span></div>
+        <div class="stat"><span class="k">한 번 주고받는 시간</span><span class="v" id="tp-pair">—</span></div>
+        <div class="stat"><span class="k">이벤트당 주고받기</span><span class="v" id="tp-n">—</span></div>
+        <div class="stat"><span class="k">공중 속도 대비</span><span class="v" id="tp-eff">—</span></div>
+      </div>
+      <div class="sim-note">막대: 공중 속도(PHY)에서 시작해 손실을 하나씩 빼 앱 처리량까지 내려간다. 41 = “간격 끝까지 계속”. 해볼 것: ① 기본값(2M, DLE 251, MTU 247)에서 약 1.3~1.4 Mb/s가 나온다. ② DLE를 27로 바꾸면 절반 아래로 떨어진다. ③ 이벤트당 패킷을 4로 제한하고 간격을 늘려 보자. 휴대폰마다 처리량이 크게 다른 이유다. 모델: 페리페럴이 알림(ATT_HANDLE_VALUE_NTF)을 보내고 센트럴은 빈 PDU로 답한다. 한 알림 = ATT_MTU − 3바이트의 데이터 + ATT 3 + L2CAP 4바이트, 링크 페이로드보다 크면 여러 패킷으로 쪼갠다. T_IFS 150 µs, 이벤트는 다음 앵커 150 µs 전(T_MCES)까지.</div>
+    </div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">펌웨어 업데이트 파일(200 KB)을 LE로 보낸다. 연결 간격을 7.5 ms에서 30 ms로 늘리면(이벤트당 패킷 수 제한 없음) 전송 시간은?</p><p class="wi-hint">처리량 계산기에서 간격만 바꿔 보자. 이벤트 사이의 빈틈이 얼마나 되는지 생각해 보자.</p><div class="opts">
+      <button class="opt">4배 길어진다</button>
+      <button class="opt" data-correct>거의 그대로이거나 오히려 조금 빨라진다 — 이벤트가 간격 끝까지 이어지므로 쉬는 틈의 비율이 줄 뿐이다</button>
+      <button class="opt">4배 빨라진다</button>
+    </div><div class="quiz-exp">이벤트당 패킷 수에 제한이 없으면 센트럴은 다음 앵커 직전까지 계속 주고받는다. 간격이 길수록 이벤트 끝에 남는 자투리 시간의 비율이 작아진다. 반대로 휴대폰이 이벤트당 패킷 수를 제한하면 짧은 간격이 유리하다.</div></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="update">
+    <h2>약속 바꾸기와 끝내기</h2>
+    <p>연결 파라미터는 연결 중에 얼마든지 바꿀 수 있다. 바꾸는 절차는 모두 <b>LL 제어 PDU</b>(LLID 11)로 이루어지고, 대부분 “몇 번째 이벤트(instant)부터 새 값으로” 하는 식이다. 두 기기의 이벤트 카운터가 같으므로 정확히 같은 순간에 갈아탄다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>절차</th><th>바꾸는 것</th><th>쓰임</th></tr></thead>
+      <tbody>
+        <tr><td>Connection Update / Parameters Request</td><td>간격, 지연, 타임아웃</td><td>연결 직후 빠르게 → 평소 느리게</td></tr>
+        <tr><td>Channel Map Update</td><td>채널 맵</td><td>Wi-Fi 피하기 (4장)</td></tr>
+        <tr><td>PHY Update</td><td>1M ↔ 2M ↔ Coded</td><td>거리·속도 조절 (3장)</td></tr>
+        <tr><td>Data Length Update</td><td>최대 페이로드 27 ~ 251바이트</td><td>처리량 (이 장)</td></tr>
+        <tr><td>Connection Subrate Update (5.3)</td><td>subrate factor, continuation number</td><td>빠른 모드·느린 모드 전환</td></tr>
+        <tr><td>Frame Space Update (6.0)</td><td>T_IFS, T_MCES 등 프레임 간격</td><td>빠른 칩끼리 150 µs보다 짧게</td></tr>
+        <tr><td>Connection Rate Update / Request (6.2)</td><td>짧은 연결 간격을 포함한 간격·서브레이팅</td><td>SCI</td></tr>
+        <tr><td>Encryption Start</td><td>AES-CCM 암호화 시작</td><td>페어링 뒤 (8장)</td></tr>
+        <tr><td>Terminate</td><td>연결 끝내기 (이유 코드 포함)</td><td>사용자가 연결 해제</td></tr>
+      </tbody>
+    </table></div>
+    <p class="spec-ref">링크 계층 제어 절차: <b>[Vol 6] Part B §5.1</b> (5.1.1 Connection Update, 5.1.2 Channel Map Update, 5.1.10 PHY Update, 5.1.19 Connection Subrate Update, 5.1.30 Frame Space Update, 5.1.32·5.1.33 Connection Rate Update/Request) · 오류 코드: <b>[Vol 1] Part F</b></p>
+    <div class="callout tip"><strong>연결이 자주 끊긴다면</strong><p>감독 타임아웃이 너무 짧으면 잠깐의 간섭(전자레인지 몇 초, 몸이 가린 순간)에도 끊긴다. 너무 길면 기기가 꺼졌는데도 오랫동안 연결된 것처럼 보인다. 흔한 선택은 수 초다. 연결이 끊긴 이유는 HCI의 Disconnection Complete 이벤트에 오류 코드로 남는다. 0x08은 “Connection Timeout”(감독 타임아웃), 0x13은 상대가 끊음, 0x3E는 연결 수립 실패다.</p></div>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>LE 연결은 <b>연결 간격</b>마다 열리는 짧은 <b>연결 이벤트</b>다. 앵커 포인트에서 센트럴이 먼저 말하고 페리페럴이 <b>T_IFS(기본 150 µs)</b> 뒤 답하며, MD 비트로 이벤트를 이어 가거나 닫는다.</li>
+      <li>6.2의 연결 간격은 <b>125 µs 단위 375 µs ~ 4 s</b>. 모든 컨트롤러는 7.5 ms 이상·1.25 ms 단위(BCV)를 지원하고, SCI를 지원하면 더 짧은 값을 쓸 수 있다.</li>
+      <li><b>페리페럴 지연</b>은 건너뛸 수 있는 이벤트 수, <b>서브레이팅</b>(5.3)은 평소 N번째 이벤트만 쓰기. <b>감독 타임아웃</b>(100 ms ~ 32 s)은 (1 + 지연) × subrate × 간격 × 2보다 커야 한다.</li>
+      <li>데이터 PDU 헤더 = <b>LLID·NESN·SN·MD·CP·Length</b>. 페이로드 ≤ 251바이트(+MIC 4). <b>CRC-24</b>(x²⁴+x¹⁰+x⁹+x⁶+x⁴+x³+x+1)와 채널별 <b>화이트닝</b>(x⁷+x⁴+1)을 거쳐 전송한다.</li>
+      <li><b>SN/NESN</b> 1비트씩으로 확인 응답·재전송·중복 제거를 한다. 잃은 패킷은 다음 핑퐁이나 다음 이벤트(다른 채널)에서 다시 보낸다.</li>
+      <li>앱 처리량은 패킷 머리, 응답과 150 µs 틈, L2CAP·ATT 헤더, DLE, 이벤트당 패킷 상한에 깎인다. 2M·DLE 251·MTU 247이면 약 <b>1.4 Mb/s</b>가 상한이다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>Core 6.2에서 6.2의 새 기능(SCI)을 지원하지 않는 컨트롤러가 쓸 수 있는 가장 짧은 연결 간격은?</p><div class="opts">
+        <button class="opt">375 µs</button><button class="opt">1.25 ms</button><button class="opt" data-correct>7.5 ms</button><button class="opt">20 ms</button>
+      </div><div class="quiz-exp">SCI를 지원하지 않으면 BCV(1.25 ms 단위, 7.5 ms 이상)만 지원해야 한다. 375 µs는 SCI를 지원하는 컨트롤러가 ECV에서 선택적으로 지원할 수 있는 최솟값이다.</div></div>
+      <div class="quiz-q"><p>연결 간격 50 ms, 페리페럴 지연 9, 서브레이팅 없음. 감독 타임아웃으로 허용되는 것은?</p><div class="opts">
+        <button class="opt">500 ms</button><button class="opt">900 ms</button><button class="opt" data-correct>1.5 s</button><button class="opt">50 ms</button>
+      </div><div class="quiz-exp">(1 + 9) × 1 × 50 ms × 2 = 1,000 ms보다 커야 한다. 1.5 s만 조건을 만족한다(그리고 100 ms ~ 32 s 범위, 10 ms 단위).</div></div>
+      <div class="quiz-q"><p>페리페럴 지연을 크게 하면 어떤 방향의 반응이 느려지나?</p><div class="opts">
+        <button class="opt">페리페럴 → 센트럴</button><button class="opt" data-correct>센트럴 → 페리페럴</button><button class="opt">양쪽 모두</button><button class="opt">어느 쪽도 아니다</button>
+      </div><div class="quiz-exp">센트럴은 매 앵커 포인트에서 보내므로 페리페럴은 원할 때 바로 다음 이벤트에 답할 수 있다. 하지만 센트럴의 데이터는 페리페럴이 깨어나는 이벤트까지 기다려야 한다.</div></div>
+      <div class="quiz-q"><p>센트럴이 SN=1인 패킷을 보냈는데, 페리페럴의 답장 헤더 NESN이 1이었다. 센트럴이 할 일은?</p><div class="opts">
+        <button class="opt">다음 패킷을 SN=0으로 보낸다</button><button class="opt" data-correct>상대가 SN=1을 아직 기대하므로 같은 패킷(SN=1)을 다시 보낸다</button><button class="opt">연결을 끊는다</button><button class="opt">NESN을 무시한다</button>
+      </div><div class="quiz-exp">NESN은 “다음에 받기를 기대하는 SN”이다. 1을 기대한다는 것은 방금 보낸 SN=1을 받지 못했다는 뜻이다. 잘 받았다면 NESN이 0으로 뒤집혀 왔을 것이다.</div></div>
+      <div class="quiz-q"><p>4.2의 데이터 길이 확장(DLE) 이전에 ATT 알림 하나로 보낼 수 있던 앱 데이터는 최대 몇 바이트였을까? (링크 페이로드 27바이트, L2CAP 헤더 4, ATT 알림 헤더 3)</p><div class="opts">
+        <button class="opt">27바이트</button><button class="opt">23바이트</button><button class="opt" data-correct>20바이트</button><button class="opt">16바이트</button>
+      </div><div class="quiz-exp">27 − 4 − 3 = 20바이트. 기본 ATT_MTU 23도 이 숫자(23 = 27 − 4)에 맞춰져 있다(7장).</div></div>
+      <div class="quiz-q"><p>같은 데이터를 다른 채널로 보내면 공중의 비트열이 달라지는 이유는?</p><div class="opts">
+        <button class="opt">CRC 초깃값이 채널마다 달라서</button><button class="opt" data-correct>화이트닝 LFSR을 채널 번호로 초기화하기 때문에</button><button class="opt">접근 주소가 채널마다 달라서</button><button class="opt">채널마다 다른 암호 키를 써서</button>
+      </div><div class="quiz-exp">화이트닝은 채널 번호로 초기화한 x⁷ + x⁴ + 1 LFSR의 출력과 XOR한다. 수신기는 같은 채널 번호로 되돌린다. CRC 초깃값은 연결마다 고정이다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+
+  /** 사양 규칙 검사. 시간 단위 µs. [Vol 6] Part B §4.5.1·§4.5.2 */
+  function checkConnParams(intervalUs, latency, subrate, timeoutMs, sci) {
+    const errs = [];
+    if (intervalUs < 375 || intervalUs > 4e6 || intervalUs % 125) errs.push("간격은 125 µs 단위 375 µs ~ 4 s");
+    else if (!sci && (intervalUs < 7500 || intervalUs % 1250)) errs.push("SCI 미지원: 1.25 ms 단위 7.5 ms 이상(BCV)만");
+    if (subrate * (latency + 1) > 500) errs.push("subrate × (지연 + 1) ≤ 500");
+    if (timeoutMs < 100 || timeoutMs > 32000 || timeoutMs % 10) errs.push("타임아웃은 10 ms 단위 100 ms ~ 32 s");
+    if (!(timeoutMs * 1000 > (1 + latency) * subrate * intervalUs * 2)) errs.push("타임아웃 > (1 + 지연) × subrate × 간격 × 2");
+    return errs;
+  }
+  /** 바이트 → 전송 순서 비트(LSB 먼저) */
+  function bitsLsbFirst(bytes) { const o = []; bytes.forEach((b) => { for (let i = 0; i < 8; i++) o.push((b >> i) & 1); }); return o; }
+  /** CRC-24 (x^24+x^10+x^9+x^6+x^4+x^3+x+1). 반환값의 비트 23이 먼저 전송된다. [Vol 6] Part B §3.1.1 */
+  function crc24(bytes, init) {
+    let r = init & 0xffffff;
+    bitsLsbFirst(bytes).forEach((b) => { const fb = ((r >> 23) & 1) ^ b; r = (r << 1) & 0xffffff; if (fb) r ^= 0x00065b; });
+    return r;
+  }
+  /** 화이트닝 비트열 (x^7+x^4+1, 위치 0 = 1, 위치 1~6 = 채널 번호 MSB 먼저). [Vol 6] Part B §3.2 */
+  function whiteningBits(channel, n) {
+    let s = [1]; for (let i = 5; i >= 0; i--) s.push((channel >> i) & 1);
+    const out = [];
+    for (let k = 0; k < n; k++) { const o = s[6]; out.push(o); s = [o, s[0], s[1], s[2], s[3] ^ o, s[4], s[5]]; }
+    return out;
+  }
+  /** LE 처리량(kb/s). 페리페럴 알림, 센트럴 빈 PDU 응답 */
+  function leThroughput(o) {
+    const t = (pdu) => (o.phy === "1m" ? (1 + 4 + pdu + 3) * 8 : o.phy === "2m" ? (2 + 4 + pdu + 3) * 4 : 376 + (pdu * 8 + 27) * (o.phy === "s8" ? 8 : 2));
+    const mic = o.enc ? 4 : 0;
+    const l2 = o.mtu + 4, frags = Math.ceil(l2 / o.ll), lastLen = l2 - (frags - 1) * o.ll;
+    const pairFull = t(2 + o.ll + mic) + o.tifs + t(2) + o.tifs;
+    const pairLast = t(2 + lastLen + mic) + o.tifs + t(2) + o.tifs;
+    const ntfTime = (frags - 1) * pairFull + pairLast;
+    const usable = o.intervalUs - 150;
+    let pairs = Math.floor(usable / pairFull); pairs = Math.max(1, Math.min(pairs, o.maxPerEvent));
+    const ntfPerEvent = Math.max(0, Math.floor((pairs * pairFull) / ntfTime + 1e-9));
+    const bits = ntfPerEvent * (o.mtu - 3) * 8;
+    return { kbps: bits / o.intervalUs * 1000, pairUs: pairFull, pairs, frags, ntfPerEvent };
+  }
+
+  /* ================================================================ 1. 연결 파라미터 */
+  (function () {
+    const sciBox = $("cp-sci");
+    const intOf = (v) => {
+      const lo = sciBox.checked ? 375 : 7500, hi = 4e6, us = lo * Math.pow(hi / lo, v / 100);
+      if (!sciBox.checked || us >= 7500) return Math.max(lo, Math.round(us / 1250) * 1250);
+      return Math.round(us / 125) * 125;
+    };
+    const fmt = (us) => (us >= 1e6 ? (us / 1e6).toFixed(2) + " s" : us >= 1000 ? +(us / 1000).toFixed(3) + " ms" : us + " µs");
+    const iv = BT.range("cp-int", (v) => fmt(intOf(v)), draw);
+    const lat = BT.range("cp-lat", (v) => String(v), draw);
+    const to = BT.range("cp-to", (v) => (v >= 1000 ? (v / 1000).toFixed(2) + " s" : v + " ms"), draw);
+    sciBox.addEventListener("change", () => { iv.el.dispatchEvent(new Event("input")); });
+    let press = null; // {who, t}
+    $("cp-press").addEventListener("click", () => { press = { who: "p", f: 0.37 }; draw(); });
+    $("cp-cmd").addEventListener("click", () => { press = { who: "c", f: 0.37 }; draw(); });
+    const cv = BT.canvas($("cv-cp"), (ctx, w, h) => {
+      const P = BT.palette(), I = intOf(iv()), Lt = lat(), N = 24, L = 70, Rr = w - 10, cw = (Rr - L) / N, yc = 26, yp = 70, hh = 22;
+      BT.text(ctx, "센트럴", 6, yc + hh / 2, { size: 11, color: P.dim }); BT.text(ctx, "페리페럴", 6, yp + hh / 2, { size: 11, color: P.dim });
+      let pressEv = press ? Math.floor(press.f * N) : -1, deliver = -1;
+      if (press) {
+        if (press.who === "p") deliver = pressEv + 1;
+        else { deliver = pressEv + 1; while (deliver % (Lt + 1) !== 0) deliver++; }
+      }
+      for (let e = 0; e < N; e++) {
+        const x = L + e * cw, awake = e % (Lt + 1) === 0 || (press && press.who === "p" && e === deliver);
+        ctx.fillStyle = P.accent; ctx.globalAlpha = 0.85; ctx.fillRect(x + 1, yc, Math.max(2, cw * 0.28), hh);
+        ctx.fillStyle = P.accent2; ctx.globalAlpha = awake ? 0.9 : 0.13; ctx.fillRect(x + 1, yp, Math.max(2, cw * 0.28), hh); ctx.globalAlpha = 1;
+        if (e === deliver) BT.text(ctx, "★", x + cw * 0.14, (press.who === "p" ? yc : yp) - 8, { size: 13, color: P.ok, align: "center" });
+      }
+      if (press) { const x = L + press.f * N * cw; ctx.strokeStyle = P.bad; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(x, yc - 6); ctx.lineTo(x, yp + hh + 6); ctx.stroke(); ctx.setLineDash([]); BT.text(ctx, press.who === "p" ? "버튼" : "명령", x, yp + hh + 16, { size: 11, color: P.bad, align: "center" }); }
+      ctx.strokeStyle = P.axis; ctx.beginPath(); ctx.moveTo(L, yp + hh + 4); ctx.lineTo(Rr, yp + hh + 4); ctx.stroke();
+      BT.text(ctx, "이벤트 " + N + "개 = " + fmt(I * N), Rr, h - 10, { size: 11, color: P.dim, align: "right" });
+    }, { aspect: 0.24, minHeight: 140, maxHeight: 170 });
+    function draw() {
+      const I = intOf(iv()), Lt = lat(), T = to();
+      const errs = checkConnParams(I, Lt, 1, T, sciBox.checked);
+      BT.stat("cp-ok", errs.length ? `<span style="color:var(--bad)">✗ ${errs[0]}</span>` : `<span style="color:var(--ok)">✓ 유효</span>`);
+      BT.stat("cp-up", fmt(I));
+      BT.stat("cp-down", fmt(I * (Lt + 1)));
+      BT.stat("cp-wake", "초당 " + BT.fmt(1e6 / (I * (Lt + 1))) + "번");
+      cv.redraw();
+    }
+    draw();
+  })();
+
+  /* ================================================================ 2. 패킷 만들기 */
+  (function () {
+    const llid = BT.seg("pk-llid", draw);
+    ["pk-aa", "pk-crc", "pk-pl", "pk-ch"].forEach((id) => $(id).addEventListener("input", draw));
+    ["pk-nesn", "pk-sn", "pk-md"].forEach((id) => $(id).addEventListener("change", draw));
+    $("pk-sample").addEventListener("click", () => {
+      $("pk-aa").value = "AA08192B"; $("pk-crc").value = "C4C181"; $("pk-pl").value = "01 02 03 04 05"; $("pk-ch").value = "16";
+      llid.set("2"); $("pk-nesn").checked = true; $("pk-sn").checked = false; $("pk-md").checked = true; draw();
+    });
+    const g8 = (bits) => bits.join("").replace(/(.{8})(?=.)/g, "$1 ");
+    function draw() {
+      const aa = parseInt($("pk-aa").value.replace(/[^0-9a-f]/gi, "") || "0", 16) >>> 0;
+      const ci = parseInt($("pk-crc").value.replace(/[^0-9a-f]/gi, "") || "0", 16) & 0xffffff;
+      const pl = ($("pk-pl").value.match(/[0-9a-f]{1,2}/gi) || []).slice(0, 251).map((x) => parseInt(x, 16));
+      let ch = parseInt($("pk-ch").value, 10); if (!(ch >= 0 && ch <= 39)) ch = 0;
+      const h0 = (+llid()) | ($("pk-nesn").checked ? 4 : 0) | ($("pk-sn").checked ? 8 : 0) | ($("pk-md").checked ? 16 : 0);
+      const pdu = [h0, pl.length, ...pl];
+      const c = crc24(pdu, ci), cbits = []; for (let i = 23; i >= 0; i--) cbits.push((c >> i) & 1);
+      const aaBytes = [aa & 255, (aa >> 8) & 255, (aa >> 16) & 255, (aa >>> 24) & 255];
+      // 프리앰블은 접근 주소의 첫 비트와 반대 값으로 끝나도록 0과 1을 번갈아 둔다 ([Vol 6] Part B §2.1.1)
+      const pre = (aaBytes[0] & 1) ? [1, 0, 1, 0, 1, 0, 1, 0] : [0, 1, 0, 1, 0, 1, 0, 1];
+      const body = bitsLsbFirst(pdu).concat(cbits), wb = whiteningBits(ch, body.length), wh = body.map((b, i) => b ^ wb[i]);
+      const names = ["LLID", "LLID", "NESN", "SN", "MD", "CP", "RFU", "RFU", "Len", "", "", "", "", "", "", ""];
+      $("pk-hdr").innerHTML = bitsLsbFirst([h0, pl.length]).map((b, i) => `<span>${b}<small>${names[i]}</small></span>`).join("");
+      $("pk-rows").innerHTML = [
+        ["프리앰블", `<span class="pre">${g8(pre)}</span>`],
+        ["접근 주소", `<span class="aa">${g8(bitsLsbFirst(aaBytes))}</span>`],
+        ["헤더", `<span class="hd">${g8(bitsLsbFirst([h0, pl.length]))}</span>`],
+        ["페이로드", `<span class="pl">${pl.length ? g8(bitsLsbFirst(pl)) : "(빈 PDU)"}</span>`],
+        ["CRC", `<span class="crc">${g8(cbits)}</span>`],
+        ["화이트닝 후 (ch " + ch + ")", `<span>${g8(wh)}</span>`],
+      ].map(([k, v]) => `<div><span>${k}</span><span class="b">${v}</span></div>`).join("");
+      BT.stat("pk-crcv", g8(cbits));
+      const nbytes = 1 + 4 + pdu.length + 3; BT.stat("pk-len", nbytes + "바이트 / " + nbytes * 8 + " µs");
+      const isSample = aa === 0xaa08192b && ci === 0xc4c181 && ch === 16 && h0 === 0x16 && pl.join() === "1,2,3,4,5";
+      const expW = "01100011 11011001 01001010 10001100 11011011 01111101 10111001 10110010 00101111 10011000";
+      BT.stat("pk-ok", isSample ? (g8(cbits) === "10100010 00001011 01001011" && g8(wh) === expW ? `<span style="color:var(--ok)">✓ CRC·화이트닝 일치</span>` : `<span style="color:var(--bad)">✗ 불일치</span>`) : "샘플과 다른 입력");
+    }
+    draw();
+  })();
+
+  /* ================================================================ 3. SN/NESN */
+  (function () {
+    const p = BT.range("ack-p", (v) => v + "%", null);
+    let st, rows = [], rnd;
+    function reset() {
+      st = { cSN: 0, cNESN: 0, pSN: 0, pNESN: 0, msg: 0, got: [], sent: 0, re: 0, dup: 0, pending: true };
+      rows = []; rnd = BT.rng(99); $("ack-log").innerHTML = ""; show();
+    }
+    const L = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    function step() {
+      const loss = p() / 100;
+      // 센트럴 → 페리페럴 (메시지 L[msg], SN=cSN)
+      const m = L[st.msg % 26], down = rnd() >= loss, sentSN = st.cSN;
+      let note = "";
+      if (down) {
+        if (sentSN === st.pNESN) { st.got.push(m); st.pNESN ^= 1; note = `<span class="k">${m} 받음</span>`; }
+        else { st.dup++; note = `<span class="r">${m} 중복 → 버림</span>`; }
+      } else note = `<span class="x">${m} 잃음</span>`;
+      // 페리페럴 → 센트럴 (빈 PDU, NESN=pNESN)
+      const up = rnd() >= loss, ackNESN = st.pNESN;
+      let note2 = "";
+      if (up) {
+        if (ackNESN !== st.cSN) { st.cSN ^= 1; st.msg++; st.sent++; note2 = "확인 → 다음 메시지"; }
+        else { st.re++; note2 = `<span class="r">NESN 그대로 → 재전송</span>`; }
+      } else { st.re++; note2 = `<span class="x">답장 잃음</span> → 재전송`; }
+      rows.push({ m, sentSN, down, ackNESN, up });
+      if (rows.length > 14) rows.shift();
+      $("ack-log").insertAdjacentHTML("afterbegin", `<div>센트럴 SN=${sentSN} “${m}” ${down ? "→" : "✗"} ${note} · 페리페럴 NESN=${ackNESN} ${up ? "→" : "✗"} ${note2}</div>`);
+      show();
+    }
+    const cv = BT.canvas($("cv-ack"), (ctx, w, h) => {
+      const P = BT.palette(), yc = 22, yp = h - 22, L = 76, Rr = w - 10, n = 14, cw = (Rr - L) / n;
+      BT.text(ctx, "센트럴", 6, yc, { size: 11, color: P.dim }); BT.text(ctx, "페리페럴", 6, yp, { size: 11, color: P.dim });
+      ctx.strokeStyle = P.axis; ctx.beginPath(); ctx.moveTo(L, yc); ctx.lineTo(Rr, yc); ctx.moveTo(L, yp); ctx.lineTo(Rr, yp); ctx.stroke();
+      rows.forEach((r, i) => {
+        const x = L + i * cw + 6, x2 = x + cw * 0.42, x3 = x + cw * 0.84;
+        BT.arrow(ctx, x, yc, r.down ? x2 : (x + x2) / 2, r.down ? yp : (yc + yp) / 2, { color: r.down ? P.accent : P.bad });
+        if (!r.down) BT.text(ctx, "✗", (x + x2) / 2, (yc + yp) / 2 + 9, { size: 12, color: P.bad, align: "center", bold: true });
+        BT.text(ctx, r.m + r.sentSN, x - 2, yc - 11, { size: 10.5, mono: true, color: P.accent });
+        BT.arrow(ctx, x2, yp, r.up ? x3 : (x2 + x3) / 2, r.up ? yc : (yc + yp) / 2, { color: r.up ? P.accent2 : P.bad });
+        if (!r.up) BT.text(ctx, "✗", (x2 + x3) / 2, (yc + yp) / 2 - 9, { size: 12, color: P.bad, align: "center", bold: true });
+        BT.text(ctx, "N" + r.ackNESN, x2, yp + 12, { size: 10.5, mono: true, color: P.accent2 });
+      });
+    }, { aspect: 0.3, minHeight: 150, maxHeight: 200 });
+    function show() {
+      BT.stat("ack-sent", st.sent + "개 확인됨");
+      BT.stat("ack-got", st.got.length ? st.got.slice(-12).join("") + ` (${st.got.length})` : "—");
+      BT.stat("ack-re", st.re + "번"); BT.stat("ack-dup", st.dup + "번");
+      cv.redraw();
+    }
+    $("ack-step").addEventListener("click", step);
+    $("ack-run").addEventListener("click", () => { for (let i = 0; i < 20; i++) step(); });
+    $("ack-reset").addEventListener("click", reset);
+    reset();
+  })();
+
+  /* ================================================================ 4. 처리량 */
+  (function () {
+    const PHYR = { "1m": 1000, "2m": 2000, s2: 500, s8: 125 };
+    const phy = BT.seg("tp-phy", draw), dle = BT.seg("tp-dle", draw), mtu = BT.seg("tp-mtu", draw);
+    const iv = BT.range("tp-int", (v) => (v * 1.25).toFixed(2).replace(/\.?0+$/, "") + " ms", draw);
+    const mx = BT.range("tp-max", (v) => (v >= 41 ? "제한 없음" : v + "개"), draw);
+    $("tp-enc").addEventListener("change", draw);
+    let R = null;
+    const cv = BT.canvas($("cv-tp"), (ctx, w, h) => {
+      if (!R) return;
+      const P = BT.palette(), steps = R.steps, L = 132, Rr = w - 70, top = 10, rh = (h - top - 6) / steps.length, max = steps[0][1];
+      steps.forEach(([name, v], i) => {
+        const y = top + i * rh, bw = Math.max(2, ((Rr - L) * v) / max);
+        BT.text(ctx, name, 6, y + rh / 2, { size: 11.5, color: P.dim });
+        ctx.fillStyle = i === steps.length - 1 ? P.ok : P.accent; ctx.globalAlpha = i === 0 ? 0.35 : 0.8; ctx.fillRect(L, y + 4, bw, rh - 8); ctx.globalAlpha = 1;
+        BT.text(ctx, v >= 1000 ? (v / 1000).toFixed(2) + " Mb/s" : Math.round(v) + " kb/s", L + bw + 6, y + rh / 2, { size: 11, mono: true, color: P.text });
+      });
+    }, { aspect: 0.36, minHeight: 190, maxHeight: 250 });
+    function draw() {
+      const o = { phy: phy(), ll: +dle(), mtu: +mtu(), intervalUs: iv() * 1250, maxPerEvent: mx() >= 41 ? 1e9 : mx(), tifs: 150, enc: $("tp-enc").checked };
+      const r = leThroughput(o), air = PHYR[o.phy];
+      // 손실 폭포: 공중 → 패킷 머리 → 응답·틈 → 상위 헤더/조각 → 이벤트 자투리
+      const t = (pdu) => (o.phy === "1m" ? (1 + 4 + pdu + 3) * 8 : o.phy === "2m" ? (2 + 4 + pdu + 3) * 4 : 376 + (pdu * 8 + 27) * (o.phy === "s8" ? 8 : 2));
+      const mic = o.enc ? 4 : 0;
+      const afterHdr = (o.ll * 8) / t(2 + o.ll + mic) * 1000;
+      const afterPair = (o.ll * 8) / r.pairUs * 1000;
+      const l2 = o.mtu + 4, eff = (o.mtu - 3) / (r.frags * o.ll);
+      const afterUpper = afterPair * eff;
+      R = { steps: [["공중 속도", air], ["패킷 머리·꼬리", afterHdr], ["응답 + 150 µs 틈", afterPair], ["L2CAP·ATT 헤더", afterUpper], ["이벤트 자투리 = 앱", r.kbps]] };
+      BT.stat("tp-app", r.kbps >= 1000 ? (r.kbps / 1000).toFixed(2) + " Mb/s" : Math.round(r.kbps) + " kb/s");
+      BT.stat("tp-pair", r.pairUs + " µs");
+      BT.stat("tp-n", r.pairs + "번 (알림 " + r.ntfPerEvent + "개)");
+      BT.stat("tp-eff", Math.round((r.kbps / air) * 100) + "%");
+      cv.redraw();
+    }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>블루투스 오디오 · BluetoothBook</title>
+<meta name="description" content="무선 이어폰 속의 블루투스. 클래식의 A2DP·HFP와 SCO/eSCO, 코덱과 비트레이트, 소리가 늦게 들리는 이유(지연 예산), LE 오디오의 등시성 채널 CIS·BIS와 LC3, 브로드캐스트 오디오 Auracast를 Core 6.2와 관련 프로파일 사양을 바탕으로 계산한다.">
+<link rel="canonical" href="https://bluetoothbook.euiyun.com/chapters/audio.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="BluetoothBook">
+<meta property="og:title" content="블루투스 오디오 · BluetoothBook">
+<meta property="og:description" content="무선 이어폰 속의 블루투스. 클래식의 A2DP·HFP와 SCO/eSCO, 코덱과 비트레이트, 소리가 늦게 들리는 이유(지연 예산), LE 오디오의 등시성 채널 CIS·BIS와 LC3, 브로드캐스트 오디오 Auracast를 Core 6.2와 관련 프로파일 사양을 바탕으로 계산한다.">
+<meta property="og:url" content="https://bluetoothbook.euiyun.com/chapters/audio.html">
+<meta property="og:image" content="https://bluetoothbook.euiyun.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"블루투스 오디오","name":"블루투스 오디오 · BluetoothBook","url":"https://bluetoothbook.euiyun.com/chapters/audio.html","mainEntityOfPage":"https://bluetoothbook.euiyun.com/chapters/audio.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":10,"image":"https://bluetoothbook.euiyun.com/og.png","dateModified":"2026-10-16","isPartOf":{"@type":"Book","@id":"https://bluetoothbook.euiyun.com/#book","name":"BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서","url":"https://bluetoothbook.euiyun.com/"},"publisher":{"@type":"Organization","name":"BluetoothBook","url":"https://bluetoothbook.euiyun.com/"},"description":"무선 이어폰 속의 블루투스. 클래식의 A2DP·HFP와 SCO/eSCO, 코덱과 비트레이트, 소리가 늦게 들리는 이유(지연 예산), LE 오디오의 등시성 채널 CIS·BIS와 LC3, 브로드캐스트 오디오 Auracast를 Core 6.2와 관련 프로파일 사양을 바탕으로 계산한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook","item":"https://bluetoothbook.euiyun.com/"},{"@type":"ListItem","position":2,"name":"10 블루투스 오디오","item":"https://bluetoothbook.euiyun.com/chapters/audio.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<!-- Cloudflare Web Analytics -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"3d6151a0abc94ede89285d462527fa80"}'></script>
+<!-- End Cloudflare Web Analytics -->
+</head>
+<body data-chapter="audio">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 10</div>
+    <h1>블루투스 오디오</h1>
+    <p class="lead">무선 이어폰으로 영상을 보면 입 모양과 소리가 살짝 어긋난다. 게임에서는 총소리가 늦게 들린다. 사람 많은 지하철역에서는 음악이 툭툭 끊기고, 통화할 때는 상대 목소리가 갑자기 먹먹해진다. 모두 블루투스 오디오가 <b>제시간에 도착해야 하는 데이터</b>를 다룬다는 데서 생기는 일이다. 이 장에서는 20년 넘게 쓰인 클래식 오디오가 어떻게 동작하는지, 소리가 어디서 늦어지는지 계산해 보고, 5.2에서 시작된 LE 오디오가 등시성 채널로 무엇을 바꿨는지 따라간다. 그리고 한 송신기가 수많은 이어폰에 소리를 뿌리는 Auracast까지 간다.</p>
+    <ul class="objectives">
+      <li>음악(A2DP)과 통화(HFP)가 클래식에서 서로 다른 길(ACL, SCO/eSCO)을 쓰는 이유를 안다.</li>
+      <li>코덱별 비트레이트가 무선 링크의 여유와 공중 점유 시간에 어떤 부담을 주는지 계산한다.</li>
+      <li>프레임 길이, 전송, 재전송 여유, 지터 버퍼, 디코딩으로 이루어진 지연 예산을 쌓아 본다.</li>
+      <li>LE 등시성 채널(CIS·BIS)의 ISO_Interval, NSE, BN, FT 같은 파라미터가 신뢰도와 지연을 어떻게 맞바꾸는지 시뮬레이터로 확인한다.</li>
+      <li>Auracast 브로드캐스트가 주기적 광고와 BIG 위에서 동작하는 방식을 이해한다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="classic">
+    <h2>클래식 오디오: 음악은 ACL로, 통화는 SCO로</h2>
+    <p>무선 이어폰은 사실 여러 프로파일의 묶음이다. 프로파일은 1장에서 본 대로 Core 밖의 사양이다.</p>
+    <ul>
+      <li><b>A2DP</b>(Advanced Audio Distribution Profile): 음악. 압축된 오디오를 클래식 ACL 링크 위의 L2CAP 채널로 보낸다. 일반 데이터처럼 확인 응답과 재전송이 있어 소리가 정확히 도착하지만, 늦게 도착할 수 있다. 그래서 받는 쪽은 수백 ms의 <b>버퍼</b>를 두고 재생한다.</li>
+      <li><b>AVRCP</b>: 재생·정지·다음 곡, 볼륨 같은 리모컨 명령.</li>
+      <li><b>HFP</b>(Hands-Free Profile): 통화. 양방향 음성을 <span class="term">SCO</span><span class="en">(Synchronous Connection-Oriented)</span> 또는 1.2에서 추가된 <span class="term">eSCO</span> 링크로 보낸다. 정해진 슬롯을 미리 예약해 두고 늦지 않게 보낸다.</li>
+    </ul>
+    <p>SCO는 실시간성의 극단이다. 예를 들어 HV3 패킷은 30바이트를 6슬롯(3.75 ms)마다 보내 64 kb/s를 만든다. 재전송도 CRC도 없다. 깨지면 그 조각만 잡음으로 들리고 지나간다. 음성은 늦게 오는 것보다 조금 깨지는 편이 낫기 때문이다. eSCO는 예약 슬롯 뒤에 재전송 창을 두어 한두 번은 다시 보낼 수 있게 했다. 코덱은 처음에는 8 kHz 표본화의 CVSD(협대역, 유선 전화 음질), 이후 HFP가 16 kHz의 mSBC(광대역), 최근에는 LC3를 쓰는 초광대역으로 발전했다. 음악을 듣다 전화가 오면 소리가 먹먹해지는 것은 A2DP의 수백 kb/s에서 이 좁은 음성 링크로 바뀌기 때문이다.</p>
+    <p class="spec-ref">SCO/eSCO 논리 전송과 HV·EV 패킷(HV3 30바이트, 재전송 없음): <b>[Vol 2] Part B §6.5.2·§6.5.3</b> · CVSD 코덱: <b>[Vol 2] Part B §9</b> · 1.2의 새 기능 eSCO: <b>[Vol 1] Part C §2.1</b> · A2DP·AVRCP·HFP: Core 밖의 프로파일 사양</p>
+    <div class="callout deep"><strong>왼쪽 귀와 오른쪽 귀는 어떻게 받을까</strong><p>클래식 A2DP는 휴대폰 한 대와 수신기 한 대 사이의 링크다. 완전 무선(TWS) 이어폰이 처음 나왔을 때는 휴대폰이 한쪽 이어폰에 스테레오를 보내고, 그 이어폰이 다른 쪽으로 다시 중계했다. 머리 하나를 사이에 두고 2.4 GHz를 넘기는 일은 2장의 “몸 손실” 때문에 쉽지 않고, 중계 이어폰의 배터리가 먼저 닳았다. 이후 제조사들은 다른 쪽 이어폰이 휴대폰의 신호를 옆에서 같이 듣는 방식(각 회사의 독자 기술)을 썼다. LE 오디오는 이것을 표준으로 해결했다. 휴대폰이 귀마다 따로 등시성 스트림을 보내고, 두 스트림을 같은 시각에 재생하도록 묶는다(아래 CIG).</p></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="codecs">
+    <h2>코덱과 비트레이트: 얼마나 보내야 하나</h2>
+    <p>CD 음질(44.1 kHz, 16비트, 스테레오)은 1,411 kb/s다. 3장에서 본 것처럼 클래식의 실제 처리량 상한은 약 2 Mb/s이고, 그마저도 Wi-Fi와 나눠 쓰며 재전송 여유를 남겨야 한다. 그래서 오디오는 반드시 압축해 보낸다. 압축 방식이 <span class="term">코덱</span><span class="en">(codec)</span>이다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>코덱</th><th>쓰는 곳</th><th>대표 비트레이트</th><th>비고</th></tr></thead>
+      <tbody>
+        <tr><td>SBC</td><td>A2DP 필수</td><td class="num">~ 200 ~ 345 kb/s</td><td>단순·저지연 연산, 모든 기기가 지원</td></tr>
+        <tr><td>AAC</td><td>A2DP 선택</td><td class="num">~ 128 ~ 256 kb/s</td><td>같은 비트레이트에서 SBC보다 효율적</td></tr>
+        <tr><td>aptX / aptX HD</td><td>A2DP (회사 코덱)</td><td class="num">352 ~ 384 / 576 kb/s</td><td>고정 비트레이트</td></tr>
+        <tr><td>LDAC</td><td>A2DP (회사 코덱)</td><td class="num">330 / 660 / 990 kb/s</td><td>연결 상태에 따라 바꾼다</td></tr>
+        <tr><td>CVSD / mSBC</td><td>HFP 통화</td><td class="num">64 kb/s</td><td>8 kHz 협대역 / 16 kHz 광대역</td></tr>
+        <tr><td>LC3</td><td>LE 오디오 필수</td><td class="num">예: 16 kHz 32 kb/s ~ 48 kHz 124 kb/s (채널당)</td><td>7.5 ms·10 ms 프레임, 낮은 비트레이트에서 강함</td></tr>
+      </tbody>
+    </table></div>
+    <p class="spec-ref">코덱과 그 설정은 Core 밖의 사양(A2DP, HFP, LC3, BAP)과 각 회사 문서에 있다. 비트레이트는 대표적인 설정값이다.</p>
+    <p>비트레이트가 높으면 음질에 유리하지만 무선의 짐이 커진다. 같은 데이터를 보내는 데 공중을 더 오래 차지하므로 Wi-Fi와 부딪힐 기회가 늘고, 패킷이 깨졌을 때 다시 보낼 시간 여유가 줄어든다. 사람 많은 곳에서 고음질 코덱이 먼저 끊기는 이유다.</p>
+    <div class="sim" id="sim-codec">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>코덱 비트레이트와 링크 여유: 어디서부터 끊기나</h3></div>
+      <div class="sim-view"><canvas id="cv-codec"></canvas></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>코덱</span><div class="seg" id="cd-c"><button data-value="328">SBC 328</button><button data-value="256" class="on">AAC 256</button><button data-value="576">aptX HD 576</button><button data-value="990">LDAC 990</button><button data-value="96">LC3 96 (LE)</button></div></div>
+        <label class="ctrl"><span>패킷 손실률 (간섭·거리) <output id="cd-p-out"></output></span><input type="range" id="cd-p" min="0" max="70" value="10"></label>
+        <label class="ctrl"><span>링크가 실제로 낼 수 있는 처리량 <output id="cd-cap-out"></output></span><input type="range" id="cd-cap" min="200" max="2000" step="50" value="1300"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">필요한 공중 시간 비율</span><span class="v" id="cd-air">—</span></div>
+        <div class="stat"><span class="k">재전송 여유</span><span class="v" id="cd-room">—</span></div>
+        <div class="stat"><span class="k">판정</span><span class="v" id="cd-ok">—</span></div>
+      </div>
+      <div class="sim-note">막대: 링크 용량(전체)에서 코덱 데이터가 차지하는 몫, 손실을 메우기 위한 재전송 몫, 남는 여유. 손실률 p에서 평균 전송 횟수는 1/(1−p)이므로 필요한 공중 시간은 비트레이트 ÷ (1−p)다. 해볼 것: ① 손실률을 10% → 40%로 올려 보자. LDAC 990은 금방 용량을 넘지만 AAC 256은 버틴다. LDAC 같은 코덱이 연결이 나빠지면 660, 330으로 스스로 내려가는 이유다. ② 링크 처리량을 줄이는 것은 거리가 멀어져 3 Mb/s EDR 대신 2 Mb/s나 1 Mb/s 패킷으로 내려간 상황이다(3장). 단순화: 재전송 여유가 30% 미만이면 “위험”, 0 이하면 “끊김”으로 판정했다. 실제 동작은 버퍼 크기와 재전송 정책에 따라 다르다.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="latency">
+    <h2>소리는 왜 늦게 들릴까: 지연 예산</h2>
+    <p>휴대폰에서 재생 버튼을 누른 순간부터 귀에 소리가 닿기까지 여러 단계가 시간을 더한다.</p>
+    <ul>
+      <li><b>프레임 모으기</b>: 코덱은 소리를 일정 길이의 프레임으로 잘라 압축한다. LC3는 10 ms(또는 7.5 ms), SBC·AAC는 설정에 따라 수 ms~20 ms 남짓의 표본을 모아야 압축할 수 있다.</li>
+      <li><b>인코딩·디코딩</b>: 계산 시간.</li>
+      <li><b>전송과 재전송 여유</b>: 패킷이 깨지면 다시 보낼 시간을 남겨 둬야 한다. 여유가 길수록 끊김은 줄고 지연은 늘어난다.</li>
+      <li><b>지터 버퍼</b>: 도착 시각이 들쭉날쭉해도 끊김 없이 재생하려고 받는 쪽이 쌓아 두는 양. 클래식 A2DP에서 가장 큰 항목이다.</li>
+      <li><b>표시 지연</b><span class="en">(presentation delay)</span>: LE 오디오에서 여러 수신기가 같은 순간에 재생하도록 정한 기준 시각까지의 여유.</li>
+    </ul>
+    <div class="sim" id="sim-lat">
+      <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>지연 예산 쌓기: 클래식 A2DP vs LE 오디오</h3></div>
+      <div class="sim-view"><canvas id="cv-lat"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>클래식: 지터 버퍼 <output id="lt-buf-out"></output></span><input type="range" id="lt-buf" min="20" max="300" step="10" value="150"></label>
+        <label class="ctrl"><span>LE: ISO_Interval <output id="lt-iso-out"></output></span><input type="range" id="lt-iso" min="4" max="24" value="8"></label>
+        <label class="ctrl"><span>LE: 재전송 여유 FT (ISO_Interval 개수) <output id="lt-ft-out"></output></span><input type="range" id="lt-ft" min="1" max="6" value="2"></label>
+        <label class="ctrl"><span>LE: 표시 지연 <output id="lt-pd-out"></output></span><input type="range" id="lt-pd" min="0" max="40" value="10"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">클래식 A2DP 합계</span><span class="v" id="lt-c">—</span></div>
+        <div class="stat"><span class="k">LE 오디오 합계</span><span class="v" id="lt-l">—</span></div>
+        <div class="stat"><span class="k">입 모양이 어긋나 보이기 시작하는 감각</span><span class="v">약 40 ~ 100 ms</span></div>
+      </div>
+      <div class="sim-note">막대 하나가 지연 한 항목이다. 해볼 것: ① 클래식의 지터 버퍼를 줄이면 지연은 줄지만, 실제 제품에서는 간섭이 있을 때 끊긴다. 그래서 영상 앱은 운영체제가 알려 주는 지연만큼 화면을 늦춰 입 모양을 맞춘다. ② LE에서 FT를 늘리면 재전송 기회가 늘어 끊김에 강해지지만, 그만큼 지연이 ISO_Interval 단위로 쌓인다. 모델 수치(대표값): 클래식 = 프레임 20 ms + 인코딩 5 + 전송 10 + 버퍼 + 디코딩 5 + DAC 5 ms. LE = LC3 10 ms 프레임 + 인코딩 2.5 + (ISO_Interval × FT) + 표시 지연 + 디코딩 2.5 ms.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="iso">
+    <h2>LE 오디오의 토대: 등시성 채널</h2>
+    <p>1장의 “예측해 보기”에서 본 것처럼, 4.0의 LE에는 <b>정해진 시각에 꼭 도착해야 하는 데이터</b>를 다루는 규칙이 없었다. 5.2(2019년 말)는 <span class="term">등시성 채널</span><span class="en">(isochronous channels)</span>을 추가했다. “등시성”이란 같은 간격으로 반복된다는 뜻이다. 데이터에는 유효 기간이 있고, 기한이 지나면 재전송하지 않고 버린다(플러시). 늦은 소리는 소리가 아니기 때문이다.</p>
+    <ul>
+      <li><span class="term">CIS</span><span class="en">(Connected Isochronous Stream)</span>: 연결된 두 기기 사이의 등시성 스트림. ACL 연결(6장)에 딸려 있고, 확인 응답과 재전송이 있다. 귀마다 CIS 하나씩, 여러 CIS를 묶은 것이 <b>CIG</b>(그룹)다. 같은 CIG의 스트림은 같은 기준 시각에 맞춰 재생된다.</li>
+      <li><span class="term">BIS</span><span class="en">(Broadcast Isochronous Stream)</span>: 연결 없이 뿌리는 등시성 스트림. 확인 응답이 없으므로 같은 데이터를 미리 정한 횟수만큼 반복해 신뢰도를 올린다. 최대 31개 BIS를 묶은 것이 <b>BIG</b>다.</li>
+    </ul>
+    <p>CIS는 이런 파라미터로 정의된다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>파라미터</th><th>뜻</th><th>사양 범위</th></tr></thead>
+      <tbody>
+        <tr><td>ISO_Interval</td><td>CIS 이벤트 사이 간격</td><td class="num">1.25 ms 단위 5 ms ~ 4 s, ACL 감독 타임아웃의 절반 미만</td></tr>
+        <tr><td>NSE</td><td>한 이벤트 안의 최대 서브이벤트 수 (재전송 기회 포함)</td><td class="num">max(BN) ~ 31</td></tr>
+        <tr><td>BN</td><td>이벤트마다 새로 들어오는 페이로드 수</td><td class="num">0 ~ 15</td></tr>
+        <tr><td>FT</td><td>한 페이로드를 몇 이벤트 동안 보낼 수 있는가(플러시 기한)</td><td class="num">필수 지원 값 1</td></tr>
+        <tr><td>Max_PDU</td><td>CIS PDU 하나의 최대 데이터</td><td class="num">0 ~ 251바이트</td></tr>
+      </tbody>
+    </table></div>
+    <p class="spec-ref">CIS 파라미터와 범위: <b>[Vol 6] Part B §4.5.13.1·§4.5.13.2</b> · 플러시 기한: <b>§4.5.13.5</b> · BIS·BIG(최대 31 BIS, BN 1~7, PTO, IRC, NSE ≤ 31): <b>§4.4.6.1~§4.4.6.3</b> · 등시성 적응 계층(ISOAL, 프레임/비프레임): <b>[Vol 6] Part G</b> · 5.2 새 기능: <b>[Vol 1] Part C §11.1</b></p>
+    <div class="sim" id="sim-cis">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>CIS 이벤트: 재전송 기회와 플러시</h3></div>
+      <div class="sim-view"><canvas id="cv-cis"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>패킷 손실률 <output id="ci-p-out"></output></span><input type="range" id="ci-p" min="0" max="60" step="5" value="20"></label>
+        <label class="ctrl"><span>NSE (이벤트당 서브이벤트) <output id="ci-nse-out"></output></span><input type="range" id="ci-nse" min="1" max="6" value="2"></label>
+        <label class="ctrl"><span>FT (플러시 기한, 이벤트) <output id="ci-ft-out"></output></span><input type="range" id="ci-ft" min="1" max="4" value="1"></label>
+        <div class="ctrl"><span>&nbsp;</span><div class="btn-row"><button class="btn" id="ci-run">다시 실행</button></div></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">이론상 전달 확률</span><span class="v" id="ci-th">—</span></div>
+        <div class="stat"><span class="k">이 실행에서 잃은 프레임</span><span class="v" id="ci-lost">—</span></div>
+        <div class="stat"><span class="k">추가되는 최대 지연</span><span class="v" id="ci-lat">—</span></div>
+      </div>
+      <div class="sim-note">가로는 CIS 이벤트(ISO_Interval 10 ms, BN = 1: 이벤트마다 새 오디오 프레임 하나). 칸 하나가 서브이벤트, 파랑은 성공, 빨강은 손실, 회색은 이미 성공해 쓰지 않은 서브이벤트, 검정 테두리는 기한이 지나 버린 프레임이다. 해볼 것: ① NSE = 1, FT = 1이면 손실률이 그대로 끊김률이다. ② NSE를 3으로 올리면 한 이벤트 안에서 두 번 더 기회가 생겨 지연 증가 없이 신뢰도가 크게 오른다(대신 공중 시간을 더 예약한다). ③ FT를 올리면 다음 이벤트까지 기다려 다시 보낼 수 있다. 신뢰도는 오르지만 지연이 ISO_Interval씩 늘어난다. 이론값: 1 − p<sup>(NSE/BN)×FT</sup>(손실이 서로 독립이라고 가정).</div>
+    </div>
+    <p>LE 오디오의 코덱 <span class="term">LC3</span><span class="en">(Low Complexity Communication Codec)</span>는 SBC보다 낮은 비트레이트에서 더 좋은 음질을 내도록 설계되었다. 같은 음질을 적은 비트로 보내면 공중 시간이 줄고, 그 시간을 재전송 기회(NSE)에 쓸 수 있다. LE 오디오는 그래서 “더 적게 보내고 더 여러 번 보내는” 쪽을 택했다. 보청기용 프로파일(HAP)이 LE 오디오 위에 만들어진 것도, 작은 배터리로 하루 종일 두 귀에 소리를 넣어야 하기 때문이다.</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="auracast">
+    <h2>Auracast: 한 송신기, 수많은 귀</h2>
+    <p>LE 오디오의 <span class="term">브로드캐스트 오디오</span><span class="en">(Auracast™)</span>는 BIS로 소리를 뿌린다. 받는 이어폰 수에 제한이 없다. 공항 안내 방송을 보청기로 직접 듣고, 체육관의 TV 소리를 각자 이어폰으로 듣고, 친구의 휴대폰 음악을 여럿이 함께 듣는 데 쓴다.</p>
+    <ol>
+      <li>송신기는 확장 광고(5장)로 “방송이 있다”를 알리고, <b>주기적 광고</b>를 시작한다.</li>
+      <li>주기적 광고에는 BIG의 시각·채널·파라미터를 담은 <b>BIGInfo</b>가 실린다.</li>
+      <li>이어폰은 주기적 광고에 동기를 맞춘 뒤 BIGInfo를 읽고 원하는 BIS에 동기화해 듣는다. 연결은 없다.</li>
+      <li>공개 방송이 아니면 BIG를 암호화하고, 듣는 사람은 <b>Broadcast_Code</b>(방송 비밀번호)를 알아야 한다. 휴대폰 같은 “도우미” 기기가 QR 코드나 메뉴로 방송을 고르고 이어폰에 코드를 전달할 수 있다.</li>
+    </ol>
+    <p class="spec-ref">BIG 이벤트·BIGInfo·연관 주기적 광고·암호화: <b>[Vol 6] Part B §4.4.6.4~§4.4.6.11</b> · 암호화된 BIG와 Broadcast_Code: <b>[Vol 3] Part C §10.9</b> · Auracast의 방송 탐색·도우미 역할은 Core 밖의 프로파일(BAP, BASS, PBP 등)</p>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">Auracast 방송을 듣는 이어폰이 100개로 늘었다. 송신기가 보내야 하는 데이터는 어떻게 될까?</p><p class="wi-hint">BIS에는 확인 응답이 없다는 점을 떠올려 보자.</p><div class="opts">
+      <button class="opt">100배로 늘어난다</button>
+      <button class="opt" data-correct>그대로다 — 같은 BIS를 모두가 듣기만 하고 아무도 답하지 않는다</button>
+      <button class="opt">이어폰이 많으면 재전송이 늘어 조금 늘어난다</button>
+    </div><div class="quiz-exp">브로드캐스트는 수신자 수와 무관하다. 대신 아무도 “못 받았다”고 말해 주지 않으므로, 송신기는 미리 정한 반복(IRC)과 사전 전송(PTO)으로 신뢰도를 확보한다. 연결형 CIS로 100명에게 보내려면 100개의 스트림이 필요하다.</div></div>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>클래식 오디오: 음악은 <b>A2DP</b>(ACL·L2CAP, 재전송 + 큰 버퍼), 통화는 <b>HFP</b>(SCO/eSCO, 예약 슬롯). HV3는 30바이트를 3.75 ms마다, 64 kb/s, 재전송 없음.</li>
+      <li>코덱 비트레이트가 높을수록 공중 시간과 재전송 부담이 커져 간섭에 약하다. 손실률 p이면 필요한 공중 시간 ≈ 비트레이트 ÷ (1 − p).</li>
+      <li>지연 = 프레임 + 인코딩 + 전송·재전송 여유 + 지터 버퍼 + 디코딩. 클래식 A2DP는 버퍼 때문에 보통 100 ms를 넘고, LE 오디오는 수십 ms로 줄일 수 있다.</li>
+      <li>5.2의 <b>등시성 채널</b>: 연결형 <b>CIS</b>(재전송 있음, CIG로 귀마다 묶음)와 방송형 <b>BIS</b>(확인 없음, BIG ≤ 31). ISO_Interval 5 ms ~ 4 s, NSE ≤ 31, 기한(FT)이 지난 데이터는 버린다.</li>
+      <li><b>Auracast</b>는 확장 광고 → 주기적 광고(BIGInfo) → BIS 동기화로 듣는 브로드캐스트다. 청취자 수와 무관하며, 비공개 방송은 Broadcast_Code로 암호화한다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>음악을 듣다가 전화를 받으면 이어폰 음질이 갑자기 먹먹해지는 주된 이유는?</p><div class="opts">
+        <button class="opt">통화 중에는 송신 전력이 낮아져서</button><button class="opt" data-correct>A2DP 음악 링크에서 대역이 좁은 HFP 음성 링크(SCO/eSCO, 협대역·광대역 코덱)로 바뀌어서</button><button class="opt">휴대폰이 Wi-Fi를 끄기 때문</button><button class="opt">LE로 자동 전환되기 때문</button>
+      </div><div class="quiz-exp">클래식에서 마이크를 쓰는 양방향 통화는 HFP로 처리된다. CVSD(8 kHz)나 mSBC(16 kHz) 같은 음성 코덱은 음악 코덱보다 대역이 훨씬 좁다.</div></div>
+      <div class="quiz-q"><p>SCO 링크가 깨진 패킷을 재전송하지 않는 이유는?</p><div class="opts">
+        <button class="opt">음성은 오류가 생기지 않아서</button><button class="opt" data-correct>실시간 음성은 늦게 도착한 데이터가 쓸모없어, 조금 깨지더라도 제시간에 다음 조각을 보내는 편이 낫기 때문</button><button class="opt">SCO는 CRC를 계산할 수 없어서</button><button class="opt">재전송하면 암호가 풀려서</button>
+      </div><div class="quiz-exp">등시성 데이터의 원칙이다. eSCO는 짧은 재전송 창을 두어 기한 안에서만 다시 보내는 절충을 했고, LE의 CIS는 플러시 기한(FT)으로 같은 생각을 일반화했다.</div></div>
+      <div class="quiz-q"><p>CIS에서 NSE를 1에서 3으로 늘리고 FT는 1로 둔다. 무엇이 일어나나?</p><div class="opts">
+        <button class="opt">지연이 ISO_Interval의 3배로 늘어난다</button><button class="opt" data-correct>같은 이벤트 안에 재전송 기회가 생겨 신뢰도가 오르고, 지연은 거의 그대로다(대신 공중 시간을 더 예약)</button><button class="opt">데이터 속도가 3배가 된다</button><button class="opt">아무 변화 없다</button>
+      </div><div class="quiz-exp">서브이벤트는 한 ISO_Interval 안에 있으므로 플러시 기한은 그대로다. 손실률 20%라면 전달 실패 확률이 20%에서 0.8%로 준다.</div></div>
+      <div class="quiz-q"><p>BIS(브로드캐스트)가 신뢰도를 높이는 방법은?</p><div class="opts">
+        <button class="opt">수신기의 확인 응답을 받아 재전송한다</button><button class="opt" data-correct>확인 없이 같은 데이터를 미리 정한 횟수만큼 반복해 보낸다</button><button class="opt">수신기마다 다른 채널을 쓴다</button><button class="opt">LE Coded PHY만 쓴다</button>
+      </div><div class="quiz-exp">BIS는 단방향이라 확인 응답이 없다. BIG 파라미터(NSE, IRC, PTO)로 반복과 사전 전송을 정한다.</div></div>
+      <div class="quiz-q"><p>Core 6.2에서 CIS의 ISO_Interval로 허용되지 않는 값은?</p><div class="opts">
+        <button class="opt">5 ms</button><button class="opt">10 ms</button><button class="opt" data-correct>2.5 ms</button><button class="opt">100 ms</button>
+      </div><div class="quiz-exp">ISO_Interval은 1.25 ms 단위로 5 ms ~ 4 s이고, 연결된 ACL 감독 타임아웃의 절반보다 작아야 한다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  /** 손실률 p에서 필요한 공중 시간 비율 */
+  function requiredAirFraction(kbps, capKbps, p) { return kbps / (1 - p) / capKbps; }
+  /** CIS 전달 확률: 1 - p^((NSE/BN) × FT), 손실 독립 가정 */
+  function cisDelivery(p, nse, bn, ft) { return 1 - Math.pow(p, (nse / bn) * ft); }
+
+  /* ================================================================ 1. 코덱 */
+  (function () {
+    const c = BT.seg("cd-c", draw);
+    const p = BT.range("cd-p", (v) => v + "%", draw);
+    const cap = BT.range("cd-cap", (v) => v + " kb/s", draw);
+    let R = {};
+    const cv = BT.canvas($("cv-codec"), (ctx, w, h) => {
+      const P = BT.palette(), L = 10, Rr = w - 10, y = 40, hh = 34, X = (f) => L + Math.min(1, f) * (Rr - L);
+      ctx.fillStyle = P.surface; ctx.fillRect(L, y, Rr - L, hh);
+      const d = Math.min(1, R.data), re = Math.min(1, R.data + R.retx);
+      ctx.fillStyle = P.accent; ctx.fillRect(L, y, X(d) - L, hh);
+      ctx.fillStyle = P.warn; ctx.fillRect(X(d), y, X(re) - X(d), hh);
+      if (R.data + R.retx > 1) { ctx.fillStyle = P.bad; ctx.fillRect(Rr - 6, y - 6, 6, hh + 12); }
+      BT.text(ctx, "코덱 데이터", L, y - 10, { size: 11.5, color: P.accent });
+      BT.text(ctx, "재전송", X(d) + 4, y + hh + 14, { size: 11.5, color: P.warn });
+      BT.text(ctx, "링크 용량 " + cap() + " kb/s", Rr, y - 10, { size: 11.5, color: P.dim, align: "right" });
+    }, { aspect: 0.18, minHeight: 110, maxHeight: 130 });
+    function draw() {
+      const k = +c(), pp = p() / 100, C = cap();
+      R = { data: k / C, retx: (k / (1 - pp) - k) / C };
+      const air = requiredAirFraction(k, C, pp), room = 1 - air;
+      BT.stat("cd-air", Math.round(air * 100) + "%");
+      BT.stat("cd-room", Math.round(room * 100) + "%");
+      BT.stat("cd-ok", room <= 0 ? '<span style="color:var(--bad)">끊김</span>' : room < 0.3 ? '<span style="color:var(--warn)">위험</span>' : '<span style="color:var(--ok)">여유 있음</span>');
+      cv.redraw();
+    }
+    draw();
+  })();
+
+  /* ================================================================ 2. 지연 */
+  (function () {
+    const buf = BT.range("lt-buf", (v) => v + " ms", draw);
+    const iso = BT.range("lt-iso", (v) => (v * 1.25).toFixed(2).replace(/\.?0+$/, "") + " ms", draw);
+    const ft = BT.range("lt-ft", (v) => String(v), draw);
+    const pd = BT.range("lt-pd", (v) => v + " ms", draw);
+    let C = [], Lr = [];
+    const sum = (a) => a.reduce((s, x) => s + x[1], 0);
+    const cv = BT.canvas($("cv-lat"), (ctx, w, h) => {
+      const P = BT.palette(), cols = [P.accent, P.accent2, P.warn, P.ok, P.bad, P.dim], L = 70, Rr = w - 12;
+      const maxT = Math.max(sum(C), sum(Lr), 100) * 1.05, X = (t) => L + (t / maxT) * (Rr - L);
+      [["클래식", C, 22], ["LE 오디오", Lr, 86]].forEach(([name, items, y]) => {
+        BT.text(ctx, name, 6, y + 16, { size: 12, bold: true, color: P.text });
+        let t = 0; items.forEach(([lab, v], i) => { ctx.fillStyle = cols[i % cols.length]; ctx.globalAlpha = 0.8; ctx.fillRect(X(t), y, Math.max(1, X(t + v) - X(t)), 32); ctx.globalAlpha = 1;
+          if (X(t + v) - X(t) > 46) BT.text(ctx, lab, X(t) + 4, y + 16, { size: 10.5, color: "#fff" }); t += v; });
+        BT.text(ctx, Math.round(t) + " ms", X(t) + 6, y + 16, { size: 12, mono: true, color: P.text });
+      });
+    }, { aspect: 0.26, minHeight: 150, maxHeight: 180 });
+    function draw() {
+      C = [["프레임", 20], ["인코딩", 5], ["전송", 10], ["지터 버퍼", buf()], ["디코딩", 5], ["DAC", 5]];
+      Lr = [["LC3 프레임", 10], ["인코딩", 2.5], ["ISO × FT", iso() * 1.25 * ft()], ["표시 지연", pd()], ["디코딩", 2.5]];
+      BT.stat("lt-c", Math.round(sum(C)) + " ms"); BT.stat("lt-l", Math.round(sum(Lr)) + " ms");
+      cv.redraw();
+    }
+    draw();
+  })();
+
+  /* ================================================================ 3. CIS */
+  (function () {
+    const p = BT.range("ci-p", (v) => v + "%", run);
+    const nse = BT.range("ci-nse", (v) => String(v), run);
+    const ft = BT.range("ci-ft", (v) => String(v), run);
+    $("ci-run").addEventListener("click", () => { seed++; run(); });
+    let seed = 5, grid = [];
+    const EV = 24;
+    function run() {
+      const r = BT.rng(seed * 131), pp = p() / 100, N = nse(), F = ft();
+      // 각 이벤트의 서브이벤트 상태: 'ok' | 'x' | 'idle'. 프레임 i는 이벤트 i..i+F-1에서 보낼 수 있다.
+      grid = Array.from({ length: EV }, () => Array(N).fill("idle"));
+      const owner = Array.from({ length: EV }, () => Array(N).fill(-1));
+      const done = Array(EV).fill(false), lost = Array(EV).fill(false);
+      for (let e = 0; e < EV; e++) {
+        let s = 0;
+        for (let f = Math.max(0, e - F + 1); f <= e && s < N; f++) {
+          if (done[f]) continue;
+          while (s < N && !done[f]) { const ok = r() >= pp; grid[e][s] = ok ? "ok" : "x"; owner[e][s] = f; if (ok) done[f] = true; s++; }
+        }
+      }
+      for (let f = 0; f < EV - F + 1; f++) if (!done[f]) lost[f] = true;
+      R = { lost, owner, F };
+      BT.stat("ci-th", (cisDelivery(pp, N, 1, F) * 100).toPrecision(4) + "%");
+      BT.stat("ci-lost", lost.filter(Boolean).length + " / " + (EV - F + 1));
+      BT.stat("ci-lat", (F - 1) * 10 + " ms");
+      cv.redraw();
+    }
+    let R = { lost: [], owner: [], F: 1 };
+    const cv = BT.canvas($("cv-cis"), (ctx, w, h) => {
+      const P = BT.palette(), N = nse(), L = 8, Rr = w - 8, cw = (Rr - L) / EV, top = 18, sh = Math.min(22, (h - top - 30) / N);
+      grid.forEach((col, e) => col.forEach((st, s) => {
+        const x = L + e * cw + 1, y = top + s * sh;
+        ctx.fillStyle = st === "ok" ? P.accent : st === "x" ? P.bad : P.surface; ctx.globalAlpha = st === "idle" ? 1 : 0.85;
+        ctx.fillRect(x, y, cw - 2, sh - 2); ctx.globalAlpha = 1;
+      }));
+      R.lost.forEach((l, f) => { if (l) { ctx.strokeStyle = P.text; ctx.lineWidth = 2; ctx.strokeRect(L + f * cw + 1, top + N * sh + 4, cw - 2, 8); } });
+      BT.text(ctx, "CIS 이벤트 →  (아래 검정 테두리 = 기한이 지나 버린 프레임)", L, h - 8, { size: 11, color: P.dim });
+    }, { aspect: 0.3, minHeight: 150, maxHeight: 210 });
+    run();
+  })();
+})();
+</script>
+</body>
+</html>

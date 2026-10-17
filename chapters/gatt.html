@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>GATT: 데이터를 담는 메뉴판 · BluetoothBook</title>
+<meta name="description" content="LE 기기가 데이터를 주고받는 공통 언어 ATT와 GATT. 핸들·UUID·값·권한으로 된 속성, 서비스·특성·디스크립터 구조, 서비스 찾기, 읽기·쓰기·알림·표시, CCCD, ATT_MTU와 긴 값 쪼개기를 심박계 예제로 직접 다뤄 본다.">
+<link rel="canonical" href="https://bluetoothbook.euiyun.com/chapters/gatt.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="BluetoothBook">
+<meta property="og:title" content="GATT: 데이터를 담는 메뉴판 · BluetoothBook">
+<meta property="og:description" content="LE 기기가 데이터를 주고받는 공통 언어 ATT와 GATT. 핸들·UUID·값·권한으로 된 속성, 서비스·특성·디스크립터 구조, 서비스 찾기, 읽기·쓰기·알림·표시, CCCD, ATT_MTU와 긴 값 쪼개기를 심박계 예제로 직접 다뤄 본다.">
+<meta property="og:url" content="https://bluetoothbook.euiyun.com/chapters/gatt.html">
+<meta property="og:image" content="https://bluetoothbook.euiyun.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"GATT: 데이터를 담는 메뉴판","name":"GATT: 데이터를 담는 메뉴판 · BluetoothBook","url":"https://bluetoothbook.euiyun.com/chapters/gatt.html","mainEntityOfPage":"https://bluetoothbook.euiyun.com/chapters/gatt.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":7,"image":"https://bluetoothbook.euiyun.com/og.png","dateModified":"2026-10-16","isPartOf":{"@type":"Book","@id":"https://bluetoothbook.euiyun.com/#book","name":"BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서","url":"https://bluetoothbook.euiyun.com/"},"publisher":{"@type":"Organization","name":"BluetoothBook","url":"https://bluetoothbook.euiyun.com/"},"description":"LE 기기가 데이터를 주고받는 공통 언어 ATT와 GATT. 핸들·UUID·값·권한으로 된 속성, 서비스·특성·디스크립터 구조, 서비스 찾기, 읽기·쓰기·알림·표시, CCCD, ATT_MTU와 긴 값 쪼개기를 심박계 예제로 직접 다뤄 본다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook","item":"https://bluetoothbook.euiyun.com/"},{"@type":"ListItem","position":2,"name":"07 GATT: 데이터를 담는 메뉴판","item":"https://bluetoothbook.euiyun.com/chapters/gatt.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<!-- Cloudflare Web Analytics -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"3d6151a0abc94ede89285d462527fa80"}'></script>
+<!-- End Cloudflare Web Analytics -->
+<style>
+  .att-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .att-tbl th { text-align: left; font-size: 12px; color: var(--text-faint); font-weight: 600; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+  .att-tbl td { padding: 6px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .att-tbl td.m { font-family: var(--mono); font-size: 12.5px; }
+  .att-tbl tr { cursor: pointer; }
+  .att-tbl tr.svc td { background: var(--accent-soft); font-weight: 600; }
+  .att-tbl tr.on td { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .att-tbl tr.found td:first-child { box-shadow: inset 4px 0 0 var(--ok); }
+  .pdu { font-family: var(--mono); font-size: 12.5px; background: var(--surface); border-radius: 10px; padding: 10px 12px; margin-top: 10px; line-height: 1.8; word-break: break-all; }
+  .pdu .op { color: var(--warn); font-weight: 700; } .pdu .h { color: var(--accent-2); } .pdu .v { color: var(--accent); }
+  .hr-big { font-family: var(--mono); font-size: 34px; font-weight: 700; color: var(--bad); }
+</style>
+</head>
+<body data-chapter="gatt">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 07</div>
+    <h1>GATT: 데이터를 담는 메뉴판</h1>
+    <p class="lead">운동 앱은 처음 보는 회사의 심박계와도 연결해 심박수를 띄운다. 체중계 앱은 어느 회사 체중계든 몸무게를 읽어 온다. 서로 만난 적 없는 기기끼리 “심박수는 어디에, 어떤 형식으로 있는가”를 어떻게 알까? 답은 LE의 데이터 교환이 모두 같은 틀, <b>GATT</b> 위에서 이루어진다는 데 있다. 기기 안의 데이터는 번호 붙은 칸에 종류 이름표를 달고 놓여 있고, 상대는 그 칸을 찾아 읽고, 쓰고, 바뀌면 알려 달라고 요청한다. 이 장에서는 심박계 하나를 놓고 그 칸들을 직접 열어 본다.</p>
+    <ul class="objectives">
+      <li>ATT의 속성이 핸들·종류(UUID)·값·권한으로 이루어진다는 것과 16비트 UUID가 128비트 기본 UUID의 줄임이라는 것을 안다.</li>
+      <li>GATT가 속성들을 서비스 → 특성 → 디스크립터로 묶는 방식과 선언(0x2800, 0x2803)의 역할을 이해한다.</li>
+      <li>클라이언트가 서비스와 특성을 찾는 과정, 읽기·쓰기·명령의 차이를 ATT PDU 바이트로 따라간다.</li>
+      <li>CCCD에 0x0001을 써서 알림을 켜고, 알림(Notification)과 표시(Indication)의 차이와 처리량 차이를 계산한다.</li>
+      <li>ATT_MTU 23의 유래와 MTU 교환, 긴 값(최대 512바이트)을 여러 PDU로 나누는 법을 안다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="att">
+    <h2>속성: 번호 붙은 칸에 이름표 달기</h2>
+    <p>LE 기기 안의 데이터는 <span class="term">속성</span><span class="en">(attribute)</span>이라는 칸에 담긴다. 속성 하나는 네 가지로 이루어진다.</p>
+    <ul>
+      <li><b>핸들</b><span class="en">(handle)</span>: 0x0001~0xFFFF의 16비트 번호. 이 서버 안에서 칸의 주소다.</li>
+      <li><b>종류</b><span class="en">(attribute type)</span>: 이 칸에 무엇이 들었는지를 나타내는 <span class="term">UUID</span><span class="en">(Universally Unique Identifier)</span>. “심박 측정값”, “배터리 잔량” 같은 이름표다.</li>
+      <li><b>값</b><span class="en">(value)</span>: 실제 바이트. 최대 512바이트.</li>
+      <li><b>권한</b><span class="en">(permissions)</span>: 읽기·쓰기 가능 여부와 암호화·인증 요구. 권한은 서버만 알고, 무선으로 전송되지 않는다.</li>
+    </ul>
+    <p>데이터를 가진 쪽을 <span class="term">서버</span><span class="en">(server)</span>, 묻는 쪽을 <span class="term">클라이언트</span><span class="en">(client)</span>라 한다. 링크 계층의 센트럴·페리페럴과는 별개다. 보통 심박계(페리페럴)가 서버, 휴대폰(센트럴)이 클라이언트지만 반대도 가능하고, 한 기기가 둘 다일 수도 있다. 둘이 주고받는 요청·응답 규칙이 <span class="term">ATT</span><span class="en">(Attribute Protocol)</span>이고, LE에서는 L2CAP 고정 채널 0x0004를 쓴다.</p>
+    <p>UUID는 원래 128비트(16바이트)다. 매번 16바이트를 보내기는 아까우므로, SIG가 정한 항목은 <b>블루투스 기본 UUID</b> 00000000-0000-1000-8000-00805F9B34FB의 앞부분 16비트만 바꾼 값으로 정하고, 그 16비트만 보낸다. 예를 들어 심박 서비스 0x180D는 0000<b>180D</b>-0000-1000-8000-00805F9B34FB의 줄임이다. 회사가 자기 기능을 만들 때는 이 범위를 피한 무작위 128비트 UUID를 쓴다.</p>
+    <p class="spec-ref">속성의 핸들·종류·값·권한, 값 최대 512바이트: <b>[Vol 3] Part F §3.2</b> · Bluetooth_Base_UUID와 16비트 별칭: <b>[Vol 3] Part B §2.5.1</b> · ATT 고정 채널 0x0004, LE 기본 ATT_MTU 23: <b>[Vol 3] Part G §5.2</b></p>
+    <div class="callout analogy"><strong>카페의 메뉴판</strong><p>GATT 서버는 <b>메뉴판</b>이다. 메뉴판은 “음료”, “디저트” 같은 <b>분류</b>(서비스)로 나뉘고, 각 분류 아래에 “아메리카노 4,500원” 같은 <b>항목</b>(특성)이 있다. 항목 옆에는 “ICE 가능” 같은 <b>작은 메모</b>(디스크립터)가 붙는다. 메뉴판의 모든 줄에는 번호(핸들)가 있어서 “7번 주세요”라고 하면 된다. 그리고 “아메리카노 나오면 진동벨로 알려 주세요”라고 부탁해 두면(CCCD 쓰기), 준비될 때마다 가게가 먼저 알려 준다(알림).</p></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="gatt">
+    <h2>서비스, 특성, 디스크립터</h2>
+    <p>ATT는 칸을 늘어놓을 뿐 묶는 법은 모른다. <span class="term">GATT</span><span class="en">(Generic Attribute Profile)</span>는 특별한 종류의 속성(선언)을 칸 사이사이에 끼워 구조를 만든다.</p>
+    <ul>
+      <li><b>서비스 선언</b>(종류 0x2800 Primary Service): 값이 서비스의 UUID다. 여기서 다음 서비스 선언 직전까지가 한 <span class="term">서비스</span><span class="en">(service)</span>다.</li>
+      <li><b>특성 선언</b>(종류 0x2803 Characteristic): 값이 [속성 비트 1바이트][특성 값의 핸들 2바이트][특성 UUID]다. 바로 다음 칸이 실제 값을 담은 <b>특성 값</b> 칸이다. 둘을 합쳐 <span class="term">특성</span><span class="en">(characteristic)</span>이라 한다.</li>
+      <li><b>디스크립터</b>(descriptor): 특성 값 뒤에 붙는 부가 정보. 가장 중요한 것이 <span class="term">CCCD</span><span class="en">(Client Characteristic Configuration Descriptor, 0x2902)</span>다. 클라이언트가 여기에 0x0001을 쓰면 알림, 0x0002를 쓰면 표시를 받겠다는 뜻이다. 값은 클라이언트마다 따로 저장된다.</li>
+    </ul>
+    <div class="table-wrap"><table>
+      <thead><tr><th>특성 속성 비트</th><th>값</th><th>허용하는 일</th></tr></thead>
+      <tbody>
+        <tr><td>Broadcast</td><td class="num">0x01</td><td>값을 광고로 방송</td></tr>
+        <tr><td>Read</td><td class="num">0x02</td><td>읽기</td></tr>
+        <tr><td>Write Without Response</td><td class="num">0x04</td><td>응답 없는 쓰기(명령)</td></tr>
+        <tr><td>Write</td><td class="num">0x08</td><td>응답 있는 쓰기</td></tr>
+        <tr><td>Notify</td><td class="num">0x10</td><td>알림 (확인 없음, CCCD 필수)</td></tr>
+        <tr><td>Indicate</td><td class="num">0x20</td><td>표시 (확인 있음, CCCD 필수)</td></tr>
+        <tr><td>Authenticated Signed Writes</td><td class="num">0x40</td><td>서명된 쓰기</td></tr>
+        <tr><td>Extended Properties</td><td class="num">0x80</td><td>확장 속성 디스크립터 있음</td></tr>
+      </tbody>
+    </table></div>
+    <p class="spec-ref">서비스 선언 0x2800/0x2801, 특성 선언 0x2803: <b>[Vol 3] Part G §3.1·§3.3.1</b> · 특성 속성(Table 3.5): <b>§3.3.1.1</b> · CCCD: <b>§3.3.3.3</b></p>
+    <p>모든 LE 서버에는 기본 서비스 두 개가 있다. 장치 이름과 외형을 담는 <b>GAP 서비스</b>(0x1800)와, 서버의 구조가 바뀌었음을 알리는 Service Changed 특성을 가진 <b>GATT 서비스</b>(0x1801)다. 그 뒤에 기기의 쓸모를 담은 서비스가 온다. 심박 서비스(0x180D)와 그 안의 심박 측정값(0x2A37) 특성의 <b>바이트 형식</b>은 Core 사양이 아니라 별도의 Heart Rate Service 사양이 정한다. 이 덕분에 어느 회사 심박계든 같은 앱으로 읽을 수 있다.</p>
+
+    <div class="sim" id="sim-db">
+      <div class="sim-head"><span class="sim-tag">INTERACTIVE</span><h3>심박계 GATT 서버 들여다보기: 찾기 → 읽기 → 알림 켜기</h3></div>
+      <div class="sim-view" style="padding:10px 10px 14px">
+        <div class="table-wrap" style="margin:0"><table class="att-tbl" id="db-tbl"></table></div>
+        <div class="pdu" id="db-pdu" aria-live="polite"></div>
+      </div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>클라이언트(휴대폰)가 할 일</span><div class="btn-row">
+          <button class="btn" id="db-svc">① 서비스 찾기</button>
+          <button class="btn" id="db-chr">② 특성 찾기</button>
+          <button class="btn" id="db-read">③ 위치 읽기</button>
+          <button class="btn primary" id="db-ntf">④ 알림 켜기 (CCCD ← 0x0001)</button>
+        </div></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">심박수</span><span class="v"><span class="hr-big" id="db-hr">—</span></span></div>
+        <div class="stat"><span class="k">마지막 알림 값 (바이트)</span><span class="v" id="db-raw">—</span></div>
+        <div class="stat"><span class="k">해석</span><span class="v" id="db-parse">—</span></div>
+      </div>
+      <div class="sim-note">표의 줄을 누르면 그 속성을 읽는 ATT 요청과 응답의 바이트가 아래에 나온다(주황 = 옵코드, 청록 = 핸들, 파랑 = 값, 모두 리틀 엔디언). 해볼 것: ① 버튼을 차례로 눌러 보자. ①은 ATT_READ_BY_GROUP_TYPE_REQ(0x10)로 0x2800 선언을 모아 서비스 세 개를 찾고, ②는 ATT_READ_BY_TYPE_REQ(0x08)로 심박 서비스 범위의 0x2803 선언을 모은다. ② ④를 누르면 CCCD에 01 00이 쓰이고, 그 뒤 1초마다 ATT_HANDLE_VALUE_NTF(0x1B)가 온다. 측정값의 첫 바이트는 플래그(비트 0 = 심박이 16비트인가, 비트 1~2 = 피부 접촉, 비트 4 = RR 간격 포함)다. 심박 측정값 형식은 Heart Rate Service 사양(Core 밖)을 따랐다.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="ops">
+    <h2>읽기, 쓰기, 알림, 표시</h2>
+    <p>ATT의 대화 방식은 네 가지로 나뉜다. 차이는 <b>누가 먼저 말하는가</b>와 <b>확인을 기다리는가</b>다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>방식</th><th>방향</th><th>ATT PDU (옵코드)</th><th>확인</th><th>대표 쓰임</th></tr></thead>
+      <tbody>
+        <tr><td>읽기</td><td>클라이언트 → 서버 → 클라이언트</td><td>READ_REQ (0x0A) / READ_RSP (0x0B)</td><td>응답이 곧 확인</td><td>배터리 잔량, 장치 이름</td></tr>
+        <tr><td>쓰기</td><td>클라이언트 → 서버</td><td>WRITE_REQ (0x12) / WRITE_RSP (0x13)</td><td>있음</td><td>설정 바꾸기, CCCD</td></tr>
+        <tr><td>명령(응답 없는 쓰기)</td><td>클라이언트 → 서버</td><td>WRITE_CMD (0x52)</td><td>없음</td><td>펌웨어 업데이트 데이터, 빠른 제어</td></tr>
+        <tr><td>알림</td><td>서버 → 클라이언트</td><td>HANDLE_VALUE_NTF (0x1B)</td><td>없음</td><td>심박수, 센서 스트림</td></tr>
+        <tr><td>표시</td><td>서버 → 클라이언트</td><td>HANDLE_VALUE_IND (0x1D) / CFM (0x1E)</td><td>있음</td><td>혈압 측정 결과처럼 잃으면 안 되는 값</td></tr>
+      </tbody>
+    </table></div>
+    <p class="spec-ref">ATT PDU 옵코드: <b>[Vol 3] Part F §3.4</b> (0x0A READ_REQ, 0x12 WRITE_REQ, 0x52 WRITE_CMD, 0x1B NTF, 0x1D IND, 0x1E CFM)</p>
+    <p>“확인 없음”이 “잃어버려도 된다”는 뜻은 아니다. 6장의 링크 계층이 SN/NESN으로 모든 패킷을 확인하고 재전송하므로, 연결이 살아 있는 한 알림도 결국 도착한다. 확인의 차이는 <b>앱 수준</b>에서 생긴다. ATT는 한 베어러에서 응답을 기다리는 요청이나 표시를 <b>한 번에 하나만</b> 허용한다. 그래서 표시를 보내면 상대의 확인(CFM)이 올 때까지 다음 표시를 못 보낸다. 확인은 보통 다음 연결 이벤트에서야 돌아오므로, 표시는 <b>연결 간격당 하나</b> 정도가 한계다. 알림과 명령은 기다리지 않으므로 한 이벤트에 여러 개를 쏟아낼 수 있다.</p>
+    <p>5.2의 <span class="term">EATT</span><span class="en">(Enhanced ATT)</span>는 ATT를 여러 L2CAP 채널(베어러)에서 동시에 돌려, 큰 응답 하나가 다른 앱의 작은 요청을 막는 “줄 서기” 문제를 줄였다.</p>
+    <div class="sim" id="sim-ni">
+      <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>알림 vs 표시: 확인을 기다리는 값</h3></div>
+      <div class="sim-view"><canvas id="cv-ni"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>연결 간격 <output id="ni-int-out"></output></span><input type="range" id="ni-int" min="6" max="400" value="24"></label>
+        <label class="ctrl"><span>값 크기 <output id="ni-len-out"></output></span><input type="range" id="ni-len" min="1" max="244" value="20"></label>
+        <label class="ctrl"><span>이벤트당 알림 수 상한 <output id="ni-n-out"></output></span><input type="range" id="ni-n" min="1" max="20" value="6"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">알림 최대</span><span class="v" id="ni-n1">—</span></div>
+        <div class="stat"><span class="k">표시 최대</span><span class="v" id="ni-i1">—</span></div>
+        <div class="stat"><span class="k">알림 / 표시</span><span class="v" id="ni-r">—</span></div>
+      </div>
+      <div class="sim-note">위 줄은 알림, 아래 줄은 표시를 1초 동안 보낼 때 이벤트마다 오가는 값(막대)과 확인(✓)이다. 해볼 것: 연결 간격을 7.5 ms에서 400 ms로 늘려 보자. 표시는 초당 2~3개로 줄어든다. 그래서 심박 측정값처럼 자주 바뀌는 값은 알림으로, 혈압 측정처럼 드물지만 꼭 받아야 하는 값은 표시로 정의한다. 가정: 표시의 확인은 다음 연결 이벤트에서 돌아온다(서버는 확인을 받은 뒤 그 이벤트에서 다음 표시를 보낸다), 링크 손실 없음.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="mtu">
+    <h2>ATT_MTU: 23바이트의 유래와 긴 값 쪼개기</h2>
+    <p><span class="term">ATT_MTU</span>는 ATT PDU 하나의 최대 크기다. LE의 기본값은 <b>23바이트</b>다. 숫자의 유래는 6장에 있다. 4.2 이전 링크 계층 페이로드 27바이트에서 L2CAP 헤더 4바이트를 빼면 23이다. 알림 PDU는 옵코드 1 + 핸들 2바이트를 쓰므로 값은 <b>ATT_MTU − 3 = 20바이트</b>까지 실린다. 클라이언트가 ATT_EXCHANGE_MTU_REQ로 더 큰 값을 제안하면 둘 중 작은 값으로 정해진다. 4.2의 DLE(251바이트)와 짝을 맞춘 247이 흔한 선택이다(247 + 4 = 251).</p>
+    <p>값이 ATT_MTU에 다 들어가지 않으면 두 층에서 쪼갠다. ATT 층에서는 <b>긴 값 읽기</b>(READ_BLOB_REQ로 오프셋을 바꿔 가며 여러 번)와 <b>긴 값 쓰기</b>(PREPARE_WRITE_REQ 여러 번 + EXECUTE_WRITE_REQ)를 쓴다. ATT PDU 하나가 링크 계층 페이로드보다 크면 L2CAP이 여러 링크 계층 패킷으로 나눈다(LLID 10 = 시작, 01 = 이어짐). 둘 다 공짜가 아니다. 쪼갤 때마다 헤더와 왕복이 늘어난다.</p>
+    <div class="sim" id="sim-mtu">
+      <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>긴 값 하나를 보내는 데 드는 PDU와 왕복</h3></div>
+      <div class="sim-view"><canvas id="cv-mtu"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>값 길이 <output id="mt-len-out"></output></span><input type="range" id="mt-len" min="1" max="512" value="300"></label>
+        <div class="ctrl"><span>ATT_MTU</span><div class="seg" id="mt-mtu"><button data-value="23" class="on">23</button><button data-value="65">65</button><button data-value="185">185</button><button data-value="247">247</button><button data-value="517">517</button></div></div>
+        <div class="ctrl"><span>링크 계층 페이로드</span><div class="seg" id="mt-dle"><button data-value="27" class="on">27</button><button data-value="251">251 (DLE)</button></div></div>
+        <div class="ctrl"><span>방식</span><div class="seg" id="mt-op"><button data-value="read" class="on">긴 값 읽기</button><button data-value="ntf">알림 (첫 MTU−3만)</button></div></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">ATT 요청·응답 쌍</span><span class="v" id="mt-att">—</span></div>
+        <div class="stat"><span class="k">링크 계층 데이터 패킷</span><span class="v" id="mt-ll">—</span></div>
+        <div class="stat"><span class="k">헤더 오버헤드</span><span class="v" id="mt-oh">—</span></div>
+      </div>
+      <div class="sim-note">막대 하나가 링크 계층 패킷 하나다(파랑 = 값, 주황 = ATT 헤더, 회색 = L2CAP 헤더). 해볼 것: ① 300바이트 값을 기본값(MTU 23, 페이로드 27)으로 읽으면 READ 1번 + READ_BLOB 13번, 왕복 14번이 필요하다. 표시나 응답이 연결 간격마다 하나라면 수백 ms가 걸린다. ② MTU 247 + DLE 251이면 왕복 2번이다. ③ 알림은 한 번에 ATT_MTU − 3바이트까지만 보낸다. 더 긴 값은 앱이 직접 나눠 보내거나 클라이언트가 읽어 가야 한다. 긴 값 읽기: 첫 READ_RSP에 MTU − 1바이트, 이후 READ_BLOB_RSP마다 MTU − 1바이트([Vol 3] Part F §3.4.4).</div>
+    </div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">스마트워치 앱이 100바이트짜리 운동 기록을 알림으로 보내려는데, 휴대폰이 ATT_MTU 교환을 하지 않아 기본값 23이다. 어떻게 될까?</p><p class="wi-hint">위 계산기에서 MTU 23, “알림”을 고르고 값 길이를 100으로 해 보자.</p><div class="opts">
+      <button class="opt">L2CAP이 자동으로 쪼개서 100바이트가 한 번에 전달된다</button>
+      <button class="opt" data-correct>알림 하나에는 20바이트만 실리므로, 앱이 5번에 나눠 보내거나 클라이언트가 나머지를 읽어 가야 한다</button>
+      <button class="opt">연결이 끊어진다</button>
+    </div><div class="quiz-exp">알림의 값은 ATT_MTU − 3 = 20바이트까지다. L2CAP은 ATT PDU가 링크 페이로드보다 클 때 쪼갤 뿐, ATT_MTU를 넘는 PDU는 만들지 않는다. 그래서 연결 직후 MTU 교환이 거의 관례가 되었다.</div></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="disc">
+    <h2>찾기 비용과 GATT 캐싱</h2>
+    <p>처음 연결한 클라이언트는 서버의 메뉴판을 모른다. 그래서 위 시뮬레이터처럼 서비스 찾기 → 특성 찾기 → 디스크립터 찾기를 차례로 한다. 요청 하나가 응답을 받아야 다음 요청을 보낼 수 있으므로, 속성이 수백 개인 기기(이어폰, 시계)에서는 이 과정만 연결 간격 수십 개, 즉 1초 넘게 걸리기도 한다. 그래서 클라이언트는 본딩한(8장) 기기의 메뉴판을 저장해 두고 다음 연결 때 다시 쓴다.</p>
+    <p>문제는 서버가 펌웨어 업데이트로 메뉴판을 바꿨을 때다. 옛 메뉴판대로 “7번 주세요”라고 하면 엉뚱한 값을 읽는다. 해결책이 둘 있다. 서버가 GATT 서비스의 <b>Service Changed</b> 특성으로 바뀐 핸들 범위를 표시해 알리는 방법, 그리고 5.1의 <b>GATT 캐싱</b>이다. 서버는 메뉴판 전체의 해시(<b>Database Hash</b>)를 특성으로 제공하고, 클라이언트는 연결할 때 해시 하나만 읽어 저장해 둔 것과 같은지 확인한다. 다르면 다시 찾는다.</p>
+    <p class="spec-ref">Service Changed, Database Hash, Robust Caching: <b>[Vol 3] Part G §2.5.2·§7</b> · EATT 베어러: <b>[Vol 3] Part G §5.3</b>와 <b>[Vol 3] Part A</b>(Enhanced Credit Based Flow Control)</p>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>속성 = <b>핸들(16비트 번호) + 종류(UUID) + 값(≤ 512바이트) + 권한</b>. 16비트 UUID는 기본 UUID 0000xxxx-0000-1000-8000-00805F9B34FB의 줄임이다.</li>
+      <li>ATT는 클라이언트·서버의 요청·응답 규칙(LE에서 L2CAP 채널 0x0004), GATT는 그 위의 구조다. <b>서비스 선언 0x2800 → 특성 선언 0x2803(속성 비트·값 핸들·UUID) → 특성 값 → 디스크립터</b>.</li>
+      <li><b>CCCD(0x2902)</b>에 0x0001을 쓰면 알림, 0x0002를 쓰면 표시. 값의 형식(예: 심박 측정값의 플래그 바이트)은 Core 밖의 서비스 사양이 정한다.</li>
+      <li>읽기·쓰기·명령·알림·표시. ATT는 응답을 기다리는 요청·표시를 한 번에 하나만 허용하므로 <b>표시는 대략 연결 간격당 하나</b>, 알림·명령은 한 이벤트에 여러 개가 가능하다. 링크 계층 재전송은 모두에게 적용된다.</li>
+      <li>LE 기본 <b>ATT_MTU = 23</b>(= 27 − L2CAP 4). 알림 값은 MTU − 3바이트까지. MTU 교환으로 키우며, 247 + DLE 251이 짝이 좋다. 긴 값은 READ_BLOB·PREPARE/EXECUTE_WRITE로 나눈다.</li>
+      <li>찾기는 왕복이 많아 느리다. 본딩한 기기는 결과를 캐시하고, Service Changed와 <b>Database Hash</b>(5.1)로 바뀐 것을 확인한다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>16비트 UUID 0x2A19(배터리 잔량)의 실제 128비트 값은?</p><div class="opts">
+        <button class="opt">00000000-0000-0000-0000-000000002A19</button>
+        <button class="opt" data-correct>00002A19-0000-1000-8000-00805F9B34FB</button>
+        <button class="opt">2A190000-0000-1000-8000-00805F9B34FB</button>
+        <button class="opt">16비트 UUID는 128비트 값이 없다</button>
+      </div><div class="quiz-exp">128비트 값 = 16비트 값 × 2⁹⁶ + 기본 UUID. 기본 UUID의 첫 32비트 자리(0000xxxx)에 들어간다.</div></div>
+      <div class="quiz-q"><p>특성 선언(0x2803)의 값에 들어 있지 않은 것은?</p><div class="opts">
+        <button class="opt">특성 속성 비트(읽기, 알림 등)</button><button class="opt">특성 값이 있는 핸들</button><button class="opt">특성의 UUID</button><button class="opt" data-correct>특성의 현재 값</button>
+      </div><div class="quiz-exp">현재 값은 바로 다음 칸(특성 값 속성)에 있다. 선언은 “어디에 무엇이 있고 무엇을 할 수 있는지”만 알려 준다.</div></div>
+      <div class="quiz-q"><p>심박계의 심박수 알림을 받으려면 클라이언트가 먼저 해야 할 일은?</p><div class="opts">
+        <button class="opt">심박 측정값 특성에 0x01을 쓴다</button><button class="opt" data-correct>심박 측정값 특성의 CCCD(0x2902)에 0x0001을 쓴다</button><button class="opt">광고를 다시 시작하게 한다</button><button class="opt">아무것도 안 해도 연결되면 자동으로 온다</button>
+      </div><div class="quiz-exp">알림은 클라이언트가 CCCD로 켜야 한다. CCCD 값은 클라이언트마다 따로 저장되며, 본딩한 클라이언트에 대해서는 재연결 후에도 유지된다.</div></div>
+      <div class="quiz-q"><p>연결 간격이 100 ms일 때 표시(Indication)로 보낼 수 있는 값은 대략 초당 몇 개인가?</p><div class="opts">
+        <button class="opt">약 100개</button><button class="opt">약 50개</button><button class="opt" data-correct>약 5~10개</button><button class="opt">무제한</button>
+      </div><div class="quiz-exp">표시는 확인(CFM)을 받아야 다음 표시를 보낼 수 있고, 확인은 보통 다음 연결 이벤트에 돌아온다. 그래서 이벤트 한두 개당 하나, 초당 5~10개 정도다.</div></div>
+      <div class="quiz-q"><p>LE의 기본 ATT_MTU가 23인 이유는?</p><div class="opts">
+        <button class="opt">23은 소수라 계산이 편해서</button><button class="opt" data-correct>4.0의 링크 계층 페이로드 27바이트에서 L2CAP 헤더 4바이트를 뺀 값이라서</button><button class="opt">UUID 16바이트 + 핸들 등을 더한 값이라서</button><button class="opt">광고 데이터 31바이트에서 헤더를 뺀 값이라서</button>
+      </div><div class="quiz-exp">ATT PDU 하나가 링크 계층 패킷 하나에 쪼개지지 않고 들어가도록 맞춘 값이다. DLE 251과 짝을 이루는 MTU가 247인 것도 같은 계산이다.</div></div>
+      <div class="quiz-q"><p>펌웨어 업데이트 뒤 서버의 GATT 구조가 바뀌었는데, 클라이언트가 예전 핸들로 값을 읽는 문제를 막는 장치는?</p><div class="opts">
+        <button class="opt">ATT_MTU 교환</button><button class="opt">CCCD</button><button class="opt" data-correct>Service Changed 특성과 Database Hash(GATT 캐싱)</button><button class="opt">페리페럴 지연</button>
+      </div><div class="quiz-exp">서버는 Service Changed로 바뀐 범위를 알리고, 클라이언트는 Database Hash를 비교해 캐시가 낡았는지 확인한다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const hex16le = (v) => [v & 255, (v >> 8) & 255];
+  const hx = (arr) => arr.map((b) => BT.hex(b)).join(" ");
+
+  /** 심박 측정값 바이트 해석 (Heart Rate Service 사양의 형식) */
+  function parseHeartRate(bytes) {
+    const f = bytes[0], out = { u16: !!(f & 1), contact: (f >> 1) & 3, energy: !!(f & 8), rr: !!(f & 16) };
+    let i = 1;
+    out.bpm = out.u16 ? bytes[i] | (bytes[i + 1] << 8) : bytes[i]; i += out.u16 ? 2 : 1;
+    if (out.energy) { out.kj = bytes[i] | (bytes[i + 1] << 8); i += 2; }
+    out.rrs = []; if (out.rr) while (i + 1 < bytes.length) { out.rrs.push((bytes[i] | (bytes[i + 1] << 8)) / 1024); i += 2; }
+    return out;
+  }
+  /** 긴 값 읽기에 필요한 ATT 왕복 수: 첫 READ_RSP와 READ_BLOB_RSP가 각각 MTU−1바이트 */
+  function longReadRoundTrips(len, mtu) { return Math.max(1, Math.ceil(len / (mtu - 1))); }
+
+  /* ================================================================ 1. GATT DB */
+  (function () {
+    // [핸들, 종류 UUID, 종류 이름, 값 바이트 또는 함수, 값 설명, 권한, 묶음]
+    const DB = [
+      [0x0001, 0x2800, "Primary Service", [0x00, 0x18], "GAP 서비스 0x1800", "읽기", "svc"],
+      [0x0002, 0x2803, "Characteristic", [0x02, 0x03, 0x00, 0x00, 0x2a], "읽기 · 핸들 0x0003 · Device Name 0x2A00", "읽기", "chr"],
+      [0x0003, 0x2a00, "Device Name", Array.from(new TextEncoder().encode("HR Sensor")), "“HR Sensor”", "읽기", "val"],
+      [0x0004, 0x2800, "Primary Service", [0x01, 0x18], "GATT 서비스 0x1801", "읽기", "svc"],
+      [0x0005, 0x2803, "Characteristic", [0x20, 0x06, 0x00, 0x05, 0x2a], "표시 · 핸들 0x0006 · Service Changed 0x2A05", "읽기", "chr"],
+      [0x0006, 0x2a05, "Service Changed", [], "(표시 전용)", "—", "val"],
+      [0x0007, 0x2902, "CCCD", [0x00, 0x00], "0x0000 (꺼짐)", "읽기·쓰기", "dsc"],
+      [0x0008, 0x2800, "Primary Service", [0x0d, 0x18], "심박 서비스 0x180D", "읽기", "svc"],
+      [0x0009, 0x2803, "Characteristic", [0x10, 0x0a, 0x00, 0x37, 0x2a], "알림 · 핸들 0x000A · HR Measurement 0x2A37", "읽기", "chr"],
+      [0x000a, 0x2a37, "Heart Rate Measurement", [], "(알림 전용)", "—", "val"],
+      [0x000b, 0x2902, "CCCD", [0x00, 0x00], "0x0000 (꺼짐)", "읽기·쓰기", "dsc"],
+      [0x000c, 0x2803, "Characteristic", [0x02, 0x0d, 0x00, 0x38, 0x2a], "읽기 · 핸들 0x000D · Body Sensor Location 0x2A38", "읽기", "chr"],
+      [0x000d, 0x2a38, "Body Sensor Location", [0x01], "1 = 가슴", "읽기", "val"],
+    ];
+    const tbl = $("db-tbl"), pdu = $("db-pdu");
+    let sel = -1, found = new Set(), timer = null, beat = 0;
+    function render() {
+      tbl.innerHTML = `<thead><tr><th>핸들</th><th>종류</th><th>값</th><th>권한</th></tr></thead><tbody>` +
+        DB.map((r, i) => `<tr data-i="${i}" class="${r[6] === "svc" ? "svc" : ""}${i === sel ? " on" : ""}${found.has(i) ? " found" : ""}"><td class="m">0x${BT.hex(r[0], 4)}</td><td><span class="m">0x${BT.hex(r[1], 4)}</span> ${r[2]}</td><td><span class="m">${r[3].length ? hx(r[3]) : "—"}</span><br><small style="color:var(--text-faint)">${r[4]}</small></td><td>${r[5]}</td></tr>`).join("") + "</tbody>";
+    }
+    tbl.addEventListener("click", (e) => {
+      const tr = e.target.closest("tr[data-i]"); if (!tr) return; sel = +tr.dataset.i; const r = DB[sel];
+      const req = [0x0a, ...hex16le(r[0])];
+      pdu.innerHTML = r[3].length
+        ? `요청 ATT_READ_REQ: <span class="op">0A</span> <span class="h">${hx(hex16le(r[0]))}</span><br>응답 ATT_READ_RSP: <span class="op">0B</span> <span class="v">${hx(r[3])}</span>`
+        : `이 속성은 읽을 수 없다(속성 비트에 Read 없음). 읽으려 하면 ATT_ERROR_RSP(0x01): <span class="op">01</span> 0A <span class="h">${hx(hex16le(r[0]))}</span> 02 (Read Not Permitted)`;
+      render();
+    });
+    $("db-svc").addEventListener("click", () => {
+      found = new Set(DB.map((r, i) => (r[1] === 0x2800 ? i : -1)).filter((i) => i >= 0));
+      pdu.innerHTML = `요청 ATT_READ_BY_GROUP_TYPE_REQ: <span class="op">10</span> <span class="h">01 00 FF FF</span> 00 28 (핸들 0x0001~0xFFFF에서 종류 0x2800)<br>응답 ATT_READ_BY_GROUP_TYPE_RSP: <span class="op">11</span> 06 ` +
+        `<span class="h">01 00 03 00</span> <span class="v">00 18</span> · <span class="h">04 00 07 00</span> <span class="v">01 18</span> · <span class="h">08 00 0D 00</span> <span class="v">0D 18</span><br><small>(각 6바이트: 시작 핸들, 끝 핸들, 서비스 UUID)</small>`;
+      render();
+    });
+    $("db-chr").addEventListener("click", () => {
+      found = new Set(DB.map((r, i) => (r[1] === 0x2803 && r[0] >= 8 ? i : -1)).filter((i) => i >= 0));
+      pdu.innerHTML = `요청 ATT_READ_BY_TYPE_REQ: <span class="op">08</span> <span class="h">08 00 0D 00</span> 03 28 (심박 서비스 범위에서 종류 0x2803)<br>응답 ATT_READ_BY_TYPE_RSP: <span class="op">09</span> 07 <span class="h">09 00</span> <span class="v">10 0A 00 37 2A</span> · <span class="h">0C 00</span> <span class="v">02 0D 00 38 2A</span><br><small>(각 7바이트: 선언 핸들, [속성 비트, 값 핸들, UUID])</small>`;
+      render();
+    });
+    $("db-read").addEventListener("click", () => {
+      sel = 12; found = new Set([12]);
+      pdu.innerHTML = `요청 ATT_READ_REQ: <span class="op">0A</span> <span class="h">0D 00</span><br>응답 ATT_READ_RSP: <span class="op">0B</span> <span class="v">01</span> → 센서 위치 1 = 가슴`;
+      render();
+    });
+    $("db-ntf").addEventListener("click", () => {
+      DB[10][3] = [0x01, 0x00]; DB[10][4] = "0x0001 (알림 켜짐)"; sel = 10; found = new Set([10]);
+      pdu.innerHTML = `요청 ATT_WRITE_REQ: <span class="op">12</span> <span class="h">0B 00</span> <span class="v">01 00</span><br>응답 ATT_WRITE_RSP: <span class="op">13</span><br>이제 서버가 1초마다 알림을 보낸다 ↓`;
+      render();
+      if (timer) return;
+      const tick = () => {
+        beat++;
+        const bpm = 68 + Math.round(8 * Math.sin(beat / 3)) + (beat % 4);
+        const withRR = beat % 2 === 0, rr = Math.round((60 / bpm) * 1024);
+        const val = [withRR ? 0x16 : 0x06, bpm, ...(withRR ? hex16le(rr) : [])];
+        const p = parseHeartRate(val);
+        $("db-hr").textContent = p.bpm;
+        BT.stat("db-raw", `<span class="m">1B 0A 00 ${hx(val)}</span>`);
+        BT.stat("db-parse", `플래그 0x${BT.hex(val[0])}: ${p.u16 ? "16비트" : "8비트"} 값, 접촉 ${p.contact === 3 ? "감지" : p.contact === 2 ? "안 됨" : "미지원"}${p.rr ? `, RR ${p.rrs.map((x) => x.toFixed(3) + " s").join(", ")}` : ""}`);
+      };
+      tick(); timer = setInterval(tick, 1000);
+    });
+    render();
+    pdu.innerHTML = "표의 줄을 누르거나 아래 버튼을 눌러 보자.";
+  })();
+
+  /* ================================================================ 2. 알림 vs 표시 */
+  (function () {
+    const iv = BT.range("ni-int", (v) => (v * 1.25).toFixed(2).replace(/\.?0+$/, "") + " ms", draw);
+    const len = BT.range("ni-len", (v) => v + "바이트", draw);
+    const nmax = BT.range("ni-n", (v) => v + "개", draw);
+    let R = {};
+    const cv = BT.canvas($("cv-ni"), (ctx, w, h) => {
+      const P = BT.palette(), I = iv() * 1.25, L = 54, Rr = w - 10, span = 1000, X = (t) => L + (t / span) * (Rr - L), y1 = 24, y2 = 74, hh = 22;
+      BT.text(ctx, "알림", 6, y1 + hh / 2, { size: 11.5, color: P.dim }); BT.text(ctx, "표시", 6, y2 + hh / 2, { size: 11.5, color: P.dim });
+      const ev = Math.floor(span / I);
+      for (let e = 0; e < ev; e++) {
+        const x = X(e * I), bw = Math.max(1.5, Math.min(14, (X(I) - X(0)) * 0.8));
+        ctx.fillStyle = P.accent; ctx.globalAlpha = 0.85; for (let k = 0; k < nmax(); k++) { const hh2 = hh / nmax(); ctx.fillRect(x, y1 + k * hh2, bw, Math.max(1, hh2 - 0.5)); } ctx.globalAlpha = 1;
+        if (e % 2 === 0) { ctx.fillStyle = P.accent2; ctx.fillRect(x, y2, bw, hh); }
+        else if (X(I) - X(0) > 7) BT.text(ctx, "✓", x + bw / 2, y2 + hh / 2, { size: 11, color: P.ok, align: "center" });
+      }
+      BT.text(ctx, "1초", Rr, h - 8, { size: 11, color: P.dim, align: "right" });
+    }, { aspect: 0.2, minHeight: 120, maxHeight: 140 });
+    function draw() {
+      const I = iv() * 1.25, perSec = 1000 / I;
+      const n = perSec * nmax(), ind = perSec / 2;
+      BT.stat("ni-n1", `${BT.fmt(n)}개/s · ${BT.fmt((n * len() * 8) / 1000)} kb/s`);
+      BT.stat("ni-i1", `${BT.fmt(ind)}개/s · ${BT.fmt((ind * len() * 8) / 1000)} kb/s`);
+      BT.stat("ni-r", "×" + BT.fmt(n / ind));
+      cv.redraw();
+    }
+    draw();
+  })();
+
+  /* ================================================================ 3. MTU */
+  (function () {
+    const len = BT.range("mt-len", (v) => v + "바이트", draw);
+    const mtu = BT.seg("mt-mtu", draw), dle = BT.seg("mt-dle", draw), op = BT.seg("mt-op", draw);
+    let pk = [];
+    const cv = BT.canvas($("cv-mtu"), (ctx, w, h) => {
+      const P = BT.palette(), n = pk.length, L = 8, Rr = w - 8, gap = 2, bw = Math.max(2, (Rr - L - gap * (n - 1)) / Math.max(n, 1)), maxLL = +dle(), base = h - 20, hh = base - 14;
+      pk.forEach((p, i) => {
+        const x = L + i * (bw + gap); let y = base;
+        [[p.l2, P.faint], [p.att, P.warn], [p.val, P.accent]].forEach(([b, c]) => { const hb = (hh * b) / maxLL; ctx.fillStyle = c; ctx.fillRect(x, y - hb, bw, hb); y -= hb; });
+      });
+      BT.text(ctx, `링크 계층 패킷 ${n}개 (높이 = 페이로드, 최대 ${maxLL}바이트)`, L, h - 6, { size: 11, color: P.dim });
+    }, { aspect: 0.3, minHeight: 150, maxHeight: 210 });
+    function draw() {
+      const L = len(), M = +mtu(), D = +dle();
+      pk = []; let rounds, valSent = 0;
+      const push = (attHdr, val) => { // ATT PDU 하나를 L2CAP(4) + 링크 계층 조각으로
+        let total = 4 + attHdr + val, first = true, h = attHdr, v = val;
+        while (total > 0) { const take = Math.min(D, total); let l2 = first ? Math.min(4, take) : 0; let a = Math.min(h, take - l2); let vv = take - l2 - a; h -= a; v -= vv; pk.push({ l2, att: a, val: vv }); total -= take; first = false; }
+      };
+      if (op() === "read") {
+        rounds = longReadRoundTrips(L, M);
+        for (let i = 0; i < rounds; i++) { const v = Math.min(M - 1, L - valSent); push(1, v); valSent += v; }
+      } else { rounds = 1; const v = Math.min(M - 3, L); push(3, v); valSent = v; }
+      const total = pk.reduce((a, p) => a + p.l2 + p.att + p.val, 0);
+      BT.stat("mt-att", rounds + "번" + (op() === "ntf" && valSent < L ? ` <small style="color:var(--bad)">(${L - valSent}바이트 남음)</small>` : ""));
+      BT.stat("mt-ll", pk.length + "개");
+      BT.stat("mt-oh", Math.round(((total - valSent) / total) * 100) + "%");
+      cv.redraw();
+    }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

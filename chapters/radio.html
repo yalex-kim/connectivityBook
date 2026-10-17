@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>2.4 GHz 전파와 데시벨 · BluetoothBook</title>
+<meta name="description" content="블루투스가 쓰는 2.4 GHz ISM 대역과 채널 배치, 파장 12 cm의 의미, dB와 dBm 계산, 거리·벽·사람 몸이 신호를 깎는 정도, 링크 버짓과 수신 감도, 다중 경로 페이딩과 RSSI를 시뮬레이터로 익힌다.">
+<link rel="canonical" href="https://bluetoothbook.euiyun.com/chapters/radio.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="BluetoothBook">
+<meta property="og:title" content="2.4 GHz 전파와 데시벨 · BluetoothBook">
+<meta property="og:description" content="블루투스가 쓰는 2.4 GHz ISM 대역과 채널 배치, 파장 12 cm의 의미, dB와 dBm 계산, 거리·벽·사람 몸이 신호를 깎는 정도, 링크 버짓과 수신 감도, 다중 경로 페이딩과 RSSI를 시뮬레이터로 익힌다.">
+<meta property="og:url" content="https://bluetoothbook.euiyun.com/chapters/radio.html">
+<meta property="og:image" content="https://bluetoothbook.euiyun.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"2.4 GHz 전파와 데시벨","name":"2.4 GHz 전파와 데시벨 · BluetoothBook","url":"https://bluetoothbook.euiyun.com/chapters/radio.html","mainEntityOfPage":"https://bluetoothbook.euiyun.com/chapters/radio.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":2,"image":"https://bluetoothbook.euiyun.com/og.png","dateModified":"2026-10-16","isPartOf":{"@type":"Book","@id":"https://bluetoothbook.euiyun.com/#book","name":"BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서","url":"https://bluetoothbook.euiyun.com/"},"publisher":{"@type":"Organization","name":"BluetoothBook","url":"https://bluetoothbook.euiyun.com/"},"description":"블루투스가 쓰는 2.4 GHz ISM 대역과 채널 배치, 파장 12 cm의 의미, dB와 dBm 계산, 거리·벽·사람 몸이 신호를 깎는 정도, 링크 버짓과 수신 감도, 다중 경로 페이딩과 RSSI를 시뮬레이터로 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook","item":"https://bluetoothbook.euiyun.com/"},{"@type":"ListItem","position":2,"name":"02 2.4 GHz 전파와 데시벨","item":"https://bluetoothbook.euiyun.com/chapters/radio.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<!-- Cloudflare Web Analytics -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"3d6151a0abc94ede89285d462527fa80"}'></script>
+<!-- End Cloudflare Web Analytics -->
+</head>
+<body data-chapter="radio">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 02</div>
+    <h1>2.4 GHz 전파와 데시벨</h1>
+    <p class="lead">휴대폰을 바지 뒷주머니에 넣고 걸으면 이어폰 소리가 가끔 뚝뚝 끊긴다. 앞주머니로 옮기면 멀쩡하다. 전자레인지를 돌리는 동안 블루투스 스피커가 버벅이기도 한다. 이웃집까지는 닿지 않는데 같은 방 안에서는 벽 너머 화장실까지도 잘 된다. 이 장에서는 블루투스가 쓰는 2.4 GHz 전파의 성질과, 신호의 세기를 다루는 단위 <b>데시벨</b>을 익힌다. 이 두 가지만 있으면 “왜 끊기는가”의 절반은 설명할 수 있다.</p>
+    <ul class="objectives">
+      <li>2.4 GHz ISM 대역(2400~2483.5 MHz)에 블루투스 클래식 79채널과 LE 40채널이 어떻게 놓이는지, LE 채널 번호와 주파수의 관계를 안다.</li>
+      <li>dB와 dBm을 오가며 송신 전력·손실·수신 세기를 덧셈과 뺄셈으로 계산한다.</li>
+      <li>거리, 벽, 사람 몸이 신호를 얼마나 깎는지 링크 버짓으로 따져 보고, 수신 감도와 여유(마진)로 도달 거리를 추정한다.</li>
+      <li>반사파가 만드는 다중 경로 페이딩이 주파수마다 다른 곳에서 일어난다는 것과, 그것이 주파수 도약의 이유가 된다는 것을 안다.</li>
+      <li>RSSI가 무엇이며 사양이 정한 정확도(±6 dB)가 어느 정도인지 안다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="band">
+    <h2>2.4 GHz ISM 대역: 모두의 카페</h2>
+    <p>전파는 주파수(1초에 몇 번 진동하는가)에 따라 쓰임새가 나라별 법으로 정해져 있다. 방송, 휴대폰, 레이더는 정부가 면허를 준 사업자만 쓴다. 그런데 <b>2,400~2,483.5 MHz</b>는 산업·과학·의료(ISM)용으로 남겨 둔 대역으로, 출력 제한 같은 규칙만 지키면 <b>누구나 면허 없이</b> 쓸 수 있다. 전자레인지가 이 대역(약 2.45 GHz)의 에너지로 음식을 데우고, Wi-Fi, 블루투스, Zigbee, 무선 마우스 동글이 모두 이 대역을 나눠 쓴다. 이 책의 비유로 말하면 2.4 GHz는 <b>입장료 없는 시끄러운 카페</b>다.</p>
+    <p>블루투스는 이 83.5 MHz 폭을 채널로 나눈다. 클래식(BR/EDR)은 2402 MHz부터 2480 MHz까지 <b>1 MHz 간격으로 79개</b>, LE는 같은 범위를 <b>2 MHz 간격으로 40개</b>로 나눈다. LE의 40개 중 3개(2402, 2426, 2480 MHz)는 처음 만나는 기기끼리 서로를 찾는 <span class="term">광고 채널</span><span class="en">(primary advertising channel)</span>이고, 나머지 37개는 연결된 뒤 대화에 쓰는 <span class="term">범용 채널</span><span class="en">(general-purpose channel)</span>이다.</p>
+    <div class="formula">LE 채널 번호 → 중심 주파수
+      <div class="where">37 → 2402 MHz, 0~10 → 2404~2424 MHz, 38 → 2426 MHz, 11~36 → 2428~2478 MHz, 39 → 2480 MHz. 번호가 주파수 순서와 다른 이유는 광고 채널 세 개를 <b>대역의 양 끝과 가운데</b>에 흩어 놓으면서, 나머지 37개에 0부터 차례로 번호를 붙였기 때문이다.</div>
+    </div>
+    <p class="spec-ref">LE 40채널과 2 MHz 간격: <b>[Vol 6] Part A §2</b> · 채널 번호 대응표(Table 1.3): <b>[Vol 6] Part B §1.4.1</b> · BR/EDR f = 2402 + k MHz, k = 0~78: <b>[Vol 2] Part A §2</b></p>
+
+    <div class="sim" id="sim-band">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>2.4 GHz 대역 지도: 블루투스와 Wi-Fi는 어디서 겹치나</h3></div>
+      <div class="sim-view"><canvas id="cv-band"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>LE 채널 번호 <output id="bd-ch-out"></output></span><input type="range" id="bd-ch" min="0" max="39" value="37"></label>
+        <div class="ctrl"><span>함께 표시</span><div class="seg" id="bd-show"><button data-value="le" class="on">LE 40채널</button><button data-value="br">클래식 79채널</button><button data-value="both">둘 다</button></div></div>
+        <label class="check"><input type="checkbox" id="bd-wifi" checked> Wi-Fi 1·6·11번 채널(20 MHz)</label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">중심 주파수</span><span class="v" id="bd-f">—</span></div>
+        <div class="stat"><span class="k">용도</span><span class="v" id="bd-use">—</span></div>
+        <div class="stat"><span class="k">겹치는 Wi-Fi</span><span class="v" id="bd-wf">—</span></div>
+        <div class="stat"><span class="k">파장 λ</span><span class="v" id="bd-lam">—</span></div>
+      </div>
+      <div class="sim-note">위: 대역 전체(가로축 MHz). 막대 하나가 블루투스 채널 하나, 반투명 언덕이 Wi-Fi 채널이다. 해볼 것: ① 슬라이더로 37·38·39를 차례로 골라 보자. 광고 채널은 Wi-Fi 1·6·11번 채널 사이의 <b>틈</b>에 놓여 있다(38번 2426 MHz는 1번과 6번 사이, 39번 2480 MHz는 11번 위쪽). 가장 붐비는 Wi-Fi 채널을 피해 처음 만남이 성공하도록 고른 배치다. ② “둘 다”를 고르면 클래식 채널 두 개마다 LE 채널 하나가 겹친다. 단순화: Wi-Fi는 20 MHz 폭 직사각형에 가깝게 그렸다(실제로는 가장자리가 완만하다).</div>
+    </div>
+
+    <p>2.44 GHz의 파장은 λ = c / f ≈ (3×10<sup>8</sup> m/s) ÷ (2.44×10<sup>9</sup> Hz) ≈ <b>12.3 cm</b>다. 반 파장이 약 6 cm, 1/4 파장이 약 3 cm라서 이어폰이나 반지 크기 기기에도 안테나를 넣을 수 있다. 칩 옆의 지그재그 모양 구리 패턴, 작은 세라믹 칩 안테나가 바로 그것이다. 반대로 휴대폰의 저주파 셀룰러 안테나(700 MHz, 1/4 파장 약 11 cm)는 폰 크기와 맞먹는다. 블루투스가 2.4 GHz를 고른 데는 “작게 만들 수 있다”는 이유도 있다.</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="db">
+    <h2>데시벨: 곱셈을 덧셈으로</h2>
+    <p>무선 신호의 세기는 엄청난 범위를 오간다. 송신기에서 나오는 1 mW는 3 m만 가도 약 10억분의 1로 줄어 1 pW(10<sup>−12</sup> W) 근처가 된다. 이런 숫자를 곱하고 나누기는 불편하다. 그래서 무선 공학은 <b>로그</b>를 쓴다. 비율을 <span class="term">데시벨</span><span class="en">(dB)</span>로 나타내면 곱셈이 덧셈이 된다.</p>
+    <div class="formula">비율(dB) = 10 · log<sub>10</sub>(P<sub>2</sub> / P<sub>1</sub>) &nbsp;&nbsp;&nbsp; 절대 세기(dBm) = 10 · log<sub>10</sub>(P / 1 mW)
+      <div class="where">외워 둘 것: <b>+3 dB = 2배, +10 dB = 10배, −10 dB = 1/10, −30 dB = 1/1000</b>. 0 dBm = 1 mW, +10 dBm = 10 mW, +20 dBm = 100 mW, −70 dBm = 0.1 nW(100 pW). dBm은 “1 mW를 기준으로 몇 dB인가”라는 절대값, dB는 두 값의 비율이다. 그래서 dBm − dB = dBm, dBm − dBm = dB다.</div>
+    </div>
+    <div class="sim" id="sim-dbm">
+      <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>dBm 사다리: 블루투스 세계의 세기 지도</h3></div>
+      <div class="sim-view"><canvas id="cv-dbm"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>세기 <output id="dbm-p-out"></output></span><input type="range" id="dbm-p" min="-110" max="20" step="1" value="0"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">와트로</span><span class="v" id="dbm-w">—</span></div>
+        <div class="stat"><span class="k">1 mW와 비교</span><span class="v" id="dbm-r">—</span></div>
+        <div class="stat"><span class="k">가장 가까운 기준점</span><span class="v" id="dbm-near">—</span></div>
+      </div>
+      <div class="sim-note">눈금 하나가 10 dB, 즉 10배다. 해볼 것: 슬라이더를 0 dBm(1 mW)에서 −70 dBm까지 내려 보자. 7칸, 즉 1000만 분의 1로 줄었는데도 사양이 요구하는 최소 수신 감도에 겨우 닿는다. 기준점의 출처: 송신 전력 범위와 수신 감도 −70/−75/−82 dBm은 Core 6.2 [Vol 6] Part A §3·§4.1, “요즘 칩의 감도”는 여러 상용 칩 데이터시트의 대표값(약 −94~−105 dBm), 열잡음 바닥은 kTB(1 MHz, 상온) ≈ −114 dBm.</div>
+    </div>
+    <p>송신 전력은 사양이 범위를 정한다. LE 기기의 최대 송신 전력은 <b>0.01 mW(−20 dBm)~100 mW(+20 dBm)</b> 사이여야 하고, 최대 출력에 따라 아래와 같은 <b>전력 등급</b>으로 나뉜다. 클래식도 비슷한 세 등급이 있다. 흔히 “블루투스는 10 m”라는 말은 옛날 클래스 2(최대 2.5 mW) 기기를 기준으로 한 이야기다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>LE 전력 등급</th><th>최대 출력 P<sub>max</sub></th><th>대표 기기</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td class="num">10 mW(+10 dBm) &lt; P ≤ 100 mW(+20 dBm)</td><td>장거리 게이트웨이, 산업용</td></tr>
+        <tr><td class="num">1.5</td><td class="num">2.5 mW(+4 dBm) &lt; P ≤ 10 mW(+10 dBm)</td><td>휴대폰, 노트북</td></tr>
+        <tr><td class="num">2</td><td class="num">1 mW(0 dBm) &lt; P ≤ 2.5 mW(+4 dBm)</td><td>이어폰, 시계</td></tr>
+        <tr><td class="num">3</td><td class="num">0.01 mW(−20 dBm) ≤ P ≤ 1 mW(0 dBm)</td><td>코인 전지 센서, 태그</td></tr>
+      </tbody>
+    </table></div>
+    <p class="spec-ref">LE 송신 전력 범위와 Table 3.1 전력 등급: <b>[Vol 6] Part A §3</b> · BR/EDR 전력 등급: <b>[Vol 2] Part A §3</b> · LE 수신 감도 요구(Table 4.2): <b>[Vol 6] Part A §4.1</b></p>
+    <p>받는 쪽에는 <span class="term">수신 감도</span><span class="en">(receiver sensitivity)</span>가 있다. 이 세기보다 약하면 비트 오류가 너무 많아 패킷을 받을 수 없다. 사양은 LE 비부호화 PHY(1M·2M)에 <b>−70 dBm 이하</b>, LE Coded PHY S=2에 −75 dBm 이하, S=8에 −82 dBm 이하의 감도를 요구한다(3장). 이것은 “최소한 이 정도는 되어야 한다”는 하한이고, 요즘 칩은 이보다 20~25 dB 좋은 −95 dBm 안팎을 낸다. 사양의 요구와 실제 제품 사이의 이 큰 차이 덕분에 같은 블루투스라도 제품마다 도달 거리가 크게 다르다.</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="budget">
+    <h2>거리, 벽, 사람 몸: 링크 버짓</h2>
+    <p>전파는 퍼져 나가면서 약해진다. 아무것도 없는 공간에서도 거리가 2배가 되면 같은 넓이에 닿는 에너지는 1/4, 즉 <b>6 dB</b> 줄어든다. 이것을 <span class="term">자유 공간 경로 손실</span><span class="en">(FSPL, free-space path loss)</span>이라 한다.</p>
+    <div class="formula">FSPL(dB) = 20 · log<sub>10</sub>(4π d f / c)
+      <div class="where">2.44 GHz에서 d = 1 m이면 약 <b>40 dB</b>, 10 m이면 60 dB, 100 m이면 80 dB. 실내에서는 벽과 가구에 부딪히고 흡수되어 거리가 늘수록 더 빨리 약해진다. 그래서 1 m까지는 자유 공간으로 계산하고, 그 뒤는 <b>경로 손실 지수 n</b>을 써서 10·n·log<sub>10</sub>(d) dB씩 깎는 모델을 흔히 쓴다(트인 곳 n ≈ 2, 집·사무실 n ≈ 2.5~3.5).</div>
+    </div>
+    <p>여기에 장애물 손실을 더한다. 2.4 GHz에서 석고보드 벽은 몇 dB, 철근 콘크리트 벽은 10~15 dB 정도를 깎는다. 그리고 블루투스에서 특히 중요한 장애물은 <b>사람의 몸</b>이다. 몸은 대부분 물이고, 물은 2.4 GHz 전파를 잘 흡수한다(전자레인지가 같은 대역으로 음식 속 물을 데운다). 휴대폰을 뒷주머니에 넣고 이어폰을 귀에 꽂으면 신호는 몸을 돌아가거나 통과해야 하고, 그 손실은 자세에 따라 수 dB에서 20 dB 넘게까지 변한다.</p>
+    <p>이 모든 것을 한 줄로 모은 것이 <span class="term">링크 버짓</span><span class="en">(link budget)</span>이다. 수신 세기가 수신 감도보다 얼마나 높은지를 <b>마진</b>이라 하고, 마진이 0 아래로 내려가면 끊긴다.</p>
+    <div class="formula">수신 세기(dBm) = 송신 전력 + 안테나 이득 − 경로 손실 − 장애물 손실 &nbsp;&nbsp; 마진 = 수신 세기 − 수신 감도</div>
+
+    <div class="sim" id="sim-lb">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>링크 버짓: 어디까지 닿을까</h3></div>
+      <div class="sim-view"><canvas id="cv-lb"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>송신 전력 <output id="lb-tx-out"></output></span><input type="range" id="lb-tx" min="-20" max="20" step="1" value="0"></label>
+        <label class="ctrl"><span>거리 <output id="lb-d-out"></output></span><input type="range" id="lb-d" min="0" max="1000" value="500"></label>
+        <div class="ctrl"><span>환경 (경로 손실 지수)</span><div class="seg" id="lb-env"><button data-value="2">트인 곳 n=2</button><button data-value="2.7" class="on">집 n=2.7</button><button data-value="3.3">사무실 n=3.3</button></div></div>
+        <div class="ctrl"><span>받는 쪽 PHY (3장)</span><div class="seg" id="lb-phy"><button data-value="1m" class="on">LE 1M</button><button data-value="2m">LE 2M</button><button data-value="s2">Coded S=2</button><button data-value="s8">Coded S=8</button></div></div>
+        <label class="check"><input type="checkbox" id="lb-body"> 사람 몸이 가림 (뒷주머니 등, −12 dB)</label>
+        <label class="check"><input type="checkbox" id="lb-wall"> 콘크리트 벽 하나 (−12 dB)</label>
+        <label class="check"><input type="checkbox" id="lb-spec"> 사양 최소 감도로 계산 (−70/−70/−75/−82 dBm)</label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">수신 세기(RSSI)</span><span class="v" id="lb-rx">—</span></div>
+        <div class="stat"><span class="k">수신 감도</span><span class="v" id="lb-sens">—</span></div>
+        <div class="stat"><span class="k">마진</span><span class="v" id="lb-m">—</span></div>
+        <div class="stat"><span class="k">추정 도달 거리</span><span class="v" id="lb-r">—</span></div>
+      </div>
+      <div class="sim-note">그래프: 거리(로그 눈금)에 따른 수신 세기(굵은 선)와 수신 감도(가로 점선). 선이 점선 아래로 내려가는 지점이 도달 거리다. 해볼 것: ① 송신 전력을 +6 dB 올리면 트인 곳(n=2)에서 도달 거리가 2배가 된다. 집(n=2.7)에서는 1.67배뿐이다. ② “사람 몸”을 켜면 거리가 크게 준다. 전력을 올리는 것보다 휴대폰을 앞주머니로 옮기는 편이 낫다. ③ 사양 최소 감도로 바꿔 보면 같은 칩이라도 감도가 얼마나 중요한지 보인다. 가정: 양쪽 안테나 이득 합 0 dBi, 1 m까지는 자유 공간 손실(2.44 GHz, 40.2 dB), 그 뒤는 10·n·log₁₀(d). 칩 감도 대표값: 1M −97, 2M −94, S=2 −100, S=8 −104 dBm. 실제로는 아래의 페이딩 때문에 10 dB 안팎의 여유를 남겨 설계한다.</div>
+    </div>
+
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">집에서 이어폰이 가끔 끊긴다. 휴대폰 송신 전력을 4배(+6 dB)로 올리는 것과, 휴대폰을 뒷주머니에서 셔츠 앞주머니로 옮기는 것 중 어느 쪽이 더 효과가 클까?</p><p class="wi-hint">링크 버짓 시뮬레이터에서 송신 전력 +6 dB와 “사람 몸” 체크를 비교해 보자.</p><div class="opts">
+      <button class="opt">전력을 4배로 올리는 쪽. 4배는 큰 차이다</button>
+      <button class="opt" data-correct>앞주머니로 옮기는 쪽. 몸이 가리는 손실(10 dB 이상)이 +6 dB보다 크다</button>
+      <button class="opt">둘 다 효과 없다. 이어폰 문제다</button>
+    </div><div class="quiz-exp">dB로 보면 바로 비교된다. 4배는 +6 dB, 몸을 피하면 10~20 dB를 되찾는다. 게다가 전력을 올리면 배터리를 더 쓰고, 이어폰이 휴대폰에게 보내는 쪽(반대 방향)은 그대로다. 링크는 양방향이 모두 닿아야 한다.</div></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="fading">
+    <h2>다중 경로 페이딩: 한 뼘 옮겼더니 끊긴다</h2>
+    <p>실내에서 전파는 송신기에서 수신기로 한 길로만 가지 않는다. 벽, 바닥, 책상, 사람에게 반사된 여러 사본이 조금씩 다른 길이를 거쳐 도착한다. 길이 차이가 반 파장(약 6 cm)이면 두 사본은 서로 반대 위상이 되어 <b>상쇄</b>되고, 한 파장 차이면 <b>보강</b>된다. 그래서 수신 세기는 거리만으로 정해지지 않고, 위치를 몇 cm만 옮겨도 20~30 dB씩 출렁인다. 이것이 <span class="term">다중 경로 페이딩</span><span class="en">(multipath fading)</span>이다.</p>
+    <p>중요한 점은 상쇄가 일어나는 위치가 <b>주파수마다 다르다</b>는 것이다. 같은 길이 차이라도 파장이 다르면 위상 차이가 달라진다. 2402 MHz에서 깊은 골짜기에 빠진 위치가 2480 MHz에서는 멀쩡할 수 있다. 블루투스가 채널을 계속 바꿔 다니는 <b>주파수 도약</b>(4장)은 Wi-Fi 간섭뿐 아니라 이 페이딩을 피하는 장치이기도 하다. 사양서 첫 문장도 “간섭과 페이딩에 대처하기 위해 주파수 도약 송수신기를 쓴다”고 적고 있다.</p>
+    <p class="spec-ref">“A frequency hopping transceiver is used to combat interference and fading.”: <b>[Vol 6] Part A §1</b>, <b>[Vol 2] Part A §1</b></p>
+
+    <div class="sim" id="sim-mp">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>반사파가 만드는 골짜기: 채널마다 다른 곳에서 끊긴다</h3></div>
+      <div class="sim-view"><canvas id="cv-mp"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>반사파 세기 <output id="mp-k-out"></output></span><input type="range" id="mp-k" min="0" max="0.95" step="0.05" value="0.7"></label>
+        <label class="ctrl"><span>수신기 위치 <output id="mp-x-out"></output></span><input type="range" id="mp-x" min="0" max="100" step="0.5" value="50"></label>
+        <div class="ctrl"><span>방 바꾸기</span><div class="btn-row"><button class="btn" id="mp-room">다른 반사 배치</button></div></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">ch 37 (2402 MHz)</span><span class="v" id="mp-a">—</span></div>
+        <div class="stat"><span class="k">ch 38 (2426 MHz)</span><span class="v" id="mp-b">—</span></div>
+        <div class="stat"><span class="k">ch 39 (2480 MHz)</span><span class="v" id="mp-c">—</span></div>
+        <div class="stat"><span class="k">셋 중 최선</span><span class="v" id="mp-best">—</span></div>
+      </div>
+      <div class="sim-note">그래프: 수신기를 50 cm 범위에서 움직일 때 세 광고 채널의 상대 세기(직접파만 있을 때 = 0 dB). 해볼 것: ① 위치 슬라이더를 천천히 움직여 한 채널이 −20 dB 아래로 꺼지는 곳을 찾아보자. 그 자리에서 다른 채널은 대개 멀쩡하다. 광고를 세 채널에 나눠 보내는 이유다(5장). ② 반사파 세기를 0으로 하면 골짜기가 사라진다(트인 야외). 0.9 이상이면 금속이 많은 공장처럼 골짜기가 깊어진다. 모델: 직접파 1개 + 무작위 길이·세기의 반사파 4개를 더한 합성(2차원 기하는 생략, 거리 감쇠는 반영하지 않음).</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="rssi">
+    <h2>RSSI: 받은 세기를 숫자로</h2>
+    <p>수신기는 패킷을 받을 때마다 그 세기를 dBm 단위로 잰다. 이것이 <span class="term">RSSI</span><span class="en">(Received Signal Strength Indication)</span>다. 휴대폰 앱에서 주변 기기를 스캔하면 “−58 dBm” 같은 숫자가 뜨는데, 바로 그 광고 패킷의 RSSI다. 연결 품질 감시, 전력 제어(9장), 거리 짐작(11장)에 쓴다.</p>
+    <p>RSSI를 너무 믿으면 안 된다. 사양은 LE 기기가 RSSI를 지원한다면 정확도가 <b>±6 dB 정도이길 권장(should)</b>할 뿐이다(BR/EDR은 ±6 dB가 필수). ±6 dB는 거리로 바꾸면 트인 곳에서도 <b>절반~두 배</b>의 오차다. 여기에 위의 페이딩이 패킷마다 ±10 dB 이상의 출렁임을 더한다. 그래서 RSSI는 여러 번 평균 내서 “가깝다/멀다” 정도를 판단하는 데 쓰고, 정확한 거리는 6.0의 채널 사운딩(11장)처럼 다른 방법을 쓴다.</p>
+    <p class="spec-ref">RSSI 정확도 ±6 dB(should): <b>[Vol 6] Part A §4.8</b> · BR/EDR(shall): <b>[Vol 2] Part A §4</b></p>
+    <div class="callout tip"><strong>끊김을 줄이는 현실적인 순서</strong><p>① 휴대폰과 이어폰 사이에 몸이 끼지 않게 한다(같은 쪽 주머니, 가방 바깥쪽). ② 전자레인지, 2.4 GHz Wi-Fi 공유기 바로 옆을 피한다. 공유기를 5·6 GHz로 쓰면 블루투스가 쉴 자리가 생긴다(4장). ③ 이어폰이 지원하면 “연결 우선” 모드로 코덱 비트레이트를 낮춘다(10장). 같은 마진에서 더 느린 데이터는 더 강하다(3장).</p></div>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>블루투스는 면허 없는 <b>2.4 GHz ISM 대역(2400~2483.5 MHz)</b>을 Wi-Fi·전자레인지와 나눠 쓴다. 클래식은 <b>1 MHz × 79채널</b>, LE는 <b>2 MHz × 40채널</b>이며 LE의 37·38·39번(2402·2426·2480 MHz)이 광고 채널이다.</li>
+      <li>파장은 약 <b>12 cm</b>. 1/4 파장이 3 cm라 작은 기기에도 안테나가 들어간다.</li>
+      <li><b>dB</b>는 비율, <b>dBm</b>은 1 mW 기준의 절대값. +3 dB = 2배, +10 dB = 10배. LE 송신 전력은 −20~+20 dBm, 사양의 최소 수신 감도는 −70 dBm(1M·2M), −75(S=2), −82(S=8)이며 실제 칩은 20 dB 이상 좋다.</li>
+      <li>링크 버짓: 수신 세기 = 송신 + 이득 − 경로 손실 − 장애물. 2.44 GHz 1 m 손실은 약 40 dB, 거리 2배마다 6 dB(트인 곳). <b>사람 몸</b>은 10 dB 이상을 깎는 큰 장애물이다.</li>
+      <li>반사파가 만드는 <b>다중 경로 페이딩</b>은 몇 cm 차이로 20 dB 넘게 출렁이고, 주파수마다 다른 곳에서 일어난다. 그래서 블루투스는 채널을 바꿔 가며 쓴다.</li>
+      <li><b>RSSI</b>는 받은 세기의 측정값이다. 사양의 정확도 권장은 ±6 dB이고 페이딩까지 더해지므로 거리 측정에는 거칠다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>LE 채널 38번의 중심 주파수는?</p><div class="opts">
+        <button class="opt">2478 MHz</button><button class="opt" data-correct>2426 MHz</button><button class="opt">2438 MHz</button><button class="opt">2480 MHz</button>
+      </div><div class="quiz-exp">광고 채널은 37 = 2402, 38 = 2426, 39 = 2480 MHz다. 38번은 대역 가운데쯤, Wi-Fi 1번과 6번 채널 사이에 놓인다.</div></div>
+      <div class="quiz-q"><p>송신 0 dBm, 경로 손실 75 dB, 벽 손실 12 dB일 때 수신 세기와, 수신 감도 −95 dBm 기준 마진은?</p><div class="opts">
+        <button class="opt">−63 dBm, 마진 32 dB</button><button class="opt" data-correct>−87 dBm, 마진 8 dB</button><button class="opt">−87 dBm, 마진 −8 dB</button><button class="opt">87 dBm, 마진 182 dB</button>
+      </div><div class="quiz-exp">0 − 75 − 12 = −87 dBm. 마진 = −87 − (−95) = 8 dB. dB 단위에서는 더하고 빼기만 하면 된다.</div></div>
+      <div class="quiz-q"><p>트인 공간에서 송신 전력을 그대로 두고 거리를 2배로 늘리면 수신 세기는?</p><div class="opts">
+        <button class="opt">절반(−3 dB)</button><button class="opt" data-correct>1/4(−6 dB)</button><button class="opt">1/10(−10 dB)</button><button class="opt">그대로</button>
+      </div><div class="quiz-exp">자유 공간 경로 손실은 20·log₁₀(d)를 따르므로 거리 2배마다 6 dB(1/4)씩 준다. 실내에서는 경로 손실 지수가 2보다 커서 더 빨리 준다.</div></div>
+      <div class="quiz-q"><p>LE 사양이 요구하는 LE 1M PHY의 최소 수신 감도(이보다 나빠서는 안 되는 값)는?</p><div class="opts">
+        <button class="opt">−97 dBm 이하</button><button class="opt" data-correct>−70 dBm 이하</button><button class="opt">−82 dBm 이하</button><button class="opt">−50 dBm 이하</button>
+      </div><div class="quiz-exp">Core 6.2 [Vol 6] Part A Table 4.2: LE 비부호화 PHY ≤ −70 dBm, Coded S=2 ≤ −75 dBm, S=8 ≤ −82 dBm. −97 dBm 같은 값은 실제 칩의 성능이다.</div></div>
+      <div class="quiz-q"><p>책상 위에서 블루투스 스피커를 5 cm 옮겼더니 RSSI가 15 dB 바뀌었다. 가장 그럴듯한 원인은?</p><div class="opts">
+        <button class="opt">거리 변화로 인한 경로 손실</button><button class="opt">스피커의 송신 전력이 바뀌어서</button><button class="opt" data-correct>반사파들이 보강·상쇄되는 다중 경로 페이딩</button><button class="opt">RSSI는 원래 거리와 무관한 숫자라서</button>
+      </div><div class="quiz-exp">5 cm는 반 파장(약 6 cm)에 가까워, 반사파와 직접파의 위상 관계가 크게 바뀐다. 경로 손실로는 5 cm 이동에 0.1 dB도 변하지 않는다.</div></div>
+      <div class="quiz-q"><p>RSSI −60 dBm인 광고를 보고 “정확히 2.0 m 떨어져 있다”고 판단하는 것이 위험한 이유로 가장 적절한 것은?</p><div class="opts">
+        <button class="opt">RSSI는 dBm이 아니라 퍼센트라서</button><button class="opt" data-correct>사양의 RSSI 정확도 권장이 ±6 dB이고 페이딩이 더해져 거리 오차가 몇 배까지 날 수 있어서</button><button class="opt">광고 패킷에는 RSSI가 없어서</button><button class="opt">2.4 GHz는 거리를 잴 수 없는 주파수라서</button>
+      </div><div class="quiz-exp">±6 dB만으로도 트인 곳에서 거리 절반~두 배의 오차다. cm급 거리는 위상과 왕복 시간을 쓰는 채널 사운딩(11장)으로 잰다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const C = 299792458;
+
+  /** LE 채널 번호 → 중심 주파수(MHz). Core 6.2 [Vol 6] Part B Table 1.3 */
+  function leFreq(ch) {
+    if (ch === 37) return 2402;
+    if (ch === 38) return 2426;
+    if (ch === 39) return 2480;
+    return ch <= 10 ? 2404 + 2 * ch : 2428 + 2 * (ch - 11);
+  }
+  /** 자유 공간 경로 손실(dB) */
+  function fspl(dMeters, fHz) {
+    return 20 * Math.log10((4 * Math.PI * dMeters * fHz) / C);
+  }
+  /** 실내 로그 거리 모델: 1 m까지 자유 공간, 그 뒤 10·n·log10(d) */
+  function pathLoss(dMeters, n, fHz) {
+    return fspl(1, fHz) + 10 * n * Math.log10(Math.max(dMeters, 0.01));
+  }
+  /** 마진이 0이 되는 거리(m) */
+  function maxRange(txDbm, extraLossDb, sensDbm, n, fHz) {
+    return Math.pow(10, (txDbm - extraLossDb - sensDbm - fspl(1, fHz)) / (10 * n));
+  }
+  const WIFI = [[1, 2412], [6, 2437], [11, 2462]];
+
+  /* ================================================================ 1. 대역 지도 */
+  (function () {
+    const ch = BT.range("bd-ch", (v) => String(v), draw);
+    const show = BT.seg("bd-show", draw);
+    $("bd-wifi").addEventListener("change", draw);
+    const cv = BT.canvas($("cv-band"), (ctx, w, h) => {
+      const P = BT.palette();
+      const x0 = 2398, x1 = 2486, L = 36, R = w - 14, top = 26, base = h - 46;
+      const X = (f) => L + ((f - x0) / (x1 - x0)) * (R - L);
+      ctx.strokeStyle = P.axis; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(L, base); ctx.lineTo(R, base); ctx.stroke();
+      ctx.fillStyle = BT.color("accent-soft"); ctx.fillRect(X(2400), top - 14, X(2483.5) - X(2400), base - top + 14);
+      BT.text(ctx, "ISM 2400 ~ 2483.5 MHz", X(2400) + 4, top - 6, { size: 11, color: P.dim, mono: true });
+      for (let f = 2400; f <= 2480; f += 10) { const x = X(f); ctx.strokeStyle = P.grid; ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, base); ctx.stroke(); BT.text(ctx, String(f), x, base + 12, { size: 10.5, color: P.dim, align: "center", mono: true }); }
+      BT.text(ctx, "MHz", R, base + 28, { size: 11, color: P.faint, align: "right" });
+      if ($("bd-wifi").checked) {
+        WIFI.forEach(([n, fc]) => {
+          const xa = X(fc - 10), xb = X(fc + 10), hh = (base - top) * 0.78;
+          ctx.fillStyle = BT.color("warn"); ctx.globalAlpha = 0.16;
+          ctx.beginPath(); ctx.moveTo(xa, base); ctx.bezierCurveTo(xa + 4, base - hh, xb - 4, base - hh, xb, base); ctx.fill(); ctx.globalAlpha = 1;
+          BT.text(ctx, "Wi-Fi " + n, X(fc), top + 6, { size: 11, color: P.warn, align: "center", bold: true });
+        });
+      }
+      const mode = show(), sel = ch();
+      if (mode !== "le") {
+        for (let k = 0; k <= 78; k++) { const x = X(2402 + k); ctx.strokeStyle = P.accent2; ctx.globalAlpha = 0.55; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x, base); ctx.lineTo(x, base - (base - top) * (mode === "both" ? 0.35 : 0.55)); ctx.stroke(); ctx.globalAlpha = 1; }
+      }
+      if (mode !== "br") {
+        for (let c = 0; c <= 39; c++) {
+          const f = leFreq(c), x = X(f), adv = c >= 37, on = c === sel, bw = Math.max(2, X(f + 0.9) - X(f - 0.9));
+          const hh = (base - top) * (adv ? 0.62 : 0.45);
+          ctx.fillStyle = on ? P.text : adv ? P.accent : BT.color("accent-soft");
+          ctx.strokeStyle = P.accent; ctx.lineWidth = 1;
+          ctx.fillRect(x - bw / 2, base - hh, bw, hh); if (!adv && !on) ctx.strokeRect(x - bw / 2, base - hh, bw, hh);
+          if (adv) BT.text(ctx, String(c), x, base - hh - 9, { size: 11, color: P.accent, align: "center", bold: true, mono: true });
+        }
+      }
+      if (mode === "br") { const x = X(leFreq(sel)); ctx.strokeStyle = P.text; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, base); ctx.stroke(); ctx.setLineDash([]); }
+    }, { aspect: 0.36, minHeight: 210, maxHeight: 300 });
+    function draw() {
+      const c = ch(), f = leFreq(c);
+      const wf = WIFI.filter(([, fc]) => Math.abs(f - fc) < 11).map(([n]) => n + "번");
+      BT.stat("bd-f", f + " MHz");
+      BT.stat("bd-use", c >= 37 ? "광고 채널" : "범용(데이터) 채널");
+      BT.stat("bd-wf", wf.length ? wf.join(", ") : "없음");
+      BT.stat("bd-lam", (C / (f * 1e6) * 100).toFixed(2) + " cm");
+      cv.redraw();
+    }
+    draw();
+  })();
+
+  /* ================================================================ 2. dBm 사다리 */
+  (function () {
+    const MARKS = [
+      [20, "LE 최대 허용 송신 (100 mW)"], [10, "휴대폰 흔한 최대 송신"], [0, "1 mW · 전력 등급 3 상한"], [-20, "LE 최소 허용 최대 출력"],
+      [-70, "사양 최소 감도 · LE 1M/2M"], [-82, "사양 최소 감도 · Coded S=8"], [-97, "요즘 칩 감도 · LE 1M (대표)"], [-104, "요즘 칩 감도 · Coded S=8 (대표)"], [-114, "열잡음 바닥 (1 MHz)"],
+    ];
+    const p = BT.range("dbm-p", (v) => v + " dBm", draw);
+    const cv = BT.canvas($("cv-dbm"), (ctx, w, h) => {
+      const P = BT.palette(), lo = -115, hi = 22, L = 70, R = w - 16, y = h * 0.42;
+      const X = (d) => L + ((d - lo) / (hi - lo)) * (R - L);
+      ctx.strokeStyle = P.axis; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(L, y); ctx.lineTo(R, y); ctx.stroke();
+      const step = w < 560 ? 20 : 10;
+      for (let d = -110; d <= 20; d += step) { const x = X(d); ctx.strokeStyle = P.axis; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x, y - 6); ctx.lineTo(x, y + 6); ctx.stroke(); BT.text(ctx, String(d), x, y + 16, { size: 10.5, mono: true, color: P.dim, align: "center" }); }
+      BT.text(ctx, "dBm", L - 10, y, { size: 11, color: P.faint, align: "right" });
+      const small = w < 560;
+      MARKS.forEach(([d, label], i) => {
+        const x = X(d), up = i % 2 === 0, yy = up ? y - 26 - (i % 4 === 0 ? 0 : 20) : y + 38 + (i % 4 === 1 ? 0 : 20);
+        ctx.strokeStyle = d >= -20 ? P.accent : d >= -82 ? P.warn : P.dim; ctx.lineWidth = 1; ctx.setLineDash([2, 3]); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, yy + (up ? 8 : -8)); ctx.stroke(); ctx.setLineDash([]);
+        BT.text(ctx, small ? String(d) : label, x, yy, { size: 11, color: ctx.strokeStyle, align: x > R - 120 ? "right" : x < L + 100 ? "left" : "center" });
+      });
+      const x = X(p());
+      ctx.fillStyle = P.text; ctx.beginPath(); ctx.moveTo(x, y - 9); ctx.lineTo(x - 7, y - 21); ctx.lineTo(x + 7, y - 21); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.arc(x, y, 5, 0, 7); ctx.fill();
+    }, { aspect: 0.32, minHeight: 190, maxHeight: 250 });
+    function draw() {
+      const d = p(), W = 1e-3 * Math.pow(10, d / 10);
+      BT.stat("dbm-w", BT.si(W, "W"));
+      const r = Math.pow(10, d / 10);
+      BT.stat("dbm-r", r >= 1 ? BT.fmt(r) + "배" : "1/" + BT.kn(Math.round(1 / r)));
+      let best = MARKS[0]; MARKS.forEach((m) => { if (Math.abs(m[0] - d) < Math.abs(best[0] - d)) best = m; });
+      BT.stat("dbm-near", `${best[1]} (${best[0] - d >= 0 ? "+" : ""}${best[0] - d} dB)`);
+      cv.redraw();
+    }
+    draw();
+  })();
+
+  /* ================================================================ 3. 링크 버짓 */
+  (function () {
+    const SENS = { "1m": [-97, -70], "2m": [-94, -70], s2: [-100, -75], s8: [-104, -82] };
+    const F = 2.44e9;
+    const dOf = (v) => Math.pow(10, -0.5 + (v / 1000) * 3); // 0.316 m ~ 316 m
+    const tx = BT.range("lb-tx", (v) => (v > 0 ? "+" : "") + v + " dBm (" + BT.si(1e-3 * Math.pow(10, v / 10), "W") + ")", draw);
+    const dd = BT.range("lb-d", (v) => { const d = dOf(v); return d < 10 ? d.toFixed(1) + " m" : Math.round(d) + " m"; }, draw);
+    const env = BT.seg("lb-env", draw), phy = BT.seg("lb-phy", draw);
+    ["lb-body", "lb-wall", "lb-spec"].forEach((id) => $(id).addEventListener("change", draw));
+    const extra = () => ($("lb-body").checked ? 12 : 0) + ($("lb-wall").checked ? 12 : 0);
+    const sens = () => SENS[phy()][$("lb-spec").checked ? 1 : 0];
+    const cv = BT.canvas($("cv-lb"), (ctx, w, h) => {
+      const P = BT.palette(), n = +env(), t = tx(), ex = extra(), s = sens();
+      const data = []; for (let i = 0; i <= 200; i++) { const d = Math.pow(10, -0.5 + (i / 200) * 3); data.push([d, t - ex - pathLoss(d, n, F)]); }
+      const ch = BT.chart(ctx, null, { x: [0.316, 316], y: [-120, 0], logX: true, xLabel: "거리 (m, 로그)", yLabel: "수신 세기 (dBm)", xFmt: (v) => (v >= 1 ? String(v) : v.toFixed(1)),
+        series: [{ data, color: P.accent, width: 2.5 }], hlines: [{ y: s, color: P.bad, label: "수신 감도 " + s + " dBm" }],
+        bands: [] });
+      const d = dOf(dd()), rx = t - ex - pathLoss(d, n, F);
+      ctx.fillStyle = rx >= s ? P.ok : P.bad; ctx.beginPath(); ctx.arc(ch.X(d), ch.Y(Math.max(-120, rx)), 6, 0, 7); ctx.fill();
+      const r = maxRange(t, ex, s, n, F);
+      if (r > 0.316 && r < 316) { ctx.strokeStyle = P.bad; ctx.setLineDash([2, 3]); ctx.beginPath(); ctx.moveTo(ch.X(r), ch.box.y); ctx.lineTo(ch.X(r), ch.box.y + ch.box.h); ctx.stroke(); ctx.setLineDash([]); }
+    }, { aspect: 0.5, minHeight: 260, maxHeight: 380 });
+    function draw() {
+      const n = +env(), t = tx(), ex = extra(), s = sens(), d = dOf(dd());
+      const rx = t - ex - pathLoss(d, n, F), m = rx - s, r = maxRange(t, ex, s, n, F);
+      BT.stat("lb-rx", rx.toFixed(1) + " dBm");
+      BT.stat("lb-sens", s + " dBm");
+      BT.stat("lb-m", `<span style="color:var(${m >= 10 ? "--ok" : m >= 0 ? "--warn" : "--bad"})">${m >= 0 ? "+" : ""}${m.toFixed(1)} dB</span>`);
+      BT.stat("lb-r", r >= 1000 ? "1 km 이상" : r >= 10 ? Math.round(r) + " m" : r.toFixed(1) + " m");
+      cv.redraw();
+    }
+    draw();
+  })();
+
+  /* ================================================================ 4. 다중 경로 */
+  (function () {
+    const FS = [2402e6, 2426e6, 2480e6];
+    let seed = 7, paths = [];
+    function room() {
+      const r = BT.rng(seed);
+      paths = Array.from({ length: 4 }, () => ({ extra: 0.4 + r() * 4.5, amp: 0.45 + r() * 0.55, slope: (r() - 0.5) * 1.8, ph: r() * Math.PI * 2 }));
+    }
+    /** 위치 x(m)에서 주파수 f의 합성 세기(dB, 직접파 = 0 dB 기준) */
+    function multipath(fHz, x, k) {
+      const lam = C / fHz; let re = 1, im = 0;
+      paths.forEach((p) => {
+        const L = p.extra + p.slope * x; const ph = (2 * Math.PI * L) / lam + p.ph;
+        re += k * p.amp * Math.cos(ph); im += k * p.amp * Math.sin(ph);
+      });
+      return 10 * Math.log10(Math.max(re * re + im * im, 1e-4));
+    }
+    const k = BT.range("mp-k", (v) => v.toFixed(2), draw);
+    const xs = BT.range("mp-x", (v) => v.toFixed(1) + " cm", draw);
+    $("mp-room").addEventListener("click", () => { seed = (seed * 48271) % 2147483647; room(); draw(); });
+    room();
+    const cv = BT.canvas($("cv-mp"), (ctx, w, h) => {
+      const P = BT.palette(), cols = [P.accent, P.accent2, P.warn];
+      const series = FS.map((f, i) => { const d = []; for (let j = 0; j <= 400; j++) { const x = (j / 400) * 0.5; d.push([x * 200, multipath(f, x, k())]); } return { data: d, color: cols[i], width: 1.8 }; });
+      const ch = BT.chart(ctx, null, { x: [0, 100], y: [-35, 12], xLabel: "수신기 위치 (cm, 50 cm 구간을 0~100으로 확대)", yLabel: "상대 세기 (dB)", xFmt: (v) => (v / 2).toFixed(0), series, hlines: [{ y: -20, color: P.bad, label: "−20 dB" }] });
+      const x = xs(); ctx.strokeStyle = P.text; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(ch.X(x), ch.box.y); ctx.lineTo(ch.X(x), ch.box.y + ch.box.h); ctx.stroke(); ctx.setLineDash([]);
+      ["37", "38", "39"].forEach((t, i) => BT.text(ctx, "ch " + t, ch.box.x + 10 + i * 64, ch.box.y + 12, { size: 12, color: cols[i], bold: true }));
+    }, { aspect: 0.48, minHeight: 250, maxHeight: 360 });
+    function draw() {
+      const x = xs() / 200, v = FS.map((f) => multipath(f, x, k()));
+      ["mp-a", "mp-b", "mp-c"].forEach((id, i) => BT.stat(id, `<span style="color:var(${v[i] < -20 ? "--bad" : "--text"})">${v[i].toFixed(1)} dB</span>`));
+      const b = Math.max(...v); BT.stat("mp-best", b.toFixed(1) + " dB");
+      cv.redraw();
+    }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>
