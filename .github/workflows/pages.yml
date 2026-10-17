@@ -1,32 +1,44 @@
-name: Deploy Book
+name: Deploy Library
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 permissions:
   contents: read
   pages: write
   id-token: write
 concurrency:
-  group: pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # 책마다 scripts/verify-factcheck.cjs가 있으면 실행한다
+      - name: Verify every book
+        run: |
+          set -e
+          for f in */scripts/verify-factcheck.cjs; do
+            [ -e "$f" ] || continue
+            echo "::group::$f"; node "$f"; echo "::endgroup::"
+          done
   deploy:
+    if: github.event_name != 'pull_request'
+    needs: test
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm test
-      - run: npm run build
+      - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: .book-dist
+          path: .
       - id: deployment
         uses: actions/deploy-pages@v4

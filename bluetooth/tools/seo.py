@@ -1,5 +1,5 @@
 import io, re, json, os, html, datetime
-BASE = 'https://bluetoothbook.euiyun.com/'
+BASE = 'https://yalex-kim.github.io/yalexBook/bluetooth/'
 SITE = 'BluetoothBook'
 TODAY = datetime.date.today().isoformat()
 js = io.open('js/common.js', encoding='utf-8').read()
@@ -26,7 +26,7 @@ def inject(path, url, kind, ld):
         '<meta property="og:image:height" content="630">',
         '<meta property="og:locale" content="ko_KR">',
         '<meta name="twitter:card" content="summary_large_image">',
-        '<script type="application/ld+json">' + json.dumps({'@context': 'https://schema.org', '@graph': ld}, ensure_ascii=False, separators=(',', ':')).replace('</', '<\/') + '</script>',
+        '<script type="application/ld+json">' + json.dumps({'@context': 'https://schema.org', '@graph': ld}, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/') + '</script>',
     ]) + '\n'
     s = s[:m.end()] + block + s[m.end():]
     io.open(path, 'w', encoding='utf-8', newline='').write(s)

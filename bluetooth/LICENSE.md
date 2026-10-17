@@ -1,6 +1,6 @@
 # BluetoothBook 라이선스
 
-Copyright (c) 2026 geniuskey
+Copyright (c) 2026 Yalex Kim
 
 BluetoothBook은 실행 코드와 교재 콘텐츠에 서로 다른 라이선스를 적용합니다. 파일 확장자가 아니라 해당 부분의 용도에 따라 구분하며, 두 라이선스 중 하나를 임의로 선택하는 방식이 아닙니다.
 
@@ -18,7 +18,7 @@ BluetoothBook은 실행 코드와 교재 콘텐츠에 서로 다른 라이선스
 
 콘텐츠 출처 표시 예시:
 
-> BluetoothBook — geniuskey, https://bluetoothbook.euiyun.com/ (원본: https://github.com/geniuskey/bluetoothbook). CC BY 4.0: https://creativecommons.org/licenses/by/4.0/ . 자료는 현 상태로 제공되며 보증하지 않습니다. 변경 사항: 한국어 본문 일부를 번역하고 그림을 수정함.
+> BluetoothBook — Yalex Kim, https://yalex-kim.github.io/yalexBook/bluetooth/ (원본: https://github.com/yalex-kim/yalexBook/tree/main/bluetooth). CC BY 4.0: https://creativecommons.org/licenses/by/4.0/ . 자료는 현 상태로 제공되며 보증하지 않습니다. 변경 사항: 한국어 본문 일부를 번역하고 그림을 수정함.
 
 수정하지 않은 자료에는 변경 사항을 “변경 없음”으로 표시할 수 있습니다. 특정 챕터를 사용할 때는 해당 챕터의 출처 URL을 함께 표시하세요.
 
