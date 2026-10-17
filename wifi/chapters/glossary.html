@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>용어집 &amp; 종합 퀴즈 · WiFiBook</title>
+<meta name="description" content="대역과 채널, OFDM, MCS, MIMO, 채널 접근, 프레임, 연결과 보안, 절전, Wi-Fi 6·7까지 이 책의 와이파이 핵심 용어를 검색하고, 장별 종합 퀴즈로 실력을 점검한다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/wifi/chapters/glossary.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="WiFiBook">
+<meta property="og:title" content="용어집 &amp; 종합 퀴즈 · WiFiBook">
+<meta property="og:description" content="대역과 채널, OFDM, MCS, MIMO, 채널 접근, 프레임, 연결과 보안, 절전, Wi-Fi 6·7까지 이 책의 와이파이 핵심 용어를 검색하고, 장별 종합 퀴즈로 실력을 점검한다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/wifi/chapters/glossary.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/wifi/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"용어집 & 종합 퀴즈","name":"용어집 & 종합 퀴즈 · WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/chapters/glossary.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/wifi/chapters/glossary.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":15,"image":"https://yalex-kim.github.io/yalexBook/wifi/og.png","dateModified":"2026-10-17","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/wifi/#book","name":"WiFiBook — 누구나 읽는 인터랙티브 와이파이 교과서","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"publisher":{"@type":"Organization","name":"WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"description":"대역과 채널, OFDM, MCS, MIMO, 채널 접근, 프레임, 연결과 보안, 절전, Wi-Fi 6·7까지 이 책의 와이파이 핵심 용어를 검색하고, 장별 종합 퀴즈로 실력을 점검한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"WiFiBook","item":"https://yalex-kim.github.io/yalexBook/wifi/"},{"@type":"ListItem","position":2,"name":"15 용어집 & 종합 퀴즈","item":"https://yalex-kim.github.io/yalexBook/wifi/chapters/glossary.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<script src="../js/terms.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  .gl-tools { display: grid; gap: 10px; margin-bottom: 18px; }
+  .gl-tools .row { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+  .gl-tools .seg button { font-size: 12.5px; padding: 4px 9px; }
+  .gl-search { margin-bottom: 0 !important; }
+  .gl-count { font-size: 13px; color: var(--text-faint); margin-left: auto; }
+  #gl-list { max-height: min(78vh, 980px); overflow-y: auto; overscroll-behavior: contain; padding: 2px 6px 2px 2px; }
+  .gl-group { position: sticky; top: 0; z-index: 1; background: var(--bg); font-family: var(--mono); font-weight: 700; font-size: 13px; color: var(--accent); letter-spacing: .04em; margin: 14px 0 6px; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
+  .gl-group:first-child { margin-top: 0; }
+  .gl-item { margin-bottom: 8px; }
+  .gl-item mark { background: color-mix(in srgb, var(--warn) 35%, transparent); color: inherit; border-radius: 3px; padding: 0 1px; }
+  .gl-empty { padding: 24px; text-align: center; color: var(--text-dim); border: 1px dashed var(--border); border-radius: 12px; }
+  .fq { background: var(--bg-elev); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .fq-top { display: flex; justify-content: space-between; gap: 10px; padding: 12px 18px 8px; font-size: 13px; color: var(--text-dim); font-family: var(--mono); }
+  .fq-bar { height: 6px; background: var(--surface-2); margin: 0 18px; border-radius: 3px; overflow: hidden; }
+  .fq-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .3s ease; }
+  .fq-card, .fq-result { padding: 18px 20px 20px; }
+  .fq-ch { font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 6px; }
+  .fq-q { font-weight: 700; font-size: 17px; margin: 0 0 14px !important; }
+  .fq-opts { display: grid; gap: 8px; }
+  .fq-opt { text-align: left; font: inherit; font-size: 15px; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; line-height: 1.5; }
+  .fq-opt:hover:not(:disabled) { border-color: var(--accent); }
+  .fq-opt:disabled { cursor: default; }
+  .fq-opt.right { border-color: var(--ok); background: color-mix(in srgb, var(--ok) 15%, transparent); font-weight: 600; }
+  .fq-opt.wrong { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 12%, transparent); }
+  .fq-exp { margin-top: 12px; font-size: 15px; color: var(--text-dim); padding: 12px 14px; border-radius: 8px; background: var(--surface); }
+  .fq-nav { display: flex; justify-content: flex-end; margin-top: 14px; }
+  .fq-result { text-align: center; }
+  .fq-title { font-size: clamp(24px, 5vw, 32px); font-weight: 800; margin: 4px 0; background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .fq-big { font-family: var(--mono); font-size: 40px; font-weight: 700; }
+  .fq-big small { font-size: 18px; color: var(--text-dim); }
+  .fq-rows { text-align: left; display: grid; gap: 6px; margin: 16px 0; }
+  .fq-rows div { display: grid; grid-template-columns: 170px 1fr 52px; gap: 10px; align-items: center; font-size: 13.5px; }
+  @media (max-width: 520px) { .fq-rows div { grid-template-columns: 110px 1fr 44px; font-size: 12.5px; } }
+  .fq-rows i { display: block; height: 10px; border-radius: 5px; background: var(--surface-2); overflow: hidden; }
+  .fq-rows i b { display: block; height: 100%; background: var(--accent); }
+  .fq-rows a { color: var(--text); }
+</style>
+</head>
+<body data-chapter="glossary">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 15</div>
+    <h1>용어집 &amp; 종합 퀴즈</h1>
+    <p class="lead">이 책에 나온 핵심 용어를 한곳에 모았다. 모르는 말이 나오면 검색해 보고, 설명 아래의 링크로 해당 장으로 돌아가 시뮬레이터를 다시 만져 보자. 마지막에는 모든 장을 아우르는 종합 퀴즈로 실력을 점검할 수 있다.</p>
+  </header>
+
+  <section id="glossary" data-nonum>
+    <h2>용어집</h2>
+    <div class="gl-tools">
+      <input class="gl-search" id="gl-q" type="search" placeholder="용어, 영어 이름, 설명으로 검색 (예: OFDMA, DTIM, 블록 ACK, PMK)" aria-label="용어 검색">
+      <div class="row"><div class="seg" id="gl-part"><button data-value="all" class="on">전체</button></div><span class="gl-count" id="gl-count"></span></div>
+    </div>
+    <div id="gl-list"></div>
+  </section>
+
+  <section id="final" data-nonum>
+    <h2>종합 퀴즈</h2>
+    <p>각 장에서 골고루 뽑은 문제다. 보기를 고르면 바로 해설이 나온다. 끝까지 풀면 장별 결과를 보여 준다.</p>
+    <div class="fq" id="fq"></div>
+  </section>
+
+  <section id="refs" data-nonum>
+    <h2>참고 자료</h2>
+    <p>이 책은 IEEE 802.11 원문 대신, 표준을 구현한 공개 소스 코드를 1차 근거로 삼았다(1장). 본문 계산 함수는 아래 코드와 시험 벡터로 자동 검증한다(<code>scripts/verify-factcheck.cjs</code>).</p>
+    <ul>
+      <li>Linux 커널 무선 스택(<a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/net/wireless">net/wireless</a>, <a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/net/mac80211">net/mac80211</a>, <code>include/linux/ieee80211*.h</code>) — 채널↔주파수, 링크 속도(HT·VHT·HE·EHT), 전송 시간, 머리말 길이, TIM 인코딩, 펑처링 패턴, 스캔 시간.</li>
+      <li><a href="https://w1.fi/hostapd/">hostapd · wpa_supplicant</a> — WMM/EDCA 기본값, 비컨·DTIM 기본값, PBKDF2·PRF 시험 벡터, PTK 유도, 로밍 판단(<code>wpa_supplicant_need_to_roam_within_ess()</code>), 배경 스캔.</li>
+      <li>Linux 드라이버(ath9k, mt76) — 슬롯·SIFS 값, OBSS PD 문턱.</li>
+      <li>G. Bianchi, “Performance Analysis of the IEEE 802.11 Distributed Coordination Function”, IEEE JSAC, 2000 — 6장 충돌 확률 비교.</li>
+      <li>Wi-Fi Alliance 공개 자료 — 세대 이름, WPA3·Enhanced Open, Wi-Fi 6E·7 인증 요건.</li>
+      <li>IEEE 802.11 작업 그룹 공개 일정 — 802.11bn(Wi-Fi 8) 초안 진행 상황.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const T = window.WF_TERMS || [];
+  const chOf = (slug) => WF.CHAPTERS.find((c) => c.slug === slug);
+  // part filter buttons
+  const parts = [...new Set(WF.CHAPTERS.filter((c) => c.slug !== "glossary").map((c) => c.part))];
+  $("gl-part").insertAdjacentHTML("beforeend", parts.map((p) => `<button data-value="${p}">${p}</button>`).join(""));
+  const part = WF.seg("gl-part", render);
+  const q = $("gl-q"); q.addEventListener("input", render);
+  try { const qq = new URLSearchParams(location.search).get("q"); if (qq) q.value = qq; } catch (e) {}
+  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  function hl(s, term) { if (!term) return esc(s); const i = s.toLowerCase().indexOf(term.toLowerCase()); if (i < 0) return esc(s); return esc(s.slice(0, i)) + "<mark>" + esc(s.slice(i, i + term.length)) + "</mark>" + esc(s.slice(i + term.length)); }
+  function render() {
+    const term = q.value.trim(), p = part();
+    const list = T.filter(([ko, en, def, ch]) => (p === "all" || chOf(ch).part === p) && (!term || (ko + " " + en + " " + def).toLowerCase().includes(term.toLowerCase())));
+    let html = "", last = "";
+    list.forEach(([ko, en, def, ch]) => {
+      const c = chOf(ch);
+      if (c.slug !== last) { html += `<div class="gl-group">${c.num} ${c.title}</div>`; last = c.slug; }
+      html += `<div class="gl-item"><h4>${hl(ko, term)}<span class="en">${hl(en, term)}</span></h4><p>${hl(def, term)}</p><a class="ch" href="${c.slug}.html">→ ${c.num}장에서 보기</a></div>`;
+    });
+    $("gl-list").innerHTML = html || `<div class="gl-empty">“${esc(term)}”에 맞는 용어가 없습니다.</div>`;
+    $("gl-count").textContent = `${list.length} / ${T.length}개`;
+  }
+  render();
+
+  /* ---------------- final quiz ---------------- */
+  const QZ = [
+/*QZ-BEGIN*/
+    ["intro", "“Wi-Fi 6”라는 이름을 붙이고 제품을 인증하는 곳은?", ["IEEE", "Wi-Fi Alliance", "ITU", "각 나라 전파 당국"], 1, "IEEE 802.11이 규칙을, Wi-Fi Alliance가 인증과 세대 이름을 맡는다."],
+    ["intro", "같은 공유기가 2.4 GHz와 5 GHz에서 같은 SSID로 BSS를 열었다. 두 BSS의 BSSID는?", ["같다", "다르다", "SSID와 같다", "없다"], 1, "BSSID는 BSS마다, 대역마다 다르다. SSID만 같을 뿐이다."],
+    ["intro", "Wi-Fi 7 최종 표준의 최대 링크 속도에 가장 가까운 것은?", ["약 9.6 Gb/s", "약 23 Gb/s", "약 46 Gb/s", "약 100 Gb/s"], 1, "8스트림·320 MHz·MCS 13 ≈ 23 Gb/s. 46 Gb/s는 초안의 16스트림 기준이었다."],
+    ["bands", "2.4 GHz 채널 6번의 중심 주파수는?", ["2412 MHz", "2437 MHz", "2462 MHz", "2484 MHz"], 1, "2407 + 5 × 6 = 2437 MHz."],
+    ["bands", "6 GHz에서 단말이 직접 탐색하는 PSC 채널 수는?", ["3", "15", "59", "233"], 1, "5번부터 16칸마다, 15개."],
+    ["bands", "DFS 채널을 쓰기 전 레이더가 없는지 듣는 최소 시간(CAC)은?", ["1초", "10초", "60초", "10분"], 2, "최소 60초. 일부 기상 레이더 채널은 더 길다."],
+    ["ofdm", "Wi-Fi 6의 부반송파 간격은?", ["312.5 kHz", "78.125 kHz", "20 MHz", "1 MHz"], 1, "Wi-Fi 4·5의 312.5 kHz를 4분의 1로 줄여 심볼이 4배(12.8 µs) 길어졌다."],
+    ["ofdm", "보호 구간(GI)이 막는 것은?", ["채널 간섭", "반사파로 인한 심볼 간 간섭", "충돌", "암호 해독"], 1, "늦게 오는 반사파가 GI 안에 도착하면 다음 심볼과 섞이지 않는다."],
+    ["mcs", "1024-QAM은 부반송파당 몇 비트를 싣는가?", ["6", "8", "10", "12"], 2, "2^10 = 1024. 4096-QAM은 12비트."],
+    ["mcs", "링크 속도 공식에 들어가지 않는 것은?", ["데이터 부반송파 수", "부호율", "공간 스트림 수", "비컨 간격"], 3, "속도 = 부반송파 × 비트 × 부호율 × 스트림 ÷ 심볼 시간."],
+    ["mcs", "멀어질수록 속도가 계단처럼 떨어지는 이유는?", ["채널이 바뀌어서", "SNR이 낮아지면 MCS를 한 칸씩 낮춰서", "암호화 때문에", "비컨이 줄어서"], 1, "속도 적응이 SNR에 맞는 MCS를 고른다."],
+    ["mimo", "4×4 공유기와 2×2 휴대폰 링크의 최대 공간 스트림은?", ["1", "2", "4", "8"], 1, "min(4, 2) = 2."],
+    ["mimo", "안테나 8개로 빔을 모을 때 최대 이득은?", ["3 dB", "약 9 dB", "18 dB", "29 dB"], 1, "10·log₁₀8 ≈ 9 dB."],
+    ["access", "5 GHz에서 일반(BE) 트래픽의 AIFS는?", ["16 µs", "34 µs", "43 µs", "79 µs"], 2, "SIFS 16 + 3 × 슬롯 9 = 43 µs."],
+    ["access", "숨은 단말이 조용히 하게 만드는 것은?", ["RTS", "AP의 CTS에 적힌 Duration으로 설정한 NAV", "비컨", "백오프"], 1, "숨은 단말은 상대는 못 들어도 AP의 CTS는 듣는다."],
+    ["access", "기기가 많아지면 CSMA/CA에서 늘어나는 것은?", ["링크 속도", "충돌과 대기", "채널 폭", "보호 구간"], 1, "같은 백오프 숫자를 고를 확률이 커지고, 충돌하면 CW가 커져 대기도 는다."],
+    ["frames", "Frame Control 0x0080인 프레임은?", ["ACK", "비컨", "QoS 데이터", "RTS"], 1, "관리(0) · 하위 종류 8 = 비컨."],
+    ["frames", "주소 칸이 넷 다 쓰이는 경우는?", ["비컨", "ACK", "ToDS = FromDS = 1 (AP ↔ AP 무선 중계)", "프로브 요청"], 2, "RA·TA·DA·SA가 모두 달라 주소 4가 필요하다."],
+    ["frames", "FCS가 틀린 프레임을 받으면?", ["ACK를 보낸다", "버리고 ACK를 보내지 않는다", "고쳐서 쓴다", "연결을 끊는다"], 1, "보낸 쪽은 ACK가 없으니 다시 보낸다."],
+    ["throughput", "링크 속도 1,201 Mb/s인데 실제 속도가 훨씬 낮은 가장 큰 이유는?", ["암호화", "프레임마다 대기·프리앰블·ACK 고정 비용", "비컨", "DHCP"], 1, "그래서 여러 패킷을 묶어(A-MPDU) 고정 비용을 한 번만 낸다."],
+    ["throughput", "Wi-Fi 6의 블록 ACK 창(한 묶음 최대 프레임 수)은?", ["64", "256", "1024", "4096"], 1, "Wi-Fi 4·5는 64, Wi-Fi 6는 256, Wi-Fi 7은 1,024."],
+    ["throughput", "느린 단말이 모두를 느리게 하는 문제를 막는 것은?", ["DTIM", "공중 시간 공정성", "RTS/CTS", "WPA3"], 1, "패킷 수가 아니라 공중 시간을 공평하게 나눈다."],
+    ["connect", "WPA2-Personal에서 비밀번호가 실제로 확인되는 단계는?", ["열린 인증", "연결", "4-way 핸드셰이크", "DHCP"], 2, "메시지 2의 MIC로 확인한다."],
+    ["connect", "wpa_supplicant가 지금 SNR이 25 dB를 넘을 때 하는 일은?", ["즉시 로밍", "로밍하지 않는다", "연결을 끊는다", "채널을 바꾼다"], 1, "충분히 좋은 연결은 유지한다. 그래서 끈적한 단말이 생기기도 한다."],
+    ["connect", "로밍할 때 키 교환 왕복을 줄이는 개정안은?", ["802.11k", "802.11v", "802.11r", "802.11w"], 2, "11k = 찾기, 11v = 권하기, 11r = 빨리 옮기기."],
+    ["security", "WPA2-Personal의 PMK를 만들 때 비밀번호와 함께 쓰는 것은?", ["AP MAC 주소", "SSID", "채널", "시각"], 1, "PBKDF2-HMAC-SHA1(비밀번호, SSID, 4096회)."],
+    ["security", "WPA3-SAE가 WPA2-PSK보다 나은 점은?", ["비밀번호가 필요 없다", "엿들은 내용으로 비밀번호를 검증할 수 없고 연결마다 PMK가 다르다", "속도가 빠르다", "PMF가 필요 없다"], 1, "같은 비밀번호를 아는 이웃도 남의 연결 키를 계산할 수 없다."],
+    ["security", "PMF(802.11w)가 막는 것은?", ["채널 간섭", "가짜 연결 해제(Deauth) 프레임", "숨은 단말", "비컨 손실"], 1, "관리 프레임에 무결성 보호를 씌운다."],
+    ["power", "AP에 데이터가 쌓인 절전 단말을 알리는 것은?", ["DTIM 주기", "비컨의 TIM", "RTS", "블록 ACK"], 1, "TIM 비트맵의 AID 비트."],
+    ["power", "방송·멀티캐스트 프레임이 나가는 때는?", ["아무 때나", "DTIM 비컨 직후", "PS-Poll 뒤", "TWT 시각에만"], 1, "DTIM 주기가 크면 방송 지연도 커진다."],
+    ["power", "배터리 IoT 센서에 특히 알맞은 Wi-Fi 6 기능은?", ["OFDMA", "TWT", "BSS 컬러", "MU-MIMO"], 1, "약속한 시각에만 깨어나 비컨도 듣지 않고 잔다."],
+    ["wifi6", "20 MHz에서 26-톤 RU로 동시에 받을 수 있는 단말 수는?", ["4", "9", "37", "256"], 1, "20 MHz = 26-톤 RU 9개."],
+    ["wifi6", "OFDMA가 가장 큰 이득을 주는 상황은?", ["혼자 큰 파일 받기", "여러 단말이 작은 패킷을 주고받을 때", "먼 거리 한 단말", "2.4 GHz 전용"], 1, "경쟁·프리앰블·ACK를 한 번으로 묶는다."],
+    ["wifi6", "BSS 컬러가 다르고 이웃 신호가 OBSS PD 문턱보다 약하면?", ["양보한다", "무시하고 송신할 수 있다(송신 세기는 낮춤)", "채널을 바꾼다", "연결을 끊는다"], 1, "공간 재사용이다."],
+    ["wifi7", "320 MHz 채널을 쓸 수 있는 대역은?", ["2.4 GHz", "5 GHz", "6 GHz", "모두"], 2, "320 MHz 연속 폭은 6 GHz에만 있다."],
+    ["wifi7", "휴대폰이 주로 쓰는 MLO 방식은?", ["STR", "EMLSR", "OFDMA", "TWT"], 1, "무선부 하나로 여러 링크를 듣다가 먼저 빈 링크로 보낸다."],
+    ["wifi7", "프리앰블 펑처링에서 비울 수 없는 것은?", ["가장 높은 20 MHz", "주 채널", "DFS 채널", "가장 낮은 20 MHz"], 1, "주 채널로 경쟁하고 비컨을 보내기 때문이다."],
+    ["design", "메시 노드 무선 백홀이 단말과 같은 대역이면?", ["속도가 두 배", "두 구간이 공중 시간을 나눠 써서 느려진다", "아무 영향 없다", "보안이 약해진다"], 1, "같은 속도라면 절반. 전용 대역이나 유선 백홀이 낫다."],
+    ["design", "콘크리트 벽 둘 너머 방이 느릴 때 먼저 해 볼 일은?", ["6 GHz 160 MHz로 바꾸기", "공유기를 집 가운데로 옮기기", "DTIM을 10으로", "SSID를 늘리기"], 1, "위치가 대역보다 먼저다. 벽 하나가 MCS 여러 계단을 깎는다."],
+/*QZ-END*/
+  ];
+  let qi = 0, results = [];
+  // shuffle options deterministically per load
+  function renderQ() {
+    const [ch, q, opts, ans, exp] = QZ[qi]; const c = chOf(ch);
+    $("fq").innerHTML = `<div class="fq-top"><span>${qi + 1} / ${QZ.length}</span><span>맞힌 문제 ${results.filter(Boolean).length}</span></div><div class="fq-bar"><i style="width:${(qi / QZ.length) * 100}%"></i></div>
+      <div class="fq-card"><div class="fq-ch">${c.num} · ${c.title}</div><p class="fq-q">${q}</p><div class="fq-opts">${opts.map((o, k) => `<button class="fq-opt" data-k="${k}">${o}</button>`).join("")}</div><div id="fq-after"></div></div>`;
+    $("fq").querySelectorAll(".fq-opt").forEach((b) => b.onclick = () => {
+      const k = Number(b.dataset.k), ok = k === ans; results[qi] = ok;
+      $("fq").querySelectorAll(".fq-opt").forEach((x) => { x.disabled = true; if (Number(x.dataset.k) === ans) x.classList.add("right"); });
+      if (!ok) b.classList.add("wrong");
+      $("fq-after").innerHTML = `<div class="fq-exp"><b style="color:${ok ? "var(--ok)" : "var(--bad)"}">${ok ? "정답!" : "아쉽다."}</b> ${exp}</div><div class="fq-nav"><button class="btn primary" id="fq-next">${qi < QZ.length - 1 ? "다음 문제 →" : "결과 보기"}</button></div>`;
+      $("fq-next").onclick = () => { qi++; qi < QZ.length ? renderQ() : renderResult(); };
+    });
+  }
+  function renderResult() {
+    const score = results.filter(Boolean).length, pct = score / QZ.length;
+    const title = pct >= 0.9 ? "와이파이 박사" : pct >= 0.7 ? "든든한 이해자" : pct >= 0.5 ? "성장 중인 탐험가" : "이제 막 출발한 여행자";
+    const by = {}; QZ.forEach(([ch], k) => { by[ch] = by[ch] || [0, 0]; by[ch][1]++; if (results[k]) by[ch][0]++; });
+    $("fq").innerHTML = `<div class="fq-result"><div class="scale-note">결과</div><div class="fq-title">${title}</div><div class="fq-big">${score}<small> / ${QZ.length}</small></div>
+      <div class="fq-rows">${Object.keys(by).map((ch) => { const c = chOf(ch), [a, n] = by[ch]; return `<div><a href="${c.slug}.html">${c.num} ${c.title}</a><i><b style="width:${(a / n) * 100}%;background:${a === n ? "var(--ok)" : a === 0 ? "var(--bad)" : "var(--accent)"}"></b></i><span class="mono">${a}/${n}</span></div>`; }).join("")}</div>
+      <p class="scale-note">틀린 문제가 있는 장의 시뮬레이터를 다시 만져 보면 금방 감이 온다.</p><button class="btn primary" id="fq-again">다시 풀기</button></div>`;
+    $("fq-again").onclick = () => { qi = 0; results = []; renderQ(); };
+  }
+  renderQ();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>Wi-Fi 6: OFDMA와 다중 사용자 · WiFiBook</title>
+<meta name="description" content="Wi-Fi 6(802.11ax)는 최고 속도보다 붐비는 곳의 효율을 겨냥했다. 채널을 자원 단위(RU)로 쪼개 여러 단말에 동시에 주는 OFDMA, AP가 지휘하는 트리거 프레임과 상향 다중 사용자 전송, 이웃 망과 채널을 함께 쓰는 BSS 컬러링을 시뮬레이터로 익힌다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/wifi/chapters/wifi6.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="WiFiBook">
+<meta property="og:title" content="Wi-Fi 6: OFDMA와 다중 사용자 · WiFiBook">
+<meta property="og:description" content="Wi-Fi 6(802.11ax)는 최고 속도보다 붐비는 곳의 효율을 겨냥했다. 채널을 자원 단위(RU)로 쪼개 여러 단말에 동시에 주는 OFDMA, AP가 지휘하는 트리거 프레임과 상향 다중 사용자 전송, 이웃 망과 채널을 함께 쓰는 BSS 컬러링을 시뮬레이터로 익힌다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/wifi/chapters/wifi6.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/wifi/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"Wi-Fi 6: OFDMA와 다중 사용자","name":"Wi-Fi 6: OFDMA와 다중 사용자 · WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/chapters/wifi6.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/wifi/chapters/wifi6.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":12,"image":"https://yalex-kim.github.io/yalexBook/wifi/og.png","dateModified":"2026-10-17","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/wifi/#book","name":"WiFiBook — 누구나 읽는 인터랙티브 와이파이 교과서","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"publisher":{"@type":"Organization","name":"WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"description":"Wi-Fi 6(802.11ax)는 최고 속도보다 붐비는 곳의 효율을 겨냥했다. 채널을 자원 단위(RU)로 쪼개 여러 단말에 동시에 주는 OFDMA, AP가 지휘하는 트리거 프레임과 상향 다중 사용자 전송, 이웃 망과 채널을 함께 쓰는 BSS 컬러링을 시뮬레이터로 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"WiFiBook","item":"https://yalex-kim.github.io/yalexBook/wifi/"},{"@type":"ListItem","position":2,"name":"12 Wi-Fi 6: OFDMA와 다중 사용자","item":"https://yalex-kim.github.io/yalexBook/wifi/chapters/wifi6.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+</head>
+<body data-chapter="wifi6">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 12</div>
+    <h1>Wi-Fi 6: OFDMA와 다중 사용자</h1>
+    <p class="lead">Wi-Fi 5까지의 발전은 “한 단말을 얼마나 빨리”였다. 채널을 넓히고, 변조를 촘촘히 하고, 스트림을 늘렸다. 그런데 아파트·사무실·경기장에서 사람들이 느끼는 문제는 최고 속도가 아니라 <b>붐빔</b>이었다. 단말은 수십 대인데 각자 보내는 것은 메신저·게임·IoT의 작은 패킷이고, 그때마다 채널 전체를 잡고 6장의 입장료를 낸다. Wi-Fi 6(802.11ax, “High Efficiency”)는 이름처럼 효율을 겨냥했다.</p>
+    <ul class="objectives">
+      <li>OFDMA가 채널을 자원 단위(RU)로 나누는 방법과 RU 크기별 속도를 계산한다.</li>
+      <li>작은 패킷이 많을 때 OFDMA가 공중 시간을 얼마나 줄이는지 비교한다.</li>
+      <li>트리거 프레임으로 AP가 상향 전송을 지휘하는 흐름을 안다.</li>
+      <li>BSS 컬러링과 공간 재사용이 이웃 망과의 양보를 줄이는 원리를 안다.</li>
+      <li>1024-QAM, 4배 긴 심볼, TWT 같은 Wi-Fi 6의 나머지 변화를 앞 장들과 연결한다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="ofdma">
+    <h2>OFDMA: 채널을 나눠 주기</h2>
+    <p>3장에서 Wi-Fi 6는 부반송파 간격을 78.125 kHz로 좁혀 20 MHz에 256개 부반송파를 담는다고 했다. Wi-Fi 6는 이 부반송파 묶음을 <span class="term">RU</span><span class="en">(Resource Unit, 자원 단위)</span>로 잘라 단말마다 다른 RU를 줄 수 있다. 같은 순간, 같은 채널에서 여러 단말이 각자의 RU로 받거나 보낸다. 이것이 <span class="term">OFDMA</span><span class="en">(Orthogonal Frequency Division Multiple Access)</span>다. LTE·5G가 쓰는 방식을 와이파이로 가져왔다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>RU 크기(부반송파)</th><th>데이터 부반송파</th><th>20 MHz에</th><th>40 MHz에</th><th>80 MHz에</th></tr></thead>
+      <tbody>
+        <tr><td class="num">26</td><td class="num">24</td><td class="num">9개</td><td class="num">18개</td><td class="num">37개</td></tr>
+        <tr><td class="num">52</td><td class="num">48</td><td class="num">4개</td><td class="num">8개</td><td class="num">16개</td></tr>
+        <tr><td class="num">106</td><td class="num">102</td><td class="num">2개</td><td class="num">4개</td><td class="num">8개</td></tr>
+        <tr><td class="num">242</td><td class="num">234</td><td class="num">1개(전체)</td><td class="num">2개</td><td class="num">4개</td></tr>
+        <tr><td class="num">484</td><td class="num">468</td><td class="num">—</td><td class="num">1개(전체)</td><td class="num">2개</td></tr>
+        <tr><td class="num">996</td><td class="num">980</td><td class="num">—</td><td class="num">—</td><td class="num">1개(전체)</td></tr>
+      </tbody>
+    </table></div>
+    <p>242·484·996 RU는 각각 20·40·80 MHz 채널 전체와 같다. 그 데이터 부반송파 수(234·468·980)가 4장의 링크 속도 계산에 쓴 값이다. 작은 RU는 속도가 낮지만, 작은 패킷 하나를 보내기에는 충분하다.</p>
+    <div class="sim" id="sim-ru">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>RU로 채널 나누기</h3></div>
+      <div class="sim-view"><canvas id="cv-ru"></canvas></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>채널 폭</span><div class="seg" id="ru-bw"><button data-value="20" class="on">20 MHz</button><button data-value="40">40</button><button data-value="80">80</button></div></div>
+        <div class="ctrl"><span>RU 크기</span><div class="seg" id="ru-sz"><button data-value="26" class="on">26</button><button data-value="52">52</button><button data-value="106">106</button><button data-value="242">242</button><button data-value="484">484</button><button data-value="996">996</button></div></div>
+        <label class="ctrl"><span>MCS (1스트림, GI 0.8 µs) <output id="ru-mcs-out"></output></span><input type="range" id="ru-mcs" min="0" max="11" value="7"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">동시 단말 수</span><span class="v" id="ru-n">—</span></div>
+        <div class="stat"><span class="k">RU 하나 속도</span><span class="v" id="ru-r">—</span></div>
+        <div class="stat"><span class="k">합계</span><span class="v" id="ru-sum">—</span></div>
+      </div>
+      <div class="sim-note">그림: 채널을 RU로 나눈 모습(색 = 다른 단말). 해볼 것: ① 20 MHz를 26-톤 RU 9개로 나누면 9대가 동시에 받는다. RU 하나는 MCS 7에서 약 8.8 Mb/s로, 메신저·게임 패킷에는 넘친다. ② 같은 채널을 RU 하나(242)로 쓰면 합계가 오히려 크다(작은 RU일수록 사이의 빈 부반송파·파일럿 비율이 커서). OFDMA는 최고 속도가 아니라 “많은 단말에 작은 것을 빨리” 주는 기술이다. 계산: 속도 = 데이터 부반송파 × 변조 비트 × 부호율 ÷ 13.6 µs(4장과 같은 식). 160 MHz와 Wi-Fi 7의 RU 묶음(52+26 등)은 생략했다.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="small">
+    <h2>작은 패킷이 많을 때</h2>
+    <p>단말 열 대가 각자 100바이트짜리 게임 패킷을 받아야 한다. Wi-Fi 5 방식이면 AP는 열 번 경쟁하고 열 번 프리앰블을 보내고 열 번 ACK를 받는다. 각 전송의 데이터 부분은 심볼 한두 개(몇 µs)뿐이다. OFDMA라면 AP는 <b>한 번</b> 경쟁해 RU 열 개에 각자의 패킷을 동시에 싣고, 단말들은 블록 ACK를 상향 OFDMA로 동시에 돌려준다.</p>
+    <div class="sim" id="sim-small">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>단일 사용자 대 OFDMA: 공중 시간</h3></div>
+      <div class="sim-view"><canvas id="cv-small"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>패킷을 받을 단말 수 <output id="sm-n-out"></output></span><input type="range" id="sm-n" min="1" max="9" value="8"></label>
+        <label class="ctrl"><span>단말당 패킷 크기 <output id="sm-b-out"></output></span><input type="range" id="sm-b" min="50" max="1500" step="50" value="100"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">단일 사용자 × N</span><span class="v" id="sm-su">—</span></div>
+        <div class="stat"><span class="k">OFDMA 한 번</span><span class="v" id="sm-mu">—</span></div>
+        <div class="stat"><span class="k">마지막 단말이 받는 시각</span><span class="v" id="sm-lat">—</span></div>
+      </div>
+      <div class="sim-note">막대: 위 = 단말마다 따로(대기·백오프·프리앰블·데이터·SIFS·ACK를 N번), 아래 = OFDMA 한 번(대기·백오프·긴 프리앰블·데이터·SIFS·상향 블록 ACK). 해볼 것: ① 100바이트 × 8대면 OFDMA가 공중 시간을 4분의 1 아래로 줄인다. ② 패킷을 1,500바이트로 키우면 작은 RU에서 데이터 시간이 길어져 이득이 준다. 큰 데이터는 넓은 RU나 단일 사용자 + 묶음 전송이 낫다. 가정: 20 MHz, 1스트림, MCS 7. 단일 사용자는 242-톤 전체, OFDMA는 단말 수에 맞는 가장 큰 RU(≤4대 52, ≤2대 106, 그 외 26). 프리앰블은 단일 사용자 36 + 4 µs(8장의 커널 근사), OFDMA는 다중 사용자 신호 필드가 붙어 그보다 길게 잡은 60 µs. 상향 블록 ACK는 트리거 기반 응답 약 50 µs로 근사. 백오프는 평균값.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="trigger">
+    <h2>트리거 프레임: AP가 지휘하는 상향 전송</h2>
+    <p>하향(AP → 단말)은 AP가 모든 데이터를 갖고 있으니 RU를 나누기 쉽다. 상향(단말 → AP)은 다르다. 여러 단말이 <b>같은 순간에</b>, <b>각자 다른 RU로</b>, <b>AP에 비슷한 세기로 도착하도록</b> 보내야 한다. 그래서 AP가 <b>트리거 프레임</b><span class="en">(Trigger, 제어 프레임 하위 종류 2)</span>을 보내 지휘한다. 트리거에는 단말마다 쓸 RU, MCS, 송신 세기 목표, 보낼 길이가 적혀 있고, 단말들은 트리거가 끝나고 정확히 SIFS 뒤에 동시에 보낸다.</p>
+    <p>AP는 단말에게 무엇을 보낼 게 있는지 물어보는 트리거(버퍼 상태 보고, BSR 폴)도 보낸다. 이렇게 AP가 공중 시간을 계획하는 비중이 커지면서, Wi-Fi 6는 6장의 “모두가 경쟁” 방식에서 셀룰러의 “기지국 스케줄링” 쪽으로 한 걸음 다가갔다. 단말이 경쟁으로 보낼 때의 EDCA 매개변수를 따로 더 보수적으로 주는 <b>MU EDCA</b>도 있다(트리거로 보낼 기회를 받았으니 경쟁은 덜 하라는 뜻).</p>
+    <p class="spec-ref">트리거 하위 종류 <code>IEEE80211_STYPE_TRIGGER = 0x0020</code>: Linux <code>include/linux/ieee80211.h</code> · MU EDCA 매개변수: hostapd <code>hostapd.conf</code>의 <code>he_mu_edca_ac_*</code></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="color">
+    <h2>BSS 컬러링과 공간 재사용</h2>
+    <p>아파트에서는 같은 채널에 이웃 공유기가 여럿 들린다. 6장의 규칙대로라면 −82 dBm보다 센 와이파이 프리앰블이 들리면 채널이 바쁜 것으로 보고 양보한다. 그런데 −78 dBm으로 들리는 옆집 전송은 우리 집 AP와 노트북의 대화를 거의 방해하지 않는다. 그래도 매번 양보하니 시간이 낭비된다.</p>
+    <p>Wi-Fi 6는 프리앰블에 <span class="term">BSS 컬러</span><span class="en">(BSS color, 1~63)</span>라는 6비트 번호를 넣는다. 수신기는 프리앰블만 듣고도 “우리 망(같은 색)인지 이웃 망(다른 색)인지” 안다. 다른 색이고 세기가 <b>OBSS PD 문턱</b>(−82 dBm보다 높게 잡은 값, 최대 −62 dBm)보다 약하면, 그 전송을 무시하고 자기 전송을 할 수 있다(<span class="term">공간 재사용</span><span class="en">(spatial reuse)</span>). 대신 문턱을 올린 만큼 자기 송신 세기를 낮춰 이웃에 주는 피해를 줄인다.</p>
+    <div class="sim" id="sim-color">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>옆집 전송이 들릴 때: 양보할까?</h3></div>
+      <div class="sim-view"><canvas id="cv-color"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>옆집 전송의 수신 세기 <output id="co-rx-out"></output></span><input type="range" id="co-rx" min="-90" max="-50" value="-76"></label>
+        <label class="ctrl"><span>OBSS PD 문턱 <output id="co-pd-out"></output></span><input type="range" id="co-pd" min="-82" max="-62" value="-72"></label>
+        <label class="check"><input type="checkbox" id="co-same"> 옆집과 BSS 컬러가 같다(색 충돌)</label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">판단</span><span class="v" id="co-dec">—</span></div>
+        <div class="stat"><span class="k">우리 송신 세기 상한</span><span class="v" id="co-tx">—</span></div>
+        <div class="stat"><span class="k">옆집 전송 중 우리가 쓸 수 있는 시간</span><span class="v" id="co-use">—</span></div>
+      </div>
+      <div class="sim-note">그래프: 옆집 신호 세기(가로)에 따라 양보하는 구간(빨강)과 재사용하는 구간(초록). 해볼 것: ① 옆집 −76 dBm, 문턱 −72 dBm이면 Wi-Fi 5는 양보하지만 Wi-Fi 6는 재사용한다. ② 문턱을 −62 dBm까지 올리면 더 많이 재사용하지만 송신 세기를 20 dB 낮춰야 한다. ③ 색이 같으면(이웃끼리 같은 번호) 우리 망으로 착각해 재사용하지 않는다. AP는 색 충돌을 알아채면 색을 바꾼다. 송신 세기 상한 = 21 dBm − (문턱 + 82)로 근사(표준의 “문턱을 올린 만큼 송신 세기를 낮춤” 관계, 기준 송신 21 dBm 가정).</div>
+    </div>
+    <p class="spec-ref">OBSS PD 문턱 = −82 dBm + 오프셋, 비SRG 최대 −62 dBm: Linux mt76 드라이버 <code>drivers/net/wireless/mediatek/mt76/mt7915/mcu.c</code>(<code>max_th = 82, non_srg_max_th = 62</code>, <code>pd_th = max_th − offset</code>) · BSS 컬러 1~63과 공간 재사용 설정: hostapd <code>he_bss_color</code>, <code>he_spr_*</code></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="rest">
+    <h2>나머지 변화 한눈에</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>기능</th><th>무엇이 바뀌었나</th><th>자세히</th></tr></thead>
+      <tbody>
+        <tr><td>1024-QAM (MCS 10·11)</td><td>부반송파당 10비트. 가까운 거리에서 25% 빠름</td><td>4장</td></tr>
+        <tr><td>4배 긴 심볼 (12.8 µs + GI)</td><td>부반송파 간격 78.125 kHz. 같은 GI 비율에서 긴 반사파에 강하고, 실외 GI 3.2 µs 지원</td><td>3장</td></tr>
+        <tr><td>상향 MU-MIMO</td><td>여러 단말이 같은 RU에서 다른 공간 스트림으로 동시에 송신(트리거 기반)</td><td>5장</td></tr>
+        <tr><td>TWT</td><td>깨어날 시각을 협상. 배터리 IoT와 경쟁 분산</td><td>11장</td></tr>
+        <tr><td>블록 ACK 256</td><td>한 묶음에 프레임 256개까지</td><td>8장</td></tr>
+        <tr><td>WPA3 (Wi-Fi 6 인증 필수)</td><td>SAE·PMF</td><td>10장</td></tr>
+        <tr><td>Wi-Fi 6E</td><td>같은 기술을 6 GHz로. 넓고 깨끗한 채널, WPA3만 허용</td><td>2장</td></tr>
+      </tbody>
+    </table></div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">혼자 사는 집에서 노트북 한 대로 큰 파일만 내려받는다. Wi-Fi 5 공유기를 같은 채널 폭·스트림의 Wi-Fi 6로 바꾸면 무엇이 가장 크게 달라질까?</p><p class="wi-hint">OFDMA와 BSS 컬러링은 “여러 단말”, “이웃 망”이 있을 때의 기술이다.</p><div class="opts">
+      <button class="opt">OFDMA로 두 배 빨라진다</button>
+      <button class="opt" data-correct>가까울 때 1024-QAM과 긴 심볼로 최대 링크 속도가 약 40% 오르는 정도다</button>
+      <button class="opt">BSS 컬러링으로 지연이 사라진다</button>
+    </div><div class="quiz-exp">80 MHz 2스트림 기준 Wi-Fi 5 MCS 9(866.7 Mb/s) → Wi-Fi 6 MCS 11(1,201 Mb/s), 약 1.39배. 단말 하나만 있으면 OFDMA의 이득은 거의 없다.</div></div>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>Wi-Fi 6(802.11ax, High Efficiency)는 붐비는 환경의 효율을 겨냥했다.</li>
+      <li>OFDMA: 채널을 26·52·106·242·484·996-톤 RU로 나눠 여러 단말에 동시에. 20 MHz에 최대 9대.</li>
+      <li>작은 패킷이 많을수록 OFDMA는 경쟁·프리앰블·ACK를 한 번으로 묶어 공중 시간과 지연을 크게 줄인다.</li>
+      <li>상향 다중 사용자 전송은 AP의 트리거 프레임이 RU·MCS·세기·길이를 지정하고, 단말들이 SIFS 뒤 동시에 보낸다.</li>
+      <li>BSS 컬러(1~63)와 OBSS PD(−82 → 최대 −62 dBm)로 이웃 망의 약한 전송을 무시하고 채널을 재사용한다. 대신 송신 세기를 낮춘다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>20 MHz 채널에서 OFDMA로 동시에 받을 수 있는 최대 단말 수는(26-톤 RU)?</p><div class="opts">
+        <button class="opt">4</button><button class="opt" data-correct>9</button><button class="opt">37</button><button class="opt">256</button>
+      </div><div class="quiz-exp">20 MHz는 26-톤 RU 9개로 나뉜다. 80 MHz면 37개.</div></div>
+      <div class="quiz-q"><p>상향 OFDMA에서 단말들이 언제, 어느 RU로 보낼지 정하는 것은?</p><div class="opts">
+        <button class="opt">각 단말의 백오프</button><button class="opt" data-correct>AP의 트리거 프레임</button><button class="opt">비컨의 TIM</button><button class="opt">BSS 컬러</button>
+      </div><div class="quiz-exp">트리거 프레임이 RU·MCS·송신 세기·길이를 지정하고, 단말은 SIFS 뒤 동시에 보낸다.</div></div>
+      <div class="quiz-q"><p>BSS 컬러가 하는 일은?</p><div class="opts">
+        <button class="opt">암호화 키를 구분한다</button><button class="opt" data-correct>프리앰블만 듣고 우리 망인지 이웃 망인지 구별하게 한다</button><button class="opt">채널 번호를 바꾼다</button><button class="opt">SSID를 숨긴다</button>
+      </div><div class="quiz-exp">다른 색이고 충분히 약하면 양보하지 않고 재사용할 수 있다.</div></div>
+      <div class="quiz-q"><p>OBSS PD 문턱을 올려(예: −82 → −72 dBm) 더 많이 재사용할 때의 대가는?</p><div class="opts">
+        <button class="opt">채널 폭이 줄어든다</button><button class="opt" data-correct>자기 송신 세기를 그만큼 낮춰야 한다</button><button class="opt">암호화를 꺼야 한다</button><button class="opt">비컨 간격이 늘어난다</button>
+      </div><div class="quiz-exp">이웃에 주는 간섭을 줄이기 위해서다. 그래서 공간 재사용은 가까운 단말과의 통신에 유리하다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const RU = { 26: { nsd: 24, per: { 20: 9, 40: 18, 80: 37 } }, 52: { nsd: 48, per: { 20: 4, 40: 8, 80: 16 } }, 106: { nsd: 102, per: { 20: 2, 40: 4, 80: 8 } }, 242: { nsd: 234, per: { 20: 1, 40: 2, 80: 4 } }, 484: { nsd: 468, per: { 40: 1, 80: 2 } }, 996: { nsd: 980, per: { 80: 1 } } };
+  const MCS = [[1, 1 / 2], [2, 1 / 2], [2, 3 / 4], [4, 1 / 2], [4, 3 / 4], [6, 2 / 3], [6, 3 / 4], [6, 5 / 6], [8, 3 / 4], [8, 5 / 6], [10, 3 / 4], [10, 5 / 6]];
+  const TSYM = 13.6, SIFS = 16, AIFS = 43, BACKOFF = 67.5;
+  /** RU 하나의 속도(Mb/s): 데이터 부반송파 × 비트 × 부호율 × 스트림 ÷ 13.6 µs */
+  function ruRate(ru, mcs, nss) { const [b, r] = MCS[mcs]; return (RU[ru].nsd * b * r * nss) / TSYM; }
+  /** 채널 폭에 들어가는 RU 개수(안 들어가면 0) */
+  function ruCount(bw, ru) { return RU[ru].per[bw] || 0; }
+  /** 데이터 부분 시간(µs): 서비스 16비트 + 데이터 + 꼬리 6비트 */
+  function dataUs(bytes, rate) { const ndbps = rate * TSYM; return TSYM * Math.ceil((16 + 8 * bytes + 6) / ndbps); }
+  /** 단일 사용자로 N번(µs) */
+  function suAirtime(n, bytes) { const r = ruRate(242, 7, 1); return n * (AIFS + BACKOFF + 40 + dataUs(bytes + 54, r) + SIFS + 28); }
+  /** 20 MHz에서 N대에 맞는 가장 큰 RU */
+  function ruFor(n) { return n <= 1 ? 242 : n <= 2 ? 106 : n <= 4 ? 52 : 26; }
+  /** OFDMA 한 번(µs) */
+  function ofdmaAirtime(n, bytes) { return AIFS + BACKOFF + 60 + dataUs(bytes + 54, ruRate(ruFor(n), 7, 1)) + SIFS + 50; }
+  /** 공간 재사용 판단: 같은 색이면 −82 dBm 문턱, 다른 색이면 OBSS PD 문턱 */
+  function srDecision(rx, pd, sameColor) { const th = sameColor ? -82 : pd; return { reuse: rx < th, txMax: sameColor ? 21 : 21 - (pd + 82) }; }
+  const mbps = (x) => (x >= 100 ? x.toFixed(0) : x.toFixed(1)) + " Mb/s";
+
+  /* ================================================================ 1. RU */
+  (function () {
+    let bw = 20, sz = 26;
+    const m = WF.range("ru-mcs", (v) => String(v), draw);
+    WF.seg("ru-bw", (v) => { bw = +v; draw(); }); WF.seg("ru-sz", (v) => { sz = +v; draw(); });
+    const COLS = ["#7c3aed", "#ea580c", "#0891b2", "#16a34a", "#db2777", "#ca8a04", "#2563eb", "#dc2626", "#0d9488"];
+    const cv = WF.canvas($("cv-ru"), (ctx, w, h) => {
+      const P = WF.palette(), n = ruCount(bw, sz), L = 12, R = w - 12, y = 26, H = h - 60;
+      ctx.fillStyle = P.grid; WF.rrect(ctx, L, y, R - L, H, 6); ctx.fill();
+      if (!n) { WF.text(ctx, `${bw} MHz에는 ${sz}-톤 RU가 들어가지 않는다`, w / 2, y + H / 2, { size: 13, color: P.bad, align: "center", bold: true }); return; }
+      const gap = n > 20 ? 1 : 3, cw = (R - L - gap * (n - 1)) / n;
+      for (let i = 0; i < n; i++) { ctx.fillStyle = COLS[i % COLS.length]; WF.rrect(ctx, L + i * (cw + gap), y + 6, cw, H - 12, Math.min(4, cw / 3)); ctx.fill(); if (cw > 22) WF.text(ctx, String(i + 1), L + i * (cw + gap) + cw / 2, y + H / 2 + 4, { size: 11, color: "#fff", align: "center", bold: true }); }
+      WF.text(ctx, "주파수 →", R, y + H + 18, { size: 11, color: P.faint, align: "right" }); WF.text(ctx, `${bw} MHz = ${sz}-톤 RU × ${n}`, L, y + H + 18, { size: 12, color: P.text, bold: true });
+    }, { aspect: 0.3, minHeight: 140, maxHeight: 190 });
+    function draw() { const n = ruCount(bw, sz), r = ruRate(sz, m(), 1); WF.stat("ru-n", n ? n + "대" : "—"); WF.stat("ru-r", n ? mbps(r) : "—"); WF.stat("ru-sum", n ? mbps(n * r) : "—"); cv.redraw(); }
+    draw();
+  })();
+
+  /* ================================================================ 2. 작은 패킷 */
+  (function () {
+    const n = WF.range("sm-n", (v) => v + "대", draw), b = WF.range("sm-b", (v) => v + " B", draw);
+    const cv = WF.canvas($("cv-small"), (ctx, w, h) => {
+      const P = WF.palette(), su = suAirtime(n(), b()), mu = ofdmaAirtime(n(), b()), mx = Math.max(su, mu), L = 70, W = w - L - 16, sc = W / mx;
+      const one = su / n(); WF.text(ctx, "단일 × " + n(), 8, 44, { size: 12, color: P.text, bold: true }); WF.text(ctx, "OFDMA", 8, 104, { size: 12, color: P.text, bold: true });
+      for (let i = 0; i < n(); i++) { ctx.fillStyle = i % 2 ? P.accent : P.accent2; WF.rrect(ctx, L + i * one * sc, 28, Math.max(1, one * sc - 1), 28, 3); ctx.fill(); }
+      ctx.fillStyle = P.ok; WF.rrect(ctx, L, 88, Math.max(2, mu * sc), 28, 3); ctx.fill();
+      WF.text(ctx, su.toFixed(0) + " µs", Math.min(L + su * sc + 4, w - 60), 22, { size: 11, color: P.dim }); WF.text(ctx, mu.toFixed(0) + " µs", L + mu * sc + 6, 108, { size: 11, color: P.dim });
+    }, { aspect: 0.28, minHeight: 130, maxHeight: 150 });
+    function draw() { const su = suAirtime(n(), b()), mu = ofdmaAirtime(n(), b()); WF.stat("sm-su", (su / 1000).toFixed(2) + " ms"); WF.stat("sm-mu", (mu / 1000).toFixed(2) + " ms (×" + (su / mu).toFixed(1) + ")"); WF.stat("sm-lat", (su / 1000).toFixed(2) + " → " + (mu / 1000).toFixed(2) + " ms"); cv.redraw(); }
+    draw();
+  })();
+
+  /* ================================================================ 3. 컬러 */
+  (function () {
+    const rx = WF.range("co-rx", (v) => v + " dBm", draw), pd = WF.range("co-pd", (v) => v + " dBm", draw);
+    $("co-same").addEventListener("change", draw);
+    const cv = WF.canvas($("cv-color"), (ctx, w, h) => {
+      const P = WF.palette(), same = $("co-same").checked, th = same ? -82 : pd(), X = (v) => 12 + ((w - 24) * (v + 90)) / 40, y = 40;
+      ctx.fillStyle = P.ok; ctx.fillRect(X(-90), y, X(th) - X(-90), 30); ctx.fillStyle = P.bad; ctx.fillRect(X(th), y, X(-50) - X(th), 30);
+      ctx.strokeStyle = P.text; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(X(-82), y - 8); ctx.lineTo(X(-82), y + 38); ctx.stroke(); ctx.setLineDash([]);
+      WF.text(ctx, "−82 (Wi-Fi 5 기준)", X(-82), y - 12, { size: 10.5, color: P.dim, align: "center" });
+      ctx.fillStyle = P.text; ctx.beginPath(); ctx.moveTo(X(rx()), y + 34); ctx.lineTo(X(rx()) - 6, y + 46); ctx.lineTo(X(rx()) + 6, y + 46); ctx.fill();
+      WF.text(ctx, "재사용", (X(-90) + X(th)) / 2, y + 20, { size: 12, color: "#fff", align: "center", bold: true }); WF.text(ctx, "양보", (X(th) + X(-50)) / 2, y + 20, { size: 12, color: "#fff", align: "center", bold: true });
+      [-90, -80, -70, -60, -50].forEach((v) => WF.text(ctx, String(v), X(v), y + 62, { size: 10.5, color: P.faint, align: "center" }));
+      WF.text(ctx, "옆집 전송의 수신 세기 (dBm)", w / 2, h - 6, { size: 11, color: P.dim, align: "center" });
+    }, { aspect: 0.25, minHeight: 130, maxHeight: 150 });
+    function draw() { const d = srDecision(rx(), pd(), $("co-same").checked); WF.stat("co-dec", d.reuse ? (rx() < -82 ? "들리지 않는 것과 같음" : "재사용 (송신)") : "양보 (대기)"); WF.stat("co-tx", d.txMax + " dBm"); WF.stat("co-use", d.reuse ? "전부" : "0%"); cv.redraw(); }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

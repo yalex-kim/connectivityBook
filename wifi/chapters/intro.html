@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>와이파이란 무엇인가 · WiFiBook</title>
+<meta name="description" content="선 없는 이더넷의 탄생. IEEE 802.11 표준과 Wi-Fi Alliance의 관계, 802.11b부터 Wi-Fi 7까지의 세대 이름, AP·STA·BSS·BSSID·SSID·ESS로 그리는 무선 랜의 구조와 이 책이 근거로 삼는 자료를 다룬다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/wifi/chapters/intro.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="WiFiBook">
+<meta property="og:title" content="와이파이란 무엇인가 · WiFiBook">
+<meta property="og:description" content="선 없는 이더넷의 탄생. IEEE 802.11 표준과 Wi-Fi Alliance의 관계, 802.11b부터 Wi-Fi 7까지의 세대 이름, AP·STA·BSS·BSSID·SSID·ESS로 그리는 무선 랜의 구조와 이 책이 근거로 삼는 자료를 다룬다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/wifi/chapters/intro.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/wifi/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"와이파이란 무엇인가","name":"와이파이란 무엇인가 · WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/chapters/intro.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/wifi/chapters/intro.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":1,"image":"https://yalex-kim.github.io/yalexBook/wifi/og.png","dateModified":"2026-10-17","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/wifi/#book","name":"WiFiBook — 누구나 읽는 인터랙티브 와이파이 교과서","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"publisher":{"@type":"Organization","name":"WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"description":"선 없는 이더넷의 탄생. IEEE 802.11 표준과 Wi-Fi Alliance의 관계, 802.11b부터 Wi-Fi 7까지의 세대 이름, AP·STA·BSS·BSSID·SSID·ESS로 그리는 무선 랜의 구조와 이 책이 근거로 삼는 자료를 다룬다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"WiFiBook","item":"https://yalex-kim.github.io/yalexBook/wifi/"},{"@type":"ListItem","position":2,"name":"01 와이파이란 무엇인가","item":"https://yalex-kim.github.io/yalexBook/wifi/chapters/intro.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<style>
+  .tl { display: flex; gap: 6px; overflow-x: auto; padding: 4px 2px 10px; }
+  .tl button { flex: none; font: inherit; font-family: var(--mono); font-size: 12.5px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-elev); color: var(--text); cursor: pointer; text-align: center; min-width: 72px; }
+  .tl button small { display: block; font-size: 11px; color: var(--text-faint); }
+  .tl button.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+  .info { margin-top: 8px; padding: 14px 16px; border-radius: 12px; background: var(--surface); font-size: 14.5px; line-height: 1.65; }
+  .info h4 { margin: 0 0 6px; font-size: 15.5px; }
+  .scan { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .scan th { text-align: left; font-size: 11.5px; color: var(--text-faint); padding: 6px; border-bottom: 1px solid var(--border); }
+  .scan td { padding: 6px; border-bottom: 1px solid var(--border); }
+  .scan td.m { font-family: var(--mono); font-size: 12px; }
+  .scan tr.grp td { background: var(--accent-soft); font-weight: 600; }
+  .bars { display: inline-flex; gap: 2px; align-items: flex-end; height: 12px; }
+  .bars i { width: 3px; background: var(--border); border-radius: 1px; }
+  .bars i.on { background: var(--accent); }
+</style>
+</head>
+<body data-chapter="intro">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 01</div>
+    <h1>와이파이란 무엇인가</h1>
+    <p class="lead">카페에 들어가 휴대폰의 Wi-Fi 목록을 열면 이름이 열 개도 넘게 뜬다. 그중 “Cafe_5G”와 “Cafe”는 같은 공유기일까, 다른 공유기일까? 집에 메시 공유기를 세 대 놓았는데 목록에는 이름이 하나만 보인다. 공유기 상자에는 “Wi-Fi 7”이라고 적혀 있고 설정 화면에는 “802.11be”라고 나온다. 이 장에서는 와이파이가 어디서 왔고, 누가 규칙을 정하며, 세대 이름이 무엇을 뜻하는지, 그리고 목록에 보이는 이름들 뒤에 어떤 구조가 숨어 있는지 큰 그림을 그린다.</p>
+    <ul class="objectives">
+      <li>와이파이가 “선 없는 이더넷”으로 출발했고, IEEE 802.11이 규칙을, Wi-Fi Alliance가 인증과 이름을 맡는다는 것을 안다.</li>
+      <li>802.11b부터 Wi-Fi 7(802.11be)까지 세대마다 대역·채널 폭·변조·스트림이 어떻게 늘었는지 안다.</li>
+      <li>STA, AP, BSS, BSSID, SSID, ESS를 구분하고, Wi-Fi 목록 한 줄이 무엇을 가리키는지 설명한다.</li>
+      <li>이 책이 IEEE 원문 대신 무엇을 근거로 삼는지, 그 한계는 무엇인지 안다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="origin">
+    <h2>선 없는 이더넷</h2>
+    <p>1990년대의 사무실 컴퓨터는 바닥을 기어 다니는 <b>이더넷</b> 케이블로 이어져 있었다. 노트북이 늘면서 “케이블 없이 같은 네트워크에 붙고 싶다”는 요구가 생겼고, 이더넷 표준을 만들던 IEEE 802 위원회가 무선판을 만들었다. 1997년에 나온 첫 표준이 <span class="term">IEEE 802.11</span>이다. 802.3이 이더넷, 802.15.1이 블루투스(BluetoothBook 참고)인 것처럼, 802.11은 무선 랜의 번호다. 이후의 세대는 802.11b, 802.11a, 802.11n처럼 뒤에 글자를 붙인 <b>개정판</b><span class="en">(amendment)</span>으로 나오고, 몇 년마다 그동안의 개정을 하나로 합친 통합판(예: 802.11-2020, 802.11-2024)이 나온다.</p>
+    <p>그런데 표준만 있다고 서로 다른 회사의 제품이 붙는 것은 아니다. 표준에는 선택 사항이 많고 해석의 여지도 있다. 그래서 1999년 제조사들이 모여 서로 연결되는지 시험하고 인증하는 단체를 만들었다. 지금의 <span class="term">Wi-Fi Alliance</span>다. “Wi-Fi”라는 이름도 이때 붙은 상표다. 정리하면 <b>IEEE 802.11이 규칙을 쓰고, Wi-Fi Alliance가 그 규칙을 지킨 제품을 시험해 이름을 붙인다</b>. 공유기 상자의 “Wi-Fi 7” 로고는 Wi-Fi Alliance 인증, 설정 화면의 “802.11be”는 IEEE 표준 이름이다.</p>
+    <div class="callout analogy"><strong>회의실 토론</strong><p>이 책은 와이파이를 <b>회의실에서 하는 토론</b>에 빗대어 설명한다. 공유기(AP)는 <b>사회자</b>, 노트북과 휴대폰은 <b>참석자</b>, 채널은 <b>회의실</b>이다. 회의실에서는 한 번에 한 사람만 말할 수 있어서, 참석자는 조용한지 먼저 듣고(캐리어 감지), 잠깐 무작위로 기다렸다가(백오프) 말하고, 상대가 “네, 들었어요”(ACK)라고 답해 줘야 다음으로 넘어간다(6장). 같은 회의실을 쓰는 옆 팀의 목소리는 방해가 되고(간섭, 2장), 너무 멀리 앉은 사람의 말은 웅얼거림으로 들린다(MCS, 4장). Wi-Fi 6부터는 사회자가 시간을 쪼개 <b>여러 명에게 동시에</b> 발언권을 나눠 주기도 한다(OFDMA, 12장).</p></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="generations">
+    <h2>세대: 802.11b에서 Wi-Fi 7까지</h2>
+    <p>와이파이는 25년 남짓 동안 수천 배 빨라졌다. 속도를 올린 손잡이는 결국 네 개다. <b>채널 폭</b>(도로 폭)을 넓히고, <b>변조</b>를 촘촘하게(한 번에 더 많은 비트) 하고, <b>공간 스트림</b>(같은 주파수에 여러 줄)을 늘리고, <b>오버헤드</b>(앞뒤 의식)를 줄였다. 2018년 Wi-Fi Alliance는 외우기 어려운 802.11 글자 대신 Wi-Fi 4·5·6 같은 세대 번호를 붙이기 시작했다.</p>
+    <div class="sim" id="sim-gen">
+      <div class="sim-head"><span class="sim-tag">TIMELINE</span><h3>세대 탐색기: 무엇이 늘었나</h3></div>
+      <div class="sim-view" style="padding:12px 12px 4px">
+        <div class="tl" id="gen-tl"></div>
+        <div class="info" id="gen-info"></div>
+        <canvas id="cv-gen" style="margin-top:10px"></canvas>
+      </div>
+      <div class="sim-note">아래 그래프는 세대별 이론 최대 속도(로그 눈금)다. 해볼 것: 802.11n(Wi-Fi 4)과 802.11ac(Wi-Fi 5) 사이의 큰 계단을 눌러 보자. 채널 폭이 40 → 160 MHz, 변조가 64 → 256-QAM, 스트림이 4 → 8로 한꺼번에 늘었다. 최대 속도는 4장의 링크 속도 공식(부반송파 수 × 심볼당 비트 × 부호율 × 스트림 ÷ 심볼 시간)으로 계산한 값이며, 그 공식은 Linux 커널의 속도 계산 코드와 맞춰 검증했다. Wi-Fi 7은 정식 표준의 최대 8스트림 기준 약 23 Gb/s다. 흔히 보이는 “46 Gb/s”는 16스트림을 검토하던 초기 초안 기준의 숫자다.</div>
+    </div>
+    <div class="callout warn"><strong>“최대 속도”를 읽는 법</strong><p>표의 최대 속도는 표준이 허용하는 <b>가장 넓은 채널, 가장 많은 스트림, 가장 촘촘한 변조</b>를 모두 쓴 이론값이다. 휴대폰은 안테나 공간과 배터리 때문에 대개 스트림 2개라서, 같은 세대라도 실제 링크 속도는 최대의 1/4 수준이다. 그리고 8장에서 보듯 링크 속도의 절반 남짓이 실제 처리율이다.</p></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="structure">
+    <h2>구조: AP, STA, BSS, 그리고 SSID</h2>
+    <p>802.11은 무선 랜의 구성 요소를 몇 개의 단어로 정리한다. 처음에는 낯설지만, Wi-Fi 목록과 공유기 설정 화면에 그대로 나오는 말들이다.</p>
+    <ul>
+      <li><span class="term">STA</span><span class="en">(station)</span>: 802.11로 통신하는 모든 기기. 휴대폰, 노트북, 그리고 공유기의 무선부도 STA다.</li>
+      <li><span class="term">AP</span><span class="en">(access point)</span>: 다른 STA들을 묶어 유선 네트워크와 이어 주는 특별한 STA. 회의의 사회자다.</li>
+      <li><span class="term">BSS</span><span class="en">(Basic Service Set)</span>: AP 하나와 거기에 붙은 STA들의 모임. 회의실 하나에서 열리는 회의 하나다.</li>
+      <li><span class="term">BSSID</span>: BSS의 고유 번호. 보통 AP 무선부의 MAC 주소(48비트)다. 공유기 한 대가 2.4·5·6 GHz에서 각각 BSS를 열면 BSSID도 대역마다 다르다.</li>
+      <li><span class="term">SSID</span><span class="en">(Service Set Identifier)</span>: 사람이 보는 네트워크 이름. 최대 32바이트. 여러 BSS가 같은 SSID를 쓸 수 있다.</li>
+      <li><span class="term">ESS</span><span class="en">(Extended Service Set)</span>: 같은 SSID를 쓰며 유선(또는 무선 백홀)으로 이어진 여러 BSS의 묶음. 메시 공유기 세 대, 회사 천장의 AP 수십 대가 하나의 ESS다. 단말은 그 안에서 BSS를 옮겨 다닌다(로밍, 9장).</li>
+    </ul>
+    <figure class="diagram">
+      <div style="overflow-x:auto">
+      <svg viewBox="0 0 760 260" role="img" aria-label="두 개의 BSS가 유선으로 이어져 하나의 ESS를 이루는 그림" style="min-width:580px">
+        <rect x="10" y="10" width="740" height="200" rx="16" fill="none" stroke="var(--accent)" stroke-dasharray="6 5"/>
+        <text x="24" y="32" class="t-acc">ESS · SSID “우리집”</text>
+        <circle cx="200" cy="120" r="80" class="f-acc-soft"/><circle cx="520" cy="120" r="80" class="f-acc2-soft"/>
+        <rect x="178" y="104" width="44" height="30" rx="6" class="f-elev" stroke="var(--border)"/><text x="200" y="124" text-anchor="middle" class="t-mono">AP1</text>
+        <rect x="498" y="104" width="44" height="30" rx="6" class="f-elev" stroke="var(--border)"/><text x="520" y="124" text-anchor="middle" class="t-mono">AP2</text>
+        <text x="200" y="66" text-anchor="middle" class="t-dim">BSS 1 · BSSID 02:11:…:A1</text>
+        <text x="520" y="66" text-anchor="middle" class="t-dim">BSS 2 · BSSID 02:11:…:B1</text>
+        <g class="t"><text x="140" y="160">📱</text><text x="242" y="168">💻</text><text x="470" y="166">📱</text><text x="575" y="150">⌚</text></g>
+        <path d="M200 134 V236 H520 V134" class="s-line" fill="none"/>
+        <text x="360" y="252" text-anchor="middle" class="t-mono">분배 시스템(DS): 유선 이더넷 또는 무선 백홀</text>
+      </svg>
+      </div>
+      <figcaption><b>그림 1-1.</b> AP 하나와 그 STA들이 BSS, 같은 SSID로 이어진 여러 BSS가 ESS다. 휴대폰이 거실의 AP1에서 방의 AP2로 옮겨 가도 SSID는 그대로이고 BSSID만 바뀐다.</figcaption>
+    </figure>
+    <div class="sim" id="sim-scan">
+      <div class="sim-head"><span class="sim-tag">INTERACTIVE</span><h3>Wi-Fi 목록 해부: 이름 하나, BSS 여럿</h3></div>
+      <div class="sim-view" style="padding:10px">
+        <div class="table-wrap" style="margin:0"><table class="scan" id="scan-tbl"></table></div>
+        <div class="info" id="scan-info"></div>
+      </div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>보기</span><div class="seg" id="scan-mode"><button data-value="raw" class="on">휴대폰이 실제로 들은 것 (BSS 단위)</button><button data-value="ssid">휴대폰 화면 (SSID로 묶음)</button></div></div>
+      </div>
+      <div class="sim-note">휴대폰은 주변 채널을 돌며 AP들의 비컨(9장)을 듣고 목록을 만든다. 해볼 것: ① “BSS 단위”로 보면 우리 집 SSID 하나 뒤에 메시 노드 2대 × 대역 3개 = BSS 6개가 있다. 휴대폰은 이 중 하나에 붙는다. ② 줄을 눌러 그 BSS의 대역·채널·세기를 확인해 보자. “Cafe”와 “Cafe_5G”처럼 이름이 다르면 휴대폰은 다른 네트워크로 보고, 대역을 옮기려면 사람이 직접 골라야 한다. 목록의 주소와 수치는 설명을 위해 만든 예다.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="layers">
+    <h2>802.11이 맡는 층: PHY와 MAC</h2>
+    <p>802.11은 네트워크 층 중 <b>아래 두 층</b>만 정한다. 그 위의 IP, TCP, 앱은 이더넷과 똑같이 그대로 쓴다. 그래서 노트북은 케이블을 뽑고 Wi-Fi로 바꿔도 같은 웹 브라우저를 쓴다.</p>
+    <ul>
+      <li><b>PHY</b>(물리 계층): 비트를 전파로 바꾸는 법. 대역과 채널(2장), OFDM(3장), 변조와 부호화(4장), 다중 안테나(5장).</li>
+      <li><b>MAC</b>(매체 접근 제어): 누가 언제 말할지(6장), 프레임 형식과 주소(7장), 확인 응답과 재전송, 연결과 보안(9·10장), 절전(11장).</li>
+    </ul>
+    <p>이더넷과 가장 큰 차이는 <b>매체가 공유되고 믿을 수 없다</b>는 점이다. 스위치로 이어진 이더넷은 포트마다 전용 선이 있고 오류가 드물다. 와이파이는 같은 채널의 모든 기기가 한 공기를 나눠 쓰고, 벽과 거리와 간섭 때문에 프레임을 자주 잃는다. 그래서 와이파이의 MAC은 이더넷에는 없는 확인 응답(ACK), 재전송, 충돌 회피, 프레임 묶기 같은 장치로 가득하다.</p>
+    <div class="callout spec"><strong>이 책이 근거로 삼는 것</strong><p>와이파이의 원문 표준(IEEE 802.11-2024, 802.11be-2024)은 IEEE의 무료 열람 프로그램으로 공개되어 있지만 계정 로그인이 필요해, 이 책을 쓰며 원문을 직접 확인하지 못했다. 대신 표준을 그대로 구현한 <b>공개 소스 코드</b>를 1차 근거로 삼았다. Linux 커널의 무선 스택(cfg80211·mac80211)의 채널 계산·속도 계산·전송 시간 계산, hostapd·wpa_supplicant의 보안 계산과 시험 벡터, 기본 설정값이다. 책의 계산 함수는 이 코드와 시험 벡터로 자동 검증한다(<code>scripts/verify-factcheck.cjs</code>). 여기에 Wi-Fi Alliance와 장비 회사의 공개 자료로 수치를 교차 확인했다. 원문을 보지 못했으므로 <b>조항 번호는 소스 코드 주석이 인용한 경우에만</b> 적는다.</p></div>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>와이파이는 “선 없는 이더넷”이다. <b>IEEE 802.11</b>(1997~)이 규칙을, <b>Wi-Fi Alliance</b>(1999~)가 인증과 이름을 맡는다. 세대 이름(Wi-Fi 4~7)은 2018년부터 붙였다.</li>
+      <li>속도는 <b>채널 폭 · 변조 · 공간 스트림 · 오버헤드</b>의 네 손잡이로 늘었다. 802.11b 11 Mb/s → Wi-Fi 7 약 23 Gb/s(8스트림, 320 MHz). 휴대폰(보통 2스트림)의 현실 속도는 그보다 훨씬 낮다.</li>
+      <li><b>STA</b>는 모든 기기, <b>AP</b>는 사회자, <b>BSS</b>는 AP 하나의 모임, <b>BSSID</b>는 그 번호(보통 MAC 주소), <b>SSID</b>는 사람이 보는 이름, <b>ESS</b>는 같은 SSID로 묶인 여러 BSS다.</li>
+      <li>802.11은 <b>PHY와 MAC</b>만 정한다. 공유되고 믿을 수 없는 매체라서 MAC에 ACK·재전송·충돌 회피·프레임 묶기가 들어 있다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>공유기 상자의 “Wi-Fi 6” 로고와 설정 화면의 “802.11ax”의 관계로 옳은 것은?</p><div class="opts">
+        <button class="opt">서로 다른 기술이다</button><button class="opt" data-correct>802.11ax는 IEEE 표준 이름, Wi-Fi 6는 Wi-Fi Alliance가 붙인 세대 이름(인증)이다</button><button class="opt">Wi-Fi 6가 802.11ax보다 새 기술이다</button><button class="opt">Wi-Fi 6는 6 GHz 전용이라는 뜻이다</button>
+      </div><div class="quiz-exp">IEEE가 규칙(802.11ax)을, Wi-Fi Alliance가 인증과 이름(Wi-Fi 6)을 맡는다. 6 GHz를 쓰는 Wi-Fi 6는 따로 Wi-Fi 6E라 부른다.</div></div>
+      <div class="quiz-q"><p>메시 공유기 3대가 각각 2.4·5 GHz로 같은 SSID를 낸다. 휴대폰 주변에 있는 BSS는 몇 개인가?</p><div class="opts">
+        <button class="opt">1개</button><button class="opt">3개</button><button class="opt" data-correct>6개</button><button class="opt">2개</button>
+      </div><div class="quiz-exp">노드 3대 × 대역 2개 = BSS 6개, BSSID도 6개다. SSID는 하나라 화면에는 이름 하나만 보인다.</div></div>
+      <div class="quiz-q"><p>BSSID는 보통 무엇인가?</p><div class="opts">
+        <button class="opt">사람이 정한 네트워크 이름</button><button class="opt" data-correct>AP 무선부의 MAC 주소(48비트)</button><button class="opt">공유기의 IP 주소</button><button class="opt">비밀번호의 해시</button>
+      </div><div class="quiz-exp">SSID가 사람용 이름이라면 BSSID는 BSS를 구분하는 기계용 번호다.</div></div>
+      <div class="quiz-q"><p>와이파이의 MAC에 이더넷에는 없는 ACK와 재전송이 필요한 가장 큰 이유는?</p><div class="opts">
+        <button class="opt">와이파이가 더 빨라서</button><button class="opt" data-correct>여러 기기가 한 공기를 공유하고, 벽·거리·간섭 때문에 프레임을 자주 잃어서</button><button class="opt">IP 주소가 없어서</button><button class="opt">이더넷보다 프레임이 짧아서</button>
+      </div><div class="quiz-exp">무선은 공유 매체이고 오류가 잦다. 그래서 받은 쪽이 ACK로 확인하고, 없으면 다시 보낸다(6·7장).</div></div>
+      <div class="quiz-q"><p>Wi-Fi 7(802.11be)의 이론 최대 속도로 정식 표준의 최대 스트림(8개)을 기준으로 할 때 가장 가까운 것은?</p><div class="opts">
+        <button class="opt">약 2.4 Gb/s</button><button class="opt">약 9.6 Gb/s</button><button class="opt" data-correct>약 23 Gb/s</button><button class="opt">약 460 Gb/s</button>
+      </div><div class="quiz-exp">320 MHz, 4096-QAM 5/6, GI 0.8 µs에서 스트림 하나가 약 2.88 Gb/s, 8스트림이면 약 23 Gb/s다. 9.6 Gb/s는 Wi-Fi 6의 최대다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  /** 링크 속도(Mb/s) = 데이터 부반송파 × 심볼당 비트 × 부호율 × 스트림 ÷ (심볼 + GI) µs (4장) */
+  function linkRateMbps(nsd, bits, rate, nss, tsymUs) { return (nsd * bits * rate * nss) / tsymUs; }
+
+  /* ================================================================ 1. 세대 */
+  (function () {
+    // [표준, 세대 이름, 해, 대역, 최대 폭, 최대 변조, 최대 스트림, 최대 속도 Mb/s, 설명]
+    const G = [
+      ["802.11", "—", 1997, "2.4 GHz", "22 MHz", "DBPSK·DQPSK", 1, 2, "최초의 표준. 확산 스펙트럼(DSSS·FHSS)과 적외선, 1~2 Mb/s."],
+      ["802.11b", "—", 1999, "2.4 GHz", "22 MHz", "CCK", 1, 11, "보급형 와이파이의 시작. 11 Mb/s로 노트북에 무선 랜이 퍼졌다."],
+      ["802.11a", "—", 1999, "5 GHz", "20 MHz", "64-QAM (OFDM)", 1, 54, "처음으로 OFDM(3장)을 쓴 표준. 5 GHz라 덜 붐볐지만 당시엔 비쌌다."],
+      ["802.11g", "—", 2003, "2.4 GHz", "20 MHz", "64-QAM (OFDM)", 1, 54, "802.11a의 OFDM을 2.4 GHz로 가져와 b와 함께 쓸 수 있게 했다."],
+      ["802.11n", "Wi-Fi 4", 2009, "2.4 / 5 GHz", "40 MHz", "64-QAM", 4, linkRateMbps(108, 6, 5 / 6, 4, 3.6), "MIMO(5장)와 40 MHz 채널, 프레임 집적(8장). 처음으로 수백 Mb/s."],
+      ["802.11ac", "Wi-Fi 5", 2013, "5 GHz", "160 MHz", "256-QAM", 8, linkRateMbps(468, 8, 5 / 6, 8, 3.6), "5 GHz 전용, 80·160 MHz, 256-QAM, 하향 MU-MIMO."],
+      ["802.11ax", "Wi-Fi 6 / 6E", 2021, "2.4 / 5 / 6 GHz", "160 MHz", "1024-QAM", 8, linkRateMbps(1960, 10, 5 / 6, 8, 13.6), "OFDMA(12장), 네 배 긴 심볼, BSS 컬러링, TWT. 6 GHz를 쓰면 Wi-Fi 6E. (인증은 2019년 시작)"],
+      ["802.11be", "Wi-Fi 7", 2024, "2.4 / 5 / 6 GHz", "320 MHz", "4096-QAM", 8, linkRateMbps(3920, 12, 5 / 6, 8, 13.6), "320 MHz, 4096-QAM, 멀티 링크(MLO), 프리앰블 펑처링(13장). 2024년 승인, 2025년 발행."],
+      ["802.11bn", "Wi-Fi 8 (초안)", 2028, "2.4 / 5 / 6 GHz", "320 MHz", "—", 8, NaN, "UHR(Ultra High Reliability). 속도보다 신뢰성·지연을 겨냥한 초안 단계. 2028년 확정 예정(13장)."],
+    ];
+    const tl = $("gen-tl"), info = $("gen-info");
+    tl.innerHTML = G.map((g, i) => `<button type="button" data-i="${i}">${g[0]}<small>${g[2]}</small></button>`).join("");
+    let sel = 7;
+    const fmt = (m) => (!isFinite(m) ? "미정" : m >= 1000 ? (m / 1000).toFixed(m >= 10000 ? 1 : 2) + " Gb/s" : (m < 100 ? m : Math.round(m)) + " Mb/s");
+    const cv = WF.canvas($("cv-gen"), (ctx, w, h) => {
+      const P = WF.palette(), pts = G.filter((g) => isFinite(g[7]));
+      const ch = WF.chart(ctx, null, { x: [1996, 2026], y: [1, 50000], logY: true, xLabel: "해", yLabel: "최대 속도 (Mb/s)", xFmt: (v) => String(v), yFmt: (v) => (v >= 1000 ? v / 1000 + "G" : String(v)),
+        series: [{ data: pts.map((g) => [g[2], g[7]]), color: P.accent, width: 2 }] });
+      pts.forEach((g) => { const on = G.indexOf(g) === sel; ctx.fillStyle = on ? P.accent2 : P.accent; ctx.beginPath(); ctx.arc(ch.X(g[2]), ch.Y(g[7]), on ? 6 : 4, 0, 7); ctx.fill(); });
+    }, { aspect: 0.42, minHeight: 200, maxHeight: 280 });
+    function show(i) {
+      sel = i; const g = G[i];
+      tl.querySelectorAll("button").forEach((b) => b.classList.toggle("on", +b.dataset.i === i));
+      info.innerHTML = `<h4>${g[0]} ${g[1] !== "—" ? "· " + g[1] : ""} <span style="color:var(--text-faint);font-weight:400;font-size:13px">${g[2]}</span></h4>${g[8]}<div style="margin-top:6px;font-size:13.5px;color:var(--text-dim)">대역 ${g[3]} · 최대 폭 ${g[4]} · 최대 변조 ${g[5]} · 최대 스트림 ${g[6]} · <b style="color:var(--text)">이론 최대 ${fmt(g[7])}</b></div>`;
+      cv.redraw();
+    }
+    tl.addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) show(+b.dataset.i); });
+    show(7);
+  })();
+
+  /* ================================================================ 2. 스캔 목록 */
+  (function () {
+    // [SSID, BSSID, 대역, 채널, RSSI, 설명]
+    const L = [
+      ["우리집", "02:11:22:33:44:A0", "2.4 GHz", 6, -48, "거실 메시 노드의 2.4 GHz BSS. 벽 너머까지 닿지만 이웃과 붐빈다."],
+      ["우리집", "02:11:22:33:44:A1", "5 GHz", 36, -52, "거실 노드의 5 GHz BSS. 대부분의 휴대폰이 여기에 붙는다."],
+      ["우리집", "02:11:22:33:44:A2", "6 GHz", 37, -61, "거실 노드의 6 GHz BSS(Wi-Fi 6E·7 단말만 보인다)."],
+      ["우리집", "02:11:22:33:55:B0", "2.4 GHz", 1, -66, "안방 메시 노드의 2.4 GHz BSS. 같은 SSID, 다른 BSSID."],
+      ["우리집", "02:11:22:33:55:B1", "5 GHz", 149, -70, "안방 노드의 5 GHz BSS. 안방에 들어가면 이쪽이 더 세진다(로밍, 9장)."],
+      ["우리집", "02:11:22:33:55:B2", "6 GHz", 101, -80, "안방 노드의 6 GHz BSS. 거실에서는 벽 때문에 약하다."],
+      ["Neighbor_2G", "8C:44:4F:00:12:30", "2.4 GHz", 6, -74, "옆집 공유기. 우리 2.4 GHz와 같은 6번 채널이라 공중 시간을 나눠 쓴다(6장)."],
+      ["Neighbor_5G", "8C:44:4F:00:12:31", "5 GHz", 44, -79, "같은 옆집 공유기의 5 GHz. 이름을 다르게 지어 휴대폰은 다른 네트워크로 본다."],
+      ["Cafe_Guest", "A4:2B:B0:7C:01:10", "5 GHz", 52, -86, "1층 카페. DFS 채널(2장)을 쓰고 있다."],
+    ];
+    const mode = WF.seg("scan-mode", draw);
+    const tbl = $("scan-tbl"), info = $("scan-info");
+    const bars = (r) => { const n = r > -55 ? 4 : r > -65 ? 3 : r > -75 ? 2 : 1; return `<span class="bars">${[1, 2, 3, 4].map((k) => `<i class="${k <= n ? "on" : ""}" style="height:${k * 3}px"></i>`).join("")}</span>`; };
+    function draw() {
+      if (mode() === "raw") {
+        tbl.innerHTML = `<thead><tr><th>SSID</th><th>BSSID</th><th>대역 · 채널</th><th>세기</th></tr></thead><tbody>` + L.map((r, i) => `<tr data-i="${i}" style="cursor:pointer"><td>${r[0]}</td><td class="m">${r[1]}</td><td>${r[2]} · ${r[3]}</td><td class="m">${bars(r[4])} ${r[4]} dBm</td></tr>`).join("") + "</tbody>";
+      } else {
+        const g = {}; L.forEach((r) => { (g[r[0]] = g[r[0]] || []).push(r); });
+        tbl.innerHTML = `<thead><tr><th>네트워크 (SSID)</th><th>BSS 수</th><th>가장 센 신호</th></tr></thead><tbody>` + Object.entries(g).sort((a, b) => Math.max(...b[1].map((x) => x[4])) - Math.max(...a[1].map((x) => x[4]))).map(([s, rs]) => `<tr class="grp"><td>${s}</td><td>${rs.length}개</td><td class="m">${bars(Math.max(...rs.map((x) => x[4])))} ${Math.max(...rs.map((x) => x[4]))} dBm</td></tr>`).join("") + "</tbody>";
+        info.innerHTML = "휴대폰 화면은 SSID가 같은 BSS를 하나로 묶어 보여 준다. “우리집” 한 줄 뒤에 BSS 6개가 숨어 있다. 휴대폰은 연결할 때 그중 가장 좋은 BSS를 스스로 고른다.";
+      }
+    }
+    tbl.addEventListener("click", (e) => { const tr = e.target.closest("tr[data-i]"); if (!tr) return; const r = L[+tr.dataset.i]; info.innerHTML = `<b>${r[0]}</b> · BSSID <span style="font-family:var(--mono)">${r[1]}</span> · ${r[2]} 채널 ${r[3]} · ${r[4]} dBm<br>${r[5]}`; });
+    draw(); info.innerHTML = "줄을 눌러 보자.";
+  })();
+})();
+</script>
+</body>
+</html>

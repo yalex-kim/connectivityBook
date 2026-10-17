@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>MIMO와 빔포밍 · WiFiBook</title>
+<meta name="description" content="안테나 여러 개로 같은 주파수에 여러 줄을 보내는 MIMO. 다이버시티로 페이딩을 메우고, 공간 다중화로 스트림을 늘리고, 빔포밍으로 전파를 한 방향에 모으며, MU-MIMO로 여러 단말에 동시에 보내는 원리를 시뮬레이터로 익힌다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/wifi/chapters/mimo.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="WiFiBook">
+<meta property="og:title" content="MIMO와 빔포밍 · WiFiBook">
+<meta property="og:description" content="안테나 여러 개로 같은 주파수에 여러 줄을 보내는 MIMO. 다이버시티로 페이딩을 메우고, 공간 다중화로 스트림을 늘리고, 빔포밍으로 전파를 한 방향에 모으며, MU-MIMO로 여러 단말에 동시에 보내는 원리를 시뮬레이터로 익힌다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/wifi/chapters/mimo.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/wifi/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"MIMO와 빔포밍","name":"MIMO와 빔포밍 · WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/chapters/mimo.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/wifi/chapters/mimo.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":5,"image":"https://yalex-kim.github.io/yalexBook/wifi/og.png","dateModified":"2026-10-17","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/wifi/#book","name":"WiFiBook — 누구나 읽는 인터랙티브 와이파이 교과서","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"publisher":{"@type":"Organization","name":"WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"description":"안테나 여러 개로 같은 주파수에 여러 줄을 보내는 MIMO. 다이버시티로 페이딩을 메우고, 공간 다중화로 스트림을 늘리고, 빔포밍으로 전파를 한 방향에 모으며, MU-MIMO로 여러 단말에 동시에 보내는 원리를 시뮬레이터로 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"WiFiBook","item":"https://yalex-kim.github.io/yalexBook/wifi/"},{"@type":"ListItem","position":2,"name":"05 MIMO와 빔포밍","item":"https://yalex-kim.github.io/yalexBook/wifi/chapters/mimo.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+</head>
+<body data-chapter="mimo">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 05</div>
+    <h1>MIMO와 빔포밍</h1>
+    <p class="lead">공유기 뒤에 더듬이처럼 꽂힌 안테나가 네 개, 여덟 개다. 상자에는 “4×4 MU-MIMO”, “빔포밍 지원”이라고 적혀 있다. 그런데 휴대폰 안테나는 몇 개일까? 안테나를 늘리면 무조건 빨라질까? 이 장에서는 와이파이가 같은 시간, 같은 주파수를 여러 안테나로 다시 쓰는 세 가지 방법, 즉 <b>다이버시티</b>, <b>공간 다중화</b>, <b>빔포밍</b>을 차례로 보고, 그것을 여러 단말에 나눠 쓰는 MU-MIMO까지 간다.</p>
+    <ul class="objectives">
+      <li>“2×2:2” 같은 표기와 공간 스트림 수가 송수신 안테나 중 적은 쪽에 묶이는 이유를 안다.</li>
+      <li>수신 안테나를 늘려 페이딩 골짜기를 메우는 다이버시티의 효과를 확률로 계산한다.</li>
+      <li>공간 다중화가 SNR이 높고 경로가 다양할 때만 이득이 큰 이유를 용량 공식으로 이해한다.</li>
+      <li>빔포밍이 위상을 맞춰 전파를 모으는 원리, 사운딩의 비용, MU-MIMO의 쓸모를 안다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="notation">
+    <h2>안테나 수 읽는 법</h2>
+    <p>와이파이 제품 사양의 “4×4:4”는 송신 안테나(정확히는 무선 체인) 4개 × 수신 4개 : 공간 스트림 4개라는 뜻이다. <span class="term">공간 스트림</span><span class="en">(spatial stream)</span>은 같은 시각, 같은 주파수에 동시에 보내는 서로 다른 데이터 줄이다. 한 링크의 스트림 수는 <b>양쪽 중 적은 쪽</b>을 넘을 수 없다. 공유기가 8×8이어도 휴대폰이 2×2면 그 링크는 최대 2스트림이다. 대부분의 휴대폰과 노트북은 공간과 배터리 때문에 2×2다.</p>
+    <p>안테나가 많은 쪽의 남는 안테나는 놀지 않는다. 받는 쪽에서는 여러 안테나의 신호를 합쳐 더 튼튼하게 받고(다이버시티), 보내는 쪽에서는 전파를 상대 쪽으로 모으는 데(빔포밍) 쓴다. 공유기 안테나가 많은 것은 한 단말의 속도보다는 <b>여러 단말을 동시에</b>(MU-MIMO) 다루고 구석까지 튼튼하게 닿기 위해서다.</p>
+    <div class="callout analogy"><strong>회의실의 여러 마이크와 스피커</strong><p>사회자(AP)가 마이크를 여러 개 들고 있으면, 한 참석자의 목소리를 여러 마이크로 받아 합쳐 더 또렷하게 들을 수 있다(다이버시티). 서로 다른 자리의 두 사람이 동시에 말해도, 마이크 위치에 따라 들리는 섞임이 달라 두 목소리를 풀어낼 수 있다(공간 다중화). 지향성 스피커처럼 소리를 한 사람 쪽으로 모아 보낼 수도 있다(빔포밍). 그리고 서로 다른 방향의 두 사람에게 각자의 말을 동시에 보낼 수도 있다(MU-MIMO).</p></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="diversity">
+    <h2>다이버시티: 골짜기를 메우기</h2>
+    <p>실내에서는 반사파가 더해지며 위치에 따라 신호가 20~30 dB씩 꺼지는 골짜기가 생긴다(다중 경로 페이딩). 안테나를 반 파장(2.4 GHz 약 6 cm, 5 GHz 약 3 cm) 이상 떨어뜨려 놓으면 두 안테나가 동시에 골짜기에 빠질 확률이 낮다. 받는 쪽이 여러 안테나 신호를 위상을 맞춰 더하면(최대비 결합, MRC) 골짜기가 메워진다.</p>
+    <div class="sim" id="sim-div">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>수신 안테나 수와 끊길 확률</h3></div>
+      <div class="sim-view"><canvas id="cv-div"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>평균 SNR <output id="dv-snr-out"></output></span><input type="range" id="dv-snr" min="0" max="40" value="20"></label>
+        <label class="ctrl"><span>필요한 SNR (이 아래면 끊김) <output id="dv-th-out"></output></span><input type="range" id="dv-th" min="0" max="35" value="10"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">안테나 1개</span><span class="v" id="dv-1">—</span></div>
+        <div class="stat"><span class="k">2개 (MRC)</span><span class="v" id="dv-2">—</span></div>
+        <div class="stat"><span class="k">4개 (MRC)</span><span class="v" id="dv-4">—</span></div>
+      </div>
+      <div class="sim-note">그래프: 평균 SNR에 따른 끊길 확률(로그 눈금). 해볼 것: 평균 SNR이 필요 SNR보다 10 dB 높을 때, 안테나 1개는 약 10%의 시간·위치에서 끊기지만 2개면 약 0.5%, 4개면 0.0004%(10만 번에 4번) 수준이다. 그래서 같은 거리에서도 안테나가 많은 쪽이 훨씬 안정적이다. 모델: 안테나마다 독립적인 레일리 페이딩(실내 반사가 많은 환경), 최대비 결합, 확률은 해석식으로 계산.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="smux">
+    <h2>공간 다중화: 같은 주파수에 여러 줄</h2>
+    <p>안테나 둘이 서로 다른 데이터를 동시에 보내면 수신 안테나 둘에는 두 데이터가 섞여 들어간다. 그런데 반사가 풍부한 실내에서는 송신 안테나마다 수신 안테나까지의 경로가 조금씩 달라, 섞이는 비율도 다르다. 수신기는 이 섞임의 표(채널 행렬)를 알아내 연립방정식처럼 풀어 두 데이터를 분리한다. 이것이 <span class="term">공간 다중화</span><span class="en">(spatial multiplexing)</span>이고, 스트림 수만큼 속도가 늘어나는 원리다.</p>
+    <p>대가도 있다. 송신 전력은 스트림 사이에 나뉘므로 스트림 하나의 SNR은 떨어진다. 경로가 비슷하면(트인 공간, 안테나가 가까움) 섞임을 풀기 어렵다. 그래서 공간 다중화는 <b>SNR이 넉넉하고 반사가 풍부한</b> 가까운 실내에서 가장 이득이 크고, 먼 거리에서는 단말이 스스로 스트림을 줄이고 다이버시티 쪽으로 돌아선다.</p>
+    <div class="formula">용량 ≈ Σ<sub>i</sub> log₂(1 + (SNR / N) × λ<sub>i</sub>) &nbsp; (N 스트림, λ<sub>i</sub> = 채널 행렬의 고유값, 합 = N)
+      <div class="where">2×2에서 두 경로의 상관이 ρ이면 λ = 1 ± ρ로 단순화할 수 있다. ρ = 0(완전히 다른 경로)이면 두 스트림이 고르게 쓰이고, ρ = 1(같은 경로)이면 한 스트림만 남는다.</div>
+    </div>
+    <div class="sim" id="sim-smux">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>스트림을 늘리면 언제 빨라지나</h3></div>
+      <div class="sim-view"><canvas id="cv-smux"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>SNR <output id="sm-snr-out"></output></span><input type="range" id="sm-snr" min="0" max="40" value="25"></label>
+        <label class="ctrl"><span>경로 상관 ρ (2×2) <output id="sm-rho-out"></output></span><input type="range" id="sm-rho" min="0" max="1" step="0.05" value="0.3"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">1스트림 용량</span><span class="v" id="sm-1">—</span></div>
+        <div class="stat"><span class="k">2스트림 용량</span><span class="v" id="sm-2">—</span></div>
+        <div class="stat"><span class="k">2스트림 이득</span><span class="v" id="sm-g">—</span></div>
+      </div>
+      <div class="sim-note">그래프: SNR에 따른 Hz당 용량(b/s/Hz). 파랑 = 1스트림(전력을 모아 한 줄), 청록 = 2스트림(전력을 반씩). 해볼 것: ① SNR 5 dB에서는 2스트림이 거의 이득이 없다. ② SNR 30 dB, ρ = 0이면 거의 두 배다. ③ ρ를 0.9로 올리면(트인 공간, 가까운 안테나) 2스트림 이득이 크게 준다. 모델: 섀넌 용량, 2×2 채널의 고유값을 1 ± ρ로 단순화, 송신 측이 채널을 모름(전력 균등 분배).</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="bf">
+    <h2>빔포밍: 전파를 한 방향에 모으기</h2>
+    <p>안테나 여러 개가 같은 신호를 보내되 각자의 위상을 조금씩 다르게 하면, 특정 방향에서는 전파가 보강되고 다른 방향에서는 상쇄된다. 이렇게 전파를 상대 쪽으로 모으는 것이 <span class="term">빔포밍</span><span class="en">(beamforming)</span>이다. 안테나 N개로 모으면 그 방향의 세기가 최대 N배(10·log₁₀N dB) 늘어난다. 4개면 약 6 dB, 즉 MCS 두세 칸이다.</p>
+    <p>문제는 “상대가 어느 쪽인지”를 아는 것이다. 실내에서는 방향이 아니라 반사 경로 전체가 중요하므로, 802.11ac부터는 <b>사운딩</b><span class="en">(sounding)</span>을 한다. AP가 알림 프레임(NDPA) 뒤에 데이터 없는 시험 패킷(NDP)을 보내면, 단말이 그 패킷으로 잰 채널 상태를 압축해 되돌려 준다. AP는 이 보고로 안테나별 가중치를 정한다. 사운딩은 매번 공중 시간을 쓰므로, 단말이 많고 자주 움직이면 그 비용이 커진다.</p>
+    <div class="sim" id="sim-bf">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>안테나 배열의 빔: 위상만 바꿔 방향을 돌리기</h3></div>
+      <div class="sim-body side">
+        <div class="sim-view"><canvas id="cv-bf"></canvas></div>
+        <div class="sim-controls">
+          <label class="ctrl"><span>안테나 수 <output id="bf-n-out"></output></span><input type="range" id="bf-n" min="1" max="8" value="4"></label>
+          <label class="ctrl"><span>모을 방향 <output id="bf-a-out"></output></span><input type="range" id="bf-a" min="-60" max="60" value="25"></label>
+          <label class="check"><input type="checkbox" id="bf-mu"> 두 번째 단말(−40°) 쪽에는 0을 만들기 (MU-MIMO)</label>
+        </div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">목표 방향 이득</span><span class="v" id="bf-g">—</span></div>
+        <div class="stat"><span class="k">−40° 방향 세기</span><span class="v" id="bf-null">—</span></div>
+        <div class="stat"><span class="k">빔 폭(−3 dB)</span><span class="v" id="bf-w">—</span></div>
+      </div>
+      <div class="sim-note">위에서 본 방사 패턴(극좌표, dB). 안테나는 반 파장 간격의 일직선 배열이다. 해볼 것: ① 안테나를 1 → 8개로 늘리면 빔이 좁아지고 목표 방향 이득이 0 → 9 dB로 는다. ② “두 번째 단말 쪽에 0”을 켜면, 한 단말에 보내는 신호가 다른 단말 쪽에서는 거의 0이 되도록 가중치를 고친다. 이렇게 단말마다 다른 데이터를 동시에 보내는 것이 MU-MIMO다(모은 쪽 이득은 조금 줄어든다). 모델: 자유 공간의 균일 선형 배열, 안테나마다 같은 세기, 사운딩 오차 없음.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="mu">
+    <h2>MU-MIMO: 한 번에 여러 단말에게</h2>
+    <p>공유기가 4×4라도 2×2 휴대폰 하나에는 2스트림만 쓴다. 남는 안테나로 다른 단말에게 동시에 보낼 수 있다면? 이것이 <span class="term">MU-MIMO</span><span class="en">(Multi-User MIMO)</span>다. 위 시뮬레이터처럼 단말 A로 가는 신호가 단말 B 쪽에서는 상쇄되도록 가중치를 정해, 같은 시간·주파수에서 A와 B에게 다른 데이터를 보낸다. 802.11ac(Wi-Fi 5)는 하향(AP → 단말) MU-MIMO를 도입했고, Wi-Fi 6는 상향까지 넓혔다.</p>
+    <p>MU-MIMO가 잘 되려면 조건이 까다롭다. 단말들이 서로 다른 방향에 있어야 하고(가까이 붙어 있으면 갈라낼 수 없다), 사운딩이 최신이어야 하며(단말이 움직이면 금방 낡는다), 동시에 보낼 데이터가 비슷한 양이어야 한다. 그래서 실제 가정에서는 기대만큼 자주 쓰이지 않고, Wi-Fi 6부터는 주파수를 쪼개 여러 단말에 나눠 주는 OFDMA(12장)가 더 자주 쓰인다.</p>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">4×4 공유기 옆에서 2×2 노트북이 혼자 내려받고 있다. 공유기를 8×8로 바꾸면 노트북 속도는 얼마나 빨라질까?</p><p class="wi-hint">한 링크의 스트림 수는 양쪽 중 적은 쪽에 묶인다.</p><div class="opts">
+      <button class="opt">두 배가 된다</button>
+      <button class="opt" data-correct>스트림은 여전히 2개라 크게 빨라지지 않는다. 대신 남는 안테나로 빔포밍·다이버시티 이득이 조금 생긴다</button>
+      <button class="opt">네 배가 된다</button>
+    </div><div class="quiz-exp">링크의 스트림 수는 min(송신, 수신) = 2다. 안테나가 많은 공유기의 이득은 구석까지의 안정성(빔포밍)과 여러 단말을 동시에 다루는 능력(MU-MIMO)에서 나온다.</div></div>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>“M×N:S” = 송신 M × 수신 N : 공간 스트림 S. 링크의 스트림은 양쪽 중 적은 쪽에 묶인다. 휴대폰은 대개 2×2.</li>
+      <li><b>다이버시티</b>: 반 파장 이상 떨어진 안테나들은 동시에 페이딩 골짜기에 빠지기 어렵다. 최대비 결합으로 끊길 확률이 크게 준다.</li>
+      <li><b>공간 다중화</b>: 서로 다른 경로를 이용해 같은 주파수에 여러 줄을 보낸다. SNR이 높고 반사가 풍부할 때 이득이 크다.</li>
+      <li><b>빔포밍</b>: 위상을 맞춰 전파를 상대 쪽에 모은다(안테나 N개 → 최대 10·log₁₀N dB). 채널을 알려면 <b>사운딩</b>(NDPA → NDP → 보고)이 필요하고, 이는 공중 시간을 쓴다.</li>
+      <li><b>MU-MIMO</b>: 서로 다른 단말에 동시에 다른 데이터를 보낸다(Wi-Fi 5 하향, Wi-Fi 6 상향까지). 조건이 까다로워 OFDMA와 함께 쓴다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>4×4 공유기와 2×2 휴대폰 사이 링크의 최대 공간 스트림 수는?</p><div class="opts">
+        <button class="opt">1</button><button class="opt" data-correct>2</button><button class="opt">4</button><button class="opt">8</button>
+      </div><div class="quiz-exp">스트림 수는 min(4, 2) = 2.</div></div>
+      <div class="quiz-q"><p>공간 다중화의 이득이 가장 작은 상황은?</p><div class="opts">
+        <button class="opt">가까운 거리, 반사가 많은 거실</button><button class="opt" data-correct>먼 거리(낮은 SNR)의 트인 공간</button><button class="opt">안테나 간격이 넓은 노트북</button><button class="opt">SNR 30 dB 이상</button>
+      </div><div class="quiz-exp">SNR이 낮으면 전력을 나누는 손해가 크고, 트인 공간은 경로가 비슷해 스트림을 갈라내기 어렵다.</div></div>
+      <div class="quiz-q"><p>안테나 8개로 한 방향에 빔을 모으면 그 방향 세기는 최대 몇 dB 늘어나는가?</p><div class="opts">
+        <button class="opt">3 dB</button><button class="opt">6 dB</button><button class="opt" data-correct>약 9 dB</button><button class="opt">18 dB</button>
+      </div><div class="quiz-exp">10 · log₁₀(8) ≈ 9 dB.</div></div>
+      <div class="quiz-q"><p>802.11ac의 명시적 빔포밍에서 AP가 채널 상태를 알아내는 방법은?</p><div class="opts">
+        <button class="opt">GPS로 단말 위치를 받는다</button><button class="opt" data-correct>NDPA와 데이터 없는 시험 패킷(NDP)을 보내고, 단말이 잰 채널 정보를 압축해 돌려준다</button><button class="opt">RSSI만 보고 방향을 추정한다</button><button class="opt">비컨 간격을 바꾼다</button>
+      </div><div class="quiz-exp">사운딩 절차다. 정확하지만 공중 시간을 쓰고, 단말이 움직이면 빨리 낡는다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  /** 레일리 페이딩 + MRC(L개)의 끊길 확률: P(γ < γth) = 1 − e^(−x) Σ_{k<L} x^k/k!, x = γth/γ̄ */
+  function outageMrc(meanSnrDb, threshDb, L) {
+    const x = Math.pow(10, (threshDb - meanSnrDb) / 10); let s = 0, t = 1;
+    for (let k = 0; k < L; k++) { if (k > 0) t *= x / k; s += t; }
+    return Math.max(0, 1 - Math.exp(-x) * s);
+  }
+  /** 2×2 용량(b/s/Hz): 고유값 1 ± ρ, 전력 균등 */
+  function capacity2x2(snrDb, rho) { const s = Math.pow(10, snrDb / 10); return Math.log2(1 + (s / 2) * (1 + rho)) + Math.log2(1 + (s / 2) * (1 - rho)); }
+  /** 1스트림(2×2에서 송신 전력을 모아 최대 고유값 방향으로) */
+  function capacity1(snrDb, rho) { const s = Math.pow(10, snrDb / 10); return Math.log2(1 + s * (1 + rho)); }
+  /** 균일 선형 배열(반 파장 간격) 배열 이득(선형): 가중치 w로 각도 θ에서의 |Σ w_n e^{jπ n sinθ}|² / N */
+  function arrayGain(weights, thetaRad) {
+    let re = 0, im = 0; weights.forEach(([wr, wi], n) => { const ph = Math.PI * n * Math.sin(thetaRad); re += wr * Math.cos(ph) - wi * Math.sin(ph); im += wr * Math.sin(ph) + wi * Math.cos(ph); });
+    return re * re + im * im;
+  }
+  /** 목표 방향 θ0로 모으는 가중치(전체 전력 1) */
+  function steer(N, theta0) { return Array.from({ length: N }, (_, n) => { const ph = -Math.PI * n * Math.sin(theta0); return [Math.cos(ph) / Math.sqrt(N), Math.sin(ph) / Math.sqrt(N)]; }); }
+  /** 목표 θ0로 모으면서 θ1 쪽은 0이 되도록 투영한 가중치(전체 전력 1) */
+  function steerWithNull(N, theta0, theta1) {
+    const a = steer(N, theta0), b = steer(N, theta1);
+    let dr = 0, di = 0; b.forEach(([br, bi], n) => { dr += br * a[n][0] + bi * a[n][1]; di += br * a[n][1] - bi * a[n][0]; }); // <b, a>
+    const w = a.map(([ar, ai], n) => [ar - (dr * b[n][0] - di * b[n][1]), ai - (dr * b[n][1] + di * b[n][0])]);
+    const p = Math.sqrt(w.reduce((s, [x, y]) => s + x * x + y * y, 0)) || 1; return w.map(([x, y]) => [x / p, y / p]);
+  }
+  const db = (x) => 10 * Math.log10(Math.max(x, 1e-9));
+
+  /* ================================================================ 1. 다이버시티 */
+  (function () {
+    const snr = WF.range("dv-snr", (v) => v + " dB", draw), th = WF.range("dv-th", (v) => v + " dB", draw);
+    const cv = WF.canvas($("cv-div"), (ctx, w, h) => {
+      const P = WF.palette(), S = (L, c) => { const d = []; for (let s = 0; s <= 40; s += 0.5) { const o = outageMrc(s, th(), L); d.push([s, o >= 1e-6 ? o : NaN]); } return { data: d, color: c, width: 2 }; };
+      const ch = WF.chart(ctx, null, { x: [0, 40], y: [1e-6, 1], logY: true, xLabel: "평균 SNR (dB)", yLabel: "끊길 확률", yFmt: (v) => "1e" + Math.round(Math.log10(v)), series: [S(1, P.bad), S(2, P.accent), S(4, P.ok)] });
+      ctx.strokeStyle = P.text; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(ch.X(snr()), ch.box.y); ctx.lineTo(ch.X(snr()), ch.box.y + ch.box.h); ctx.stroke(); ctx.setLineDash([]);
+      [["1개", P.bad], ["2개", P.accent], ["4개", P.ok]].forEach(([t, c], i) => WF.text(ctx, t, ch.box.x + ch.box.w - 40, ch.box.y + 12 + i * 16, { size: 11.5, color: c, bold: true }));
+    }, { aspect: 0.48, minHeight: 240, maxHeight: 340 });
+    const pct = (p) => (p < 1e-9 ? "≈ 0%" : (p * 100).toPrecision(2) + "%");
+    function draw() { [1, 2, 4].forEach((L) => WF.stat("dv-" + L, pct(outageMrc(snr(), th(), L)))); cv.redraw(); }
+    draw();
+  })();
+
+  /* ================================================================ 2. 공간 다중화 */
+  (function () {
+    const snr = WF.range("sm-snr", (v) => v + " dB", draw), rho = WF.range("sm-rho", (v) => v.toFixed(2), draw);
+    const cv = WF.canvas($("cv-smux"), (ctx, w, h) => {
+      const P = WF.palette(), a = [], b = []; for (let s = 0; s <= 40; s += 0.5) { a.push([s, capacity1(s, rho())]); b.push([s, capacity2x2(s, rho())]); }
+      const ch = WF.chart(ctx, null, { x: [0, 40], y: [0, 26], xLabel: "SNR (dB)", yLabel: "용량 (b/s/Hz)", series: [{ data: a, color: P.accent, width: 2.2 }, { data: b, color: P.accent2, width: 2.2 }] });
+      ctx.fillStyle = P.text; ctx.beginPath(); ctx.arc(ch.X(snr()), ch.Y(capacity2x2(snr(), rho())), 5, 0, 7); ctx.fill();
+    }, { aspect: 0.48, minHeight: 240, maxHeight: 340 });
+    function draw() { const c1 = capacity1(snr(), rho()), c2 = capacity2x2(snr(), rho()); WF.stat("sm-1", c1.toFixed(2)); WF.stat("sm-2", c2.toFixed(2)); WF.stat("sm-g", "×" + (c2 / c1).toFixed(2)); cv.redraw(); }
+    draw();
+  })();
+
+  /* ================================================================ 3. 빔포밍 */
+  (function () {
+    const n = WF.range("bf-n", (v) => v + "개", draw), a = WF.range("bf-a", (v) => v + "°", draw);
+    $("bf-mu").addEventListener("change", draw);
+    const rad = (d) => (d * Math.PI) / 180, T1 = rad(-40);
+    const weights = () => (n() > 1 && $("bf-mu").checked ? steerWithNull(n(), rad(a()), T1) : steer(n(), rad(a())));
+    const cv = WF.canvas($("cv-bf"), (ctx, w, h) => {
+      const P = WF.palette(), cx = w / 2, cy = h - 24, R = Math.min(w / 2 - 16, h - 40), W = weights(), floor = -30, top = 10;
+      ctx.strokeStyle = P.grid; [0, 10, 20, 30, 40].forEach((r) => { ctx.beginPath(); ctx.arc(cx, cy, (R * (40 - r)) / 40, Math.PI, 2 * Math.PI); ctx.stroke(); });
+      [-60, -30, 0, 30, 60].forEach((d) => { const t = rad(d); ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.sin(t) * R, cy - Math.cos(t) * R); ctx.stroke(); WF.text(ctx, d + "°", cx + Math.sin(t) * (R + 10), cy - Math.cos(t) * (R + 10), { size: 10, color: P.faint, align: "center" }); });
+      ctx.strokeStyle = P.accent; ctx.lineWidth = 2.2; ctx.beginPath();
+      for (let i = 0; i <= 360; i++) { const t = rad(-90 + i / 2), g = Math.max(floor, Math.min(top, db(arrayGain(W, t)))), r = (R * (g - floor)) / (top - floor); const x = cx + Math.sin(t) * r, y = cy - Math.cos(t) * r; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+      ctx.stroke();
+      const mark = (d, c, txt) => { const t = rad(d); ctx.fillStyle = c; ctx.beginPath(); ctx.arc(cx + Math.sin(t) * R * 0.95, cy - Math.cos(t) * R * 0.95, 6, 0, 7); ctx.fill(); WF.text(ctx, txt, cx + Math.sin(t) * R * 0.82, cy - Math.cos(t) * R * 0.82, { size: 11, color: c, align: "center", bold: true }); };
+      mark(a(), P.ok, "A"); if ($("bf-mu").checked) mark(-40, P.bad, "B");
+      for (let k = 0; k < n(); k++) { ctx.fillStyle = P.text; ctx.fillRect(cx - (n() - 1) * 5 + k * 10 - 2, cy + 4, 4, 8); }
+    }, { aspect: 0.62, minHeight: 240, maxHeight: 340 });
+    function draw() {
+      const W = weights(), g = db(arrayGain(W, rad(a()))), nl = db(arrayGain(W, T1));
+      let lo = a(), hi = a(); while (lo > -90 && db(arrayGain(W, rad(lo))) > g - 3) lo -= 0.5; while (hi < 90 && db(arrayGain(W, rad(hi))) > g - 3) hi += 0.5;
+      WF.stat("bf-g", (g >= 0 ? "+" : "") + g.toFixed(1) + " dB"); WF.stat("bf-null", nl < -29 ? "≈ 0 (−∞ dB)" : nl.toFixed(1) + " dB"); WF.stat("bf-w", (hi - lo).toFixed(0) + "°");
+      cv.redraw();
+    }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

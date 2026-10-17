@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>연결과 로밍 · WiFiBook</title>
+<meta name="description" content="와이파이 목록을 띄우는 스캔, 연결 버튼을 누른 뒤 오가는 인증·연결·키 교환·DHCP, 그리고 집 안을 걸어 다닐 때 공유기를 갈아타는 로밍. wpa_supplicant의 실제 로밍 판단 규칙으로 “왜 먼 공유기를 붙잡고 있는지”를 시뮬레이션한다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/wifi/chapters/connect.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="WiFiBook">
+<meta property="og:title" content="연결과 로밍 · WiFiBook">
+<meta property="og:description" content="와이파이 목록을 띄우는 스캔, 연결 버튼을 누른 뒤 오가는 인증·연결·키 교환·DHCP, 그리고 집 안을 걸어 다닐 때 공유기를 갈아타는 로밍. wpa_supplicant의 실제 로밍 판단 규칙으로 “왜 먼 공유기를 붙잡고 있는지”를 시뮬레이션한다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/wifi/chapters/connect.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/wifi/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"연결과 로밍","name":"연결과 로밍 · WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/chapters/connect.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/wifi/chapters/connect.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":9,"image":"https://yalex-kim.github.io/yalexBook/wifi/og.png","dateModified":"2026-10-17","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/wifi/#book","name":"WiFiBook — 누구나 읽는 인터랙티브 와이파이 교과서","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"publisher":{"@type":"Organization","name":"WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"description":"와이파이 목록을 띄우는 스캔, 연결 버튼을 누른 뒤 오가는 인증·연결·키 교환·DHCP, 그리고 집 안을 걸어 다닐 때 공유기를 갈아타는 로밍. wpa_supplicant의 실제 로밍 판단 규칙으로 “왜 먼 공유기를 붙잡고 있는지”를 시뮬레이션한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"WiFiBook","item":"https://yalex-kim.github.io/yalexBook/wifi/"},{"@type":"ListItem","position":2,"name":"09 연결과 로밍","item":"https://yalex-kim.github.io/yalexBook/wifi/chapters/connect.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<style>
+  .seq { display: grid; grid-template-columns: 64px 1fr 64px; gap: 4px 8px; font-size: 13.5px; align-items: center; }
+  .seq .who { font-weight: 700; text-align: center; color: var(--text-dim); }
+  .seq .msg { position: relative; padding: 6px 10px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border); }
+  .seq .msg.r { text-align: right; }
+  .seq .msg small { color: var(--text-dim); display: block; font-size: 12px; }
+  .seq .msg.new { border-color: var(--accent); }
+  .seq .ph { grid-column: 1 / -1; font: 600 12px var(--mono); color: var(--accent); margin-top: 6px; }
+</style>
+</head>
+<body data-chapter="connect">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 09</div>
+    <h1>연결과 로밍</h1>
+    <p class="lead">설정에서 와이파이를 켜면 몇 초 뒤 목록이 뜨고, 이름을 누르면 1~2초 만에 연결된다. 그 사이 공중에서는 열 개가 넘는 프레임이 오간다. 거실에서 안방으로 걸어가면 휴대폰은 언젠가 더 가까운 공유기로 갈아탄다. 그런데 왜 꼭 신호가 나빠질 대로 나빠진 뒤에야 갈아탈까? 이 장은 실제 단말 소프트웨어(wpa_supplicant)의 코드를 근거로 그 과정을 따라간다.</p>
+    <ul class="objectives">
+      <li>수동 스캔과 능동 스캔의 차이, 전체 스캔에 몇 초가 걸리는 이유를 계산한다.</li>
+      <li>연결 과정(프로브 → 인증 → 연결 → 4단계 핸드셰이크 → DHCP)을 프레임 순서로 말할 수 있다.</li>
+      <li>단말이 로밍을 결정하는 규칙과 “끈적한 단말”이 생기는 이유를 안다.</li>
+      <li>802.11k·v·r이 로밍의 어느 단계를 줄이는지 구분한다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="scan">
+    <h2>스캔: 목록이 뜨기까지</h2>
+    <p>단말이 주변 네트워크를 찾는 방법은 둘이다.</p>
+    <ul>
+      <li><b>수동 스캔</b>: 채널마다 머물며 비컨(102.4 ms마다)을 기다린다. 한 채널에 최소 100 ms 남짓 머물러야 한다.</li>
+      <li><b>능동 스캔</b>: 채널에 가자마자 <b>프로브 요청</b>을 보내고 AP들의 <b>프로브 응답</b>을 기다린다. 훨씬 빠르지만, 먼저 전파를 내도 되는 채널에서만 쓸 수 있다. 레이더 보호가 필요한 DFS 채널(2장)에서는 비컨을 듣기 전까지 보낼 수 없어 수동 스캔을 한다.</li>
+    </ul>
+    <p>6 GHz는 채널이 너무 많아 다른 길을 쓴다. AP가 2.4·5 GHz 비컨 안에 “나는 6 GHz 몇 번 채널에도 있다”는 <b>RNR</b><span class="en">(Reduced Neighbor Report)</span>을 넣어 알려 주고, 단말은 스캔할 때 PSC 15개 채널(2장)만 직접 살핀다.</p>
+    <div class="sim" id="sim-scan">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>전체 스캔에 걸리는 시간</h3></div>
+      <div class="sim-view"><canvas id="cv-scan"></canvas></div>
+      <div class="sim-controls">
+        <label class="check"><input type="checkbox" id="sc-24" checked> 2.4 GHz (채널 1~13, 능동)</label>
+        <label class="check"><input type="checkbox" id="sc-5" checked> 5 GHz 일반 (36~48, 149~165, 능동)</label>
+        <label class="check"><input type="checkbox" id="sc-dfs" checked> 5 GHz DFS (52~64, 100~144, 수동)</label>
+        <label class="check"><input type="checkbox" id="sc-6" checked> 6 GHz PSC 15개 (능동)</label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">능동 채널</span><span class="v" id="sc-na">—</span></div>
+        <div class="stat"><span class="k">수동 채널</span><span class="v" id="sc-np">—</span></div>
+        <div class="stat"><span class="k">전체 스캔</span><span class="v" id="sc-t">—</span></div>
+      </div>
+      <div class="sim-note">막대: 채널마다 머무는 시간을 차례로 이은 것(파랑 = 능동, 주황 = 수동). 해볼 것: 모든 대역을 켜면 약 4초다. DFS 채널 16개가 그중 절반 가까이다. 연결 중에 이렇게 오래 채널을 떠나 있으면 통화가 끊기므로, 연결 중 스캔은 몇 채널씩 나눠서 하고 로밍에는 아래의 이웃 목록(802.11k)을 쓴다. 계산: Linux mac80211 소프트웨어 스캔의 채널당 시간(능동: 프로브 전 대기 HZ/33 + 응답 대기 HZ/33 ≈ 61 ms, 수동: HZ/9 ≈ 111 ms). 칩이 직접 스캔하는 드라이버는 자기 값을 쓴다. 채널 목록은 한국 기준(2장).</div>
+    </div>
+    <p class="spec-ref">채널당 시간: Linux <code>net/mac80211/scan.c</code>의 <code>IEEE80211_PROBE_DELAY = HZ / 33</code>, <code>IEEE80211_CHANNEL_TIME = HZ / 33</code>, <code>IEEE80211_PASSIVE_CHANNEL_TIME = HZ / 9</code> · PSC: 2장 계산(<code>cfg80211_channel_is_psc()</code>)</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="join">
+    <h2>연결 버튼을 누른 뒤</h2>
+    <p>연결은 네 단계다. 이름은 헷갈리지만 각각 하는 일이 다르다.</p>
+    <ol>
+      <li><b>인증</b><span class="en">(Authentication)</span>: 이름과 달리 WPA2에서는 형식뿐인 “열린 인증” 두 프레임이다. 진짜 비밀번호 확인은 뒤의 4단계 핸드셰이크에서 한다. WPA3-Personal은 여기서 <b>SAE</b>로 비밀번호를 직접 증명한다(10장).</li>
+      <li><b>연결</b><span class="en">(Association)</span>: 단말이 자기 능력(지원 속도, HT/VHT/HE, 보안 방식)을 알리고 AP가 연결 번호(AID)를 준다.</li>
+      <li><b>4단계 핸드셰이크</b>: EAPOL-Key 프레임 네 개로 이번 연결에 쓸 암호 키를 만든다(10장). 회사 망(802.1X)은 그 전에 EAP로 사용자 인증을 한다.</li>
+      <li><b>DHCP</b>: 이제 데이터 프레임이 오갈 수 있으니 IP 주소를 받는다. 이것은 와이파이가 아니라 IP 계층의 일이다.</li>
+    </ol>
+    <div class="sim" id="sim-join">
+      <div class="sim-head"><span class="sim-tag">INTERACTIVE</span><h3>연결 과정 따라가기</h3></div>
+      <div class="sim-controls" style="border-top:0">
+        <div class="ctrl"><span>보안 방식</span><div class="seg" id="jn-mode"><button data-value="psk" class="on">WPA2-Personal</button><button data-value="sae">WPA3-Personal</button><button data-value="eap">WPA2/3-Enterprise</button><button data-value="ft">로밍(FT, 802.11r)</button></div></div>
+      </div>
+      <div class="sim-view" style="padding:14px"><div class="seq" id="jn-seq"></div></div>
+      <div class="sim-controls"><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" id="jn-next">다음 프레임</button><button class="btn" id="jn-all">끝까지</button><button class="btn" id="jn-reset">처음부터</button></div></div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">공중 프레임</span><span class="v" id="jn-n">—</span></div>
+        <div class="stat"><span class="k">단말이 기다리는 왕복</span><span class="v" id="jn-rt">—</span></div>
+        <div class="stat"><span class="k">지금 단계</span><span class="v" id="jn-ph">—</span></div>
+      </div>
+      <div class="sim-note">ACK는 그리지 않았다. 왕복 수 = 단말이 보내고 답을 기다리는 횟수(AP가 먼저 보내는 프레임에 단말이 답하는 것도 하나로 셈). 엔터프라이즈의 EAP 부분은 방식(EAP-TLS, PEAP 등)과 인증서 크기에 따라 왕복이 크게 달라 대표 흐름만 보였다. FT는 같은 ESS 안에서 다른 AP로 옮기는 경우로, IP 주소가 그대로라 DHCP도 생략한다(실제 단말은 확인용 DHCP를 보내기도 한다).</div>
+    </div>
+    <p class="spec-ref">상태 기계: wpa_supplicant <code>wpa_supplicant/events.c</code>, <code>src/rsn_supp/wpa.c</code>(4단계 핸드셰이크), <code>src/rsn_supp/wpa_ft.c</code>(FT) · 프레임 종류: 7장</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="roam">
+    <h2>로밍: 언제 갈아탈까</h2>
+    <p>와이파이에서 로밍은 <b>단말이 결정한다</b>. AP는 “나가 줄래?”라고 권할 수는 있어도 붙잡거나 넘길 수 없다. 단말은 연결 중에 가끔 배경 스캔을 하고, 같은 SSID의 다른 BSS가 충분히 좋아 보이면 옮긴다. “충분히”가 어느 정도인지가 핵심이다. 리눅스와 안드로이드가 쓰는 wpa_supplicant의 규칙은 대략 이렇다.</p>
+    <ul>
+      <li>지금 신호의 SNR이 <b>25 dB보다 좋으면 옮기지 않는다</b>(잡음 −95 dBm 기준 신호 −70 dBm보다 강함).</li>
+      <li>그렇지 않으면, 새 후보가 지금보다 <b>몇 dB 이상</b> 강해야 옮긴다. 그 기준은 지금 신호가 나쁠수록 작다: −70 dBm 이상이면 5 dB, −75까지 4 dB, −80까지 3 dB, −85까지 2 dB, 그보다 나쁘면 1 dB.</li>
+      <li>배경 스캔은 신호가 기준(예: −65 dBm)보다 나쁘면 짧은 간격(예: 30초), 좋으면 긴 간격(예: 300초)으로 한다.</li>
+    </ul>
+    <p>규칙만 보면 합리적이지만, 걸어가며 신호가 서서히 나빠지는 상황에서는 결과가 기대와 다르다. 아래에서 직접 걸어 보자.</p>
+    <p class="spec-ref">로밍 판단: wpa_supplicant <code>wpa_supplicant/events.c</code>의 <code>wpa_supplicant_need_to_roam_within_ess()</code>(min_diff 표, <code>GREAT_SNR = 25</code>는 <code>scan.h</code>) · 배경 스캔: <code>wpa_supplicant/bgscan_simple.c</code>, 설정 예 <code>bgscan="simple:30:-45:300"</code>(<code>wpa_supplicant.conf</code>)</p>
+    <div class="sim" id="sim-roam">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>복도를 걸으며 로밍하기</h3></div>
+      <div class="sim-view"><canvas id="cv-roam"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>두 공유기 사이 거리 <output id="rm-d-out"></output></span><input type="range" id="rm-d" min="15" max="60" value="40"></label>
+        <label class="ctrl"><span>배경 스캔 기준 신호 <output id="rm-th-out"></output></span><input type="range" id="rm-th" min="-85" max="-50" value="-65"></label>
+        <label class="ctrl"><span>짧은 스캔 간격 <output id="rm-si-out"></output></span><input type="range" id="rm-si" min="2" max="30" value="10"></label>
+        <label class="check"><input type="checkbox" id="rm-k"> 802.11v: AP가 −67 dBm 아래에서 “옆 AP로 가라”고 권함(BSS 전환 관리)</label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">갈아탄 위치</span><span class="v" id="rm-at">—</span></div>
+        <div class="stat"><span class="k">갈아타기 직전 신호</span><span class="v" id="rm-lvl">—</span></div>
+        <div class="stat"><span class="k">−75 dBm 아래로 버틴 시간</span><span class="v" id="rm-bad">—</span></div>
+      </div>
+      <div class="sim-note">그래프: 공유기 1(왼쪽) 옆에서 공유기 2(오른쪽)까지 초속 1 m로 걸을 때 두 공유기의 신호. 굵은 선 = 연결된 공유기, 아래 눈금 = 배경 스캔 시각. 해볼 것: ① 기본값(40 m)에서는 중간 지점 20 m를 한참 지난 약 29 m에서야 갈아탄다. 신호가 −70 dBm(SNR 25 dB)보다 나빠질 때까지는 후보가 아무리 강해도 머물기 때문이다. 이것이 “끈적한 단말”이다. ② 짧은 스캔 간격을 30초로 늘리면 다음 스캔 전에 복도 끝에 닿아 끝까지 옮기지 않을 수도 있다. ③ 802.11v를 켜면 AP가 −67 dBm에서 권해 약 22 m에서 옮긴다. ④ 공유기 사이를 15 m로 줄이면 신호가 늘 좋아 아예 옮기지 않는다(그래도 괜찮다). 배경 스캔은 신호가 기준 아래로 내려가는 순간 한 번 바로 하고, 그 뒤 짧은 간격으로 한다(bgscan simple의 신호 변화 알림). 모델: 송신 20 dBm, 1 m 손실 40 dB, 경로 손실 지수 3.5(벽 몇 개 있는 실내), 공유기 높이 차 2 m, 잡음 −95 dBm, 페이딩 없음. wpa_supplicant 규칙 중 처리량 추정·대역 점수 보정은 뺐다(두 공유기가 같은 대역·같은 사양이라 가정).</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="kvr">
+    <h2>로밍을 빠르게: 802.11k·v·r</h2>
+    <p>로밍은 세 부분으로 나뉜다. <b>어디로 갈지 찾기</b>(스캔), <b>언제 갈지 정하기</b>(판단), <b>옮겨 가기</b>(재연결과 키 교환). 세 개정안이 하나씩 맡는다. 셋을 묶어 Wi-Fi Alliance는 “Voice-Enterprise”·“Agile Multiband” 같은 인증을 만들었다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>개정안</th><th>줄이는 것</th><th>방법</th></tr></thead>
+      <tbody>
+        <tr><td><b>802.11k</b> (무선 자원 측정)</td><td>스캔 시간</td><td>AP가 <b>이웃 보고서</b><span class="en">(Neighbor Report)</span>로 같은 ESS의 이웃 AP와 그 채널을 알려 준다. 단말은 전체 스캔(수 초) 대신 그 몇 채널만 본다.</td></tr>
+        <tr><td><b>802.11v</b> (무선 네트워크 관리)</td><td>판단 지연</td><td>AP가 <b>BSS 전환 관리 요청</b><span class="en">(BTM Request)</span>으로 “이 AP로 옮겨 달라”고 권한다. 따를지는 단말이 정한다. 위 시뮬레이터의 체크 상자.</td></tr>
+        <tr><td><b>802.11r</b> (빠른 BSS 전환, FT)</td><td>옮기는 시간</td><td>처음 연결할 때 만든 키 계층을 같은 이동 도메인의 AP들이 나눠 가져, 옮길 때 인증·연결 프레임 안에서 키 교환을 끝낸다. 4단계 핸드셰이크와(엔터프라이즈라면) EAP가 빠진다.</td></tr>
+      </tbody>
+    </table></div>
+    <p class="spec-ref">hostapd 설정: <code>rrm_neighbor_report</code>(11k), <code>bss_transition</code>(11v), <code>mobility_domain</code>·<code>ieee80211r</code>(11r) — <code>hostapd/hostapd.conf</code> · 단말의 BTM 처리: wpa_supplicant <code>wnm_sta.c</code></p>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">메시 공유기 세 대를 설치했는데, 거실 휴대폰이 여전히 멀리 있는 현관 공유기에 붙어 있다. 공유기 앱에서 무엇을 켜면 가장 직접적인 도움이 될까?</p><p class="wi-hint">단말이 “지금 신호도 그럭저럭 괜찮다”고 판단해 옮기지 않는 상황이다.</p><div class="opts">
+      <button class="opt">802.11r (빠른 전환)</button><button class="opt" data-correct>802.11v (BSS 전환 관리) — 공유기가 옮기라고 권함</button><button class="opt">채널 폭 160 MHz</button>
+    </div><div class="quiz-exp">11r은 옮기는 “속도”를, 11k는 “찾는” 시간을 줄인다. 옮길지 말지 판단을 앞당기는 것은 11v의 권고다(단말이 따라야 효과가 있다). 많은 메시 제품은 여기에 더해 약한 단말의 연결 요청을 거절하는 방법도 쓴다.</div></div>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>능동 스캔(프로브)은 채널당 약 60 ms, DFS 채널의 수동 스캔은 약 110 ms. 모든 대역 전체 스캔은 수 초가 걸린다. 6 GHz는 RNR과 PSC로 찾는다.</li>
+      <li>연결 = 인증(WPA2는 형식, WPA3는 SAE) → 연결(능력·AID) → 4단계 핸드셰이크(키) → DHCP(IP).</li>
+      <li>로밍은 단말이 정한다. wpa_supplicant는 SNR 25 dB 이상이면 옮기지 않고, 그 아래에서는 신호가 나쁠수록 작은 차이(5 → 1 dB)로도 옮긴다.</li>
+      <li>배경 스캔 간격과 이 규칙 때문에 단말은 중간 지점을 지나서야 옮기기 쉽다(끈적한 단말).</li>
+      <li>11k(이웃 보고서) = 찾기, 11v(BTM) = 권하기, 11r(FT) = 빨리 옮기기.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>DFS 채널에서 단말이 프로브 요청을 바로 보낼 수 없는 이유는?</p><div class="opts">
+        <button class="opt">DFS 채널은 암호화가 필수라서</button><button class="opt" data-correct>레이더 보호 때문에 AP의 비컨을 듣기 전에는 먼저 전파를 낼 수 없어서</button><button class="opt">DFS 채널에는 비컨이 없어서</button><button class="opt">6 GHz 전용이라서</button>
+      </div><div class="quiz-exp">그래서 DFS 채널은 수동 스캔(비컨 기다리기)을 하고 시간이 더 걸린다.</div></div>
+      <div class="quiz-q"><p>WPA2-Personal에서 비밀번호가 맞는지 실제로 확인되는 단계는?</p><div class="opts">
+        <button class="opt">열린 인증(Authentication)</button><button class="opt">연결(Association)</button><button class="opt" data-correct>4단계 핸드셰이크</button><button class="opt">DHCP</button>
+      </div><div class="quiz-exp">메시지 2의 MIC가 맞는지로 AP가 단말의 비밀번호(PSK)를 확인한다(10장).</div></div>
+      <div class="quiz-q"><p>지금 신호가 −68 dBm(잡음 −95 dBm)이다. 후보 AP가 −60 dBm으로 보인다. wpa_supplicant 규칙으로는?</p><div class="opts">
+        <button class="opt" data-correct>옮기지 않는다 (SNR 27 dB > 25 dB)</button><button class="opt">옮긴다 (8 dB 차이 ≥ 5 dB)</button><button class="opt">옮긴다 (항상 강한 쪽으로)</button><button class="opt">연결을 끊는다</button>
+      </div><div class="quiz-exp">지금 SNR이 25 dB를 넘으면 차이와 상관없이 머문다(처리량 추정이 크게 좋아지는 경우 등 예외는 있다).</div></div>
+      <div class="quiz-q"><p>802.11r(FT)이 줄이는 것은?</p><div class="opts">
+        <button class="opt">스캔 채널 수</button><button class="opt">옮길지 판단하는 시간</button><button class="opt" data-correct>옮겨 가서 키를 새로 만드는 왕복(4단계 핸드셰이크·EAP)</button><button class="opt">비컨 간격</button>
+      </div><div class="quiz-exp">키 계층을 미리 나눠 두고 인증·재연결 프레임 안에서 키 교환을 끝낸다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  /* ---------------------------------------------------------------- 스캔 */
+  const ACTIVE_MS = 2000 / 33, PASSIVE_MS = 1000 / 9; // mac80211: PROBE_DELAY + CHANNEL_TIME = 2 × HZ/33, PASSIVE = HZ/9 (ms)
+  const SCAN_SETS = { "sc-24": { n: 13, passive: false }, "sc-5": { n: 9, passive: false }, "sc-dfs": { n: 16, passive: true }, "sc-6": { n: 15, passive: false } };
+  function scanMs(nActive, nPassive) { return nActive * 2 * (1000 / 33) + nPassive * (1000 / 9); }
+
+  /* ---------------------------------------------------------------- 로밍 판단 (wpa_supplicant_need_to_roam_within_ess의 신호 부분) */
+  const NOISE = -95, GREAT_SNR = 25;
+  function minDiff(cur) { return cur < -85 ? 1 : cur < -80 ? 2 : cur < -75 ? 3 : cur < -70 ? 4 : cur < 0 ? 5 : 2; }
+  function shouldRoam(cur, sel) {
+    if (cur < 0 && cur > sel) return false;      // 지금이 더 강함
+    if (cur - NOISE > GREAT_SNR) return false;    // 지금 SNR이 충분히 좋음
+    return sel - cur >= minDiff(cur);
+  }
+  /** 로그 거리 경로 손실: 송신 20 dBm, 1 m 손실 40 dB, 지수 3.5, 높이 차 2 m */
+  function rssiAt(dx) { const d = Math.max(1, Math.hypot(dx, 2)); return 20 - (40 + 35 * Math.log10(d)); }
+  /** 초속 1 m로 공유기 1 → 2까지 걷기. 신호가 기준 아래로 내려가는 순간 바로 스캔하고 짧은 간격으로 바꾼다(bgscan simple) */
+  function walk(spacing, thresh, shortI, btm) {
+    const longI = 300, dt = 0.1, T = spacing; let cur = 0, nextScan = longI, roamT = null, roamLvl = null, bad = 0, below = false; const scans = [], trace = [];
+    for (let i = 0; i * dt <= T + 1e-9; i++) {
+      const t = i * dt, r = [rssiAt(t), rssiAt(spacing - t)], lvl = r[cur];
+      trace.push([t, r[0], r[1], cur]);
+      if (lvl < -75) bad += dt;
+      if (!below && lvl < thresh) { below = true; nextScan = t; } else if (below && lvl >= thresh) below = false;
+      const btmNow = btm && cur === 0 && lvl < -67 && r[1] > lvl;
+      if (t >= nextScan - 1e-9 || (btmNow && roamT === null)) {
+        scans.push(t);
+        if (cur === 0 && (btmNow || shouldRoam(lvl, r[1]))) { cur = 1; roamT = t; roamLvl = lvl; }
+        nextScan = t + (r[cur] < thresh ? shortI : longI);
+      }
+    }
+    return { roamT, roamLvl, bad, scans, trace };
+  }
+
+  /* ---------------------------------------------------------------- 연결 과정 */
+  const S = "단말", A = "AP";
+  const STEPS = {
+    psk: [["스캔", S, "프로브 요청", "SSID “우리집”이 있나?"], ["스캔", A, "프로브 응답", "능력·보안(RSN: PSK)"], ["인증", S, "인증 (열린 인증 1)", "알고리즘 0"], ["인증", A, "인증 (열린 인증 2)", "성공 — 아직 아무것도 확인 안 함"], ["연결", S, "연결 요청", "지원 속도·HT/VHT/HE·RSN"], ["연결", A, "연결 응답", "AID 1 부여"], ["키", A, "EAPOL-Key 1/4", "ANonce"], ["키", S, "EAPOL-Key 2/4", "SNonce + MIC (여기서 비밀번호 확인)"], ["키", A, "EAPOL-Key 3/4", "GTK(암호화) + MIC"], ["키", S, "EAPOL-Key 4/4", "확인 — 키 설치"], ["IP", S, "DHCP Discover", "암호화된 데이터 프레임"], ["IP", A, "DHCP Offer", ""], ["IP", S, "DHCP Request", ""], ["IP", A, "DHCP ACK", "192.168.0.23"]],
+    sae: null, eap: null, ft: null,
+  };
+  STEPS.sae = [...STEPS.psk.slice(0, 2), ["인증", S, "인증 SAE Commit", "타원곡선 위 값(비밀번호에서 유도)"], ["인증", A, "인증 SAE Commit", ""], ["인증", S, "인증 SAE Confirm", "같은 비밀번호임을 증명"], ["인증", A, "인증 SAE Confirm", "PMK 생성"], ...STEPS.psk.slice(4)];
+  STEPS.eap = [...STEPS.psk.slice(0, 6), ["EAP", A, "EAP-Request/Identity", ""], ["EAP", S, "EAP-Response/Identity", "user@company"], ["EAP", A, "EAP-Request (TLS 시작)", "AP는 RADIUS 서버에 중계"], ["EAP", S, "TLS ClientHello", ""], ["EAP", A, "TLS ServerHello·인증서 (여러 조각)", ""], ["EAP", S, "TLS 키 교환·Finished (+조각 확인)", ""], ["EAP", A, "TLS Finished", ""], ["EAP", S, "EAP-Response (빈 확인)", ""], ["EAP", A, "EAP-Success", "RADIUS가 AP에 PMK 전달"], ...STEPS.psk.slice(6)];
+  STEPS.ft = [["FT", S, "인증 (FT)", "새 AP에 PMK-R1 이름·SNonce"], ["FT", A, "인증 (FT)", "ANonce — 키가 이미 계산됨"], ["FT", S, "재연결 요청 (FT)", "MIC로 키 확인"], ["FT", A, "재연결 응답 (FT)", "GTK 전달 — 바로 데이터"]];
+  /** 공중 프레임 수와 단말이 기다리는 왕복 수(방향이 바뀌는 횟수의 절반, 올림) */
+  function joinStats(steps) { let rt = 0; for (let i = 1; i < steps.length; i++) if (steps[i][1] !== steps[i - 1][1]) rt += 0.5; return { frames: steps.length, roundTrips: Math.ceil(rt) }; }
+
+  /* ================================================================ 1. 스캔 */
+  (function () {
+    const ids = Object.keys(SCAN_SETS); ids.forEach((id) => $(id).addEventListener("change", draw));
+    const cv = WF.canvas($("cv-scan"), (ctx, w, h) => {
+      const P = WF.palette(), segs = []; ids.forEach((id) => { if ($(id).checked) for (let i = 0; i < SCAN_SETS[id].n; i++) segs.push(SCAN_SETS[id].passive ? PASSIVE_MS : ACTIVE_MS); });
+      const tot = segs.reduce((a, b) => a + b, 0), L = 12, R = w - 12, sc = (R - L) / 4500; let x = L;
+      segs.forEach((d) => { ctx.fillStyle = d > 100 ? P.accent2 : P.accent; ctx.fillRect(x, 30, Math.max(1, d * sc - 1), 30); x += d * sc; });
+      ctx.strokeStyle = P.axis; ctx.beginPath(); ctx.moveTo(L, 66); ctx.lineTo(R, 66); ctx.stroke();
+      for (let s = 0; s <= 4; s++) WF.text(ctx, s + " s", L + s * 1000 * sc, 82, { size: 10.5, color: P.faint, align: "center" });
+      WF.text(ctx, "전체 " + (tot / 1000).toFixed(2) + " s", L, 20, { size: 12, color: P.text, bold: true });
+    }, { aspect: 0.22, minHeight: 100, maxHeight: 120 });
+    function draw() { let a = 0, p = 0; ids.forEach((id) => { if ($(id).checked) SCAN_SETS[id].passive ? (p += SCAN_SETS[id].n) : (a += SCAN_SETS[id].n); }); WF.stat("sc-na", a + "개"); WF.stat("sc-np", p + "개"); WF.stat("sc-t", (scanMs(a, p) / 1000).toFixed(2) + " s"); cv.redraw(); }
+    draw();
+  })();
+
+  /* ================================================================ 2. 연결 과정 */
+  (function () {
+    let mode = "psk", shown = 0;
+    function render() {
+      const st = STEPS[mode]; let html = "", ph = "";
+      st.slice(0, shown).forEach(([p, who, name, note], i) => {
+        if (p !== ph) { html += `<div class="ph">${p}</div>`; ph = p; }
+        const fromS = who === S, cls = "msg" + (fromS ? "" : " r") + (i === shown - 1 ? " new" : "");
+        html += `<div class="who">${fromS ? "📱" : ""}</div><div class="${cls}">${fromS ? "" : "← "}${name}${fromS ? " →" : ""}${note ? `<small>${note}</small>` : ""}</div><div class="who">${fromS ? "" : "📶"}</div>`;
+      });
+      $("jn-seq").innerHTML = html || `<div class="ph" style="color:var(--text-dim)">“다음 프레임”을 눌러 시작</div>`;
+      const s = joinStats(st); WF.stat("jn-n", shown + " / " + s.frames); WF.stat("jn-rt", s.roundTrips + "번"); WF.stat("jn-ph", shown ? st[shown - 1][0] : "—");
+    }
+    WF.seg("jn-mode", (v) => { mode = v; shown = 0; render(); });
+    $("jn-next").addEventListener("click", () => { shown = Math.min(STEPS[mode].length, shown + 1); render(); });
+    $("jn-all").addEventListener("click", () => { shown = STEPS[mode].length; render(); });
+    $("jn-reset").addEventListener("click", () => { shown = 0; render(); });
+    render();
+  })();
+
+  /* ================================================================ 3. 로밍 */
+  (function () {
+    const d = WF.range("rm-d", (v) => v + " m", draw), th = WF.range("rm-th", (v) => v + " dBm", draw), si = WF.range("rm-si", (v) => v + " s", draw);
+    $("rm-k").addEventListener("change", draw);
+    const run = () => walk(d(), th(), si(), $("rm-k").checked);
+    const cv = WF.canvas($("cv-roam"), (ctx, w, h) => {
+      const P = WF.palette(), r = run(), a = r.trace.map((p) => [p[0], p[1]]), b = r.trace.map((p) => [p[0], p[2]]);
+      const conn = r.trace.map((p) => [p[0], p[3] ? p[2] : p[1]]);
+      const ch = WF.chart(ctx, null, { x: [0, d()], y: [-95, -20], xLabel: "걸은 시간 (s) = 공유기 1에서 거리 (m)", yLabel: "신호 (dBm)", series: [{ data: a, color: P.accent, width: 1.3, dash: [4, 3] }, { data: b, color: P.accent2, width: 1.3, dash: [4, 3] }, { data: conn, color: P.text, width: 3 }], hlines: [{ y: NOISE + GREAT_SNR, label: "SNR 25 dB", color: P.ok }, { y: th(), label: "스캔 기준", color: P.faint }], vlines: r.roamT != null ? [{ x: r.roamT, label: "로밍", color: P.bad, dash: [2, 2] }] : [] });
+      ctx.fillStyle = P.dim; r.scans.forEach((t) => ctx.fillRect(ch.X(t) - 1, ch.box.y + ch.box.h - 8, 2, 8));
+      ctx.strokeStyle = P.faint; ctx.setLineDash([2, 4]); ctx.beginPath(); ctx.moveTo(ch.X(d() / 2), ch.box.y); ctx.lineTo(ch.X(d() / 2), ch.box.y + ch.box.h); ctx.stroke(); ctx.setLineDash([]);
+      WF.text(ctx, "중간", ch.X(d() / 2) + 4, ch.box.y + 26, { size: 10.5, color: P.faint });
+      WF.text(ctx, "공유기 1", ch.box.x + 6, ch.box.y + ch.box.h - 14, { size: 11, color: P.accent, bold: true }); WF.text(ctx, "공유기 2", ch.box.x + ch.box.w - 6, ch.box.y + ch.box.h - 14, { size: 11, color: P.accent2, bold: true, align: "right" });
+    }, { aspect: 0.55, minHeight: 260, maxHeight: 380 });
+    function draw() {
+      const r = run();
+      WF.stat("rm-at", r.roamT == null ? "안 옮김" : r.roamT.toFixed(1) + " m");
+      WF.stat("rm-lvl", r.roamLvl == null ? "—" : r.roamLvl.toFixed(0) + " dBm"); WF.stat("rm-bad", r.bad.toFixed(1) + " s"); cv.redraw();
+    }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

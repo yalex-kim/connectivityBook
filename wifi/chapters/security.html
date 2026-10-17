@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>보안: WEP에서 WPA3까지 · WiFiBook</title>
+<meta name="description" content="와이파이 비밀번호가 암호 키가 되는 과정. PBKDF2로 만드는 PMK, 4-way 핸드셰이크로 만드는 PTK, CCMP 암호화, WPA3-SAE, 관리 프레임 보호(PMF), Enhanced Open, 그리고 우리 집·회사·공개 망의 권장 설정을 hostapd 시험 벡터로 검증한 계산기로 익힌다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/wifi/chapters/security.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="WiFiBook">
+<meta property="og:title" content="보안: WEP에서 WPA3까지 · WiFiBook">
+<meta property="og:description" content="와이파이 비밀번호가 암호 키가 되는 과정. PBKDF2로 만드는 PMK, 4-way 핸드셰이크로 만드는 PTK, CCMP 암호화, WPA3-SAE, 관리 프레임 보호(PMF), Enhanced Open, 그리고 우리 집·회사·공개 망의 권장 설정을 hostapd 시험 벡터로 검증한 계산기로 익힌다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/wifi/chapters/security.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/wifi/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"보안: WEP에서 WPA3까지","name":"보안: WEP에서 WPA3까지 · WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/chapters/security.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/wifi/chapters/security.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":10,"image":"https://yalex-kim.github.io/yalexBook/wifi/og.png","dateModified":"2026-10-17","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/wifi/#book","name":"WiFiBook — 누구나 읽는 인터랙티브 와이파이 교과서","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"publisher":{"@type":"Organization","name":"WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"description":"와이파이 비밀번호가 암호 키가 되는 과정. PBKDF2로 만드는 PMK, 4-way 핸드셰이크로 만드는 PTK, CCMP 암호화, WPA3-SAE, 관리 프레임 보호(PMF), Enhanced Open, 그리고 우리 집·회사·공개 망의 권장 설정을 hostapd 시험 벡터로 검증한 계산기로 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"WiFiBook","item":"https://yalex-kim.github.io/yalexBook/wifi/"},{"@type":"ListItem","position":2,"name":"10 보안: WEP에서 WPA3까지","item":"https://yalex-kim.github.io/yalexBook/wifi/chapters/security.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<style>
+  .kv { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 6px 10px; font-size: 13px; align-items: start; }
+  .kv b { color: var(--text-dim); font-weight: 600; }
+  .kv code { word-break: break-all; font-size: 12px; background: none; padding: 0; }
+  .kv .kck { color: var(--accent); } .kv .kek { color: var(--accent-2); } .kv .tk { color: var(--ok); }
+  .txt { font: inherit; font-size: 14px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); width: 100%; box-sizing: border-box; }
+  .hs { display: grid; gap: 8px; }
+  .hs .m { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); font-size: 13.5px; }
+  .hs .m.ap { margin-left: 18%; } .hs .m.sta { margin-right: 18%; }
+  .hs .m.cur { border-color: var(--accent); } .hs .m.fail { border-color: var(--bad); color: var(--bad); }
+  .hs .m small { display: block; color: var(--text-dim); margin-top: 3px; }
+</style>
+</head>
+<body data-chapter="security">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 10</div>
+    <h1>보안: WEP에서 WPA3까지</h1>
+    <p class="lead">전파는 벽을 넘어 누구에게나 닿는다. 그래서 와이파이 보안은 처음부터 “주변 모두가 엿듣는다”고 가정하고 설계한다. 카페 벽에 붙은 비밀번호를 아는 손님끼리는 서로의 통신을 볼 수 있을까? 공유기 설정의 “WPA2/WPA3 혼합”은 무엇을 뜻할까? 이 장에서는 비밀번호가 실제 암호 키가 되는 과정을 직접 계산해 보고, 세대마다 무엇이 나아졌는지, 지금 어떻게 설정해야 하는지를 정리한다.</p>
+    <ul class="objectives">
+      <li>비밀번호 → PMK → PTK → 프레임 암호화로 이어지는 열쇠 사슬을 설명한다.</li>
+      <li>4-way 핸드셰이크의 메시지 넷이 각각 무엇을 증명하고 전달하는지 안다.</li>
+      <li>WPA3-SAE, PMF, Enhanced Open(OWE)이 각각 어떤 약점을 보완하는지 구별한다.</li>
+      <li>집·회사·공개 망에 알맞은 보안 설정을 고를 수 있다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="history">
+    <h2>짧은 역사</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>방식</th><th>암호</th><th>인증·키</th><th>지금</th></tr></thead>
+      <tbody>
+        <tr><td>WEP (1997)</td><td>RC4</td><td>모두가 같은 고정 키 + 24비트 IV</td><td>설계 결함으로 이미 깨졌다. 쓰지 않는다</td></tr>
+        <tr><td>WPA (2003)</td><td>TKIP</td><td>PSK / 802.1X</td><td>WEP 하드웨어를 살리려던 임시 방편. 폐기</td></tr>
+        <tr><td>WPA2 (2004)</td><td>CCMP (AES-128)</td><td>PSK / 802.1X + 4-way 핸드셰이크</td><td>널리 쓰인다. Personal은 비밀번호 강도에 기대는 한계가 있다</td></tr>
+        <tr><td>WPA3 (2018)</td><td>CCMP-128, GCMP-256(192비트 모드)</td><td>SAE / 802.1X, PMF 필수</td><td>6 GHz(Wi-Fi 6E·7)에서는 필수</td></tr>
+        <tr><td>Enhanced Open</td><td>CCMP</td><td>OWE: 비밀번호 없이 키 합의</td><td>공개 와이파이의 엿듣기 방지</td></tr>
+      </tbody>
+    </table></div>
+    <p>WEP의 교훈은 두 가지였다. 모두가 같은 키를 오래 쓰면 안 되고, 암호화와 별개로 <b>변조를 확인하는 장치</b>가 필요하다는 것. WPA2는 연결마다 새 키를 만들고(4-way 핸드셰이크), 프레임마다 무결성 검사값(MIC)과 되풀이 방지 번호(PN)를 붙인다.</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="keys">
+    <h2>열쇠 사슬: 비밀번호 → PMK → PTK</h2>
+    <p>WPA2-Personal에서 비밀번호는 그대로 쓰이지 않는다. 세 단계를 거친다.</p>
+    <ol>
+      <li><span class="term">PMK</span><span class="en">(Pairwise Master Key, 32바이트)</span> = PBKDF2-HMAC-SHA1(비밀번호, SSID, 4096회). SSID를 소금(salt)으로 섞어 같은 비밀번호라도 네트워크마다 다른 PMK가 나오고, 4096번 되풀이해 계산을 일부러 무겁게 했다. 같은 비밀번호를 아는 기기는 모두 같은 PMK를 갖는다.</li>
+      <li><span class="term">PTK</span><span class="en">(Pairwise Transient Key)</span> = PRF(PMK, “Pairwise key expansion”, 두 MAC 주소 + 두 난수). 연결할 때마다 AP와 단말이 새 난수(ANonce, SNonce)를 내므로 PTK는 <b>연결마다, 단말마다 다르다</b>. PTK는 셋으로 나뉜다: 메시지 무결성을 확인하는 KCK, 그룹 키를 감싸 보내는 KEK, 실제 데이터를 암호화하는 TK.</li>
+      <li><b>GTK</b><span class="en">(Group Temporal Key)</span>: 방송·멀티캐스트 프레임용 키. AP가 정해 KEK로 감싸 각 단말에 나눠 준다.</li>
+    </ol>
+    <div class="sim" id="sim-key">
+      <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>비밀번호에서 PTK까지 직접 계산하기</h3></div>
+      <div class="sim-controls" style="border-top:0">
+        <label class="ctrl"><span>SSID</span><input class="txt" id="ky-ssid" value="IEEE" maxlength="32" autocomplete="off" spellcheck="false"></label>
+        <label class="ctrl"><span>비밀번호 (8~63자)</span><input class="txt" id="ky-pass" value="password" maxlength="63" autocomplete="off" spellcheck="false"></label>
+        <div class="ctrl"><span>연결 (난수가 바뀐다)</span><div class="seg" id="ky-conn"><button data-value="1" class="on">첫 번째 연결</button><button data-value="2">다시 연결</button></div></div>
+      </div>
+      <div class="sim-view" style="padding:14px"><div class="kv" id="ky-out"></div></div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">PMK 계산(이 기기)</span><span class="v" id="ky-ms">—</span></div>
+        <div class="stat"><span class="k">HMAC-SHA1 호출</span><span class="v" id="ky-n">—</span></div>
+        <div class="stat"><span class="k">PTK 길이(CCMP)</span><span class="v" id="ky-len">48 B</span></div>
+      </div>
+      <div class="sim-note">기본값(SSID “IEEE”, 비밀번호 “password”)의 PMK는 hostapd 시험 벡터 <code>f42c6fc5…a12e</code>와 같다. 해볼 것: ① 비밀번호 한 글자만 바꿔도 PMK 전체가 바뀐다. ② SSID만 바꿔도 PMK가 바뀐다. ③ “다시 연결”을 누르면 PMK는 그대로인데 PTK(특히 데이터 키 TK)가 완전히 바뀐다. 계산은 모두 이 브라우저 안에서만 하며 어디에도 보내지 않는다. MAC 주소와 난수는 예시 값이다.</div>
+    </div>
+    <p class="spec-ref">PMK: hostapd <code>src/crypto/sha1-pbkdf2.c</code> <code>pbkdf2_sha1(passphrase, ssid, 4096, 32)</code>, 시험 벡터 <code>src/crypto/crypto_module_tests.c</code>의 <code>passphrase_tests</code> · PTK: <code>src/common/wpa_common.c</code>의 <code>wpa_pmk_to_ptk()</code>(주석: 802.11i-2004 8.5.1.2) · PRF: <code>src/crypto/sha1-prf.c</code>의 <code>sha1_prf()</code>(라벨 + 0x00 + 데이터 + 1바이트 카운터), 시험 벡터 <code>prf0~prf2</code></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="fourway">
+    <h2>4-way 핸드셰이크</h2>
+    <p>연결 직후 AP와 단말은 EAPOL-Key 프레임 네 개를 주고받는다. 목적은 셋이다. 서로 같은 PMK를 가졌음을 <b>PMK를 보내지 않고</b> 증명하기, 이번 연결의 PTK를 만들기, GTK를 안전하게 건네기.</p>
+    <div class="sim" id="sim-hs">
+      <div class="sim-head"><span class="sim-tag">INTERACTIVE</span><h3>메시지 넷 따라가기</h3></div>
+      <div class="sim-controls" style="border-top:0">
+        <label class="check"><input type="checkbox" id="hs-wrong"> 단말이 비밀번호를 잘못 입력함</label>
+      </div>
+      <div class="sim-view" style="padding:14px"><div class="hs" id="hs-list"></div></div>
+      <div class="sim-controls"><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" id="hs-next">다음 메시지</button><button class="btn" id="hs-reset">처음부터</button></div></div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">AP가 아는 것</span><span class="v" id="hs-ap">—</span></div>
+        <div class="stat"><span class="k">단말이 아는 것</span><span class="v" id="hs-sta">—</span></div>
+        <div class="stat"><span class="k">상태</span><span class="v" id="hs-st">—</span></div>
+      </div>
+      <div class="sim-note">PMK와 PTK는 공중에 한 번도 나가지 않는다. 오가는 것은 난수와, PTK의 KCK로 계산한 MIC뿐이다. 비밀번호가 틀리면 단말이 만든 PTK가 달라 메시지 2의 MIC가 맞지 않고, AP는 거기서 멈춘다(사용자 화면에는 “인증 문제” 또는 “비밀번호 오류”로 보인다).</div>
+    </div>
+    <p>여기에 WPA2-Personal의 구조적 한계가 있다. 같은 비밀번호를 아는 사람은 모두 같은 PMK를 가지므로, 원리상 남의 핸드셰이크를 지켜본 사람이 그 연결의 PTK를 다시 계산할 수 있다. 그리고 비밀번호가 짧거나 흔하면 PMK를 지키는 4096번의 계산만으로는 충분하지 않다. 그래서 WPA2-Personal에서는 <b>길고 예측하기 어려운 비밀번호</b>(무작위 단어 여러 개 등)가 사실상 유일한 방어선이고, 근본적인 해결은 WPA3-SAE다.</p>
+    <div class="callout analogy"><strong>열쇠를 보여 주지 않고 같은 열쇠임을 증명하기</strong><p>두 사람이 각자 같은 열쇠를 가졌는지 확인하고 싶다. 열쇠를 꺼내 보여 주면 엿보는 사람도 본다. 대신 한 사람이 “이 상자를 잠가 보라”며 새 상자(난수)를 주고, 상대가 잠가서 돌려주면(MIC) 같은 열쇠임을 알 수 있다. 상자는 매번 새것이라 지난번 상자를 베껴 와도 소용없다.</p></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="ccmp">
+    <h2>프레임 암호화: CCMP</h2>
+    <p>PTK의 TK로 데이터 프레임 몸통을 AES로 암호화한다(<span class="term">CCMP</span>). 7장의 해부 도구에서 Protected 비트를 켰을 때 본 구조다.</p>
+    <ul>
+      <li><b>CCMP 머리말 8바이트</b>: 48비트 <b>패킷 번호(PN)</b>와 키 번호. PN은 프레임마다 1씩 늘고, 받는 쪽은 이미 본 번호 이하의 프레임을 버린다. 녹화해 둔 프레임을 다시 틀어 주는 재전송 공격을 막는다.</li>
+      <li><b>MIC 8바이트</b>: 몸통과 머리말의 주요 칸(주소 등)까지 덮는 무결성 검사값. 한 비트라도 바뀌면 버린다.</li>
+      <li>MAC 머리말 자체는 암호화하지 않는다. 주소·Frame Control은 누구나 볼 수 있지만 MIC가 보호한다.</li>
+    </ul>
+    <p>2017년 공개된 KRACK은 이 PN과 키 설치 순서의 허점(같은 키를 다시 설치하면 PN이 처음으로 돌아가는 문제)을 노렸고, 표준 해석 보완과 소프트웨어 업데이트로 고쳐졌다. 오래된 기기를 업데이트해야 하는 이유 중 하나다.</p>
+    <p class="spec-ref">CCMP 머리말·MIC 길이: Linux <code>include/linux/ieee80211.h</code>의 <code>IEEE80211_CCMP_HDR_LEN = 8</code>, <code>IEEE80211_CCMP_MIC_LEN = 8</code>, 256비트 변형 <code>IEEE80211_CCMP_256_MIC_LEN = 16</code></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="wpa3">
+    <h2>WPA3: SAE, PMF, 그리고 OWE</h2>
+    <p><span class="term">SAE</span><span class="en">(Simultaneous Authentication of Equals)</span>는 9장에서 본 인증 프레임 네 개(Commit 둘, Confirm 둘)로 비밀번호를 증명하면서 동시에 새 비밀 값을 합의하는 방식이다(Dragonfly 키 교환, 타원곡선 위 계산). 달라지는 점은 셋이다.</p>
+    <ul>
+      <li><b>엿들은 내용으로는 비밀번호를 검증할 수 없다</b>. 비밀번호를 하나 맞혀 보려면 AP와 실제로 한 번씩 주고받아야 하고, AP는 그 횟수를 제한할 수 있다. 짧은 비밀번호의 위험이 크게 준다.</li>
+      <li><b>연결마다 PMK가 다르다</b>. 같은 비밀번호를 아는 이웃도 내 연결을 풀 수 없고, 나중에 비밀번호가 새도 지난 통신은 안전하다(전방 비밀성).</li>
+      <li><b>PMF가 필수</b>다.</li>
+    </ul>
+    <p><span class="term">PMF</span><span class="en">(Protected Management Frames, 802.11w)</span>는 연결 해제(Deauth·Disassoc)와 일부 액션 프레임에 무결성 보호를 씌운다. PMF가 없으면 이런 관리 프레임은 누가 보냈는지 확인할 수 없어서, 가짜 “연결 끊기” 프레임 하나로 단말을 떨어뜨릴 수 있었다. PMF가 켜진 연결에서는 보호되지 않은 연결 해제 프레임을 무시한다. 7장 비컨의 RSN 요소에 “관리 프레임 보호 필수”로 보인 비트가 이것이다.</p>
+    <p><span class="term">OWE</span><span class="en">(Opportunistic Wireless Encryption, 상품명 Enhanced Open)</span>는 비밀번호 없는 공개 와이파이를 위한 것이다. 연결할 때 Diffie-Hellman으로 단말마다 다른 키를 합의해, 옆 손님이 내 통신을 엿볼 수 없게 한다. 다만 상대가 진짜 그 카페 AP인지는 확인하지 않는다(신원 확인 없음).</p>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">카페 비밀번호를 아는 손님 둘이 같은 WPA2-Personal 망에 있다. WPA3-Personal(SAE)로 바꾸면 무엇이 달라질까?</p><p class="wi-hint">두 손님이 가진 PMK가 같은지 생각해 보자.</p><div class="opts">
+      <button class="opt">달라지는 것이 없다. 비밀번호를 아는 사람끼리는 어차피 볼 수 있다</button>
+      <button class="opt" data-correct>SAE는 연결마다 다른 PMK를 합의하므로, 비밀번호를 알아도 남의 연결 키를 계산할 수 없다</button>
+      <button class="opt">비밀번호가 필요 없어진다</button>
+    </div><div class="quiz-exp">WPA2-Personal은 PMK가 비밀번호에서 바로 나와 모두가 같다. SAE는 각 연결이 따로 비밀 값을 합의한다.</div></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="setup">
+    <h2>어떻게 설정할까</h2>
+    <p>보안 설정은 “가장 강한 것”보다 “내 기기들이 모두 붙으면서 가장 강한 것”을 고르는 일이다. 오래된 IoT 기기가 WPA3를 모르면 <b>전환 모드</b>(WPA2/WPA3 혼합)를 쓰는데, 이때는 WPA3를 아는 기기만 SAE로 붙고 나머지는 WPA2로 붙는다. 같은 비밀번호를 두 방식이 함께 쓰므로 비밀번호는 여전히 길어야 한다.</p>
+    <div class="sim" id="sim-adv">
+      <div class="sim-head"><span class="sim-tag">ADVISOR</span><h3>우리 망에 맞는 설정 고르기</h3></div>
+      <div class="sim-controls" style="border-top:0">
+        <div class="ctrl"><span>어디의 망인가</span><div class="seg" id="ad-env"><button data-value="home" class="on">집</button><button data-value="office">회사</button><button data-value="public">공개(카페)</button></div></div>
+        <div class="ctrl"><span>가장 오래된 기기</span><div class="seg" id="ad-old"><button data-value="wpa3" class="on">모두 WPA3 지원</button><button data-value="wpa2">WPA2만 되는 기기 있음</button></div></div>
+        <label class="check"><input type="checkbox" id="ad-6g" checked> 6 GHz도 쓴다</label>
+      </div>
+      <div class="sim-view" style="padding:14px"><div class="info" id="ad-out"></div></div>
+      <div class="sim-note">일반적인 권장을 정리한 것이다. 회사 망은 보안 담당자의 정책이 우선이다. 6 GHz에서는 WPA3(SAE, OWE, Enterprise)와 PMF만 허용되고 WPA2·개방은 쓸 수 없다.</div>
+    </div>
+    <p class="spec-ref">설정 항목: hostapd <code>hostapd.conf</code>의 <code>wpa_key_mgmt</code>(WPA-PSK, SAE, WPA-EAP, OWE), <code>ieee80211w</code>(0 끔 / 1 선택 / 2 필수), <code>sae_require_mfp</code>, <code>transition_disable</code></p>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>WEP은 깨졌고 TKIP는 폐기됐다. 지금은 WPA2(CCMP)와 WPA3.</li>
+      <li>WPA2-Personal: PMK = PBKDF2-HMAC-SHA1(비밀번호, SSID, 4096회, 32바이트). 비밀번호를 아는 모든 기기가 같은 PMK.</li>
+      <li>4-way 핸드셰이크는 PMK를 보내지 않고 난수와 MIC만으로 서로를 확인하며, 연결마다 새 PTK(KCK·KEK·TK)를 만들고 GTK를 건넨다.</li>
+      <li>CCMP는 AES 암호화 + MIC(변조 검사) + PN(재전송 방지).</li>
+      <li>WPA3-SAE는 엿들은 내용으로 비밀번호를 검증할 수 없게 하고, 연결마다 다른 PMK를 만든다. PMF는 가짜 연결 해제를 막고, OWE는 공개 망의 엿듣기를 막는다.</li>
+      <li>권장: 가능하면 WPA3, 오래된 기기가 있으면 전환 모드 + 긴 비밀번호, 회사는 802.1X, 공개 망은 OWE.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>WPA2-Personal에서 PMK를 만들 때 비밀번호와 함께 넣는 것은?</p><div class="opts">
+        <button class="opt">AP의 MAC 주소</button><button class="opt" data-correct>SSID</button><button class="opt">채널 번호</button><button class="opt">현재 시각</button>
+      </div><div class="quiz-exp">PBKDF2의 소금으로 SSID를 쓴다. 그래서 SSID만 바꿔도 PMK가 바뀐다.</div></div>
+      <div class="quiz-q"><p>4-way 핸드셰이크에서 공중으로 나가지 않는 것은?</p><div class="opts">
+        <button class="opt">ANonce</button><button class="opt">SNonce</button><button class="opt" data-correct>PMK와 PTK</button><button class="opt">MIC</button>
+      </div><div class="quiz-exp">양쪽이 각자 계산하고, MIC로 같은 값을 가졌음을 확인한다.</div></div>
+      <div class="quiz-q"><p>CCMP의 패킷 번호(PN)가 막는 것은?</p><div class="opts">
+        <button class="opt">채널 간섭</button><button class="opt" data-correct>녹화해 둔 프레임을 다시 보내는 재전송 공격</button><button class="opt">숨은 단말</button><button class="opt">비컨 손실</button>
+      </div><div class="quiz-exp">받는 쪽은 이미 본 PN 이하의 프레임을 버린다.</div></div>
+      <div class="quiz-q"><p>PMF(802.11w)가 켜진 연결에서 보호되지 않은 Deauth 프레임을 받으면?</p><div class="opts">
+        <button class="opt">즉시 연결을 끊는다</button><button class="opt" data-correct>무시한다</button><button class="opt">비밀번호를 다시 묻는다</button><button class="opt">채널을 바꾼다</button>
+      </div><div class="quiz-exp">PMF는 연결 해제 같은 관리 프레임에 무결성 보호를 씌운다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  /** SHA-1 (바이트 배열 → 20바이트 배열) */
+  function sha1(bytes) {
+    const ml = bytes.length, w = new Array(80), m = bytes.slice(); m.push(0x80);
+    while (m.length % 64 !== 56) m.push(0);
+    const bits = ml * 8; for (let i = 7; i >= 0; i--) m.push(i >= 4 ? 0 : (bits >>> (i * 8)) & 255);
+    let h0 = 0x67452301, h1 = 0xefcdab89, h2 = 0x98badcfe, h3 = 0x10325476, h4 = 0xc3d2e1f0;
+    for (let o = 0; o < m.length; o += 64) {
+      for (let i = 0; i < 16; i++) w[i] = (m[o + 4 * i] << 24) | (m[o + 4 * i + 1] << 16) | (m[o + 4 * i + 2] << 8) | m[o + 4 * i + 3];
+      for (let i = 16; i < 80; i++) { const x = w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16]; w[i] = (x << 1) | (x >>> 31); }
+      let a = h0, b = h1, c = h2, d = h3, e = h4;
+      for (let i = 0; i < 80; i++) {
+        const f = i < 20 ? (b & c) | (~b & d) : i < 40 ? b ^ c ^ d : i < 60 ? (b & c) | (b & d) | (c & d) : b ^ c ^ d;
+        const k = i < 20 ? 0x5a827999 : i < 40 ? 0x6ed9eba1 : i < 60 ? 0x8f1bbcdc : 0xca62c1d6;
+        const t = (((a << 5) | (a >>> 27)) + f + e + k + w[i]) | 0; e = d; d = c; c = (b << 30) | (b >>> 2); b = a; a = t;
+      }
+      h0 = (h0 + a) | 0; h1 = (h1 + b) | 0; h2 = (h2 + c) | 0; h3 = (h3 + d) | 0; h4 = (h4 + e) | 0;
+    }
+    const out = []; [h0, h1, h2, h3, h4].forEach((h) => out.push((h >>> 24) & 255, (h >>> 16) & 255, (h >>> 8) & 255, h & 255)); return out;
+  }
+  /** HMAC-SHA1 */
+  function hmacSha1(key, msg) {
+    let k = key.length > 64 ? sha1(key) : key.slice(); while (k.length < 64) k.push(0);
+    return sha1(k.map((b) => b ^ 0x5c).concat(sha1(k.map((b) => b ^ 0x36).concat(msg))));
+  }
+  /** PBKDF2-HMAC-SHA1 */
+  function pbkdf2Sha1(pass, salt, iter, len) {
+    const out = [];
+    for (let blk = 1; out.length < len; blk++) {
+      let u = hmacSha1(pass, salt.concat([(blk >>> 24) & 255, (blk >>> 16) & 255, (blk >>> 8) & 255, blk & 255])); const t = u.slice();
+      for (let i = 1; i < iter; i++) { u = hmacSha1(pass, u); for (let j = 0; j < 20; j++) t[j] ^= u[j]; }
+      out.push(...t);
+    }
+    return out.slice(0, len);
+  }
+  /** hostapd sha1_prf(): HMAC-SHA1(key, label || 0x00 || data || counter) 이어 붙이기 */
+  function sha1Prf(key, label, data, len) {
+    const lab = [...label].map((c) => c.charCodeAt(0)).concat([0]), out = [];
+    for (let ctr = 0; out.length < len; ctr++) out.push(...hmacSha1(key, lab.concat(data, [ctr])));
+    return out.slice(0, len);
+  }
+  /** 바이트 배열 사전순 비교 */
+  function cmpBytes(a, b) { for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return a[i] - b[i]; return 0; }
+  /** PTK = PRF-384(PMK, "Pairwise key expansion", Min(AA,SPA)||Max(AA,SPA)||Min(ANonce,SNonce)||Max(ANonce,SNonce)) → KCK 16 | KEK 16 | TK 16 */
+  function pmkToPtk(pmk, aa, spa, anonce, snonce) {
+    const [a1, a2] = cmpBytes(aa, spa) < 0 ? [aa, spa] : [spa, aa], [n1, n2] = cmpBytes(anonce, snonce) < 0 ? [anonce, snonce] : [snonce, anonce];
+    const p = sha1Prf(pmk, "Pairwise key expansion", a1.concat(a2, n1, n2), 48);
+    return { kck: p.slice(0, 16), kek: p.slice(16, 32), tk: p.slice(32, 48) };
+  }
+  /** 권장 설정 */
+  function recommend(env, oldest, six) {
+    if (env === "public") return { mode: "Enhanced Open (OWE)" + (oldest === "wpa2" ? " 전환 모드(개방 망과 함께)" : ""), pmf: "필수", note: "비밀번호 없이도 손님마다 다른 키로 암호화된다. 상대 AP의 신원은 확인하지 않으므로, 중요한 일은 HTTPS·VPN 위에서." };
+    if (env === "office") return { mode: oldest === "wpa2" ? "WPA2/WPA3-Enterprise (802.1X)" : "WPA3-Enterprise (802.1X)", pmf: oldest === "wpa2" ? "선택(지원 기기는 사용)" : "필수", note: "사용자·기기마다 다른 계정과 인증서. 퇴사자 한 명 때문에 모두의 비밀번호를 바꿀 필요가 없다. 게스트는 별도 SSID·VLAN으로 분리." };
+    if (oldest === "wpa2") return { mode: "WPA2/WPA3-Personal 전환 모드" + (six ? " (6 GHz는 WPA3 전용 SSID로)" : ""), pmf: "선택(WPA3 기기는 사용)", note: "비밀번호는 길고 예측하기 어렵게(무작위 단어 4개 이상 등). 오래된 기기를 교체하면 WPA3 전용으로 올린다. IoT 기기는 게스트·IoT 전용 SSID로 분리하면 좋다." };
+    return { mode: "WPA3-Personal (SAE)", pmf: "필수", note: "그래도 비밀번호는 쉽게 짐작할 수 없게. SAE는 엿들은 내용만으로 비밀번호를 확인할 수 없게 해 준다." };
+  }
+  const hex = (a) => a.map((b) => b.toString(16).padStart(2, "0")).join("");
+  const enc = (s) => [...new TextEncoder().encode(s)];
+
+  /* ================================================================ 1. 키 계산기 */
+  (function () {
+    const AA = [0x02, 0x11, 0x22, 0x33, 0x44, 0xa1], SPA = [0x3a, 0x5c, 0xb4, 0x1e, 0x77, 0x02];
+    const nonce = (seed) => { const r = WF.rng(seed); return Array.from({ length: 32 }, () => Math.floor(r() * 256)); };
+    let conn = 1, timer = 0, cache = { k: "", pmk: null, ms: 0 };
+    function compute() {
+      const ssid = enc($("ky-ssid").value), pass = enc($("ky-pass").value), ok = pass.length >= 8 && pass.length <= 63 && ssid.length >= 1 && ssid.length <= 32;
+      if (!ok) { $("ky-out").innerHTML = `<b>안내</b><span>비밀번호는 8~63바이트, SSID는 1~32바이트여야 한다(한글은 글자당 3바이트).</span>`; return; }
+      const key = hex(ssid) + "|" + hex(pass);
+      if (cache.k !== key) { const t0 = performance.now(); cache = { k: key, pmk: pbkdf2Sha1(pass, ssid, 4096, 32) }; cache.ms = performance.now() - t0; }
+      const an = nonce(conn * 2 + 1), sn = nonce(conn * 2 + 2), ptk = pmkToPtk(cache.pmk, AA, SPA, an, sn);
+      $("ky-out").innerHTML = `<b>PMK</b><code>${hex(cache.pmk)}</code><b>ANonce</b><code>${hex(an)}</code><b>SNonce</b><code>${hex(sn)}</code><b>KCK</b><code class="kck">${hex(ptk.kck)}</code><b>KEK</b><code class="kek">${hex(ptk.kek)}</code><b>TK</b><code class="tk">${hex(ptk.tk)}</code>`;
+      WF.stat("ky-ms", cache.ms.toFixed(0) + " ms"); WF.stat("ky-n", "8,192번");
+    }
+    const later = () => { clearTimeout(timer); timer = setTimeout(compute, 250); };
+    $("ky-ssid").addEventListener("input", later); $("ky-pass").addEventListener("input", later);
+    WF.seg("ky-conn", (v) => { conn = +v; compute(); });
+    compute();
+  })();
+
+  /* ================================================================ 2. 핸드셰이크 */
+  (function () {
+    const MSGS = [
+      { from: "ap", t: "메시지 1 · AP → 단말", d: "ANonce(AP의 새 난수). 아직 아무것도 증명하지 않는다.", ap: "PMK, ANonce", sta: "PMK, ANonce, SNonce → PTK 계산" },
+      { from: "sta", t: "메시지 2 · 단말 → AP", d: "SNonce + MIC(KCK로 계산). AP는 SNonce로 같은 PTK를 계산해 MIC를 확인한다 → 단말이 같은 PMK(비밀번호)를 가졌음.", ap: "PTK 계산, 단말 확인", sta: "PTK" },
+      { from: "ap", t: "메시지 3 · AP → 단말", d: "GTK(KEK로 암호화) + MIC. 단말은 MIC로 AP도 같은 PMK를 가졌음을 확인한다(가짜 AP 차단).", ap: "PTK, GTK", sta: "AP 확인, GTK 받음" },
+      { from: "sta", t: "메시지 4 · 단말 → AP", d: "확인 + MIC. 양쪽이 키를 설치하고 이제부터 데이터 프레임을 암호화한다.", ap: "키 설치", sta: "키 설치" },
+    ];
+    let shown = 0;
+    function render() {
+      const wrong = $("hs-wrong").checked; let html = "", st = "진행 전", ap = "PMK", sta = wrong ? "다른 PMK(틀린 비밀번호)" : "PMK";
+      MSGS.slice(0, shown).forEach((m, i) => {
+        const fail = wrong && i === 1;
+        html += `<div class="m ${m.from}${i === shown - 1 ? " cur" : ""}${fail ? " fail" : ""}"><b>${m.t}</b><small>${fail ? "SNonce + MIC — 그런데 단말의 PTK가 달라 AP가 계산한 MIC와 맞지 않는다. AP는 메시지 3을 보내지 않고 연결을 끝낸다." : m.d}</small></div>`;
+        ap = fail ? "MIC 불일치" : m.ap; sta = wrong && i === 0 ? "ANonce, 틀린 PTK" : wrong ? sta : m.sta; st = fail ? "실패" : i === 3 ? "암호화 시작" : "진행 중";
+      });
+      $("hs-list").innerHTML = html || `<div class="m" style="color:var(--text-dim)">“다음 메시지”를 눌러 시작</div>`;
+      WF.stat("hs-ap", ap); WF.stat("hs-sta", sta); WF.stat("hs-st", st);
+      $("hs-next").disabled = shown >= (wrong ? 2 : 4);
+    }
+    $("hs-next").addEventListener("click", () => { shown++; render(); });
+    $("hs-reset").addEventListener("click", () => { shown = 0; render(); });
+    $("hs-wrong").addEventListener("change", () => { shown = 0; render(); });
+    render();
+  })();
+
+  /* ================================================================ 3. 권장 설정 */
+  (function () {
+    let env = "home", old = "wpa3";
+    function render() {
+      const r = recommend(env, old, $("ad-6g").checked);
+      $("ad-out").innerHTML = `<h4>${r.mode}</h4>PMF: <b>${r.pmf}</b><br>${r.note}`;
+    }
+    WF.seg("ad-env", (v) => { env = v; render(); }); WF.seg("ad-old", (v) => { old = v; render(); }); $("ad-6g").addEventListener("change", render);
+    render();
+  })();
+})();
+</script>
+</body>
+</html>
