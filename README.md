@@ -16,6 +16,10 @@ GitHub Pages 주소: https://yalex-kim.github.io/yalexBook/
 ```
 index.html              전체 책장 (assets/books.js의 목록을 그린다)
 assets/books.js         책 목록 데이터 — 새 책을 여기에 등록
+assets/search-index.js  서재 통합 검색 색인 (tools/build_search.py가 만든다)
+shared/                 네 책이 함께 쓰는 common.js·style.css 원본 (tools/sync_shared.py로 각 책에 복사)
+tools/                  sync_shared.py, build_search.py
+CLAUDE.md               서재 공통 규칙과 새 책 체크리스트
 favicon.svg, robots.txt, sitemap.xml(각 책의 sitemap을 묶는 인덱스)
 .github/workflows/pages.yml   PR·push마다 모든 책의 검증 스크립트 실행 → main이면 Pages 배포
 bluetooth/              BluetoothBook (자체 css·js·chapters·scripts·tools를 가진 독립 정적 사이트)
@@ -23,7 +27,7 @@ wifi/                   WiFiBook (같은 구조, 전역 이름 WF)
 uwb/                    UWBBook (같은 구조, 전역 이름 UW)
 gnss/                   GNSSBook (같은 구조, 전역 이름 GN)
 ```
-각 책 폴더는 다른 책에 의존하지 않습니다. 책의 상단바 “서재” 버튼과 푸터가 `../index.html`(이 책장)으로 돌아옵니다.
+실행할 때 각 책 폴더는 다른 책의 파일을 불러오지 않습니다(장 끝의 “함께 읽기” 링크만 다른 책으로 이어집니다). 책의 상단바 “서재” 버튼과 푸터가 `../index.html`(이 책장)으로 돌아옵니다.
 
 ## 로컬에서 보기
 빌드 과정이 없는 정적 사이트입니다.
@@ -34,14 +38,12 @@ python3 -m http.server 8000   # → http://localhost:8000/ (책장), http://loca
 ## 검증
 ```bash
 for f in */scripts/verify-factcheck.cjs; do node "$f"; done
+python3 tools/sync_shared.py --check && python3 tools/build_search.py --check
 ```
 GitHub Actions가 PR과 `main` push마다 같은 검사를 돌리고, 통과해야 배포합니다.
 
 ## 새 책 추가하기
-1. 기존 책 폴더(예: `bluetooth/`)를 새 폴더로 복사하고 `chapters/`, `js/terms.js`, `js/common.js`의 `CHAPTERS`, 전역 이름(`BT`), 색(`css/style.css`의 `--accent`)을 새 책에 맞게 바꾼다. 작성 규칙은 각 책의 `CONTRIBUTING.md`를 따른다.
-2. `tools/seo.py`의 `BASE`를 `https://yalex-kim.github.io/yalexBook/<폴더>/`로 바꾸고 실행해 canonical/OG 태그와 sitemap을 만든다.
-3. `assets/books.js`에 책을 한 줄 등록하고, 루트 `sitemap.xml`에 새 책의 sitemap을 추가한다.
-4. 계산이 있는 책은 `scripts/verify-factcheck.cjs`를 두면 CI가 자동으로 실행한다.
+[`CLAUDE.md`](CLAUDE.md)의 “새 책 체크리스트”를 따릅니다. 요약하면 기존 책 폴더를 복사해 내용과 `book.json`(`ui`)을 바꾸고, `python3 tools/sync_shared.py`로 공통 코드를, 책 폴더에서 `python3 tools/seo.py`로 SEO 태그를 만든 뒤, `assets/books.js`·루트 `sitemap.xml`에 등록하고 `python3 tools/build_search.py`로 통합 검색 색인을 갱신합니다.
 
 ## 배포 (GitHub Pages)
 저장소 Settings → Pages → Source를 **GitHub Actions**로 지정하면 `main`에 push할 때마다 배포됩니다. 비공개 저장소에서 Pages를 쓰려면 GitHub 유료 플랜이 필요합니다(무료 계정이면 저장소를 공개로 전환).
