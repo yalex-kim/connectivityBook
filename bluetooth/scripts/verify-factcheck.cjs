@@ -242,6 +242,81 @@ const bitsStr = (s) => s.replace(/\s/g, '').split('').map(Number);
   eq(f.filterRejection(100, 2.5, 50), 50, 'rejection cap');
 }
 
+// ---------------------------------------------------------------- 무작위 입력으로 넓힌 검증: 독립 구현·수학적 성질·장 사이 일관성
+{
+  const crypto = require('node:crypto');
+  let seed = 20261018; const rnd = () => ((seed = (seed * 48271) % 2147483647) / 2147483647), ri = (n) => Math.floor(rnd() * n);
+  const bytes = (n) => Array.from({ length: n }, () => ri(256));
+  // CRC-24: 데이터 뒤에 CRC를 MSB부터 이어 넣으면 나머지가 0, 그리고 선형성 (x^24+x^10+x^9+x^6+x^4+x^3+x+1, [Vol 6] Part B §3.1.1)
+  const c = load('connection', ['bitsLsbFirst', 'crc24', 'whiteningBits']);
+  const feed = (r, bits) => { bits.forEach((b) => { const fb = ((r >> 23) & 1) ^ b; r = (r << 1) & 0xffffff; if (fb) r ^= 0x00065b; }); return r; };
+  for (let t = 0; t < 500; t++) {
+    const n = 2 + ri(256), d = bytes(n), init = ri(1 << 24), r = c.crc24(d, init);
+    eq(feed(r, Array.from({ length: 24 }, (_, i) => (r >> (23 - i)) & 1)), 0, 'CRC residue is zero');
+    const e = bytes(n), i2 = ri(1 << 24);
+    eq(c.crc24(d.map((x, k) => x ^ e[k]), init ^ i2), r ^ c.crc24(e, i2), 'CRC is linear');
+  }
+  // 화이트닝: x^7+x^4+1은 원시 다항식 → 모든 채널에서 주기 127, 한 주기에 1이 64개 ([Vol 6] Part B §3.2)
+  for (let ch = 0; ch < 40; ch++) {
+    const w = c.whiteningBits(ch, 254);
+    ok(w.slice(0, 127).join('') === w.slice(127).join(''), `whitening period 127 (ch ${ch})`);
+    eq(w.slice(0, 127).reduce((a, b) => a + b, 0), 64, `whitening balance (ch ${ch})`);
+    ok([1, 7, 63].every((p) => w.slice(0, 127).join('') !== w.slice(p, p + 127).join('')), `no shorter period (ch ${ch})`);
+  }
+  // AES-128과 AES-CMAC을 Node 내장 AES(OpenSSL)로 만든 독립 구현과 비교 (FIPS-197, RFC 4493)
+  const src = read('security'), sbox = src.slice(src.indexOf('  const SBOX ='), src.indexOf('\n', src.indexOf('  const SBOX =')));
+  const s = load('security', ['aes128', 'aesCmac'], sbox);
+  const ecb = (k, b) => { const ci = crypto.createCipheriv('aes-128-ecb', Buffer.from(k), null); ci.setAutoPadding(false); return [...Buffer.concat([ci.update(Buffer.from(b)), ci.final()])]; };
+  const dbl = (b) => { const o = b.map((x, i) => ((x << 1) | (i < 15 ? b[i + 1] >> 7 : 0)) & 0xff); if (b[0] & 0x80) o[15] ^= 0x87; return o; };
+  const cmac = (k, m) => {
+    const k1 = dbl(ecb(k, Array(16).fill(0))), k2 = dbl(k1), n = Math.max(1, Math.ceil(m.length / 16)), full = m.length > 0 && m.length % 16 === 0;
+    const last = full ? m.slice(-16).map((x, i) => x ^ k1[i]) : [...m.slice((n - 1) * 16), 0x80, ...Array(16).fill(0)].slice(0, 16).map((x, i) => x ^ k2[i]);
+    let x = Array(16).fill(0);
+    for (let b = 0; b < n - 1; b++) x = ecb(k, x.map((v, i) => v ^ m[b * 16 + i]));
+    return ecb(k, x.map((v, i) => v ^ last[i]));
+  };
+  for (let t = 0; t < 300; t++) {
+    const k = bytes(16), p = bytes(16);
+    eq(X(s.aes128(k, p)), X(ecb(k, p)), 'AES-128 matches OpenSSL');
+    const m = bytes(ri(70));
+    eq(X(s.aesCmac(k, m)), X(cmac(k, m)), `AES-CMAC matches independent CMAC (len ${m.length})`);
+  }
+  // 패킷 시간: 3·6·9장과 14장에 따로 있는 식이 모든 PDU 길이에서 같은가 ([Vol 6] Part B §2.1, Part C §2.3)
+  const phy = load('phy', ['airtimeUs']), pw = load('power', ['pktUs']);
+  for (let n = 2; n <= 257; n++) {
+    eq([phy.airtimeUs('1m', n), phy.airtimeUs('2m', n), phy.airtimeUs('s8', n)], [pw.pktUs('1m', n), pw.pktUs('2m', n), pw.pktUs('s8', n)], `airtime consistent (PDU ${n})`);
+  }
+  eq([phy.airtimeUs('1m', 2), phy.airtimeUs('1m', 257)], [80, 2120], 'LE 1M: empty PDU 80 us, max PDU 2120 us');
+  // 연결 규칙: 14장 설계기의 검사가 6장 검사(subrate 1)와 같은 판정을 내리는가
+  const dz = load('design', ['checkConn']);
+  const cc = load('connection', ['checkConnParams']);
+  for (let t = 0; t < 2000; t++) {
+    const iv = 375 + 125 * ri(31997), lat = ri(500), to = 100 + 10 * ri(3191), sci = rnd() < 0.5;
+    eq(dz.checkConn(iv, lat, to, sci).length === 0, cc.checkConnParams(iv, lat, 1, to, sci).length === 0, `design and connection agree (${iv} us, lat ${lat}, ${to} ms, sci ${sci})`);
+  }
+  // 창 넓히기 = (SCA_c + SCA_p)/10^6 × 기준점 이후 시간 + 16 µs ([Vol 6] Part B §4.2.4)
+  const ww = load('power', ['windowWideningUs']);
+  for (let t = 0; t < 200; t++) { const ppm = 20 + ri(981), us = 1000 + ri(4e6); close(ww.windowWideningUs(ppm, us), (ppm / 1e6) * us + 16, 1e-6, 'window widening'); }
+  // 링크 버짓: 최대 거리에서 경로 손실 = 송신 − 추가 손실 − 감도, RSSI 거리 = 경로 손실 모델의 역
+  const rd = load('radio', ['fspl', 'pathLoss', 'maxRange'], 'const C = 299792458;'), lc = load('location', ['rssiToDistance']);
+  for (let t = 0; t < 200; t++) {
+    const tx = -20 + ri(29), ex = ri(30), sens = -105 + ri(15), n = 1.6 + rnd() * 2.4, f = (2402 + 2 * ri(40)) * 1e6, d = rd.maxRange(tx, ex, sens, n, f);
+    if (d > 0.01) close(rd.pathLoss(d, n, f), tx - ex - sens, 1e-9, 'pathLoss(maxRange) = budget');
+    const d2 = 0.5 + rnd() * 50, p1m = -40 - ri(30);
+    close(lc.rssiToDistance(p1m - 10 * n * Math.log10(d2), p1m, n), d2, 1e-9, 'RSSI distance inverts log-distance model');
+  }
+  close(rd.fspl(10, 2.4e9), 20 * Math.log10((4 * Math.PI * 10 * 2.4e9) / 299792458), 1e-12, 'FSPL formula');
+  // CSA#2: 모든 카운터에서 결과가 사용 채널 안에 있고, 37채널 모두 쓰면 고르게 나온다
+  const hp = load('hopping', ['perm16', 'csa2Channel']);
+  for (let t = 0; t < 20; t++) {
+    const id = ri(65536), used = Array.from({ length: 37 }, () => rnd() < 0.4); used[ri(37)] = used[ri(37)] = true;
+    let inside = true; for (let k = 0; k < 2000; k++) inside = inside && used[hp.csa2Channel(ri(65536), id, used).ch];
+    ok(inside, 'CSA#2 always lands on a used channel');
+  }
+  const hist = Array(37).fill(0), all = Array(37).fill(true); for (let k = 0; k < 65536; k++) hist[hp.csa2Channel(k, 0x305f, all).ch]++;
+  ok(Math.min(...hist) > 1400 && Math.max(...hist) < 2150, 'CSA#2 is roughly uniform over 65536 counters');
+}
+
 // ---------------------------------------------------------------- 모든 인라인 스크립트가 문법 오류 없이 컴파일되는가, JSON-LD가 올바른가
 let scripts = 0;
 for (const f of ['../index.html', ...fs.readdirSync(path.join(root, 'chapters')).filter((x) => x.endsWith('.html'))]) {
