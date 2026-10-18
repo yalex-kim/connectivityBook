@@ -722,6 +722,15 @@
         (prev ? `<a class="prev" href="${href(prev.slug)}"><small>← 이전 · ${prev.num}</small>${prev.title}</a>` : `<a class="prev" href="${href("")}"><small>← 처음으로</small>홈 · 로드맵</a>`) +
         (next ? `<a class="next" href="${href(next.slug)}"><small>다음 · ${next.num} →</small>${next.title}</a>` : "");
       layout.after(pager);
+      // 오류 제보: 장 주소와 제목을 채운 GitHub 이슈를 연다(사실 정확성이 이 책의 1순위다)
+      const ch = CHAPTERS[idx];
+      if (ch && main) {
+        const title = `[BluetoothBook ${ch.num}장] `, bodyTxt = `페이지: ${location.href.split("#")[0]}\n위치(절 제목이나 문장):\n\n무엇이 틀렸나요:\n\n근거(사양서 절, 링크 등, 있으면):\n`;
+        const rep = document.createElement("aside");
+        rep.className = "sb-report";
+        rep.innerHTML = `틀린 곳이나 헷갈리는 설명을 찾았나요? <a href="https://github.com/yalex-kim/yalexBook/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(bodyTxt)}&labels=${encodeURIComponent("오류 제보")}" target="_blank" rel="noopener">이 장의 오류 제보하기</a> (GitHub 이슈)`;
+        main.appendChild(rep);
+      }
     }
     const foot = document.createElement("footer");
     foot.className = "sb-foot";

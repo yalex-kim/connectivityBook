@@ -502,9 +502,11 @@ td.num, th.num { text-align: right; font-family: var(--mono); font-variant-numer
 .hexrow { font-family: var(--mono); font-size: 13px; display: flex; flex-wrap: wrap; gap: 3px; }
 .hexrow span { padding: 2px 5px; border-radius: 5px; background: var(--surface); }
 
+.sb-report { margin: 48px 0 0; padding: 14px 18px; border: 1px dashed var(--border); border-radius: var(--radius-sm); color: var(--text-dim); font-size: 14.5px; }
+
 /* ------------------------------------------------------------ 인쇄 */
 @media print {
-  .sb-topbar, .sb-drawer, .sb-drawer-backdrop, .sb-toc, .sb-pager, .sb-resume, .sb-tip, .rm-play, .sim-controls, .hero-resume, .cta { display: none !important; }
+  .sb-report, .sb-topbar, .sb-drawer, .sb-drawer-backdrop, .sb-toc, .sb-pager, .sb-resume, .sb-tip, .rm-play, .sim-controls, .hero-resume, .cta { display: none !important; }
   body { background: #fff; }
   .sb-layout { display: block; max-width: none; padding: 0; }
   main.chapter { max-width: none; padding: 0; }

@@ -49,6 +49,11 @@
   .book p { margin: 0 0 10px; font-size: 14px; color: var(--dim); }
   .meta { display: flex; flex-wrap: wrap; gap: 6px; }
   .meta span { font-size: 12px; padding: 2px 9px; border-radius: 999px; background: var(--surface); color: var(--dim); }
+  .book-wrap { display: grid; gap: 6px; align-content: start; }
+  .prog { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 12.5px; color: var(--dim); }
+  .prog i { flex: 1; height: 6px; border-radius: 999px; background: var(--surface); overflow: hidden; }
+  .prog i b { display: block; height: 100%; background: var(--bk); }
+  .resume { justify-self: end; font-size: 13.5px; padding: 2px 6px; color: var(--bk); }
   .meta span.ref { color: var(--bk); background: color-mix(in srgb, var(--bk) 12%, transparent); }
   .how { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
   .how div { padding: 16px 18px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-elev); color: var(--dim); font-size: 14.5px; }
@@ -113,12 +118,15 @@
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   function render() {
     const books = window.YB_BOOKS || [];
-    document.getElementById("shelf").innerHTML = books.map((b) => `
-      <a class="book" href="${esc(b.path)}" style="--bk:${dark() ? b.colorDark : b.color}">
+    // 각 책이 이 브라우저에 저장한 읽기 진도(같은 사이트라 함께 읽을 수 있다)
+    const prog = (b) => { try { const d = JSON.parse(localStorage.getItem(b.progressKey) || "null"); if (!d) return null; const ch = d.ch || {}; return { done: Object.values(ch).filter((c) => c && c.done).length, last: d.last }; } catch (e) { return null; } };
+    document.getElementById("shelf").innerHTML = books.map((b) => { const pg = prog(b), col = dark() ? b.colorDark : b.color; return `<div class="book-wrap" style="--bk:${col}">
+      <a class="book" href="${esc(b.path)}" style="--bk:${col}">
         <div class="cover"><i>${b.chapters}장</i><svg viewBox="0 0 32 32" aria-hidden="true"><path d="${esc(b.icon || "M8 7h16v18H8z")}" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><b>${esc(b.title)}</b></div>
         <div><h3>${esc(b.title)}</h3><div class="sub">${esc(b.subtitle)}</div><p>${esc(b.description)}</p>
-          <div class="meta"><span class="ref">기준 · ${esc(b.reference)}</span><span>${b.chapters}개 챕터</span><span>시뮬레이터 ${b.simulators}개</span><span>${esc(b.level)}</span></div></div>
-      </a>`).join("");
+          <div class="meta"><span class="ref">기준 · ${esc(b.reference)}</span><span>${b.chapters}개 챕터</span><span>시뮬레이터 ${b.simulators}개</span><span>${esc(b.level)}</span></div>
+          ${pg ? `<div class="prog"><i><b style="width:${Math.round((100 * pg.done) / b.chapters)}%"></b></i>${pg.done}/${b.chapters}장 다 읽음</div>` : ""}</div>
+      </a>${pg && pg.last && pg.last.slug ? `<a class="resume" href="${esc(b.path)}chapters/${esc(pg.last.slug)}.html${pg.last.sec ? "#" + esc(pg.last.sec) : ""}">이어 읽기 →</a>` : ""}</div>`; }).join("");
   }
   render();
   // 서재 전체 검색: 처음 입력할 때 색인(assets/search-index.js)을 불러온다
