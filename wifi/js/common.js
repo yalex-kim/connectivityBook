@@ -166,6 +166,10 @@
     else document.documentElement.removeAttribute("data-theme");
     themeCbs.forEach((cb) => { try { cb(); } catch (e) { console.error(e); } });
   }
+  // 인쇄: 어두운 테마면 밝게 다시 그리고(캔버스 포함), 끝나면 원래대로
+  let printTheme;
+  addEventListener("beforeprint", () => { if (printTheme !== undefined) return; printTheme = document.documentElement.getAttribute("data-theme"); if (WF.isDark()) applyTheme("light"); });
+  addEventListener("afterprint", () => { if (printTheme !== undefined) { applyTheme(printTheme); printTheme = undefined; } });
   try { const saved = localStorage.getItem("wf-theme"); if (saved) document.documentElement.setAttribute("data-theme", saved); } catch (e) {}
   if (window.matchMedia) {
     window.matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => {
@@ -223,8 +227,10 @@
    * 화면에 보일 때만 도는 애니메이션 루프. fn(dt초, t초)
    *   const loop = WF.loop(el, (dt,t)=>{...}); loop.stop(); loop.start();
    */
+  /** 운영체제의 “동작 줄이기”가 켜져 있으면 저절로 움직이는 그림을 멈춰 두고, 누르면 움직이게 한다 */
+  WF.reducedMotion = () => !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
   WF.loop = function (el, fn) {
-    let raf = 0, last = 0, t = 0, visible = true, running = true;
+    let raf = 0, last = 0, t = 0, visible = true, running = !WF.reducedMotion();
     function frame(ts) {
       raf = 0;
       if (!running || !visible) return;
@@ -238,6 +244,15 @@
       new IntersectionObserver((es) => { visible = es[0].isIntersecting; kick(); }).observe(el);
     }
     kick();
+    if (!running) {
+      requestAnimationFrame(() => fn(0, 0)); // 멈춘 첫 장면
+      if (el && el.parentNode && !el.parentNode.querySelector(".rm-play")) {
+        const b = document.createElement("button");
+        b.type = "button"; b.className = "rm-play"; b.textContent = "▶ 움직임 보기";
+        b.addEventListener("click", (e) => { e.stopPropagation(); running = !running; b.textContent = running ? "❚❚ 멈추기" : "▶ 움직임 보기"; kick(); });
+        el.after(b);
+      }
+    }
     return {
       start() { running = true; kick(); },
       stop() { running = false; },
@@ -341,7 +356,7 @@
     canvas.addEventListener("pointerup", end);
     canvas.addEventListener("pointercancel", () => { drag = null; });
     canvas.addEventListener("pointerleave", () => { if (!drag && st.hover) { st.hover = null; view.redraw(); } });
-    if (opts.autoRotate !== false) WF.loop(canvas, (dt) => { if (st.touched || drag) return; st.yaw += dt * 0.18; view.redraw(); });
+    if (opts.autoRotate !== false && !WF.reducedMotion()) WF.loop(canvas, (dt) => { if (st.touched || drag) return; st.yaw += dt * 0.18; view.redraw(); });
     return {
       redraw: () => view.redraw(),
       setView(yaw, pitch) { if (yaw != null) st.yaw = yaw; if (pitch != null) st.pitch = pitch; view.redraw(); },
@@ -831,7 +846,7 @@
           const toast = document.createElement("div"); toast.className = "sb-resume";
           toast.innerHTML = `<span>지난번에 <b>${(h ? h.textContent.replace(/^\d\d/, "") : "").trim()}</b>까지 읽었어요.</span><button class="btn primary" type="button">이어 읽기</button><button class="x" type="button" aria-label="닫기">×</button>`;
           const close = () => { toast.classList.remove("show"); setTimeout(() => toast.remove(), 300); };
-          toast.querySelector(".primary").onclick = () => { target.scrollIntoView({ behavior: "smooth" }); close(); };
+          toast.querySelector(".primary").onclick = () => { target.scrollIntoView({ behavior: WF.reducedMotion() ? "auto" : "smooth" }); close(); };
           toast.querySelector(".x").onclick = close;
           body.appendChild(toast); requestAnimationFrame(() => toast.classList.add("show"));
           setTimeout(close, 12000);
