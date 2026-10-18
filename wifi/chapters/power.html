@@ -49,7 +49,7 @@
       <li>단말이 보내는 프레임의 Frame Control에 <b>Power Management 비트</b>를 켜서 “이제부터 잔다”고 알린다(7장). 보낼 데이터가 없으면 몸통 없는 <b>Null 프레임</b>으로 알린다.</li>
       <li>AP는 그 단말에게 갈 프레임을 바로 보내지 않고 <b>버퍼</b>에 모아 둔다.</li>
       <li>AP는 매 비컨의 <span class="term">TIM</span><span class="en">(Traffic Indication Map)</span> 요소에 “데이터가 쌓인 단말”의 AID(연결 번호, 9장) 비트를 켠다.</li>
-      <li>단말은 비컨 시간에 맞춰 잠깐 깨어 TIM만 보고, 자기 비트가 꺼져 있으면 다시 잔다. 켜져 있으면 PS-Poll을 보내거나 PM 비트를 끈 프레임을 보내 데이터를 받아 간다. AP는 더 남은 게 있으면 More Data 비트를 켠다.</li>
+      <li>단말은 비컨 시간에 맞춰 잠깐 깨어 TIM만 보고, 자기 비트가 꺼져 있으면 다시 잔다. 켜져 있으면 <span class="term">PS-Poll</span>을 보내거나 PM 비트를 끈 프레임을 보내 데이터를 받아 간다. AP는 더 남은 게 있으면 More Data 비트를 켠다.</li>
     </ol>
     <p>방송·멀티캐스트 프레임(ARP, mDNS 등)은 누구 하나를 위한 것이 아니어서, AP는 이것들을 모아 두었다가 <span class="term">DTIM</span><span class="en">(Delivery TIM)</span> 비컨 바로 뒤에 한꺼번에 내보낸다. DTIM은 비컨 N개마다 한 번이다(DTIM 주기). 절전 단말은 적어도 DTIM 비컨에는 깨어 있어야 방송을 놓치지 않는다.</p>
     <div class="callout analogy"><strong>아파트 택배 보관함</strong><p>집에 없을 때 온 택배는 경비실(AP)이 맡아 둔다. 경비실은 정해진 시간마다 게시판(비컨)에 “택배 있는 집 호수”(TIM)를 붙인다. 주민은 그 시간에만 잠깐 내려와 게시판을 보고, 자기 호수가 있으면 찾아간다. 전단지(방송) 같은 모두에게 가는 것은 정해진 날(DTIM)에 한꺼번에 돌린다.</p></div>

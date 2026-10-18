@@ -38,7 +38,7 @@
   <!-- ============================================================ -->
   <section id="freq">
     <h2>모든 것은 10.23 MHz에서</h2>
-    <p>GPS 위성 안에는 원자시계에서 나온 10.23 MHz 기준 신호가 하나 있고, 모든 반송파와 코드 속도가 그 정수배나 약수다. L1 = 154 × 10.23 = 1,575.42 MHz, L2 = 120 ×, L5 = 115 ×. C/A 코드는 그 10분의 1인 1.023 Mchip/s, P 코드는 10.23 Mchip/s다. Galileo도 GPS와 함께 쓰이도록 같은 눈금을 따른다. E1은 L1과 같은 주파수다.</p>
+    <p>GPS 위성 안에는 원자시계에서 나온 10.23 MHz 기준 신호가 하나 있고, 모든 반송파와 코드 속도가 그 정수배나 약수다. <span class="term">L1</span> = 154 × 10.23 = 1,575.42 MHz, L2 = 120 ×, L5 = 115 ×. C/A 코드는 그 10분의 1인 1.023 Mchip/s, P 코드는 10.23 Mchip/s다. Galileo도 GPS와 함께 쓰이도록 같은 눈금을 따른다. E1은 L1과 같은 주파수다.</p>
     <div class="table-wrap"><table>
       <thead><tr><th>신호</th><th class="num">× 10.23 MHz</th><th class="num">반송파</th><th>쓰임</th></tr></thead>
       <tbody id="fq-tb"></tbody>
@@ -99,7 +99,7 @@
   <!-- ============================================================ -->
   <section id="spectrum">
     <h2>BPSK와 BOC</h2>
-    <p>GPS L1 C/A는 코드 칩마다 반송파의 위상을 0°·180°로 뒤집는 <b>BPSK</b>다. 스펙트럼은 반송파를 중심으로 ±1.023 MHz에 첫 영점이 있는 sinc² 모양이다. Galileo E1과 새 GPS L1C는 같은 주파수에 같은 칩 속도를 쓰면서도 서로 덜 겹치도록 <b>BOC</b>(Binary Offset Carrier)를 쓴다. 칩 안에서 부반송파로 한 번 더 뒤집어, 에너지를 중심이 아니라 양옆(±1.023 MHz 근처)으로 밀어낸다. 신호 모양이 뾰족해 다중 경로(11장)에도 조금 더 강하다. Galileo E1은 BOC(1,1)에 BOC(6,1)을 조금 섞은 CBOC다.</p>
+    <p>GPS L1 C/A는 코드 칩마다 반송파의 위상을 0°·180°로 뒤집는 <b>BPSK</b>다. 스펙트럼은 반송파를 중심으로 ±1.023 MHz에 첫 영점이 있는 sinc² 모양이다. Galileo E1과 새 GPS L1C는 같은 주파수에 같은 칩 속도를 쓰면서도 서로 덜 겹치도록 <b><span class="term">BOC</span></b>(Binary Offset Carrier)를 쓴다. 칩 안에서 부반송파로 한 번 더 뒤집어, 에너지를 중심이 아니라 양옆(±1.023 MHz 근처)으로 밀어낸다. 신호 모양이 뾰족해 <span class="term">다중 경로</span>(11장)에도 조금 더 강하다. Galileo E1은 BOC(1,1)에 BOC(6,1)을 조금 섞은 CBOC다.</p>
     <div class="sim" id="sim-psd">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>스펙트럼 모양 비교</h3></div>
       <div class="sim-view"><canvas id="cv-psd"></canvas></div>

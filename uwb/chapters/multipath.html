@@ -72,7 +72,7 @@
   <!-- ============================================================ -->
   <section id="detect">
     <h2>세기 차이로 NLOS 알아보기</h2>
-    <p>수신기는 두 가지 세기를 함께 잰다. 받은 신호 전체의 세기(<b>RSSI</b>, 모든 경로의 합)와 첫 경로만의 세기(<b>FPPL</b>, First Path Power Level). 트인 곳에서는 첫 경로가 에너지 대부분을 갖고 있어 둘이 비슷하다. 직접파가 막히면 첫 경로는 약해지는데 반사파들은 그대로라 차이가 벌어진다. Decawave 드라이버의 규칙은 간단하다.</p>
+    <p>수신기는 두 가지 세기를 함께 잰다. 받은 신호 전체의 세기(<b>RSSI</b>, 모든 경로의 합)와 첫 경로만의 세기(<b><span class="term">FPPL</span></b>, First Path Power Level). 트인 곳에서는 첫 경로가 에너지 대부분을 갖고 있어 둘이 비슷하다. 직접파가 막히면 첫 경로는 약해지는데 반사파들은 그대로라 차이가 벌어진다. Decawave 드라이버의 규칙은 간단하다.</p>
     <div class="formula">d = |RSSI − FPPL| → d &lt; 6 dB: LOS(1.0) · d &gt; 10 dB: NLOS(0.0) · 그 사이: 1 − (d − 6) ÷ 4
       <div class="where">출처: Decawave <code>uwb-dw1000</code> <code>dw1000_mac.c</code>의 <code>dw1000_estimate_los()</code>(주석: “Taken from 4.7 of DW1000 manual”). 칩 제조사의 경험 규칙이며 802.15.4 표준이 정한 것은 아니다.</div>
     </div>

@@ -46,7 +46,7 @@
   <!-- ============================================================ -->
   <section id="idea">
     <h2>하늘의 시계</h2>
-    <p>GNSS(Global Navigation Satellite System, 위성 항법 시스템)의 위성은 아주 정확한 원자시계를 싣고, “나는 지금 몇 시 몇 분 몇 초에, 여기에 있다”는 신호를 쉬지 않고 방송한다. 지상에서 그 신호를 받은 수신기는, 신호가 떠난 시각과 도착한 시각의 차이에 빛의 속도를 곱해 위성까지의 거리를 안다. 위성이 2만 km 위에 있으면 신호는 약 0.067초(67 ms)를 날아온다.</p>
+    <p><span class="term">GNSS</span>(Global Navigation Satellite System, 위성 항법 시스템)의 위성은 아주 정확한 원자시계를 싣고, “나는 지금 몇 시 몇 분 몇 초에, 여기에 있다”는 신호를 쉬지 않고 방송한다. 지상에서 그 신호를 받은 수신기는, 신호가 떠난 시각과 도착한 시각의 차이에 빛의 속도를 곱해 위성까지의 거리를 안다. 위성이 2만 km 위에 있으면 신호는 약 0.067초(67 ms)를 날아온다.</p>
     <p>위성 하나까지의 거리를 알면 나는 그 위성을 중심으로 한 구 위 어딘가에 있다. 위성 셋이면 구 셋이 만나는 점, 즉 내 위치가 나온다. 여기까지는 간단하다. 문제는 <b>내 시계</b>다.</p>
     <div class="callout analogy"><strong>천둥과 번개</strong><p>번개가 보인 뒤 천둥이 3초 뒤에 들리면 번개는 약 1 km 떨어져 있다. 소리의 속도와 시간 차이로 거리를 재는 것이다. GNSS는 같은 일을 빛의 속도로 한다. 다만 번개와 달리 “번쩍”을 따로 볼 수 없으니, 위성이 “지금 보낸다”는 시각을 신호 안에 적어 보낸다. 그 시각을 내 시계로 받아 적는데, 내 시계가 1 ms만 틀려도 거리는 300 km가 틀린다.</p></div>
   </section>
@@ -54,7 +54,7 @@
   <!-- ============================================================ -->
   <section id="four">
     <h2>미지수가 넷인 이유</h2>
-    <p>위성의 원자시계는 서로 나노초 단위로 맞춰져 있지만, 휴대폰 시계는 값싼 수정 진동자다. 1 µs만 틀려도 300 m다. 그래서 수신기는 위성 시계와 내 시계의 차이(수신기 시계 오차, bias)를 <b>모르는 값으로 두고</b> 위치와 함께 푼다. 수신기가 재는 것은 진짜 거리가 아니라 “시계 오차 × 빛의 속도”가 모든 위성에 똑같이 더해진 거리, <span class="term">의사거리</span><span class="en">(pseudorange)</span>다.</p>
+    <p>위성의 원자시계는 서로 나노초 단위로 맞춰져 있지만, 휴대폰 시계는 값싼 수정 진동자다. 1 µs만 틀려도 300 m다. 그래서 수신기는 위성 시계와 내 시계의 차이(<span class="term">수신기 시계 오차</span>, bias)를 <b>모르는 값으로 두고</b> 위치와 함께 푼다. 수신기가 재는 것은 진짜 거리가 아니라 “시계 오차 × 빛의 속도”가 모든 위성에 똑같이 더해진 거리, <span class="term">의사거리</span><span class="en">(pseudorange)</span>다.</p>
     <p>미지수는 위치 x, y, z와 시계 오차 b, 넷이다. 그래서 위성이 <b>최소 넷</b> 필요하다. 아래 시뮬레이터는 평면(미지수 x, y, b)에서 이를 보여 준다. 의사거리로 그린 원 셋은 한 점에서 만나지 않는다. 시계 오차를 바르게 고르면, 그때서야 한 점에서 만난다.</p>
     <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">수신기 시계가 1 ms(천분의 1초) 틀렸다. 의사거리는 모두 얼마나 틀어질까?</p><p class="wi-hint">빛은 1초에 약 30만 km를 간다.</p><div class="opts">
       <button class="opt">30 cm</button>
@@ -104,7 +104,7 @@
   <!-- ============================================================ -->
   <section id="sources">
     <h2>이 책이 근거로 삼는 것</h2>
-    <div class="callout spec"><strong>공개 규격과 공개 구현</strong><p>GNSS는 이 서재의 다른 무선 기술과 달리 신호 규격이 무료로 공개되어 있다. 이 책은 미국의 <b>IS-GPS-200N</b>(2022-08-01, “Approved for public release”)과 유럽 연합의 <b>Galileo OS SIS ICD Issue 2.2</b>(2025년 11월)를 1차 근거로 삼고, 본문에 표·절 번호와 쪽수를 밝힌다. 여기에 공개 측위 라이브러리 <b>RTKLIB</b>(BSD-2)의 전리층·대류층 모델과 궤도 계산 코드를 구현의 근거로 쓴다. 책의 계산 함수는 규격의 표(예: PRN 코드의 처음 10칩)와 식, RTKLIB의 코드로 자동 검증한다(<code>scripts/verify-factcheck.cjs</code>). GLONASS·BeiDou 규격은 이 책에서 직접 인용하지 않았다.</p></div>
+    <div class="callout spec"><strong>공개 규격과 공개 구현</strong><p>GNSS는 이 서재의 다른 무선 기술과 달리 신호 규격이 무료로 공개되어 있다. 이 책은 미국의 <b>IS-GPS-200N</b>(2022-08-01, “Approved for public release”)과 유럽 연합의 <b>Galileo OS SIS ICD Issue 2.2</b>(2025년 11월)를 1차 근거로 삼고, 본문에 표·절 번호와 쪽수를 밝힌다. 여기에 공개 측위 라이브러리 <b>RTKLIB</b>(BSD-2)의 전리층·대류층 모델과 궤도 계산 코드를 구현의 근거로 쓴다. 책의 계산 함수는 규격의 표(예: <span class="term">PRN 코드</span>의 처음 10<span class="term">칩</span>)와 식, RTKLIB의 코드로 자동 검증한다(<code>scripts/verify-factcheck.cjs</code>). GLONASS·BeiDou 규격은 이 책에서 직접 인용하지 않았다.</p></div>
   </section>
 
   <div class="callout related"><strong>다른 책에서</strong><ul><li><a href="../../uwb/chapters/twr.html">UWBBook 06장 · 양방향 거리 측정: SS-TWR와 DS-TWR</a> — 왕복으로 시계 문제를 피하는 UWB 거리 측정</li></ul></div>

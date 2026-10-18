@@ -57,10 +57,10 @@
     </figure>
     <ul>
       <li><b>SYNC(프리앰블)</b>: 같은 <span class="term">프리앰블 코드</span> 심볼을 수십~수천 번 반복한다. 수신기는 이걸로 신호가 왔음을 알아채고(검출), 시각·주파수를 맞추고, 채널의 모양(7장의 CIR)을 잰다.</li>
-      <li><b>SFD</b><span class="en">(Start of Frame Delimiter)</span>: 프리앰블이 끝나고 프레임이 시작됨을 알리는 정해진 무늬. SFD가 끝나는 순간이 타임스탬프의 기준점이다.</li>
-      <li><b>STS</b><span class="en">(Scrambled Timestamp Sequence)</span>: 802.15.4z가 더한 구간. 암호 키로 만든, 매번 다른 펄스 열이라 미리 알 수 없다. 공격자가 흉내 낼 수 없는 시각 기준을 준다(10장).</li>
+      <li><b><span class="term">SFD</span></b><span class="en">(Start of Frame Delimiter)</span>: 프리앰블이 끝나고 프레임이 시작됨을 알리는 정해진 무늬. SFD가 끝나는 순간이 타임스탬프의 기준점이다.</li>
+      <li><b><span class="term">STS</span></b><span class="en">(Scrambled Timestamp Sequence)</span>: <span class="term">802.15.4z</span>가 더한 구간. 암호 키로 만든, 매번 다른 펄스 열이라 미리 알 수 없다. 공격자가 흉내 낼 수 없는 시각 기준을 준다(10장).</li>
       <li><b>PHR</b><span class="en">(PHY Header)</span>: 데이터 길이와 속도. 오류에 강하게 낮은 속도로 보낸다(SECDED 부호 포함 21 심볼).</li>
-      <li><b>데이터</b>: 6.81 Mb/s(BPRF) 등으로 보내고, 330비트마다 48비트의 리드-솔로몬 부호를 붙인다.</li>
+      <li><b>데이터</b>: 6.81 Mb/s(<span class="term">BPRF</span>) 등으로 보내고, 330비트마다 48비트의 리드-솔로몬 부호를 붙인다.</li>
     </ul>
     <p class="spec-ref">SP0·SP1·SP3: Android <code>FiraParams.java</code>의 <code>RFRAME_CONFIG_SP0/SP1/SP3</code>(“Ranging frame with STS following SFD, no data”) · PHR 21 심볼, 330비트당 48비트 부호: Decawave <code>uwb-dw1000</code>의 <code>dw1000_hal.c</code>(<code>.nphr = 21</code>), <code>dw1000_phy_data_duration()</code></p>
   </section>

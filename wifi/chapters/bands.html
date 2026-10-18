@@ -118,8 +118,8 @@
   <!-- ============================================================ -->
   <section id="bonding">
     <h2>채널 묶기와 6 GHz</h2>
-    <p>이웃한 20 MHz 채널을 붙여 하나처럼 쓰는 것이 <span class="term">채널 본딩</span><span class="en">(channel bonding)</span>이다. 40 → 80 → 160 → 320 MHz로 폭을 두 배로 할 때마다 부반송파가 두 배가 되어 속도도 약 두 배가 된다(3·4장). 대신 같은 대역에서 동시에 쓸 수 있는 채널 개수는 반으로 줄어 이웃과 겹칠 확률이 커지고, 잡음도 폭에 비례해 커져(폭 두 배마다 +3 dB) 먼 거리에서는 이득이 줄어든다.</p>
-    <p>묶음은 아무렇게나 만들지 않는다. 6 GHz는 5,945 MHz부터 20·40·80·160 MHz 블록을 차례로 빈틈없이 쌓는다. 320 MHz만 예외로, 160 MHz씩 겹치게 놓아 “320-1”과 “320-2” 두 계열이 생긴다. 묶음 안의 20 MHz 채널 하나는 <b>주 채널</b><span class="en">(primary channel)</span>이 되어 비컨과 제어 프레임이 오가고, 나머지는 데이터를 실을 때만 함께 쓴다.</p>
+    <p>이웃한 20 MHz 채널을 붙여 하나처럼 쓰는 것이 <span class="term">채널 본딩</span><span class="en">(channel bonding)</span>이다. 40 → 80 → 160 → 320 MHz로 폭을 두 배로 할 때마다 <span class="term">부반송파</span>가 두 배가 되어 속도도 약 두 배가 된다(3·4장). 대신 같은 대역에서 동시에 쓸 수 있는 채널 개수는 반으로 줄어 이웃과 겹칠 확률이 커지고, 잡음도 폭에 비례해 커져(폭 두 배마다 +3 dB) 먼 거리에서는 이득이 줄어든다.</p>
+    <p>묶음은 아무렇게나 만들지 않는다. 6 GHz는 5,945 MHz부터 20·40·80·160 MHz 블록을 차례로 빈틈없이 쌓는다. 320 MHz만 예외로, 160 MHz씩 겹치게 놓아 “320-1”과 “320-2” 두 계열이 생긴다. 묶음 안의 20 MHz 채널 하나는 <b><span class="term">주 채널</span></b><span class="en">(primary channel)</span>이 되어 <span class="term">비컨</span>과 제어 프레임이 오가고, 나머지는 데이터를 실을 때만 함께 쓴다.</p>
     <p>6 GHz에는 채널이 59개나 되어, 단말이 전부 훑으면 시간이 오래 걸린다. 그래서 16번마다 하나씩(번호 % 16 = 5: 5, 21, 37, …, 229) <span class="term">PSC</span><span class="en">(Preferred Scanning Channel)</span>를 정해 두고, AP는 가능하면 주 채널을 PSC에 둔다. 단말은 PSC 15개만 훑어도 대부분의 AP를 찾는다.</p>
     <p class="spec-ref">6 GHz 채널 블록(5,945 MHz부터, 320 MHz는 160 MHz 간격으로 겹침): Linux <code>net/wireless/chan.c</code>의 <code>cfg80211_valid_center_freq()</code> · PSC(번호 % 16 = 5): Linux <code>include/net/cfg80211.h</code>의 <code>cfg80211_channel_is_psc()</code> (주석: Draft IEEE P802.11ax/D5.0 26.17.2.3.3)</p>
     <div class="sim" id="sim-6g">

@@ -30,7 +30,7 @@
   <header class="chapter-hero">
     <div class="eyebrow">Chapter 13</div>
     <h1>휴대폰 속 GNSS</h1>
-    <p class="lead">측량용 GNSS 수신기는 접시만 한 안테나를 쓰는데, 휴대폰은 손톱만 한 안테나를 기기 귀퉁이에 넣는다. 그런데도 지도 앱은 몇 초 만에 몇 m 안으로 위치를 잡고, 배터리도 크게 줄지 않는다. 이 장은 지금까지의 내용이 휴대폰 안에서 어떻게 합쳐지는지 보고, Android가 열어 둔 원시 측정값으로 의사거리를 직접 계산해 본다.</p>
+    <p class="lead">측량용 GNSS 수신기는 접시만 한 안테나를 쓰는데, 휴대폰은 손톱만 한 안테나를 기기 귀퉁이에 넣는다. 그런데도 지도 앱은 몇 초 만에 몇 m 안으로 위치를 잡고, 배터리도 크게 줄지 않는다. 이 장은 지금까지의 내용이 휴대폰 안에서 어떻게 합쳐지는지 보고, Android가 열어 둔 <span class="term">원시 측정값</span>으로 의사거리를 직접 계산해 본다.</p>
     <ul class="objectives">
       <li>휴대폰 GNSS의 약점(작은 선편파 안테나, 몸, 배터리)과 그것을 메우는 방법을 안다.</li>
       <li>Android의 GnssClock·GnssMeasurement 값으로 의사거리를 직접 계산한다.</li>
@@ -46,7 +46,7 @@
     <ul>
       <li><b>여러 위성군</b>: GPS·GLONASS·Galileo·BeiDou·QZSS를 함께 들어 하늘의 위성 수십 기를 쓴다(2·11장). Android는 위성군을 번호로 구분한다: GPS 1, SBAS 2, GLONASS 3, QZSS 4, BeiDou 5, Galileo 6, NavIC(IRNSS) 7.</li>
       <li><b>이중 주파수</b>: 2018년 이후 L1 + L5(E1 + E5a) 휴대폰이 나와 전리층을 지우고(10장) 도시의 다중 경로에 강해졌다(11장).</li>
-      <li><b>A-GNSS</b>: 통신망에서 궤도력·대략 위치·시각을 받아 몇 초 만에 첫 위치를 잡는다(5장).</li>
+      <li><b><span class="term">A-GNSS</span></b>: 통신망에서 궤도력·대략 위치·시각을 받아 몇 초 만에 첫 위치를 잡는다(5장).</li>
       <li><b>센서 융합</b>: 가속도·자이로·기압계·와이파이·셀 위치와 함께 계산해, 신호가 흔들리거나 끊겨도 위치를 이어 간다.</li>
     </ul>
     <p class="spec-ref">위성군 번호: Android <code>frameworks/base</code> <code>GnssStatus.java</code>의 <code>CONSTELLATION_GPS = 1</code> … <code>CONSTELLATION_IRNSS = 7</code></p>
@@ -77,7 +77,7 @@
   <!-- ============================================================ -->
   <section id="duty">
     <h2>듀티 사이클: 배터리와 맞바꾸기</h2>
-    <p>GNSS 칩이 쉬지 않고 추적하면 휴대폰에서 꽤 큰 전류를 쓴다. 그래서 칩은 위치가 필요 없는 짧은 순간마다 수신부를 껐다 켜는 <b>듀티 사이클</b>을 한다. 꺼져 있는 동안에도 시계와 대략의 위치·도플러를 기억하므로 다시 켜면 금방 잡지만(열시동, 5장), 반송파 위상의 연속성은 끊긴다(6장). 그래서 정밀 측정이 필요한 앱을 위해 Android에는 듀티 사이클을 끄고 전체 측정을 강제하는 개발자 옵션이 있다.</p>
+    <p>GNSS 칩이 쉬지 않고 추적하면 휴대폰에서 꽤 큰 전류를 쓴다. 그래서 칩은 위치가 필요 없는 짧은 순간마다 수신부를 껐다 켜는 <b><span class="term">듀티 사이클</span></b>을 한다. 꺼져 있는 동안에도 시계와 대략의 위치·도플러를 기억하므로 다시 켜면 금방 잡지만(열시동, 5장), 반송파 위상의 연속성은 끊긴다(6장). 그래서 정밀 측정이 필요한 앱을 위해 Android에는 듀티 사이클을 끄고 전체 측정을 강제하는 개발자 옵션이 있다.</p>
     <div class="sim" id="sim-duty">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>듀티 사이클과 배터리</h3></div>
       <div class="sim-view"><canvas id="cv-duty"></canvas></div>

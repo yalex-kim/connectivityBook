@@ -67,9 +67,9 @@
     <p>지금까지 단말은 한 번에 한 BSS, 한 채널에만 연결됐다. 공유기가 2.4·5·6 GHz를 모두 켜도 휴대폰은 그중 하나를 골라 붙었고, 대역을 옮기려면 로밍처럼 다시 연결해야 했다. Wi-Fi 7은 공유기와 단말을 각각 <span class="term">MLD</span><span class="en">(Multi-Link Device)</span>로 보고, 여러 대역의 링크를 <b>하나의 연결</b>로 묶는다. 연결·보안 키·블록 ACK 합의는 MLD 단위로 한 번만 하고, 프레임은 어느 링크로든 보낼 수 있다. 시퀀스 번호가 MLD 단위라서 한 프레임을 5 GHz로 보냈다가 실패하면 6 GHz로 다시 보낼 수도 있다.</p>
     <ul>
       <li><b>STR</b><span class="en">(Simultaneous Transmit and Receive)</span>: 링크마다 무선부가 따로 있어 동시에 보내고 받는다. 대역 간 간섭을 견딜 만큼 떨어진 대역(예: 2.4 + 5/6 GHz)이 필요하다. 대역폭을 합친다.</li>
-      <li><b>EMLSR</b><span class="en">(Enhanced Multi-Link Single Radio)</span>: 무선부 하나로 여러 링크를 <b>듣다가</b>, 먼저 기회가 온 링크로 모든 안테나를 옮겨 보낸다. 휴대폰처럼 무선부를 여럿 두기 어려운 기기의 주력 방식이다. 속도를 합치진 않지만 “먼저 빈 링크”를 쓰므로 지연이 준다.</li>
+      <li><b><span class="term">EMLSR</span></b><span class="en">(Enhanced Multi-Link Single Radio)</span>: 무선부 하나로 여러 링크를 <b>듣다가</b>, 먼저 기회가 온 링크로 모든 안테나를 옮겨 보낸다. 휴대폰처럼 무선부를 여럿 두기 어려운 기기의 주력 방식이다. 속도를 합치진 않지만 “먼저 빈 링크”를 쓰므로 지연이 준다.</li>
     </ul>
-    <p>MLO의 가장 큰 쓸모는 최고 속도보다 <b>꼬리 지연</b>(가끔 생기는 긴 대기)을 줄이는 것이다. 한 채널이 옆집 다운로드로 바쁠 때, 다른 대역이 비어 있으면 그쪽으로 보낸다. 두 채널이 동시에 바쁠 확률은 각각이 바쁠 확률보다 훨씬 작다.</p>
+    <p><span class="term">MLO</span>의 가장 큰 쓸모는 최고 속도보다 <b>꼬리 지연</b>(가끔 생기는 긴 대기)을 줄이는 것이다. 한 채널이 옆집 다운로드로 바쁠 때, 다른 대역이 비어 있으면 그쪽으로 보낸다. 두 채널이 동시에 바쁠 확률은 각각이 바쁠 확률보다 훨씬 작다.</p>
     <div class="callout analogy"><strong>여러 층의 회의실을 함께 예약</strong><p>한 층 회의실만 예약하면 그 방이 붐빌 때 기다릴 수밖에 없다. 여러 층(2.4·5·6 GHz)의 회의실을 함께 예약해 두면 먼저 빈 방에서 바로 말할 수 있다. Wi-Fi 7의 MLO가 이것이다. 평균 속도보다 “가끔 오래 기다리는 일”이 크게 준다.</p></div>
     <div class="sim" id="sim-mlo">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>링크 여럿이면 기다림이 얼마나 줄까</h3></div>
@@ -92,7 +92,7 @@
   <section id="puncture">
     <h2>프리앰블 펑처링: 구멍 난 넓은 채널</h2>
     <p>160 MHz 채널 안의 20 MHz 하나를 이웃이나 레이더가 쓰고 있다면, Wi-Fi 6 이전 규칙에서는 그 20 MHz를 피할 수 있는 가장 넓은 연속 채널(80 MHz나 그 이하)로 줄여야 했다. Wi-Fi 7은 그 20 MHz만 <b>구멍을 뚫고</b>(펑처링) 나머지를 모두 쓴다. 프리앰블에 어느 20 MHz가 빠졌는지 적어 보내고, 그 부분의 부반송파는 비운다.</p>
-    <p>아무 모양의 구멍이나 되는 것은 아니다. 표준이 허용한 패턴만 쓸 수 있고, 주 채널(primary 20 MHz)은 뚫을 수 없다. 320 MHz에서는 40 MHz 단위로 뚫는다.</p>
+    <p>아무 모양의 구멍이나 되는 것은 아니다. 표준이 허용한 패턴만 쓸 수 있고, <span class="term">주 채널</span>(primary 20 MHz)은 뚫을 수 없다. 320 MHz에서는 40 MHz 단위로 뚫는다.</p>
     <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">320 MHz 채널에서 주 채널과 먼 20 MHz 한 칸에 레이더가 있다. 펑처링 없이, 그리고 펑처링으로 쓸 수 있는 폭은?</p><p class="wi-hint">펑처링 없이는 막힌 칸이 없는 정렬된 채널로 줄여야 한다. 320 MHz 펑처링은 40 MHz 단위다.</p><div class="opts">
       <button class="opt">320 / 320 MHz</button>
       <button class="opt" data-correct>160 / 280 MHz</button>
@@ -120,7 +120,7 @@
   <section id="wifi8">
     <h2>그다음: Wi-Fi 8 (802.11bn, 초안)</h2>
     <div class="callout spec"><strong>초안 단계의 내용</strong><p>802.11bn은 이 책을 쓰는 시점에 표준 초안 단계이고, 최종 표준은 2028년 전후로 예상된다. 아래는 개정 작업의 목표와 공개 발표 자료에서 논의된 방향을 정리한 것으로, 세부 기능과 숫자는 최종 표준에서 바뀔 수 있다. 공개 구현 코드로 확인할 수 있는 단계가 아니어서 이 절에는 계산 시뮬레이터를 두지 않았다.</p></div>
-    <p>802.11bn의 이름은 <b>UHR</b><span class="en">(Ultra High Reliability)</span>이다. 처음으로 최고 속도가 아닌 신뢰성을 이름에 걸었다. 최대 채널 폭(320 MHz)과 최고 변조(4096-QAM)는 Wi-Fi 7과 같게 두고, 대신 다음을 겨냥한다.</p>
+    <p>802.11bn의 이름은 <b><span class="term">UHR</span></b><span class="en">(Ultra High Reliability)</span>이다. 처음으로 최고 속도가 아닌 신뢰성을 이름에 걸었다. 최대 채널 폭(320 MHz)과 최고 변조(4096-QAM)는 Wi-Fi 7과 같게 두고, 대신 다음을 겨냥한다.</p>
     <ul>
       <li><b>여러 AP의 협조</b><span class="en">(multi-AP coordination)</span>: 지금까지 이웃 AP끼리는 서로를 “경쟁자”로만 봤다. 메시나 사무실처럼 한 관리자 아래의 AP들이 공간 재사용·빔포밍·시간 나누기를 서로 맞춰, 12장의 BSS 컬러링보다 적극적으로 간섭을 피하는 방향이다.</li>
       <li><b>끊김 없는 로밍</b>: 9장에서 본 재연결과 키 교환의 공백을 더 줄여, 여러 AP를 하나의 큰 MLD처럼 다루는 방향이 논의된다.</li>

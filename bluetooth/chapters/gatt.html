@@ -54,7 +54,7 @@
     <h2>속성: 번호 붙은 칸에 이름표 달기</h2>
     <p>LE 기기 안의 데이터는 <span class="term">속성</span><span class="en">(attribute)</span>이라는 칸에 담긴다. 속성 하나는 네 가지로 이루어진다.</p>
     <ul>
-      <li><b>핸들</b><span class="en">(handle)</span>: 0x0001~0xFFFF의 16비트 번호. 이 서버 안에서 칸의 주소다.</li>
+      <li><b><span class="term">핸들</span></b><span class="en">(handle)</span>: 0x0001~0xFFFF의 16비트 번호. 이 서버 안에서 칸의 주소다.</li>
       <li><b>종류</b><span class="en">(attribute type)</span>: 이 칸에 무엇이 들었는지를 나타내는 <span class="term">UUID</span><span class="en">(Universally Unique Identifier)</span>. “심박 측정값”, “배터리 잔량” 같은 이름표다.</li>
       <li><b>값</b><span class="en">(value)</span>: 실제 바이트. 최대 512바이트.</li>
       <li><b>권한</b><span class="en">(permissions)</span>: 읽기·쓰기 가능 여부와 암호화·인증 요구. 권한은 서버만 알고, 무선으로 전송되지 않는다.</li>
@@ -62,7 +62,7 @@
     <p>데이터를 가진 쪽을 <span class="term">서버</span><span class="en">(server)</span>, 묻는 쪽을 <span class="term">클라이언트</span><span class="en">(client)</span>라 한다. 링크 계층의 센트럴·페리페럴과는 별개다. 보통 심박계(페리페럴)가 서버, 휴대폰(센트럴)이 클라이언트지만 반대도 가능하고, 한 기기가 둘 다일 수도 있다. 둘이 주고받는 요청·응답 규칙이 <span class="term">ATT</span><span class="en">(Attribute Protocol)</span>이고, LE에서는 L2CAP 고정 채널 0x0004를 쓴다.</p>
     <p>UUID는 원래 128비트(16바이트)다. 매번 16바이트를 보내기는 아까우므로, SIG가 정한 항목은 <b>블루투스 기본 UUID</b> 00000000-0000-1000-8000-00805F9B34FB의 앞부분 16비트만 바꾼 값으로 정하고, 그 16비트만 보낸다. 예를 들어 심박 서비스 0x180D는 0000<b>180D</b>-0000-1000-8000-00805F9B34FB의 줄임이다. 회사가 자기 기능을 만들 때는 이 범위를 피한 무작위 128비트 UUID를 쓴다.</p>
     <p class="spec-ref">속성의 핸들·종류·값·권한, 값 최대 512바이트: <b>[Vol 3] Part F §3.2</b> · Bluetooth_Base_UUID와 16비트 별칭: <b>[Vol 3] Part B §2.5.1</b> · ATT 고정 채널 0x0004, LE 기본 ATT_MTU 23: <b>[Vol 3] Part G §5.2</b></p>
-    <div class="callout analogy"><strong>카페의 메뉴판</strong><p>GATT 서버는 <b>메뉴판</b>이다. 메뉴판은 “음료”, “디저트” 같은 <b>분류</b>(서비스)로 나뉘고, 각 분류 아래에 “아메리카노 4,500원” 같은 <b>항목</b>(특성)이 있다. 항목 옆에는 “ICE 가능” 같은 <b>작은 메모</b>(디스크립터)가 붙는다. 메뉴판의 모든 줄에는 번호(핸들)가 있어서 “7번 주세요”라고 하면 된다. 그리고 “아메리카노 나오면 진동벨로 알려 주세요”라고 부탁해 두면(CCCD 쓰기), 준비될 때마다 가게가 먼저 알려 준다(알림).</p></div>
+    <div class="callout analogy"><strong>카페의 메뉴판</strong><p>GATT 서버는 <b>메뉴판</b>이다. 메뉴판은 “음료”, “디저트” 같은 <b>분류</b>(서비스)로 나뉘고, 각 분류 아래에 “아메리카노 4,500원” 같은 <b>항목</b>(특성)이 있다. 항목 옆에는 “ICE 가능” 같은 <b>작은 메모</b>(<span class="term">디스크립터</span>)가 붙는다. 메뉴판의 모든 줄에는 번호(핸들)가 있어서 “7번 주세요”라고 하면 된다. 그리고 “아메리카노 나오면 진동벨로 알려 주세요”라고 부탁해 두면(CCCD 쓰기), 준비될 때마다 가게가 먼저 알려 준다(<span class="term">알림</span>).</p></div>
   </section>
 
   <!-- ============================================================ -->
@@ -72,7 +72,7 @@
     <ul>
       <li><b>서비스 선언</b>(종류 0x2800 Primary Service): 값이 서비스의 UUID다. 여기서 다음 서비스 선언 직전까지가 한 <span class="term">서비스</span><span class="en">(service)</span>다.</li>
       <li><b>특성 선언</b>(종류 0x2803 Characteristic): 값이 [속성 비트 1바이트][특성 값의 핸들 2바이트][특성 UUID]다. 바로 다음 칸이 실제 값을 담은 <b>특성 값</b> 칸이다. 둘을 합쳐 <span class="term">특성</span><span class="en">(characteristic)</span>이라 한다.</li>
-      <li><b>디스크립터</b>(descriptor): 특성 값 뒤에 붙는 부가 정보. 가장 중요한 것이 <span class="term">CCCD</span><span class="en">(Client Characteristic Configuration Descriptor, 0x2902)</span>다. 클라이언트가 여기에 0x0001을 쓰면 알림, 0x0002를 쓰면 표시를 받겠다는 뜻이다. 값은 클라이언트마다 따로 저장된다.</li>
+      <li><b>디스크립터</b>(descriptor): 특성 값 뒤에 붙는 부가 정보. 가장 중요한 것이 <span class="term">CCCD</span><span class="en">(Client Characteristic Configuration Descriptor, 0x2902)</span>다. 클라이언트가 여기에 0x0001을 쓰면 알림, 0x0002를 쓰면 <span class="term">표시</span>를 받겠다는 뜻이다. 값은 클라이언트마다 따로 저장된다.</li>
     </ul>
     <div class="table-wrap"><table>
       <thead><tr><th>특성 속성 비트</th><th>값</th><th>허용하는 일</th></tr></thead>
@@ -128,7 +128,7 @@
       </tbody>
     </table></div>
     <p class="spec-ref">ATT PDU 옵코드: <b>[Vol 3] Part F §3.4</b> (0x0A READ_REQ, 0x12 WRITE_REQ, 0x52 WRITE_CMD, 0x1B NTF, 0x1D IND, 0x1E CFM)</p>
-    <p>“확인 없음”이 “잃어버려도 된다”는 뜻은 아니다. 6장의 링크 계층이 SN/NESN으로 모든 패킷을 확인하고 재전송하므로, 연결이 살아 있는 한 알림도 결국 도착한다. 확인의 차이는 <b>앱 수준</b>에서 생긴다. ATT는 한 베어러에서 응답을 기다리는 요청이나 표시를 <b>한 번에 하나만</b> 허용한다. 그래서 표시를 보내면 상대의 확인(CFM)이 올 때까지 다음 표시를 못 보낸다. 확인은 보통 다음 연결 이벤트에서야 돌아오므로, 표시는 <b>연결 간격당 하나</b> 정도가 한계다. 알림과 명령은 기다리지 않으므로 한 이벤트에 여러 개를 쏟아낼 수 있다.</p>
+    <p>“확인 없음”이 “잃어버려도 된다”는 뜻은 아니다. 6장의 링크 계층이 <span class="term">SN/NESN</span>으로 모든 패킷을 확인하고 재전송하므로, 연결이 살아 있는 한 알림도 결국 도착한다. 확인의 차이는 <b>앱 수준</b>에서 생긴다. ATT는 한 베어러에서 응답을 기다리는 요청이나 표시를 <b>한 번에 하나만</b> 허용한다. 그래서 표시를 보내면 상대의 확인(CFM)이 올 때까지 다음 표시를 못 보낸다. 확인은 보통 다음 연결 이벤트에서야 돌아오므로, 표시는 <b>연결 간격당 하나</b> 정도가 한계다. 알림과 명령은 기다리지 않으므로 한 이벤트에 여러 개를 쏟아낼 수 있다.</p>
     <p>5.2의 <span class="term">EATT</span><span class="en">(Enhanced ATT)</span>는 ATT를 여러 L2CAP 채널(베어러)에서 동시에 돌려, 큰 응답 하나가 다른 앱의 작은 요청을 막는 “줄 서기” 문제를 줄였다.</p>
     <div class="sim" id="sim-ni">
       <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>알림 vs 표시: 확인을 기다리는 값</h3></div>
@@ -178,8 +178,8 @@
   <!-- ============================================================ -->
   <section id="disc">
     <h2>찾기 비용과 GATT 캐싱</h2>
-    <p>처음 연결한 클라이언트는 서버의 메뉴판을 모른다. 그래서 위 시뮬레이터처럼 서비스 찾기 → 특성 찾기 → 디스크립터 찾기를 차례로 한다. 요청 하나가 응답을 받아야 다음 요청을 보낼 수 있으므로, 속성이 수백 개인 기기(이어폰, 시계)에서는 이 과정만 연결 간격 수십 개, 즉 1초 넘게 걸리기도 한다. 그래서 클라이언트는 본딩한(8장) 기기의 메뉴판을 저장해 두고 다음 연결 때 다시 쓴다.</p>
-    <p>문제는 서버가 펌웨어 업데이트로 메뉴판을 바꿨을 때다. 옛 메뉴판대로 “7번 주세요”라고 하면 엉뚱한 값을 읽는다. 해결책이 둘 있다. 서버가 GATT 서비스의 <b>Service Changed</b> 특성으로 바뀐 핸들 범위를 표시해 알리는 방법, 그리고 5.1의 <b>GATT 캐싱</b>이다. 서버는 메뉴판 전체의 해시(<b>Database Hash</b>)를 특성으로 제공하고, 클라이언트는 연결할 때 해시 하나만 읽어 저장해 둔 것과 같은지 확인한다. 다르면 다시 찾는다.</p>
+    <p>처음 연결한 클라이언트는 서버의 메뉴판을 모른다. 그래서 위 시뮬레이터처럼 서비스 찾기 → 특성 찾기 → 디스크립터 찾기를 차례로 한다. 요청 하나가 응답을 받아야 다음 요청을 보낼 수 있으므로, 속성이 수백 개인 기기(이어폰, 시계)에서는 이 과정만 연결 간격 수십 개, 즉 1초 넘게 걸리기도 한다. 그래서 클라이언트는 <span class="term">본딩</span>한(8장) 기기의 메뉴판을 저장해 두고 다음 연결 때 다시 쓴다.</p>
+    <p>문제는 서버가 펌웨어 업데이트로 메뉴판을 바꿨을 때다. 옛 메뉴판대로 “7번 주세요”라고 하면 엉뚱한 값을 읽는다. 해결책이 둘 있다. 서버가 GATT 서비스의 <b>Service Changed</b> 특성으로 바뀐 핸들 범위를 표시해 알리는 방법, 그리고 5.1의 <b><span class="term">GATT 캐싱</span></b>이다. 서버는 메뉴판 전체의 해시(<b>Database Hash</b>)를 특성으로 제공하고, 클라이언트는 연결할 때 해시 하나만 읽어 저장해 둔 것과 같은지 확인한다. 다르면 다시 찾는다.</p>
     <p class="spec-ref">Service Changed, Database Hash, Robust Caching: <b>[Vol 3] Part G §2.5.2·§7</b> · EATT 베어러: <b>[Vol 3] Part G §5.3</b>와 <b>[Vol 3] Part A</b>(Enhanced Credit Based Flow Control)</p>
   </section>
 

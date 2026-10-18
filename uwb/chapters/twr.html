@@ -81,7 +81,7 @@
   <!-- ============================================================ -->
   <section id="ds">
     <h2>양방향 TWR: 핑퐁 두 번</h2>
-    <p>DS-TWR<span class="en">(Double-Sided TWR)</span>는 핑퐁을 한 번 더 한다. A Poll → B Response → A Final. 이제 A와 B 모두 왕복 하나와 응답 하나씩을 갖는다(T<sub>round1</sub>, T<sub>reply1</sub>은 첫 번째 핑퐁, T<sub>reply2</sub>, T<sub>round2</sub>는 두 번째). 두 응답 시간이 같지 않아도 되는 <b>비대칭</b> 공식은 다음과 같다.</p>
+    <p><span class="term">DS-TWR</span><span class="en">(Double-Sided TWR)</span>는 핑퐁을 한 번 더 한다. A Poll → B Response → A Final. 이제 A와 B 모두 왕복 하나와 응답 하나씩을 갖는다(T<sub>round1</sub>, T<sub>reply1</sub>은 첫 번째 핑퐁, T<sub>reply2</sub>, T<sub>round2</sub>는 두 번째). 두 응답 시간이 같지 않아도 되는 <b>비대칭</b> 공식은 다음과 같다.</p>
     <div class="formula">ToF = (T<sub>round1</sub> × T<sub>round2</sub> − T<sub>reply1</sub> × T<sub>reply2</sub>) ÷ (T<sub>round1</sub> + T<sub>round2</sub> + T<sub>reply1</sub> + T<sub>reply2</sub>)
       <div class="where">오차는 대략 ToF × (e<sub>A</sub> + e<sub>B</sub>) ÷ 2. 비행시간(나노초) 자체에 ppm이 곱해지니 사실상 0이다. 응답 시간에 곱해지던 SS-TWR와 대조된다. 대가는 프레임 하나와 그만큼의 시간·전력, 그리고 마지막 타임스탬프를 누군가에게 알려 줄 프레임이 더 필요할 수 있다는 것(FiRa의 “deferred” 방식, 11장).</div>
     </div>

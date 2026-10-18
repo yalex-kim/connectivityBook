@@ -54,7 +54,7 @@
   <!-- ============================================================ -->
   <section id="event">
     <h2>연결 이벤트: 정해진 시각에 깨어나기</h2>
-    <p>5장의 CONNECT_IND로 연결이 맺어지면 두 기기는 광고 채널을 떠난다. 이제부터 시간은 <span class="term">연결 간격</span><span class="en">(connInterval)</span>으로 잘린다. 간격마다 한 번 <span class="term">연결 이벤트</span><span class="en">(connection event)</span>가 열리고, 그 시작점을 <span class="term">앵커 포인트</span><span class="en">(anchor point)</span>라 한다. 앵커 포인트에서 센트럴이 먼저 패킷을 보내고, 페리페럴은 받은 패킷 끝에서 정확히 <b>T_IFS(기본 150 µs)</b> 뒤에 답한다. 둘 중 하나라도 더 보낼 것이 있으면(헤더의 MD 비트) 같은 채널에서 핑퐁을 이어 가고, 둘 다 없으면 이벤트를 닫고 다음 앵커 포인트까지 잔다. 다음 이벤트는 4장의 채널 선택 알고리즘이 고른 새 채널에서 열린다.</p>
+    <p>5장의 CONNECT_IND로 연결이 맺어지면 두 기기는 광고 채널을 떠난다. 이제부터 시간은 <span class="term">연결 간격</span><span class="en">(connInterval)</span>으로 잘린다. 간격마다 한 번 <span class="term">연결 이벤트</span><span class="en">(connection event)</span>가 열리고, 그 시작점을 <span class="term">앵커 포인트</span><span class="en">(anchor point)</span>라 한다. 앵커 포인트에서 센트럴이 먼저 패킷을 보내고, 페리페럴은 받은 패킷 끝에서 정확히 <b><span class="term">T_IFS</span>(기본 150 µs)</b> 뒤에 답한다. 둘 중 하나라도 더 보낼 것이 있으면(헤더의 <span class="term">MD</span> 비트) 같은 채널에서 핑퐁을 이어 가고, 둘 다 없으면 이벤트를 닫고 다음 앵커 포인트까지 잔다. 다음 이벤트는 4장의 채널 선택 알고리즘이 고른 새 채널에서 열린다.</p>
     <figure class="diagram">
       <div style="overflow-x:auto">
       <svg viewBox="0 0 760 210" role="img" aria-label="연결 간격마다 열리는 연결 이벤트와 그 안의 센트럴-페리페럴 패킷 교환" style="min-width:600px">
@@ -201,7 +201,7 @@
     <ul>
       <li><b>패킷 머리와 꼬리</b>: 데이터 패킷마다 프리앰블·접근 주소·헤더·CRC로 10~11바이트가 붙는다.</li>
       <li><b>반이중과 응답</b>: 데이터 패킷 하나마다 상대가 빈 PDU라도 답해야 하고, 사이사이 150 µs씩 쉰다.</li>
-      <li><b>상위 계층 헤더</b>: L2CAP 헤더 4바이트, ATT 알림 헤더 3바이트(7장).</li>
+      <li><b>상위 계층 헤더</b>: L2CAP 헤더 4바이트, ATT <span class="term">알림</span> 헤더 3바이트(7장).</li>
       <li><b>데이터 길이</b>: 4.2 이전에는 페이로드가 27바이트였다. 4.2의 <span class="term">데이터 길이 확장</span><span class="en">(DLE, Data Length Extension)</span>으로 251바이트까지 늘었다. 27바이트면 L2CAP·ATT 헤더를 빼고 20바이트만 남는다.</li>
       <li><b>이벤트 길이</b>: 한 이벤트에 몇 번 주고받을지는 센트럴(휴대폰 운영체제)이 정한다. 많은 휴대폰이 이벤트당 패킷 수에 상한을 둔다.</li>
     </ul>
@@ -235,7 +235,7 @@
   <!-- ============================================================ -->
   <section id="update">
     <h2>약속 바꾸기와 끝내기</h2>
-    <p>연결 파라미터는 연결 중에 얼마든지 바꿀 수 있다. 바꾸는 절차는 모두 <b>LL 제어 PDU</b>(LLID 11)로 이루어지고, 대부분 “몇 번째 이벤트(instant)부터 새 값으로” 하는 식이다. 두 기기의 이벤트 카운터가 같으므로 정확히 같은 순간에 갈아탄다.</p>
+    <p>연결 파라미터는 연결 중에 얼마든지 바꿀 수 있다. 바꾸는 절차는 모두 <b><span class="term">LL 제어 PDU</span></b>(LLID 11)로 이루어지고, 대부분 “몇 번째 이벤트(instant)부터 새 값으로” 하는 식이다. 두 기기의 이벤트 카운터가 같으므로 정확히 같은 순간에 갈아탄다.</p>
     <div class="table-wrap"><table>
       <thead><tr><th>절차</th><th>바꾸는 것</th><th>쓰임</th></tr></thead>
       <tbody>

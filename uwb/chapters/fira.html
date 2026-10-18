@@ -47,7 +47,7 @@
   <section id="roles">
     <h2>두 쌍의 역할</h2>
     <ul>
-      <li><b>컨트롤러 / 컨트롤리</b><span class="en">(controller / controlee)</span>: 누가 세션의 설정(채널, 코드, 간격, 슬롯)을 정하고 시간표를 내는가. 컨트롤러가 라운드마다 제어 메시지로 시간표를 알린다.</li>
+      <li><b><span class="term">컨트롤러</span> / 컨트롤리</b><span class="en">(controller / controlee)</span>: 누가 세션의 설정(채널, 코드, 간격, 슬롯)을 정하고 시간표를 내는가. 컨트롤러가 <span class="term">라운드</span>마다 제어 메시지로 시간표를 알린다.</li>
       <li><b>시작자 / 응답자</b><span class="en">(initiator / responder)</span>: 6장의 핑퐁에서 누가 Poll을 보내는가. 보통 컨트롤러가 시작자지만, 둘은 별개의 설정이다.</li>
     </ul>
     <p>휴대폰과 분실물 태그라면 휴대폰이 컨트롤러·시작자, 태그가 컨트롤리·응답자다. Android는 TDoA용으로 광고자·관찰자 역할도 둔다(9장).</p>
@@ -95,7 +95,7 @@
   <!-- ============================================================ -->
   <section id="uci">
     <h2>앱에서 칩까지: 세션이 열리는 순서</h2>
-    <p>앱은 UWB 칩을 직접 다루지 않는다. Android에서는 앱 → UWB 시스템 서비스 → UWB 칩(UWBS) 순으로 내려가고, 서비스와 칩은 <span class="term">UCI</span><span class="en">(UWB Command Interface)</span>라는 명령 형식으로 이야기한다. 그 전에 두 기기는 UWB 밖의 통로(대개 BLE, 12장)로 상대의 주소와 세션 설정, 보안 키를 주고받는다. 이것을 <b>대역 외(OOB) 설정</b>이라 한다.</p>
+    <p>앱은 UWB 칩을 직접 다루지 않는다. Android에서는 앱 → UWB 시스템 서비스 → UWB 칩(UWBS) 순으로 내려가고, 서비스와 칩은 <span class="term">UCI</span><span class="en">(UWB Command Interface)</span>라는 명령 형식으로 이야기한다. 그 전에 두 기기는 UWB 밖의 통로(대개 BLE, 12장)로 상대의 주소와 세션 설정, 보안 키를 주고받는다. 이것을 <b>대역 외(<span class="term">OOB</span>) 설정</b>이라 한다.</p>
     <div class="sim" id="sim-uci">
       <div class="sim-head"><span class="sim-tag">INTERACTIVE</span><h3>세션 하나의 일생</h3></div>
       <div class="sim-view" style="padding:14px"><div class="seq" id="uc-seq"></div></div>
@@ -107,7 +107,7 @@
   <!-- ============================================================ -->
   <section id="hop">
     <h2>세션끼리 부딪히지 않게: 라운드 도약</h2>
-    <p>같은 방에서 여러 휴대폰이 각자 세션을 돌리면, 같은 채널·같은 간격인 두 세션의 라운드가 겹칠 수 있다. 시계가 거의 같은 속도로 가므로, 한 번 겹치면 계속 겹친다. 그래서 FiRa는 간격 몇 개를 <b>블록</b>으로 묶고, 블록마다 라운드를 놓는 자리를 무작위로 바꾼다(<b>라운드 도약</b>, hopping). 겹쳐도 다음 블록에서는 대개 비켜 간다.</p>
+    <p>같은 방에서 여러 휴대폰이 각자 세션을 돌리면, 같은 채널·같은 간격인 두 세션의 라운드가 겹칠 수 있다. 시계가 거의 같은 속도로 가므로, 한 번 겹치면 계속 겹친다. 그래서 FiRa는 간격 몇 개를 <b>블록</b>으로 묶고, 블록마다 라운드를 놓는 자리를 무작위로 바꾼다(<b><span class="term">라운드 도약</span></b>, hopping). 겹쳐도 다음 블록에서는 대개 비켜 간다.</p>
     <div class="sim" id="sim-hop">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>두 세션의 충돌</h3></div>
       <div class="sim-view"><canvas id="cv-hop"></canvas></div>
