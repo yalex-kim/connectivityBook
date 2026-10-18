@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>양방향 거리 측정: SS-TWR와 DS-TWR · UWBBook</title>
+<meta name="description" content="시계가 맞지 않는 두 기기가 어떻게 거리를 재는가. 단방향(SS-TWR)과 양방향(DS-TWR) 측정의 공식, 응답 시간과 시계 오차가 만드는 오류, 반송파로 잰 시계 차이 보정을 시뮬레이터로 익히고, Decawave uwb-core의 시험 값으로 공식을 검증한다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/uwb/chapters/twr.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="UWBBook">
+<meta property="og:title" content="양방향 거리 측정: SS-TWR와 DS-TWR · UWBBook">
+<meta property="og:description" content="시계가 맞지 않는 두 기기가 어떻게 거리를 재는가. 단방향(SS-TWR)과 양방향(DS-TWR) 측정의 공식, 응답 시간과 시계 오차가 만드는 오류, 반송파로 잰 시계 차이 보정을 시뮬레이터로 익히고, Decawave uwb-core의 시험 값으로 공식을 검증한다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/uwb/chapters/twr.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/uwb/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"양방향 거리 측정: SS-TWR와 DS-TWR","name":"양방향 거리 측정: SS-TWR와 DS-TWR · UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/twr.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/uwb/chapters/twr.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":6,"image":"https://yalex-kim.github.io/yalexBook/uwb/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/uwb/#book","name":"UWBBook — 누구나 읽는 인터랙티브 UWB 교과서","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"publisher":{"@type":"Organization","name":"UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"description":"시계가 맞지 않는 두 기기가 어떻게 거리를 재는가. 단방향(SS-TWR)과 양방향(DS-TWR) 측정의 공식, 응답 시간과 시계 오차가 만드는 오류, 반송파로 잰 시계 차이 보정을 시뮬레이터로 익히고, Decawave uwb-core의 시험 값으로 공식을 검증한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"UWBBook","item":"https://yalex-kim.github.io/yalexBook/uwb/"},{"@type":"ListItem","position":2,"name":"06 양방향 거리 측정: SS-TWR와 DS-TWR","item":"https://yalex-kim.github.io/yalexBook/uwb/chapters/twr.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<style>
+  .ts { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; font-size: 13px; }
+  .ts code { background: none; padding: 0; font-size: 12.5px; }
+</style>
+</head>
+<body data-chapter="twr">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 06</div>
+    <h1>양방향 거리 측정: SS-TWR와 DS-TWR</h1>
+    <p class="lead">휴대폰과 태그의 시계는 서로 맞춰져 있지 않다. 한쪽이 “지금 12시 0분 0.000000001초에 보냈어”라고 해도, 받는 쪽 시계로는 그게 언제인지 알 수 없다. 그래서 UWB는 한 번 보내고 받는 것으로는 거리를 잴 수 없고, <b>보내고, 답을 받고, 걸린 시간을 비교</b>한다. 이것이 <span class="term">TWR</span><span class="en">(Two-Way Ranging)</span>이다. 이 장의 공식은 공개 라이브러리 Decawave <code>uwb-core</code>의 <code>rng_math.c</code>를 그대로 옮겼고, 그 라이브러리의 자체 시험 값으로 검증했다.</p>
+    <ul class="objectives">
+      <li>단방향 TWR(SS-TWR)의 공식 ToF = (T<sub>round</sub> − T<sub>reply</sub>) ÷ 2를 타임라인에서 유도한다.</li>
+      <li>응답 시간과 두 시계의 ppm 차이가 SS-TWR 오차를 만드는 방식, 반송파 보정의 효과를 계산한다.</li>
+      <li>비대칭 양방향 TWR(DS-TWR) 공식이 시계 오차를 거의 지워 버리는 이유를 확인한다.</li>
+      <li>공개 코드의 시험 타임스탬프로 거리를 직접 계산해 본다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="ss">
+    <h2>단방향 TWR: 핑퐁 한 번</h2>
+    <p>A(시작자, initiator)가 <b>Poll</b>을 보내고 송신 시각을 자기 시계로 찍는다. B(응답자, responder)는 받은 시각을 자기 시계로 찍고, 정해진 시간 뒤에 <b>Response</b>를 보낸다. A는 그 Response를 받은 시각을 찍는다. 이제 두 시간이 있다.</p>
+    <ul>
+      <li>A가 잰 왕복 시간 <b>T<sub>round</sub></b> = A의 수신 시각 − A의 송신 시각</li>
+      <li>B가 잰 응답 시간 <b>T<sub>reply</sub></b> = B의 송신 시각 − B의 수신 시각 (Response 안에 담아 알려 준다)</li>
+    </ul>
+    <p>왕복에서 B가 기다린 시간을 빼면 신호가 두 번 날아간 시간이 남는다. 그래서 <b>ToF = (T<sub>round</sub> − T<sub>reply</sub>) ÷ 2</b>. 각자 자기 시계 안에서의 차이만 쓰므로, 두 시계가 맞을 필요가 없다. 대신 5장에서 본 대로 시계의 <b>빠르기</b>가 다르면 T<sub>reply</sub>가 A의 단위로 틀리게 전달된다.</p>
+    <div class="sim" id="sim-tl">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>타임라인으로 보는 SS-TWR와 DS-TWR</h3></div>
+      <div class="sim-view"><canvas id="cv-tl"></canvas></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>방식</span><div class="seg" id="tl-m"><button data-value="ss" class="on">SS-TWR (프레임 2개)</button><button data-value="ds">DS-TWR (프레임 3개)</button></div></div>
+        <label class="ctrl"><span>실제 거리 <output id="tl-d-out"></output></span><input type="range" id="tl-d" min="0.5" max="30" step="0.5" value="5"></label>
+        <label class="ctrl"><span>A 시계 오차 <output id="tl-a-out"></output></span><input type="range" id="tl-a" min="-20" max="20" value="10"></label>
+        <label class="ctrl"><span>B 시계 오차 <output id="tl-b-out"></output></span><input type="range" id="tl-b" min="-20" max="20" value="-10"></label>
+        <label class="ctrl"><span>B의 응답 시간 <output id="tl-r-out"></output></span><input type="range" id="tl-r" min="100" max="3000" step="50" value="500"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">SS-TWR (보정 없음)</span><span class="v" id="tl-ss">—</span></div>
+        <div class="stat"><span class="k">SS-TWR (반송파로 보정)</span><span class="v" id="tl-sk">—</span></div>
+        <div class="stat"><span class="k">DS-TWR</span><span class="v" id="tl-ds">—</span></div>
+      </div>
+      <div class="sim-note">그림: 위 = A, 아래 = B. 사선은 공중을 나는 프레임(비행시간을 아주 크게 과장했다), 괄호는 각자 자기 시계로 잰 구간. 해볼 것: ① A +10 ppm, B −10 ppm, 응답 500 µs면 보정 없는 SS-TWR가 1.5 m 틀린다. ② 반송파로 잰 시계 차이로 보정하면 거의 맞는다(보정 오차 0 가정). ③ DS-TWR는 보정 없이도 mm 아래로 맞는다. 모델: 시계 오차는 ppm만큼 빠르기 차이, 타임스탬프 잡음·안테나 지연 오차 없음. 계산 함수는 <code>uwb-core</code>의 <code>calc_tof_ss()</code>·<code>calc_tof_ds()</code>와 같다.</div>
+    </div>
+    <div class="formula">SS-TWR 오차 ≈ T<sub>reply</sub> × (e<sub>A</sub> − e<sub>B</sub>) ÷ 2 &nbsp;&nbsp;(e = 시계 빠르기 오차, ppm)
+      <div class="where">응답 시간이 길수록, 두 시계가 다를수록 커진다. 그래서 SS-TWR는 응답을 아주 빨리 하거나(수십~수백 µs), 시계 차이를 재서 보정한다.</div>
+    </div>
+    <p><code>uwb-core</code>의 <code>calc_tof_ss()</code>는 마지막 인자 <b>skew</b>로 이 보정을 한다: ToF = (T<sub>round</sub> − T<sub>reply</sub> × (1 − skew)) ÷ 2. A는 B가 보낸 Response의 반송파 주파수가 자기 반송파와 얼마나 다른지 재서(5장, 9번 채널에서 1 ppm ≈ 8 kHz) skew를 얻는다.</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="ds">
+    <h2>양방향 TWR: 핑퐁 두 번</h2>
+    <p>DS-TWR<span class="en">(Double-Sided TWR)</span>는 핑퐁을 한 번 더 한다. A Poll → B Response → A Final. 이제 A와 B 모두 왕복 하나와 응답 하나씩을 갖는다(T<sub>round1</sub>, T<sub>reply1</sub>은 첫 번째 핑퐁, T<sub>reply2</sub>, T<sub>round2</sub>는 두 번째). 두 응답 시간이 같지 않아도 되는 <b>비대칭</b> 공식은 다음과 같다.</p>
+    <div class="formula">ToF = (T<sub>round1</sub> × T<sub>round2</sub> − T<sub>reply1</sub> × T<sub>reply2</sub>) ÷ (T<sub>round1</sub> + T<sub>round2</sub> + T<sub>reply1</sub> + T<sub>reply2</sub>)
+      <div class="where">오차는 대략 ToF × (e<sub>A</sub> + e<sub>B</sub>) ÷ 2. 비행시간(나노초) 자체에 ppm이 곱해지니 사실상 0이다. 응답 시간에 곱해지던 SS-TWR와 대조된다. 대가는 프레임 하나와 그만큼의 시간·전력, 그리고 마지막 타임스탬프를 누군가에게 알려 줄 프레임이 더 필요할 수 있다는 것(FiRa의 “deferred” 방식, 11장).</div>
+    </div>
+    <p class="spec-ref">SS: <code>calc_tof_ss(response, request, transmission, reception, skew)</code> = ((응답 − 요청) − (송신 − 수신) & 0xFFFFFFFF × (1 − skew)) ÷ 2 · DS 비대칭: <code>calc_tof_ds()</code>(분모가 0이면 NaN) · DS 대칭 근사: <code>calc_tof_sym_ds()</code> = (T1R − T1r + T2R − T2r) ÷ 4 · 거리: <code>uwb_rng_tof_to_meters()</code> = ToF × (299,792,458 ÷ 1.000293) × (1 ÷ 499.2 MHz ÷ 128) — 모두 Decawave <code>uwb-core</code> <code>lib/rng_math/src/rng_math.c</code> · Android FiRa의 측정 방식 이름: <code>RANGING_ROUND_USAGE_SS_TWR_*</code>, <code>DS_TWR_*</code>(<code>FiraParams.java</code>)</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="vectors">
+    <h2>공개 코드의 시험 값으로 계산하기</h2>
+    <p><code>uwb-core</code>에는 실제 측정에서 가져온 타임스탬프로 공식이 정확한 거리(정수 m)를 내는지 확인하는 자체 시험이 있다. 32비트 시계 넘침(0xFFFFFFFF 근처의 값)을 일부러 섞은 경우도 있다. 같은 값을 이 책의 계산 함수에 넣어 보자.</p>
+    <div class="sim" id="sim-vec">
+      <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>uwb-core 시험 타임스탬프</h3></div>
+      <div class="sim-controls" style="border-top:0">
+        <div class="ctrl"><span>시험 경우</span><div class="seg" id="vc-k"></div></div>
+      </div>
+      <div class="sim-view" style="padding:14px"><div class="ts" id="vc-ts"></div></div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">ToF(눈금)</span><span class="v" id="vc-tof">—</span></div>
+        <div class="stat"><span class="k">거리</span><span class="v" id="vc-m">—</span></div>
+        <div class="stat"><span class="k">시험이 기대하는 값(정수 m)</span><span class="v" id="vc-x">—</span></div>
+      </div>
+      <div class="sim-note">값은 <code>uwb-core</code>의 <code>lib/rng_math/selftest/src/testcases/calc_tof_test.c</code>에서 그대로 가져왔다. 시험은 결과를 정수로 자른 값(F64_TO_U64)이 기대값과 같은지 본다. “넘침”은 응답 − 요청이 32비트를 넘어가 0으로 돌아가는 값을 섞은 경우로, 빼기를 32비트에서 하고 마스크를 씌워야 맞는다(5장).</div>
+    </div>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>시계가 맞지 않는 두 기기는 왕복으로 잰다. SS-TWR: ToF = (T<sub>round</sub> − T<sub>reply</sub>) ÷ 2.</li>
+      <li>SS-TWR 오차 ≈ T<sub>reply</sub> × (e<sub>A</sub> − e<sub>B</sub>) ÷ 2. 20 ppm 차이, 500 µs면 1.5 m. 반송파로 잰 시계 차이(skew)로 보정한다.</li>
+      <li>DS-TWR(비대칭): ToF = (R1·R2 − P1·P2) ÷ (R1 + R2 + P1 + P2). 오차 ≈ ToF × ppm, 사실상 0. 대신 프레임이 하나 더.</li>
+      <li>타임스탬프 빼기는 넘침을 고려해 마스크를 씌운다. 공식은 <code>uwb-core</code>의 시험 값으로 검증된다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>T<sub>round</sub> = 1,000.0200 µs, T<sub>reply</sub> = 1,000.0000 µs(같은 시계 빠르기)면 거리는?</p><div class="opts">
+        <button class="opt">약 30 cm</button><button class="opt" data-correct>약 3 m</button><button class="opt">약 6 m</button><button class="opt">약 30 m</button>
+      </div><div class="quiz-exp">ToF = 20 ns ÷ 2 = 10 ns → 약 3 m.</div></div>
+      <div class="quiz-q"><p>SS-TWR의 오차를 키우는 두 가지는?</p><div class="opts">
+        <button class="opt">거리와 채널 번호</button><button class="opt" data-correct>응답 시간의 길이와 두 시계의 빠르기 차이</button><button class="opt">프리앰블 코드와 STS</button><button class="opt">안테나 모양과 색</button>
+      </div><div class="quiz-exp">오차 ≈ T<sub>reply</sub> × Δppm ÷ 2.</div></div>
+      <div class="quiz-q"><p>DS-TWR가 시계 오차에 강한 이유는?</p><div class="opts">
+        <button class="opt">시계를 서로 맞추기 때문에</button><button class="opt" data-correct>두 기기가 각각 왕복과 응답을 재서, 공식에서 응답 시간에 곱해지는 오차가 서로 지워지기 때문에</button><button class="opt">프레임이 더 길어서</button><button class="opt">반송파를 쓰지 않아서</button>
+      </div><div class="quiz-exp">남는 오차는 ToF(나노초)에 ppm이 곱해진 크기뿐이다.</div></div>
+      <div class="quiz-q"><p><code>calc_tof_ss()</code>의 skew 인자는 무엇을 보정하나?</p><div class="opts">
+        <button class="opt">안테나 지연</button><button class="opt" data-correct>상대 시계와 내 시계의 빠르기 차이(응답 시간을 내 시계 단위로 바꿈)</button><button class="opt">다중 경로</button><button class="opt">40비트 넘침</button>
+      </div><div class="quiz-exp">T<sub>reply</sub> × (1 − skew)로 상대가 잰 응답 시간을 내 시계 단위로 고친다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const TICK = 1 / 499.2e6 / 128, C_AIR = 299792458 / 1.000293;
+  /** uwb-core uwb_rng_tof_to_meters(): ToF(눈금) → m */
+  function tofToMeters(tof) { return Number.isNaN(tof) ? NaN : tof * C_AIR * TICK; }
+  const M32 = 0xffffffffn, M64 = (1n << 64n) - 1n;
+  /** uwb-core calc_tof_ss(): 응답·요청은 32비트 빼기, 송신 − 수신은 & MASK32, (T1R − T1r(1 − skew)) ÷ 2 */
+  function calcTofSs(resp, req, tx, rx, skew) {
+    const T1R = (BigInt(resp) - BigInt(req)) & M32, T1r = (BigInt(tx) - BigInt(rx)) & M32;
+    return (Number(T1R) - Number(T1r) * (1 - skew)) / 2;
+  }
+  /** uwb-core calc_tof_ds(): nom = T1R·T2R − T1r·T2r (64비트), denom = 넷의 합, denom = 0이면 NaN */
+  function calcTofDs(r1, q1, t1, x1, r2, q2, t2, x2) {
+    const T1R = (BigInt(r1) - BigInt(q1)) & M32, T1r = (BigInt(t1) - BigInt(x1)) & M32, T2R = (BigInt(r2) - BigInt(q2)) & M32, T2r = (BigInt(t2) - BigInt(x2)) & M32;
+    const toI64 = (v) => { v &= M64; return v >= 1n << 63n ? v - (1n << 64n) : v; };
+    const nom = toI64(T1R * T2R - T1r * T2r), denom = toI64(T1R + T2R + T1r + T2r);
+    return denom === 0n ? NaN : Number(nom) / Number(denom);
+  }
+  /** 이상적인 교환을 흉내: 실제 비행시간 tau(s), 시계 빠르기 오차 ea·eb(ppm), 응답 시간(µs, 각자 자기 시계) → 각자 잰 구간(눈금) */
+  function simulateTwr(tau, eaPpm, ebPpm, replyBUs, replyAUs) {
+    const ka = 1 + eaPpm * 1e-6, kb = 1 + ebPpm * 1e-6, tick = (s, k) => (s * k) / TICK;
+    const replyB = (replyBUs * 1e-6) / kb, replyA = (replyAUs * 1e-6) / ka; // 실제 시간
+    return { round1: tick(2 * tau + replyB, ka), reply1: tick(replyB, kb), round2: tick(2 * tau + replyA, kb), reply2: tick(replyA, ka), skew: 1 - ka / kb };
+  }
+  /** 구간으로 쓰는 SS·DS 공식(타임스탬프 대신 구간) */
+  function ssFromIntervals(round1, reply1, skew) { return (round1 - reply1 * (1 - skew)) / 2; }
+  function dsFromIntervals(r1, p1, r2, p2) { return (r1 * r2 - p1 * p2) / (r1 + r2 + p1 + p2); }
+  const fmt = (m) => (Math.abs(m) >= 1 ? m.toFixed(3) + " m" : (m * 100).toFixed(1) + " cm");
+
+  /* ================================================================ 1. 타임라인 */
+  (function () {
+    let mode = "ss";
+    const d = UW.range("tl-d", (v) => v + " m", draw), a = UW.range("tl-a", (v) => (v > 0 ? "+" : "") + v + " ppm", draw), b = UW.range("tl-b", (v) => (v > 0 ? "+" : "") + v + " ppm", draw), r = UW.range("tl-r", (v) => v + " µs", draw);
+    UW.seg("tl-m", (v) => { mode = v; draw(); });
+    const cv = UW.canvas($("cv-tl"), (ctx, w, h) => {
+      const P = UW.palette(), L = 40, R = w - 16, yA = 34, yB = h - 40, fly = (R - L) * 0.06, rep = mode === "ss" ? (R - L) * 0.78 : (R - L) * 0.36;
+      ctx.strokeStyle = P.axis; ctx.lineWidth = 1.5; [yA, yB].forEach((y) => { ctx.beginPath(); ctx.moveTo(L, y); ctx.lineTo(R, y); ctx.stroke(); });
+      UW.text(ctx, "A", 12, yA + 4, { size: 13, color: P.accent, bold: true }); UW.text(ctx, "B", 12, yB + 4, { size: 13, color: P.accent2, bold: true });
+      const arrow = (x1, y1, x2, y2, lab, col) => { ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); const right = (x1 + x2) / 2 > w * 0.6; UW.text(ctx, lab, (x1 + x2) / 2 + (right ? -6 : 6), (y1 + y2) / 2, { size: 11, color: col, bold: true, align: right ? "right" : "left" }); };
+      const brace = (x1, x2, y, lab, col, up) => { ctx.strokeStyle = col; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x1, y + (up ? -6 : 6)); ctx.moveTo(x1, y + (up ? -6 : 6)); ctx.lineTo(x2, y + (up ? -6 : 6)); ctx.lineTo(x2, y); ctx.stroke(); UW.text(ctx, lab, (x1 + x2) / 2, y + (up ? -10 : 18), { size: 11, color: col, align: "center", bold: true }); };
+      let x = L + 10;
+      arrow(x, yA, x + fly, yB, "Poll", P.accent); const bRx = x + fly, bTx = bRx + rep;
+      arrow(bTx, yB, bTx + fly, yA, "Response", P.accent2); const aRx = bTx + fly;
+      brace(x, aRx, yA - 4, "Tround1 (A 시계)", P.accent, true); brace(bRx, bTx, yB + 4, "Treply1 (B 시계)", P.accent2, false);
+      if (mode === "ds") { const aTx = aRx + rep; arrow(aTx, yA, aTx + fly, yB, "Final", P.accent); brace(aRx, aTx, yA + 18, "Treply2", P.accent, false); brace(bTx, aTx + fly, yB - 16, "Tround2", P.accent2, true); }
+    }, { aspect: 0.4, minHeight: 200, maxHeight: 260 });
+    function draw() {
+      const tau = d() / C_AIR, s = simulateTwr(tau, a(), b(), r(), r()), m = (t) => tofToMeters(t) - d();
+      UW.stat("tl-ss", fmt(m(ssFromIntervals(s.round1, s.reply1, 0))) + " 오차"); UW.stat("tl-sk", fmt(m(ssFromIntervals(s.round1, s.reply1, s.skew))) + " 오차"); UW.stat("tl-ds", fmt(m(dsFromIntervals(s.round1, s.reply1, s.round2, s.reply2))) + " 오차");
+      cv.redraw();
+    }
+    draw();
+  })();
+
+  /* ================================================================ 2. 시험 값 */
+  (function () {
+    // [이름, 종류, 인자(SS: 응답, 요청, 송신, 수신 / DS: 첫 프레임 넷 + 프레임 넷), 기대 m]
+    const V = [
+      ["SS 5 m", "ss", [254076713, 175480898, 1470169168, 1391575515], 5],
+      ["SS 9 m", "ss", [1075470169, 996872258, 1024692304, 946098392], 9],
+      ["SS 1 m 넘침", "ss", [0xcafe80d8, 0xc74f4042, 0x745650, 0xfcc517a4], 1],
+      ["DS 9 m", "ds", [2675898111, 2597300290, 1024692304, 946098392, 1075470169, 996872258, 1024692304, 946098392], 9],
+      ["DS 5 m", "ds", [2118173324, 2056354370, 3334250064, 3272433282, 3396658744, 3334250050, 2180579920, 2118173324], 5],
+      ["DS 1 m 넘침", "ds", [0xfff0b714, 0xfc417642, 0xb7e93850, 0xb439f952, 0xbba17ae4, 0xb7e93842, 0x3a8f650, 0xfff0b714], 1],
+    ];
+    $("vc-k").innerHTML = V.map((v, i) => `<button data-value="${i}"${i === 0 ? ' class="on"' : ""}>${v[0]}</button>`).join("");
+    const NAMES = { ss: ["응답 시각 (A)", "요청 시각 (A)", "송신 시각 (B)", "수신 시각 (B)"], ds: ["첫 응답 (A)", "첫 요청 (A)", "첫 송신 (B)", "첫 수신 (B)", "응답 (B)", "요청 (B)", "송신 (A)", "수신 (A)"] };
+    function show(i) {
+      const [, k, args, exp] = V[i], tof = k === "ss" ? calcTofSs(...args, 0) : calcTofDs(...args), m = tofToMeters(tof);
+      $("vc-ts").innerHTML = args.map((v, j) => `<span>${NAMES[k][j]}</span><code>${v} (0x${v.toString(16)})</code>`).join("");
+      UW.stat("vc-tof", tof.toFixed(2)); UW.stat("vc-m", m.toFixed(3) + " m"); UW.stat("vc-x", exp + " m " + (Math.trunc(m) === exp ? "✓" : "✗"));
+    }
+    UW.seg("vc-k", (v) => show(+v)); show(0);
+  })();
+})();
+</script>
+</body>
+</html>

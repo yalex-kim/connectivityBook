@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>UWB란 무엇인가 · UWBBook</title>
+<meta name="description" content="세기가 아니라 시간으로 거리를 재는 무선. 레이더에서 출발한 임펄스 무선 UWB의 정의, 802.15.4a·4z와 FiRa·CCC의 역할, 휴대폰·자동차 키·분실물 태그 속 UWB, 그리고 이 책이 근거로 삼는 공개 자료를 다룬다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/uwb/chapters/intro.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="UWBBook">
+<meta property="og:title" content="UWB란 무엇인가 · UWBBook">
+<meta property="og:description" content="세기가 아니라 시간으로 거리를 재는 무선. 레이더에서 출발한 임펄스 무선 UWB의 정의, 802.15.4a·4z와 FiRa·CCC의 역할, 휴대폰·자동차 키·분실물 태그 속 UWB, 그리고 이 책이 근거로 삼는 공개 자료를 다룬다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/uwb/chapters/intro.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/uwb/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"UWB란 무엇인가","name":"UWB란 무엇인가 · UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/intro.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/uwb/chapters/intro.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":1,"image":"https://yalex-kim.github.io/yalexBook/uwb/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/uwb/#book","name":"UWBBook — 누구나 읽는 인터랙티브 UWB 교과서","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"publisher":{"@type":"Organization","name":"UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"description":"세기가 아니라 시간으로 거리를 재는 무선. 레이더에서 출발한 임펄스 무선 UWB의 정의, 802.15.4a·4z와 FiRa·CCC의 역할, 휴대폰·자동차 키·분실물 태그 속 UWB, 그리고 이 책이 근거로 삼는 공개 자료를 다룬다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"UWBBook","item":"https://yalex-kim.github.io/yalexBook/uwb/"},{"@type":"ListItem","position":2,"name":"01 UWB란 무엇인가","item":"https://yalex-kim.github.io/yalexBook/uwb/chapters/intro.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<style>
+  .tl { display: flex; gap: 6px; overflow-x: auto; padding: 4px 2px 10px; }
+  .tl button { flex: none; font: inherit; font-family: var(--mono); font-size: 12.5px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-elev); color: var(--text); cursor: pointer; text-align: center; min-width: 64px; }
+  .tl button small { display: block; font-size: 11px; color: var(--text-faint); }
+  .tl button.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+  .info { margin-top: 8px; padding: 14px 16px; border-radius: 12px; background: var(--surface); font-size: 14.5px; line-height: 1.65; }
+  .info h4 { margin: 0 0 6px; font-size: 15.5px; }
+</style>
+</head>
+<body data-chapter="intro">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 01</div>
+    <h1>UWB란 무엇인가</h1>
+    <p class="lead">휴대폰으로 잃어버린 열쇠고리 태그를 찾으면, 화면에 화살표와 함께 “2.3 m, 오른쪽”이 뜬다. 자동차 앞에 다가가면 키를 꺼내지 않아도 문이 열리고, 차 안에 앉아야 시동이 걸린다. 블루투스 신호 세기로 거리를 짐작하면 몇 미터씩 틀리는데, 이 기능들은 수십 센티미터 안으로 맞힌다. 비결은 <b>신호의 세기 대신 도착 시간</b>을 재는 무선, <span class="term">UWB</span><span class="en">(Ultra-Wideband, 초광대역)</span>다. 이 장에서는 UWB가 무엇이고, 어디서 왔고, 누가 규칙을 정하는지 큰 그림을 그린다.</p>
+    <ul class="objectives">
+      <li>UWB의 법적 정의(대역폭 500 MHz 이상 또는 비대역폭 20% 이상)와 “임펄스 무선”의 뜻을 안다.</li>
+      <li>신호 세기로 재는 거리와 비행시간으로 재는 거리의 오차가 왜 크게 다른지 계산한다.</li>
+      <li>IEEE 802.15.4a·4z, FiRa, CCC가 각각 무엇을 정하는지 구분한다.</li>
+      <li>이 책이 무엇을 근거로 삼는지, 그 한계는 무엇인지 안다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="what">
+    <h2>아주 짧게, 아주 넓게</h2>
+    <p>와이파이나 블루투스는 정해진 주파수의 사인파(반송파)를 조금씩 바꿔 정보를 싣는다. 반면 UWB는 <b>몇 나노초짜리 아주 짧은 펄스</b>를 띄엄띄엄 보낸다. 펄스가 짧을수록 그 신호가 차지하는 주파수 폭은 넓어진다(2장). 그래서 UWB 신호 하나는 500 MHz 이상, 와이파이 20 MHz 채널의 25배가 넘는 폭을 차지한다. 이름이 “초광대역”인 이유다.</p>
+    <p>미국 연방통신위원회(FCC)는 2002년 UWB를 처음 민간에 허용하면서 이렇게 정의했다. <b>−10 dB 대역폭이 500 MHz 이상이거나, 중심 주파수에 대한 대역폭의 비율(비대역폭)이 0.2 이상인 송신기</b>. 대신 아주 약하게, 1 MHz당 −41.3 dBm(약 74 나노와트)을 넘지 않게 보내야 한다(3장). 넓게 펼치고 얇게 깔아, 같은 주파수를 쓰는 다른 무선에는 잡음 바닥 근처로만 보이게 하는 것이다.</p>
+    <p class="spec-ref">UWB 정의(UWB 대역폭, 비대역폭 = 2(f<sub>H</sub> − f<sub>L</sub>)/(f<sub>H</sub> + f<sub>L</sub>), 0.20 또는 500 MHz): 미국 연방 규정 47 CFR §15.503 · 출력 한도: §15.517·§15.519(eCFR 공개 법령)</p>
+    <div class="callout analogy"><strong>박수 소리로 거리 재기</strong><p>넓은 강당 건너편 친구에게 길게 “아~” 하고 소리를 내면, 메아리와 섞여 언제 소리가 도착했는지 알기 어렵다. 짧게 “짝!” 손뼉을 치면 도착 순간이 또렷하다. 친구가 듣자마자 손뼉으로 답하면, 왕복에 걸린 시간에서 거리를 계산할 수 있다. UWB의 짧은 펄스가 손뼉, 거리 측정(6장)이 이 왕복 손뼉이다. 소리 대신 빛의 속도라서, 1 m를 가는 데 3.3 나노초밖에 걸리지 않는다는 점만 다르다.</p></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="time">
+    <h2>세기 대신 시간으로</h2>
+    <p>블루투스로 거리를 짐작할 때는 받은 신호의 세기(RSSI)를 쓴다. 전파는 멀어질수록 약해지니까. 그런데 손에 쥔 방향, 사람 몸, 벽, 반사에 따라 세기가 수 dB씩 흔들리고, 세기는 거리의 로그로 변하기 때문에 작은 dB 오차가 큰 거리 오차가 된다. 실내에서 RSSI 거리 오차가 몇 미터에 이르는 이유다.</p>
+    <p>UWB는 신호가 날아간 <span class="term">비행시간</span><span class="en">(Time of Flight, ToF)</span>을 잰다. 거리 = 빛의 속도 × 시간이고, 시간을 1 나노초만 정확히 재도 30 cm다. UWB 칩의 시계 눈금은 15.65 피코초(5장)라서, 잘 보정하면 거리 오차는 10 cm 수준이 된다. 그리고 세기와 달리 시간은 손에 쥔 방향이나 송신 세기에 거의 흔들리지 않는다.</p>
+    <div class="sim" id="sim-rt">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>신호 세기로 재기 대 시간으로 재기</h3></div>
+      <div class="sim-view"><canvas id="cv-rt"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>실제 거리 <output id="rt-d-out"></output></span><input type="range" id="rt-d" min="1" max="20" step="0.5" value="5"></label>
+        <label class="ctrl"><span>신호 세기의 흔들림(표준편차) <output id="rt-s-out"></output></span><input type="range" id="rt-s" min="1" max="8" step="0.5" value="4"></label>
+        <label class="ctrl"><span>시간 측정 오차(표준편차) <output id="rt-t-out"></output></span><input type="range" id="rt-t" min="0.05" max="1" step="0.05" value="0.33"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">세기로 잰 거리(90% 범위)</span><span class="v" id="rt-r">—</span></div>
+        <div class="stat"><span class="k">시간으로 잰 거리(90% 범위)</span><span class="v" id="rt-u">—</span></div>
+        <div class="stat"><span class="k">1 ns = 몇 cm</span><span class="v" id="rt-c">—</span></div>
+      </div>
+      <div class="sim-note">그래프: 실제 거리마다 두 방법이 내놓는 거리의 90% 범위(띠). 해볼 것: ① 신호 세기가 4 dB 흔들리면 5 m를 2.7~9.2 m쯤으로 말한다. 오차가 거리에 비례해 멀수록 커진다. ② 시간 측정 오차 0.33 ns(약 10 cm)면 거리와 상관없이 ±16 cm 안이다. ③ 세기의 흔들림을 1 dB로 줄여도 멀리서는 시간 쪽이 훨씬 정확하다. 모델: 세기 방식은 로그 거리 경로 손실(지수 2.5)에 정규 분포 흔들림, 시간 방식은 정규 분포 시간 오차. 다중 경로·벽(7장)은 뺐다.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="history">
+    <h2>레이더에서 휴대폰까지</h2>
+    <p>짧은 펄스로 거리를 재는 생각은 레이더만큼 오래됐다. 하지만 아주 넓은 주파수를 쓰는 탓에 오랫동안 군사·연구용에 머물렀다. 2002년 FCC가 약한 출력 조건으로 민간 사용을 허용한 뒤, 처음에는 “무선 USB” 같은 고속 통신으로 주목받았다가 와이파이에 밀려 사라졌다. UWB가 다시 살아난 것은 통신이 아니라 <b>거리와 위치</b> 덕분이다.</p>
+    <div class="sim" id="sim-hist">
+      <div class="sim-head"><span class="sim-tag">INTERACTIVE</span><h3>UWB 연표</h3></div>
+      <div class="sim-view" style="padding:10px"><div class="tl" id="hs-tl"></div><div class="info" id="hs-info"></div></div>
+    </div>
+    <p>표준과 단체의 역할은 다음처럼 나뉜다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>누가</th><th>무엇을</th><th>이 책에서</th></tr></thead>
+      <tbody>
+        <tr><td><b>IEEE 802.15.4</b> (4a·4z)</td><td>저전력 무선 표준의 UWB 물리 계층(HRP)과 MAC. 4z가 보안 거리 측정(STS)과 높은 펄스율(HPRF)을 더했다</td><td>2~7장, 10장</td></tr>
+        <tr><td><b>FiRa Consortium</b></td><td>802.15.4z 위의 기기 간 상호 운용 규칙(세션·라운드·역할, UCI)과 인증</td><td>11장</td></tr>
+        <tr><td><b>CCC</b> (Car Connectivity Consortium)</td><td>휴대폰 디지털 자동차 키. Digital Key 3.0이 BLE + UWB를 쓴다</td><td>13장</td></tr>
+        <tr><td><b>각 나라 전파 당국</b></td><td>쓸 수 있는 주파수와 출력. 미국 FCC, 한국 과학기술정보통신부 고시 등</td><td>3장</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="sources">
+    <h2>이 책이 근거로 삼는 것</h2>
+    <div class="callout spec"><strong>원문 대신 공개 구현</strong><p>UWB의 원문 표준(IEEE 802.15.4-2020, 802.15.4z-2020)은 유료이고 FiRa·CCC 사양은 회원 전용이라, 이 책을 쓰며 원문을 직접 확인하지 못했다. 대신 그 표준을 구현한 <b>공개 소스 코드</b>를 1차 근거로 삼았다. Android의 UWB 스택(<code>packages/modules/Uwb</code>, <code>external/uwb</code>)의 FiRa·CCC 매개변수와 기본값, Decawave(현 Qorvo)가 공개한 <code>uwb-core</code>·<code>uwb-dw1000</code>의 거리 계산·프레임 시간·각도 계산과 그 <b>자체 시험 값</b>, Zephyr RTOS의 DW1000 드라이버와 IEEE 802.15.4 헤더다. 출력 규제는 공개 법령(미국 47 CFR Part 15 Subpart F)을 인용한다. 책의 계산 함수는 이 코드와 시험 값으로 자동 검증한다(<code>scripts/verify-factcheck.cjs</code>). 원문을 보지 못했으므로 <b>조항 번호는 소스 코드 주석이 인용한 경우에만</b> 적는다. 공개 구현끼리 값이 다를 때는 그 사실을 밝히고 근거를 비교한다(3장의 4번 채널 주파수가 그 예).</p></div>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>UWB = −10 dB 대역폭 500 MHz 이상 또는 비대역폭 0.2 이상인 무선(FCC 47 CFR §15.503). 짧은 펄스를 아주 약하게(−41.3 dBm/MHz) 보낸다.</li>
+      <li>신호 세기 대신 비행시간으로 거리를 잰다. 1 ns = 약 30 cm이고, 오차가 거리에 비례하지 않는다.</li>
+      <li>IEEE 802.15.4a(2007)가 UWB 물리 계층을, 4z(2020)가 보안 거리 측정을 더했다. FiRa가 상호 운용, CCC가 자동차 키를 맡는다.</li>
+      <li>2019년 이후 휴대폰(iPhone 11, Galaxy Note20 Ultra), 분실물 태그, 디지털 키로 퍼졌다.</li>
+      <li>이 책은 원문 대신 Android·Decawave·Zephyr의 공개 코드와 공개 법령으로 값을 확인한다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>FCC 정의로 UWB 송신기가 되는 조건은?</p><div class="opts">
+        <button class="opt">출력이 1 W 이상</button><button class="opt" data-correct>−10 dB 대역폭 500 MHz 이상 또는 비대역폭 0.2 이상</button><button class="opt">주파수 6 GHz 이상</button><button class="opt">펄스율 64 MHz 이상</button>
+      </div><div class="quiz-exp">47 CFR §15.503(d).</div></div>
+      <div class="quiz-q"><p>빛이 1 ns 동안 가는 거리는?</p><div class="opts">
+        <button class="opt">3 mm</button><button class="opt" data-correct>약 30 cm</button><button class="opt">3 m</button><button class="opt">300 m</button>
+      </div><div class="quiz-exp">299,792,458 m/s × 10⁻⁹ s ≈ 0.3 m.</div></div>
+      <div class="quiz-q"><p>RSSI 거리 오차가 멀수록 커지는 이유는?</p><div class="opts">
+        <button class="opt">멀수록 시계가 느려져서</button><button class="opt" data-correct>세기가 거리의 로그로 변해 같은 dB 흔들림이 거리에 비례하는 오차가 되어서</button><button class="opt">멀면 채널이 바뀌어서</button><button class="opt">UWB와 섞여서</button>
+      </div><div class="quiz-exp">세기 흔들림 σ dB는 거리를 10^(σ/(10n))배 흔든다. 시간 오차는 거리와 무관하다.</div></div>
+      <div class="quiz-q"><p>휴대폰끼리 UWB로 서로 잴 수 있게 세션·역할·라운드를 맞추는 상호 운용 규칙을 만드는 곳은?</p><div class="opts">
+        <button class="opt">Wi-Fi Alliance</button><button class="opt">CCC</button><button class="opt" data-correct>FiRa Consortium</button><button class="opt">FCC</button>
+      </div><div class="quiz-exp">IEEE가 PHY·MAC을, FiRa가 그 위의 상호 운용과 인증을 맡는다. CCC는 자동차 키 전용.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const C = 299792458;
+  /** 세기 방식: 흔들림 z·σ dB가 거리를 10^(zσ/(10n))배로 바꾼다 */
+  function rssiRange(d, sigmaDb, n, z) { const k = Math.pow(10, (z * sigmaDb) / (10 * n)); return [d / k, d * k]; }
+  /** 시간 방식: 거리 오차 = c × 시간 오차 */
+  function tofRange(d, sigmaNs, z) { const e = (C * sigmaNs * 1e-9) * z; return [Math.max(0, d - e), d + e]; }
+  const Z90 = 1.645, N = 2.5;
+
+  /* ================================================================ 1. 세기 대 시간 */
+  (function () {
+    const d = UW.range("rt-d", (v) => v + " m", draw), s = UW.range("rt-s", (v) => v + " dB", draw), t = UW.range("rt-t", (v) => v.toFixed(2) + " ns", draw);
+    const cv = UW.canvas($("cv-rt"), (ctx, w, h) => {
+      const P = UW.palette(), a = [], b = [], a2 = [], b2 = [];
+      for (let x = 0.5; x <= 20; x += 0.25) { const r = rssiRange(x, s(), N, Z90), u = tofRange(x, t(), Z90); a.push([x, r[1]]); a2.push([x, r[0]]); b.push([x, u[1]]); b2.push([x, u[0]]); }
+      const ch = UW.chart(ctx, null, { x: [0, 20], y: [0, 40], xLabel: "실제 거리 (m)", yLabel: "잰 거리 (m)",
+        series: [{ data: a, color: P.accent2, width: 1.6, dash: [5, 4] }, { data: a2, color: P.accent2, width: 1.6, dash: [5, 4] }, { data: b, color: P.accent, width: 2 }, { data: b2, color: P.accent, width: 2 }, { data: [[0, 0], [20, 20]], color: P.faint, width: 1 }] });
+      ctx.strokeStyle = P.text; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(ch.X(d()), ch.box.y); ctx.lineTo(ch.X(d()), ch.box.y + ch.box.h); ctx.stroke(); ctx.setLineDash([]);
+      UW.text(ctx, "세기(RSSI)", ch.box.x + 8, ch.box.y + 14, { size: 11.5, color: P.accent2, bold: true }); UW.text(ctx, "시간(ToF)", ch.box.x + 8, ch.box.y + 30, { size: 11.5, color: P.accent, bold: true });
+    }, { aspect: 0.5, minHeight: 240, maxHeight: 340 });
+    function draw() { const r = rssiRange(d(), s(), N, Z90), u = tofRange(d(), t(), Z90); UW.stat("rt-r", r[0].toFixed(1) + " ~ " + r[1].toFixed(1) + " m"); UW.stat("rt-u", u[0].toFixed(2) + " ~ " + u[1].toFixed(2) + " m"); UW.stat("rt-c", ((C * 1e-9) * 100).toFixed(1) + " cm"); cv.redraw(); }
+    draw();
+  })();
+
+  /* ================================================================ 2. 연표 */
+  (function () {
+    const H = [
+      [2002, "FCC 민간 허용", "미국 FCC가 UWB 규칙(47 CFR Part 15 Subpart F)을 만들었다. 3.1~10.6 GHz에서 −41.3 dBm/MHz 이하로 면허 없이 쓸 수 있게 됐다."],
+      [2007, "802.15.4a", "IEEE 802.15.4에 임펄스 무선 UWB 물리 계층이 들어갔다. 프리앰블 코드, 499.2 MHz 채널, 거리 측정용 타임스탬프의 틀이 이때 정해졌다(2~5장)."],
+      [2013, "측위용 칩", "2010년대 초 Decawave DW1000 등 거리 측정용 UWB 칩이 상용화되어 공장·창고의 실내 측위(RTLS)에 쓰였다. 이 책의 공개 코드 일부(uwb-core, Zephyr 드라이버)가 이 칩용이다."],
+      [2019, "FiRa · iPhone 11", "상호 운용 단체 FiRa Consortium이 출범했다. 같은 해 iPhone 11에 UWB 칩(U1)이 들어가 휴대폰 UWB가 시작됐다."],
+      [2020, "802.15.4z · 안드로이드 폰", "보안 거리 측정을 위한 STS(10장)와 높은 펄스율(HPRF)을 더한 802.15.4z가 승인됐다. Galaxy Note20 Ultra가 UWB를 넣은 첫 안드로이드 폰 중 하나가 됐다."],
+      [2021, "디지털 키 3.0 · 태그", "CCC Digital Key 3.0이 BLE + UWB 자동차 키를 정했고(13장), 분실물 태그(AirTag, SmartTag+)가 화살표로 길을 안내하는 정밀 찾기를 대중화했다."],
+      [2022, "Android UWB API", "Android 13이 앱이 쓸 수 있는 UWB API를 열었다. 이 책이 인용하는 Android UWB 스택의 FiRa 기본값이 여기서 쓰인다(11장)."],
+      [2023, "더 넓은 보급", "2세대 휴대폰 UWB 칩, 더 많은 차종의 디지털 키, 출입·결제 시범 서비스로 쓰임이 넓어지고 있다."],
+    ];
+    const tl = $("hs-tl"), info = $("hs-info");
+    tl.innerHTML = H.map((g, i) => `<button type="button" data-i="${i}">${g[0]}<small>${g[1].split(" ")[0]}</small></button>`).join("");
+    function show(i) { tl.querySelectorAll("button").forEach((b) => b.classList.toggle("on", +b.dataset.i === i)); const g = H[i]; info.innerHTML = `<h4>${g[0]} · ${g[1]}</h4>${g[2]}`; }
+    tl.addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) show(+b.dataset.i); });
+    show(3);
+  })();
+})();
+</script>
+</body>
+</html>

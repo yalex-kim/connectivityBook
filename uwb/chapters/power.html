@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>전력과 공존: BLE가 깨우는 UWB · UWBBook</title>
+<meta name="description" content="UWB는 측정할 때만 켜고 나머지는 BLE가 맡는다. 측정 한 번의 전류 파형, 측정 간격·방식(TWR·DL-TDoA·UL-TDoA)에 따른 태그 배터리, 수신 대기의 비용, 그리고 Wi-Fi 6E·5G와 같은 하늘을 나눠 쓰는 공존을 계산한다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/uwb/chapters/power.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="UWBBook">
+<meta property="og:title" content="전력과 공존: BLE가 깨우는 UWB · UWBBook">
+<meta property="og:description" content="UWB는 측정할 때만 켜고 나머지는 BLE가 맡는다. 측정 한 번의 전류 파형, 측정 간격·방식(TWR·DL-TDoA·UL-TDoA)에 따른 태그 배터리, 수신 대기의 비용, 그리고 Wi-Fi 6E·5G와 같은 하늘을 나눠 쓰는 공존을 계산한다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/uwb/chapters/power.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/uwb/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"전력과 공존: BLE가 깨우는 UWB","name":"전력과 공존: BLE가 깨우는 UWB · UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/power.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/uwb/chapters/power.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":12,"image":"https://yalex-kim.github.io/yalexBook/uwb/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/uwb/#book","name":"UWBBook — 누구나 읽는 인터랙티브 UWB 교과서","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"publisher":{"@type":"Organization","name":"UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"description":"UWB는 측정할 때만 켜고 나머지는 BLE가 맡는다. 측정 한 번의 전류 파형, 측정 간격·방식(TWR·DL-TDoA·UL-TDoA)에 따른 태그 배터리, 수신 대기의 비용, 그리고 Wi-Fi 6E·5G와 같은 하늘을 나눠 쓰는 공존을 계산한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"UWBBook","item":"https://yalex-kim.github.io/yalexBook/uwb/"},{"@type":"ListItem","position":2,"name":"12 전력과 공존: BLE가 깨우는 UWB","item":"https://yalex-kim.github.io/yalexBook/uwb/chapters/power.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+</head>
+<body data-chapter="power">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 12</div>
+    <h1>전력과 공존: BLE가 깨우는 UWB</h1>
+    <p class="lead">분실물 태그는 동전 전지 하나로 1년을 간다. 그런데 UWB 칩은 켜져 있는 동안 블루투스 칩보다 몇 배 많은 전류를 쓴다. 비결은 간단하다. <b>UWB는 거의 언제나 꺼져 있다</b>. 평소에는 저전력 블루투스(BLE)가 “나 여기 있어” 신호를 내고, 휴대폰이 가까이 와서 정밀하게 재고 싶을 때만 BLE로 깨워 UWB를 켠다. 이 장에서는 그 전력 계산과, 같은 6~8 GHz를 쓰는 와이파이·5G와의 공존을 본다.</p>
+    <ul class="objectives">
+      <li>“BLE로 찾고, UWB로 잰다”는 역할 분담과 그 이유를 안다.</li>
+      <li>측정 한 번의 전류 파형에서 평균 전류와 배터리 수명을 계산한다.</li>
+      <li>TWR·DL-TDoA·UL-TDoA 태그의 전력 차이와 수신 대기 창의 비용을 비교한다.</li>
+      <li>5번 채널과 Wi-Fi 6E가 겹치는 문제와 시간 나눠 쓰기를 이해한다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="ble">
+    <h2>BLE로 찾고, UWB로 잰다</h2>
+    <p>UWB 수신기는 넓은 대역을 빠르게 표본화하고 상관을 쌓아야 해서(4장), 켜져 있는 동안의 전류가 수십 mA로 BLE(수 mA)보다 크다. 게다가 상대가 언제 보낼지 모르면 계속 듣고 있어야 한다. 그래서 UWB 기기는 거의 모두 BLE를 함께 갖는다.</p>
+    <ol>
+      <li>태그는 평소 BLE 광고만 드문드문 보낸다(BluetoothBook 5·9장).</li>
+      <li>휴대폰이 광고를 듣고 BLE로 연결해, UWB 세션 설정과 보안 키를 주고받는다(대역 외 설정, 11장).</li>
+      <li>약속한 시각에 둘이 함께 UWB를 켜고 정해진 간격으로 측정한다. 라운드 사이에는 다시 잔다.</li>
+      <li>정밀 찾기를 끝내면 UWB 세션을 닫고 BLE만 남는다.</li>
+    </ol>
+    <p>시각을 미리 약속했으므로 수신기는 상대 신호가 올 무렵의 짧은 창만 열면 된다. 시계 오차(5장)만큼 창을 조금 넓힐 뿐이다.</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="battery">
+    <h2>측정 한 번의 전력</h2>
+    <div class="sim" id="sim-bat">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>태그 배터리 계산기</h3></div>
+      <div class="sim-view"><canvas id="cv-bat"></canvas></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>태그의 역할</span><div class="seg" id="bt-m"><button data-value="twr" class="on">TWR 응답자</button><button data-value="dl">DL-TDoA (듣기만)</button><button data-value="ul">UL-TDoA (보내기만)</button></div></div>
+        <label class="ctrl"><span>측정 간격 <output id="bt-i-out"></output></span><input type="range" id="bt-i" min="0" max="12" value="4"></label>
+        <label class="ctrl"><span>하루 중 UWB를 켜는 시간 <output id="bt-h-out"></output></span><input type="range" id="bt-h" min="0" max="24" step="0.25" value="0.5"></label>
+        <label class="ctrl"><span>수신 창 여유(시계 오차) <output id="bt-w-out"></output></span><input type="range" id="bt-w" min="10" max="500" step="10" value="100"></label>
+        <label class="ctrl"><span>배터리 <output id="bt-c-out"></output></span><input type="range" id="bt-c" min="100" max="2000" step="20" value="220"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">측정 한 번의 전하(µC = mA × ms)</span><span class="v" id="bt-q">—</span></div>
+        <div class="stat"><span class="k">하루 평균 전류</span><span class="v" id="bt-a">—</span></div>
+        <div class="stat"><span class="k">배터리 수명</span><span class="v" id="bt-l">—</span></div>
+      </div>
+      <div class="sim-note">위: 측정 한 번의 전류 파형(깨어남 → 수신 → 송신 → 잠). 해볼 것: ① 동전 전지(220 mAh)로 하루 30분 정밀 찾기(200 ms 간격)면 약 1.8년이다. UWB 몫은 평균 2 µA로, 수명은 대부분 BLE와 잠 전류가 정한다. ② UWB를 하루 종일 켜 두면 석 달이 안 된다. ③ UL-TDoA 태그는 받지 않고 보내기만 해 측정당 전하가 가장 작다. ④ 수신 창 여유를 늘리면 TWR·DL 태그의 전하가 빠르게 는다. 가정(칩마다 크게 다름, 예시 값): 수신 45 mA, 송신 30 mA, 깨어남 준비 0.5 ms × 8 mA, 잠 2 µA, BLE 광고 평균 10 µA, 프레임 140 µs(4장), DL-TDoA는 앵커 넷의 프레임을 듣는다.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="coex">
+    <h2>같은 하늘 아래: Wi-Fi 6E와 5G</h2>
+    <p>3장의 지도를 떠올리자. 5번 채널(6.24~6.74 GHz)은 Wi-Fi 6E의 6 GHz 대역 한가운데다. UWB의 송신은 아주 약해 와이파이를 거의 방해하지 않지만, 반대로 <b>같은 휴대폰 안의 와이파이 송신(+20 dBm 안팎)은 UWB 수신기에 엄청나게 센 신호</b>다. 와이파이가 보내는 순간에 UWB 라운드가 겹치면 측정을 잃는다. 9번 채널(7.74~8.24 GHz)은 와이파이와 떨어져 있지만 일부 나라의 위성·이동통신 대역과 가깝다.</p>
+    <p>그래서 휴대폰은 두 칩이 서로의 일정을 알려 주고 시간을 나눠 쓴다(블루투스·와이파이의 공존과 같은 방식, BluetoothBook 13장). UWB 라운드는 약속된 시각에 오므로, 그 순간만 와이파이 송신을 잠시 미루면 된다.</p>
+    <div class="sim" id="sim-coex">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>와이파이와 겹쳐 잃는 측정</h3></div>
+      <div class="sim-view"><canvas id="cv-coex"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>와이파이(6 GHz) 송신 점유율 <output id="cx-u-out"></output></span><input type="range" id="cx-u" min="0" max="90" value="40"></label>
+        <label class="ctrl"><span>와이파이 송신 한 번의 길이 <output id="cx-b-out"></output></span><input type="range" id="cx-b" min="0.1" max="5" step="0.1" value="2"></label>
+        <label class="check"><input type="checkbox" id="cx-co"> 두 칩이 시간을 나눠 씀(UWB 라운드 동안 와이파이 송신 보류)</label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">UWB 측정이 겹칠 확률</span><span class="v" id="cx-p">—</span></div>
+        <div class="stat"><span class="k">초당 성공 측정(5 Hz 중)</span><span class="v" id="cx-s">—</span></div>
+        <div class="stat"><span class="k">와이파이가 미루는 시간</span><span class="v" id="cx-w">—</span></div>
+      </div>
+      <div class="sim-note">그래프: 와이파이 점유율(가로)에 따른 측정 실패 확률. 모델: 측정에 필요한 프레임 구간(DS-TWR 세 프레임과 사이, 약 0.6 ms)이 와이파이 송신(무작위 시각, 정해진 길이)과 조금이라도 겹치면 실패. 확률 ≈ 1 − (1 − 점유율) × e^(−점유율 × 측정 구간 ÷ 송신 길이)의 어림. 시간 나눠 쓰기를 켜면 실패가 사라지는 대신, 와이파이는 측정 간격마다 그만큼 송신을 미룬다.</div>
+    </div>
+    <p class="spec-ref">5번 채널 6.24~6.74 GHz, 9번 7.74~8.24 GHz: 3장(499.2 MHz × 13·16 ± 249.6 MHz) · 휴대폰·디지털 키 채널 5·9: Android <code>CccParams.java</code> <code>UWB_CHANNEL_5/9</code></p>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>UWB는 켜져 있을 때 BLE보다 전류가 크다. 그래서 BLE로 찾고 설정하고, 약속한 시각에만 UWB를 켠다.</li>
+      <li>측정 한 번 = 깨어남 + 수신 창 + 송신, 수십 µC. 배터리 수명은 하루 UWB 사용 시간과 잠·BLE 전류가 정한다.</li>
+      <li>UL-TDoA 태그(보내기만)가 가장 적게 쓰고, 수신 창 여유(시계 오차)가 듣는 태그의 비용을 키운다.</li>
+      <li>5번 채널은 Wi-Fi 6E와 겹친다. 같은 기기 안의 와이파이 송신이 UWB 측정을 깨뜨리므로 시간을 나눠 쓴다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>분실물 태그가 평소 UWB를 꺼 두고 BLE만 쓰는 이유는?</p><div class="opts">
+        <button class="opt">UWB가 불법이라서</button><button class="opt" data-correct>UWB 수신 전류가 커서, 필요할 때만 켜야 배터리가 오래가서</button><button class="opt">BLE가 더 정확해서</button><button class="opt">UWB는 휴대폰만 쓸 수 있어서</button>
+      </div><div class="quiz-exp">BLE로 존재를 알리고, 정밀 측정이 필요할 때 BLE로 약속을 잡아 UWB를 켠다.</div></div>
+      <div class="quiz-q"><p>측정 간격을 200 ms에서 50 ms로 줄이면 UWB 켜진 동안의 평균 전류는 대략?</p><div class="opts">
+        <button class="opt">그대로</button><button class="opt">두 배</button><button class="opt" data-correct>네 배</button><button class="opt">절반</button>
+      </div><div class="quiz-exp">측정 한 번의 전하는 같고 횟수가 네 배.</div></div>
+      <div class="quiz-q"><p>태그 전력이 가장 작은 방식은?</p><div class="opts">
+        <button class="opt">DS-TWR 응답자</button><button class="opt">DL-TDoA</button><button class="opt" data-correct>UL-TDoA (보내기만)</button><button class="opt">모두 같다</button>
+      </div><div class="quiz-exp">수신 창이 없어 전하가 가장 작다. 대신 위치는 서버가 안다.</div></div>
+      <div class="quiz-q"><p>5번 채널 UWB가 휴대폰 안에서 특히 부딪히기 쉬운 상대는?</p><div class="opts">
+        <button class="opt">FM 라디오</button><button class="opt" data-correct>Wi-Fi 6E (6 GHz)</button><button class="opt">2.4 GHz 블루투스</button><button class="opt">NFC</button>
+      </div><div class="quiz-exp">6.24~6.74 GHz가 6 GHz 와이파이 대역 안에 있다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const I = { rx: 45, tx: 30, wake: 8, sleepUa: 2, bleUa: 10 }, WAKE_MS = 0.5, FRAME_US = 140;
+  /** 측정 한 번의 전하(µC): 깨어남 + 수신(창) + 송신. mode: twr(Poll 받고 응답 보냄), dl(앵커 4개 듣기), ul(blink 하나 보냄) */
+  function chargePerRanging(mode, windowUs) {
+    const wake = I.wake * WAKE_MS * 1000 / 1000; // mA × µs → µC: 8 mA × 500 µs = 4 µC
+    const rx = (n) => (I.rx * (windowUs + FRAME_US) * n) / 1000, tx = (n) => (I.tx * FRAME_US * n) / 1000;
+    if (mode === "twr") return wake + rx(1) + tx(1);
+    if (mode === "dl") return wake + rx(4);
+    return wake + tx(1);
+  }
+  /** 하루 평균 전류(µA): UWB를 켜는 시간 동안 간격마다 측정 + 잠 + BLE */
+  function dailyAvgUa(mode, windowUs, intervalMs, hoursOn) { const n = (hoursOn * 3600 * 1000) / intervalMs; return (n * chargePerRanging(mode, windowUs)) / 86400 + I.sleepUa + I.bleUa; }
+  /** 수명(일) */
+  function lifeDays(mAh, avgUa) { return (mAh * 1000) / avgUa / 24; }
+  /** 측정 구간 m(ms)이 와이파이 송신(점유율 u, 길이 b ms, 무작위)과 겹칠 확률(어림) */
+  function overlapProb(u, b, m) { return 1 - (1 - u) * Math.exp((-u * m) / b); }
+  const INT = [10, 20, 30, 50, 100, 150, 200, 300, 500, 1000, 2000, 5000, 10000];
+
+  /* ================================================================ 1. 배터리 */
+  (function () {
+    let mode = "twr";
+    const iv = UW.range("bt-i", (v) => (INT[v] >= 1000 ? INT[v] / 1000 + " s" : INT[v] + " ms"), draw), h = UW.range("bt-h", (v) => (v >= 1 ? v + "시간" : v * 60 + "분"), draw), w = UW.range("bt-w", (v) => v + " µs", draw), c = UW.range("bt-c", (v) => v + " mAh", draw);
+    UW.seg("bt-m", (v) => { mode = v; draw(); });
+    const cv = UW.canvas($("cv-bat"), (ctx, ww, hh) => {
+      const P = UW.palette(), L = 40, R = ww - 12, base = hh - 26, top = 14, mx = 50, Y = (mA) => base - ((base - top) * mA) / mx;
+      const segs = [["깨어남", WAKE_MS * 1000, I.wake, P.faint]];
+      if (mode === "twr") segs.push(["수신", w() + FRAME_US, I.rx, P.accent], ["송신", FRAME_US, I.tx, P.accent2]);
+      else if (mode === "dl") for (let k = 0; k < 4; k++) segs.push(["수신 " + (k + 1), w() + FRAME_US, I.rx, P.accent], ["", 300, 0.002, P.grid]);
+      else segs.push(["송신", FRAME_US, I.tx, P.accent2]);
+      const tot = segs.reduce((a, s) => a + s[1], 0) + 300, sc = (R - L) / tot; let x = L;
+      ctx.strokeStyle = P.axis; ctx.beginPath(); ctx.moveTo(L, base); ctx.lineTo(R, base); ctx.stroke();
+      segs.forEach(([t, d, ma, col]) => { ctx.fillStyle = col; ctx.fillRect(x, Y(ma), d * sc, base - Y(ma)); if (t && d * sc > 30) UW.text(ctx, t, x + (d * sc) / 2, Y(ma) - 4, { size: 10, color: P.dim, align: "center" }); x += d * sc; });
+      UW.text(ctx, "mA", 8, top + 6, { size: 10, color: P.faint }); UW.text(ctx, Math.round(tot) + " µs", R, hh - 8, { size: 10.5, color: P.faint, align: "right" });
+    }, { aspect: 0.32, minHeight: 140, maxHeight: 180 });
+    function draw() { const q = chargePerRanging(mode, w()), a = dailyAvgUa(mode, w(), INT[iv()], h()), L = lifeDays(c(), a); UW.stat("bt-q", q.toFixed(1) + " µC"); UW.stat("bt-a", a.toFixed(1) + " µA"); UW.stat("bt-l", L >= 365 ? (L / 365).toFixed(1) + "년" : L.toFixed(0) + "일"); cv.redraw(); }
+    draw();
+  })();
+
+  /* ================================================================ 2. 공존 */
+  (function () {
+    const u = UW.range("cx-u", (v) => v + "%", draw), b = UW.range("cx-b", (v) => v.toFixed(1) + " ms", draw), M = 0.6;
+    $("cx-co").addEventListener("change", draw);
+    const cv = UW.canvas($("cv-coex"), (ctx, w, h) => {
+      const P = UW.palette(), d = []; for (let x = 0; x <= 90; x += 1) d.push([x, overlapProb(x / 100, b(), M) * 100]);
+      const ch = UW.chart(ctx, null, { x: [0, 90], y: [0, 100], xLabel: "와이파이 송신 점유율 (%)", yLabel: "측정 실패 (%)", series: [{ data: d, color: P.bad, width: 2.2 }] });
+      const p = $("cx-co").checked ? 0 : overlapProb(u() / 100, b(), M) * 100; ctx.fillStyle = P.accent; ctx.beginPath(); ctx.arc(ch.X(u()), ch.Y(p), 6, 0, 7); ctx.fill();
+    }, { aspect: 0.45, minHeight: 210, maxHeight: 300 });
+    function draw() { const co = $("cx-co").checked, p = co ? 0 : overlapProb(u() / 100, b(), M); UW.stat("cx-p", (p * 100).toFixed(0) + "%"); UW.stat("cx-s", (5 * (1 - p)).toFixed(1) + "회"); UW.stat("cx-w", co ? "간격마다 약 " + M + " ms (0.3%)" : "—"); cv.redraw(); }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>HRP 프레임: 프리앰블·SFD·STS · UWBBook</title>
+<meta name="description" content="UWB 프레임 하나를 처음부터 끝까지. 자기 상관이 뾰족한 프리앰블 코드와 펄스율, 시작을 알리는 SFD, PHR과 리드-솔로몬 부호, 위조를 막는 STS, SP0·SP1·SP3 프레임 모양, 그리고 공개 드라이버의 식으로 프레임 전송 시간을 계산한다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/uwb/chapters/frame.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="UWBBook">
+<meta property="og:title" content="HRP 프레임: 프리앰블·SFD·STS · UWBBook">
+<meta property="og:description" content="UWB 프레임 하나를 처음부터 끝까지. 자기 상관이 뾰족한 프리앰블 코드와 펄스율, 시작을 알리는 SFD, PHR과 리드-솔로몬 부호, 위조를 막는 STS, SP0·SP1·SP3 프레임 모양, 그리고 공개 드라이버의 식으로 프레임 전송 시간을 계산한다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/uwb/chapters/frame.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/uwb/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"HRP 프레임: 프리앰블·SFD·STS","name":"HRP 프레임: 프리앰블·SFD·STS · UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/frame.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/uwb/chapters/frame.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":4,"image":"https://yalex-kim.github.io/yalexBook/uwb/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/uwb/#book","name":"UWBBook — 누구나 읽는 인터랙티브 UWB 교과서","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"publisher":{"@type":"Organization","name":"UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"description":"UWB 프레임 하나를 처음부터 끝까지. 자기 상관이 뾰족한 프리앰블 코드와 펄스율, 시작을 알리는 SFD, PHR과 리드-솔로몬 부호, 위조를 막는 STS, SP0·SP1·SP3 프레임 모양, 그리고 공개 드라이버의 식으로 프레임 전송 시간을 계산한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"UWBBook","item":"https://yalex-kim.github.io/yalexBook/uwb/"},{"@type":"ListItem","position":2,"name":"04 HRP 프레임: 프리앰블·SFD·STS","item":"https://yalex-kim.github.io/yalexBook/uwb/chapters/frame.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+</head>
+<body data-chapter="frame">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 04</div>
+    <h1>HRP 프레임: 프리앰블·SFD·STS</h1>
+    <p class="lead">UWB의 신호는 −41.3 dBm/MHz, 잡음 바닥과 비슷한 세기다(3장). 수신기는 잡음 속에서 신호가 왔다는 것부터 알아채고, 정확히 언제 왔는지 짚고, 그 신호가 가짜가 아님을 확인해야 한다. 802.15.4의 HRP(High Rate Pulse repetition) UWB 프레임은 이 세 가지 일을 구간별로 나눠 맡는다. 이 장에서는 프레임을 앞에서부터 하나씩 뜯어본다.</p>
+    <ul class="objectives">
+      <li>SHR(프리앰블 + SFD), PHR, 데이터, STS가 각각 무엇을 하는지 안다.</li>
+      <li>프리앰블 심볼 시간이 “코드 길이 × 펼침 칩 수 ÷ 499.2 MHz”로 나오는 것을 공개 코드의 상수와 맞춰 본다.</li>
+      <li>프리앰블을 길게 할수록 잡음 속에서 잘 찾는 이유를 상관 누적으로 이해한다.</li>
+      <li>SP0·SP1·SP3 프레임의 차이와 프레임 전송 시간을 계산한다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="layout">
+    <h2>프레임 한눈에</h2>
+    <figure class="diagram">
+      <div style="overflow-x:auto">
+      <svg viewBox="0 0 760 170" role="img" aria-label="HRP UWB 프레임 구조" style="min-width:560px">
+        <rect x="10" y="40" width="300" height="50" rx="6" class="f-acc-soft"/><text x="160" y="70" text-anchor="middle" class="t-acc">SYNC (프리앰블) — 같은 심볼 반복</text>
+        <rect x="314" y="40" width="70" height="50" rx="6" class="f-acc2-soft"/><text x="349" y="70" text-anchor="middle" class="t">SFD</text>
+        <rect x="388" y="40" width="110" height="50" rx="6" fill="none" stroke="var(--accent)" stroke-dasharray="5 4"/><text x="443" y="70" text-anchor="middle" class="t">STS (SP1)</text>
+        <rect x="502" y="40" width="70" height="50" rx="6" class="f-elev" stroke="var(--border)"/><text x="537" y="70" text-anchor="middle" class="t">PHR</text>
+        <rect x="576" y="40" width="174" height="50" rx="6" class="f-elev" stroke="var(--border)"/><text x="663" y="70" text-anchor="middle" class="t">데이터(PSDU) + RS 부호</text>
+        <path d="M10 104 H384" class="s-acc" fill="none"/><text x="197" y="122" text-anchor="middle" class="t-dim">SHR: “왔다” + “지금이 기준 시각”</text>
+        <path d="M388 104 H498" class="s-line" fill="none"/><text x="443" y="122" text-anchor="middle" class="t-dim">“진짜다”(10장)</text>
+        <path d="M502 104 H750" class="s-line" fill="none"/><text x="626" y="122" text-anchor="middle" class="t-dim">“무엇을” (길이·속도, 내용)</text>
+        <text x="10" y="26" class="t-mono">← 시간</text>
+        <text x="349" y="152" text-anchor="middle" class="t-mono">타임스탬프 기준점(RMARKER): SFD 바로 뒤 첫 펄스</text>
+      </svg>
+      </div>
+      <figcaption><b>그림 4-1.</b> 802.15.4z HRP 프레임(SP1). SP0는 STS가 없고, SP3는 데이터 없이 SHR + STS만 보낸다. 거리 측정의 기준 시각(RMARKER)은 SFD가 끝나는 순간이다.</figcaption>
+    </figure>
+    <ul>
+      <li><b>SYNC(프리앰블)</b>: 같은 <span class="term">프리앰블 코드</span> 심볼을 수십~수천 번 반복한다. 수신기는 이걸로 신호가 왔음을 알아채고(검출), 시각·주파수를 맞추고, 채널의 모양(7장의 CIR)을 잰다.</li>
+      <li><b>SFD</b><span class="en">(Start of Frame Delimiter)</span>: 프리앰블이 끝나고 프레임이 시작됨을 알리는 정해진 무늬. SFD가 끝나는 순간이 타임스탬프의 기준점이다.</li>
+      <li><b>STS</b><span class="en">(Scrambled Timestamp Sequence)</span>: 802.15.4z가 더한 구간. 암호 키로 만든, 매번 다른 펄스 열이라 미리 알 수 없다. 공격자가 흉내 낼 수 없는 시각 기준을 준다(10장).</li>
+      <li><b>PHR</b><span class="en">(PHY Header)</span>: 데이터 길이와 속도. 오류에 강하게 낮은 속도로 보낸다(SECDED 부호 포함 21 심볼).</li>
+      <li><b>데이터</b>: 6.81 Mb/s(BPRF) 등으로 보내고, 330비트마다 48비트의 리드-솔로몬 부호를 붙인다.</li>
+    </ul>
+    <p class="spec-ref">SP0·SP1·SP3: Android <code>FiraParams.java</code>의 <code>RFRAME_CONFIG_SP0/SP1/SP3</code>(“Ranging frame with STS following SFD, no data”) · PHR 21 심볼, 330비트당 48비트 부호: Decawave <code>uwb-dw1000</code>의 <code>dw1000_hal.c</code>(<code>.nphr = 21</code>), <code>dw1000_phy_data_duration()</code></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="preamble">
+    <h2>프리앰블 심볼과 펄스율</h2>
+    <p>프리앰블 심볼 하나는 길이 31, 127, 91인 <b>3진 코드</b>(+1, 0, −1)를 펄스로 보낸 것이다. 코드의 각 자리(“칩”) 사이에는 빈 칩을 끼워 펄스 간격을 벌린다. 그래서 심볼 시간 = 코드 길이 × 펼침 칩 수 ÷ 499.2 MHz다.</p>
+    <div class="sim" id="sim-sym">
+      <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>프리앰블 심볼 시간 만들기</h3></div>
+      <div class="sim-view"><canvas id="cv-sym"></canvas></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>모드</span><div class="seg" id="sy-m"><button data-value="prf16">PRF 16 MHz (코드 1~8)</button><button data-value="prf64" class="on">PRF 64 MHz · BPRF (코드 9~24)</button><button data-value="hprf">HPRF (코드 25~32)</button><button data-value="prf4">PRF 4 MHz</button></div></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">코드 길이 × 펼침</span><span class="v" id="sy-c">—</span></div>
+        <div class="stat"><span class="k">심볼 시간</span><span class="v" id="sy-t">—</span></div>
+        <div class="stat"><span class="k">평균 펄스율</span><span class="v" id="sy-p">—</span></div>
+      </div>
+      <div class="sim-note">그림: 심볼 하나의 앞부분(칩 슬롯, 막대 = 펄스, 빈칸 = 쉼). 실제 코드 값 대신 자리만 보였다. 해볼 것: 네 모드의 심볼 시간이 Zephyr 헤더의 상수(993.59 / 1,017.63 / 729.17 / 3,974.36 ns)와 정확히 같다. 평균 펄스율 = 펄스가 있는 자리 수(길이 31 코드는 16개, 127 코드는 64개) ÷ 심볼 시간으로, 이름표(16·64 MHz)와 조금 다른 실제 값이다. 64 MHz 모드의 62.89 MHz는 DW1000 드라이버 주석의 값(“MPRF of 62.89Mhz”)과 같다. 휴대폰은 BPRF(코드 9~12)와 HPRF(25~32)를 쓴다.</div>
+    </div>
+    <p class="spec-ref">심볼 시간 상수: Zephyr <code>include/zephyr/net/ieee802154_radio.h</code>의 <code>IEEE802154_PHY_HRP_UWB_PRF4/PRF16/PRF64/ERDEV_TPSYM_SYMBOL_PERIOD_NS</code>(주석: 802.15.4-2020 15.2.5 표 15-4, 802.15.4z 15.2.6.2 표 15-7b) · PRF와 코드 번호 범위(PRF 64 MHz는 9~24, 16 MHz는 1~8): <code>uwb-dw1000</code> <code>dw1000_mac_config()</code>의 검사 · 휴대폰 코드 9~12, 25~32: Android <code>UWB_PREAMBLE_CODE_INDEX_*</code></p>
+    <p>코드 번호가 다르면(예: 9번과 10번) 서로의 상관이 작아, 같은 채널의 다른 기기를 덜 방해한다. 와이파이의 채널처럼 코드를 나눠 쓰는 셈이다. Android UWB의 기본값은 9번 채널, 코드 10이다.</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="detect">
+    <h2>반복해서 잡음 속에서 찾기</h2>
+    <p>프리앰블 코드는 <b>자기 상관</b>이 뾰족하도록 고른 수열이다. 자기 자신과 딱 맞게 겹칠 때만 큰 값이 나오고, 조금만 어긋나도 거의 0이다. 수신기는 받은 신호를 코드와 상관시켜, 봉우리가 서는 순간을 찾는다. 심볼 하나로는 잡음에 묻혀도, N개 심볼의 상관을 더하면 신호는 N배, 잡음은 √N배로만 커져 SNR이 10·log₁₀N dB 오른다. 프리앰블이 길수록 멀리서도 찾는 이유다(대신 공중 시간과 전력이 든다).</p>
+    <div class="sim" id="sim-acc">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>상관을 쌓아 봉우리 세우기</h3></div>
+      <div class="sim-view"><canvas id="cv-acc"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>칩 하나의 SNR <output id="ac-s-out"></output></span><input type="range" id="ac-s" min="-30" max="0" value="-18"></label>
+        <label class="ctrl"><span>더한 프리앰블 심볼 수 <output id="ac-n-out"></output></span><input type="range" id="ac-n" min="0" max="10" value="6"></label>
+        <button class="btn" id="ac-re">잡음 다시 뽑기</button>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">상관 이득(코드 31칩)</span><span class="v" id="ac-g">—</span></div>
+        <div class="stat"><span class="k">누적 이득</span><span class="v" id="ac-a">—</span></div>
+        <div class="stat"><span class="k">봉우리 위치</span><span class="v" id="ac-p">—</span></div>
+      </div>
+      <div class="sim-note">그래프: 어긋남(칩)별 누적 상관값. 진짜 위치는 0. 해볼 것: ① 칩 SNR −18 dB에서 심볼 1개면 봉우리가 잡음에 묻히기 쉽다. ② 64개를 쌓으면 18 dB를 더 얻어 0에서 또렷한 봉우리가 선다. 모델: 설명용 길이 31 m-수열(±1, 주기 자기 상관이 0이 아닌 곳에서 −1/31) — 802.15.4의 실제 3진 코드는 아니지만 같은 성질을 보여 준다. 가우스 잡음.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="duration">
+    <h2>프레임 전송 시간</h2>
+    <p>프레임의 공중 시간은 SHR(프리앰블 + SFD) + PHR + 데이터(+ STS)다. 거리 측정 한 번에 프레임을 둘~넷 주고받으므로(6장), 이 시간이 측정 주기·전력·한 공간에서 함께 잴 수 있는 기기 수를 정한다(11·12장).</p>
+    <div class="formula">SHR = ⌈T<sub>psym</sub> × (N<sub>sync</sub> + N<sub>sfd</sub>)⌉ · 데이터 = ⌈T<sub>bsym</sub> × N<sub>phr</sub> + T<sub>dsym</sub> × (8(n + 2) + 48 × (1 + ⌊8(n + 2)/330⌋))⌉ µs
+      <div class="where">n = FCS를 뺀 바이트, +2는 FCS 2바이트. T<sub>psym</sub> 1.0176 µs, T<sub>bsym</sub> 1.0256 µs(850 kb/s, PHR), T<sub>dsym</sub> 0.1282 µs/비트(6.81 Mb/s), N<sub>sfd</sub> 8, N<sub>phr</sub> 21 — Decawave <code>dw1000_phy_SHR_duration()</code>·<code>dw1000_phy_data_duration()</code>와 기본값(<code>dw1000_dev.c</code>, <code>dw1000_hal.c</code>)</div>
+    </div>
+    <div class="sim" id="sim-dur">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>프레임 모양과 공중 시간</h3></div>
+      <div class="sim-view"><canvas id="cv-dur"></canvas></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>프레임</span><div class="seg" id="du-sp"><button data-value="0">SP0 (STS 없음)</button><button data-value="1">SP1 (STS + 데이터)</button><button data-value="3" class="on">SP3 (STS만)</button></div></div>
+        <div class="ctrl"><span>프리앰블 길이</span><div class="seg" id="du-ps"><button data-value="32">32</button><button data-value="64" class="on">64</button><button data-value="128">128</button><button data-value="1024">1,024</button></div></div>
+        <div class="ctrl"><span>STS 길이(512칩 단위)</span><div class="seg" id="du-st"><button data-value="32">32</button><button data-value="64" class="on">64</button><button data-value="128">128</button></div></div>
+        <label class="ctrl"><span>데이터 길이 <output id="du-n-out"></output></span><input type="range" id="du-n" min="0" max="127" value="20"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">SHR</span><span class="v" id="du-s">—</span></div>
+        <div class="stat"><span class="k">STS</span><span class="v" id="du-t">—</span></div>
+        <div class="stat"><span class="k">프레임 전체</span><span class="v" id="du-a">—</span></div>
+      </div>
+      <div class="sim-note">해볼 것: ① Android 기본값(SP3, 프리앰블 64, STS 64)의 거리 측정 프레임은 약 140 µs다. ② SP0에 프리앰블 1,024면 1 ms를 넘는다. 옛 측위 시스템이 먼 거리용으로 쓰던 설정이다. ③ SP3는 데이터가 없어 거리 측정 결과(타임스탬프)는 따로 SP1·SP0 프레임으로 주고받는다(11장). STS 한 단위 = 512칩 = 1.0256 µs. 계산은 DW1000 드라이버의 식(검증 스크립트가 같은 결과인지 확인)이고, 802.15.4z의 BPRF 세부(SFD 길이 등)는 칩에 따라 조금 다를 수 있다.</div>
+    </div>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>HRP 프레임 = SYNC(프리앰블) + SFD + (STS) + PHR + 데이터. SP0(STS 없음), SP1(STS + 데이터), SP3(STS만).</li>
+      <li>프리앰블 심볼 시간 = 코드 길이 × 펼침 ÷ 499.2 MHz: 31×16 → 993.59 ns, 127×4 → 1,017.63 ns, 91×4 → 729.17 ns.</li>
+      <li>프리앰블은 자기 상관이 뾰족한 코드의 반복. N개를 쌓으면 10·log₁₀N dB를 얻는다.</li>
+      <li>SFD가 끝나는 순간이 타임스탬프 기준점. STS는 위조할 수 없는 시각 기준(10장).</li>
+      <li>Android 기본 프레임(SP3, 프리앰블 64, STS 64)은 약 140 µs.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>BPRF 프리앰블 심볼 시간 1,017.63 ns는 어떻게 나오나?</p><div class="opts">
+        <button class="opt">1 µs + 보호 구간</button><button class="opt" data-correct>코드 길이 127 × 펼침 4칩 ÷ 499.2 MHz</button><button class="opt">31 × 16 ÷ 499.2 MHz</button><button class="opt">64 MHz의 역수</button>
+      </div><div class="quiz-exp">508칩 × 2.003 ns = 1,017.63 ns.</div></div>
+      <div class="quiz-q"><p>프리앰블 심볼 64개의 상관을 더하면 SNR은 얼마나 오르나?</p><div class="opts">
+        <button class="opt">6 dB</button><button class="opt" data-correct>약 18 dB</button><button class="opt">64 dB</button><button class="opt">변하지 않는다</button>
+      </div><div class="quiz-exp">10·log₁₀64 ≈ 18 dB.</div></div>
+      <div class="quiz-q"><p>SP3 프레임의 특징은?</p><div class="opts">
+        <button class="opt">STS가 없다</button><button class="opt" data-correct>데이터 없이 SHR과 STS만 보낸다</button><button class="opt">PHR만 있다</button><button class="opt">프리앰블이 없다</button>
+      </div><div class="quiz-exp">짧고 위조하기 어려운 거리 측정 전용 프레임. 결과는 다른 프레임으로 주고받는다.</div></div>
+      <div class="quiz-q"><p>거리 측정의 기준 시각(RMARKER)은?</p><div class="opts">
+        <button class="opt">프리앰블의 첫 펄스</button><button class="opt" data-correct>SFD가 끝난 직후</button><button class="opt">데이터의 끝</button><button class="opt">PHR의 가운데</button>
+      </div><div class="quiz-exp">송신·수신 타임스탬프 모두 이 지점을 기준으로 찍는다(5장).</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const CHIP_MHZ = 499.2;
+  /** 프리앰블 심볼 시간(ns) = 코드 길이 × 펼침 칩 수 ÷ 499.2 MHz */
+  function symbolNs(codeLen, spread) { return (codeLen * spread * 1000) / CHIP_MHZ; }
+  const MODES = { prf16: [31, 16], prf64: [127, 4], hprf: [91, 4], prf4: [31, 64] };
+  const NONZERO = { 31: 16, 127: 64 }; // 3진 코드에서 펄스가 있는 자리 수
+  /** 평균 펄스율(MHz) = 펄스 있는 자리 ÷ 심볼 시간 */
+  function meanPrf(codeLen, spread) { return NONZERO[codeLen] ? (NONZERO[codeLen] * 1000) / symbolNs(codeLen, spread) : NaN; }
+  /** 길이 31 m-수열(x⁵ + x² + 1)을 ±1로 */
+  function mseq31() { let r = 0b00001; const out = []; for (let i = 0; i < 31; i++) { out.push(r & 1 ? 1 : -1); const b = ((r >> 0) ^ (r >> 2)) & 1; r = (r >> 1) | (b << 4); } return out; }
+  /** 주기 자기 상관 */
+  function periodicAcf(c) { const n = c.length; return c.map((_, k) => c.reduce((s, v, i) => s + v * c[(i + k) % n], 0)); }
+  /** DW1000 dw1000_phy_SHR_duration(): ⌈Tpsym × (nsync + nsfd)⌉ µs */
+  function shrUs(tpsym, nsync, nsfd) { return Math.ceil(tpsym * (nsync + nsfd)); }
+  /** DW1000 dw1000_phy_data_duration(): ⌈Tbsym·nphr + Tdsym·(8(n+2) + 48 + ⌊8(n+2)/330⌋·48)⌉ µs */
+  function dataUs(tbsym, tdsym, nphr, nlen) { const parity = 48 + Math.floor((8 * (nlen + 2)) / 330) * 48; return Math.ceil(tbsym * nphr + tdsym * (8 * (nlen + 2) + parity)); }
+  const TPSYM = 1.0176282, TBSYM = 1.025641, TDSYM = 0.1282051, NSFD = 8, NPHR = 21, STS_UNIT_US = 512 / CHIP_MHZ;
+  /** 프레임 구간(µs): SP0/SP1/SP3 */
+  function frameParts(sp, nsync, stsUnits, nlen) {
+    const parts = [["SHR", shrUs(TPSYM, nsync, NSFD)]];
+    if (sp !== 0) parts.push(["STS", stsUnits * STS_UNIT_US]);
+    if (sp !== 3) parts.push(["PHR+데이터", dataUs(TBSYM, TDSYM, NPHR, nlen)]);
+    return parts;
+  }
+
+  /* ================================================================ 1. 심볼 */
+  (function () {
+    let mode = "prf64";
+    UW.seg("sy-m", (v) => { mode = v; draw(); });
+    const cv = UW.canvas($("cv-sym"), (ctx, w, h) => {
+      const P = UW.palette(), [L, sp] = MODES[mode], show = Math.min(L * sp, 160), cw = (w - 24) / show, code = mseq31();
+      for (let i = 0; i < show; i++) { const x = 12 + i * cw; if (i % sp === 0) { const v = code[(i / sp) % 31]; ctx.fillStyle = v > 0 ? P.accent : P.accent2; ctx.fillRect(x, v > 0 ? 20 : 50, Math.max(1, cw - 0.5), 30); } else { ctx.fillStyle = P.grid; ctx.fillRect(x, 49, Math.max(1, cw - 0.5), 2); } }
+      UW.text(ctx, `칩 ${show}개 표시 / 심볼 ${L * sp}칩`, 12, h - 8, { size: 11, color: P.dim });
+    }, { aspect: 0.2, minHeight: 100, maxHeight: 110 });
+    function draw() { const [L, sp] = MODES[mode], t = symbolNs(L, sp); UW.stat("sy-c", `${L} × ${sp} = ${L * sp}칩`); UW.stat("sy-t", t.toFixed(2) + " ns"); const m = meanPrf(L, sp); UW.stat("sy-p", isFinite(m) ? m.toFixed(2) + " MHz" : "128 MHz급(HPRF)"); cv.redraw(); }
+    draw();
+  })();
+
+  /* ================================================================ 2. 상관 누적 */
+  (function () {
+    let seed = 1;
+    const s = UW.range("ac-s", (v) => v + " dB", draw), n = UW.range("ac-n", (v) => String(2 ** v) + "개", draw);
+    $("ac-re").addEventListener("click", () => { seed++; draw(); });
+    const code = mseq31();
+    function accumulate() {
+      const N = 2 ** n(), amp = Math.pow(10, s() / 20), r = UW.rng(seed), gauss = () => Math.sqrt(-2 * Math.log(r() + 1e-12)) * Math.cos(2 * Math.PI * r()), acc = new Array(31).fill(0);
+      for (let k = 0; k < N; k++) { const rx = code.map((c) => amp * c + gauss()); for (let lag = 0; lag < 31; lag++) { let v = 0; for (let i = 0; i < 31; i++) v += rx[(i + lag) % 31] * code[i]; acc[lag] += v; } }
+      return acc;
+    }
+    const cv = UW.canvas($("cv-acc"), (ctx, w, h) => {
+      const P = UW.palette(), acc = accumulate(), mx = Math.max(...acc.map(Math.abs)) || 1, L = 40, W = w - 52, bw = W / 31, mid = h / 2 + 4, pk = acc.indexOf(Math.max(...acc));
+      ctx.strokeStyle = P.axis; ctx.beginPath(); ctx.moveTo(L, mid); ctx.lineTo(L + W, mid); ctx.stroke();
+      acc.forEach((v, i) => { const hh = (v / mx) * (h / 2 - 20); ctx.fillStyle = i === 0 ? P.ok : i === pk ? P.bad : P.accent; ctx.fillRect(L + i * bw + 1, hh > 0 ? mid - hh : mid, bw - 2, Math.abs(hh)); });
+      UW.text(ctx, "0", L + bw / 2, h - 6, { size: 10, color: P.faint, align: "center" }); UW.text(ctx, "어긋남(칩) →", L + W, h - 6, { size: 10, color: P.faint, align: "right" });
+    }, { aspect: 0.36, minHeight: 170, maxHeight: 230 });
+    function draw() { const acc = accumulate(), pk = acc.indexOf(Math.max(...acc)); UW.stat("ac-g", (10 * Math.log10(31)).toFixed(1) + " dB"); UW.stat("ac-a", "+" + (10 * Math.log10(2 ** n())).toFixed(1) + " dB"); UW.stat("ac-p", pk === 0 ? "0칩 ✓ 찾음" : pk + "칩 ✗ 잘못"); cv.redraw(); }
+    draw();
+  })();
+
+  /* ================================================================ 3. 프레임 시간 */
+  (function () {
+    let sp = 3, ps = 64, st = 64;
+    const n = UW.range("du-n", (v) => v + " B", draw);
+    UW.seg("du-sp", (v) => { sp = +v; draw(); }); UW.seg("du-ps", (v) => { ps = +v; draw(); }); UW.seg("du-st", (v) => { st = +v; draw(); });
+    const cv = UW.canvas($("cv-dur"), (ctx, w, h) => {
+      const P = UW.palette(), parts = frameParts(sp, ps, st, n()), tot = parts.reduce((a, p) => a + p[1], 0), L = 12, R = w - 12, sc = (R - L) / Math.max(tot, 300); let x = L;
+      const col = { SHR: P.accent, STS: P.warn, "PHR+데이터": P.accent2 };
+      parts.forEach(([k, d]) => { const ww = d * sc; ctx.fillStyle = col[k]; UW.rrect(ctx, x, 26, Math.max(ww - 1, 1), 36, 4); ctx.fill(); if (ww > 44) UW.text(ctx, k, x + ww / 2, 49, { size: 11, color: "#fff", align: "center", bold: true }); x += ww; });
+      UW.text(ctx, "0", L, 18, { size: 10.5, color: P.faint }); UW.text(ctx, Math.round(Math.max(tot, 300)) + " µs", R, 18, { size: 10.5, color: P.faint, align: "right" });
+    }, { aspect: 0.17, minHeight: 80, maxHeight: 90 });
+    function draw() {
+      const parts = frameParts(sp, ps, st, n()), tot = parts.reduce((a, p) => a + p[1], 0), g = (k) => (parts.find((p) => p[0] === k) || [0, 0])[1];
+      n.el.disabled = sp === 3;
+      UW.stat("du-s", g("SHR") + " µs"); UW.stat("du-t", sp === 0 ? "—" : g("STS").toFixed(1) + " µs"); UW.stat("du-a", tot.toFixed(1) + " µs"); cv.redraw();
+    }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

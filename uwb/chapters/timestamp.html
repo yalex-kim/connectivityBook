@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>시계와 타임스탬프: 15.65 피코초 · UWBBook</title>
+<meta name="description" content="UWB 칩은 63.8976 GHz 눈금의 40비트 시계로 도착 시각을 찍는다. 1 눈금 = 15.65 ps = 4.7 mm, 17초마다 한 바퀴 도는 시계와 빼기, 안테나 지연 보정, 수정 진동자의 ppm 오차가 거리를 흔드는 방식을 공개 드라이버의 상수로 확인한다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/uwb/chapters/timestamp.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="UWBBook">
+<meta property="og:title" content="시계와 타임스탬프: 15.65 피코초 · UWBBook">
+<meta property="og:description" content="UWB 칩은 63.8976 GHz 눈금의 40비트 시계로 도착 시각을 찍는다. 1 눈금 = 15.65 ps = 4.7 mm, 17초마다 한 바퀴 도는 시계와 빼기, 안테나 지연 보정, 수정 진동자의 ppm 오차가 거리를 흔드는 방식을 공개 드라이버의 상수로 확인한다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/uwb/chapters/timestamp.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/uwb/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"시계와 타임스탬프: 15.65 피코초","name":"시계와 타임스탬프: 15.65 피코초 · UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/timestamp.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/uwb/chapters/timestamp.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":5,"image":"https://yalex-kim.github.io/yalexBook/uwb/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/uwb/#book","name":"UWBBook — 누구나 읽는 인터랙티브 UWB 교과서","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"publisher":{"@type":"Organization","name":"UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"description":"UWB 칩은 63.8976 GHz 눈금의 40비트 시계로 도착 시각을 찍는다. 1 눈금 = 15.65 ps = 4.7 mm, 17초마다 한 바퀴 도는 시계와 빼기, 안테나 지연 보정, 수정 진동자의 ppm 오차가 거리를 흔드는 방식을 공개 드라이버의 상수로 확인한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"UWBBook","item":"https://yalex-kim.github.io/yalexBook/uwb/"},{"@type":"ListItem","position":2,"name":"05 시계와 타임스탬프: 15.65 피코초","item":"https://yalex-kim.github.io/yalexBook/uwb/chapters/timestamp.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+</head>
+<body data-chapter="timestamp">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 05</div>
+    <h1>시계와 타임스탬프: 15.65 피코초</h1>
+    <p class="lead">거리 1 cm는 빛으로 33 피코초다. 휴대폰 CPU 시계(수 GHz)로도 한 눈금이 수백 피코초라, 그것으로는 몇 cm 단위의 거리를 잴 수 없다. UWB 칩은 오직 시각을 찍기 위한 특별한 시계를 갖고 있다. 이 장에서는 그 시계의 눈금, 한계, 그리고 보정해야 할 것들을 숫자로 본다.</p>
+    <ul class="objectives">
+      <li>타임스탬프 단위 15.65 ps가 499.2 MHz × 128에서 나오고 4.7 mm에 해당함을 계산한다.</li>
+      <li>40비트 시계가 17초마다 넘친다는 것과, 시각의 차이를 안전하게 빼는 방법을 안다.</li>
+      <li>안테나 지연을 보정하지 않으면 거리가 수십 m 틀리는 이유를 안다.</li>
+      <li>두 기기 시계의 ppm 차이가 응답 시간에 곱해져 거리 오차가 되는 원리를 계산한다(6장의 준비).</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="tick">
+    <h2>63.8976 GHz로 세는 시계</h2>
+    <p>UWB 칩의 타임스탬프 단위는 499.2 MHz의 128배, 63.8976 GHz의 한 주기다. 1/(128 × 499.2 MHz) = <b>15.65 ps</b>. 빛은 이 사이에 4.69 mm를 간다. 실제로 칩이 이렇게 빠른 계수기를 돌리는 것은 아니고, 더 느린 시계로 세면서 프리앰블로 잰 신호의 앞쪽 가장자리를 보간해 이 단위까지 쪼갠다(7장).</p>
+    <p>시각은 40비트 레지스터에 담긴다. 2⁴⁰ × 15.65 ps ≈ <b>17.2초</b>마다 0으로 돌아간다. 그래서 두 시각의 차이는 언제나 2⁴⁰을 법으로 빼야 한다. 거리 측정 공식은 이 빼기를 마스크로 처리한다(6장).</p>
+    <div class="sim" id="sim-tick">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>시간 눈금 확대경</h3></div>
+      <div class="sim-view"><canvas id="cv-tick"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>확대 단계 <output id="tk-z-out"></output></span><input type="range" id="tk-z" min="0" max="5" value="5"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">1 눈금</span><span class="v" id="tk-1">—</span></div>
+        <div class="stat"><span class="k">빛이 가는 거리</span><span class="v" id="tk-d">—</span></div>
+        <div class="stat"><span class="k">40비트가 한 바퀴</span><span class="v" id="tk-w">—</span></div>
+      </div>
+      <div class="sim-note">위: 확대 단계의 시간 폭과 그 안의 눈금. 아래: 같은 시간 동안 빛이 가는 거리. 해볼 것: 확대를 줄여 가며 프레임(140 µs), UWB 마이크로초(1.0256 µs = 65,536 눈금), 칩(2.003 ns), 15.65 ps 눈금을 비교해 보자. 드라이버는 지연 송신 시각을 “UWB 마이크로초 × 65,536”으로 다룬다.</div>
+    </div>
+    <p class="spec-ref">눈금 15,650 fs: Zephyr <code>ieee802154_dw1000.c</code>의 <code>DWT_TS_TIME_UNITS_FS 15650U</code> · 1/499.2e6/128: Decawave <code>uwb-core</code>의 <code>uwb_rng_tof_to_meters()</code> · 40비트 레지스터: <code>ieee802154_dw1000_regs.h</code> 주석 “40 bit register” · “dx_time in dwt timeunits (uwb usecs &lt;&lt; 16)”: <code>uwb.h</code> · 지연 송신 시각은 하위 8비트를 버리고 기록: <code>dw1000_set_delay_start()</code>의 <code>dx_time &gt;&gt; 8</code></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="antenna">
+    <h2>안테나 지연: 칩 안의 숨은 거리</h2>
+    <p>타임스탬프는 칩 안의 디지털 회로가 찍는다. 그런데 신호가 실제로 공기 중에 나가는 곳은 안테나다. 칩 → 정합 회로 → 안테나로 가는 동안, 그리고 받을 때 반대 방향으로 오는 동안 수백 피코초~수백 나노초가 더 걸린다. 이것이 <span class="term">안테나 지연</span><span class="en">(antenna delay)</span>이다. 거리 측정은 왕복 시간에서 이 지연을 빼야 한다.</p>
+    <p>Zephyr의 DW1000 드라이버는 송신·수신 안테나 지연 기본값을 각각 16,450 눈금(약 257 ns)으로 둔다. 한 기기의 송신 + 수신 지연은 합쳐 32,900 눈금(약 515 ns)이다. 이 값을 빼지 않으면 거리가 100 m 넘게 틀린다. 그래서 제품은 알려진 거리에서 측정해 기기마다 이 값을 보정한다. 거리는 (왕복 − 응답) ÷ 2로 구하므로(6장), 기기 하나의 지연 합이 1 ns 틀리면 거리는 15 cm, 두 기기 모두 같은 만큼 틀리면 30 cm 틀린다.</p>
+    <div class="sim" id="sim-ant">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>안테나 지연을 잘못 넣으면</h3></div>
+      <div class="sim-view"><canvas id="cv-ant"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>실제 안테나 지연(기기 하나의 송신 + 수신) <output id="an-r-out"></output></span><input type="range" id="an-r" min="32700" max="33200" value="32920"></label>
+        <label class="ctrl"><span>설정한 값(송신 + 수신) <output id="an-s-out"></output></span><input type="range" id="an-s" min="0" max="33200" step="10" value="32900"></label>
+        <label class="ctrl"><span>실제 거리 <output id="an-d-out"></output></span><input type="range" id="an-d" min="0.5" max="20" step="0.5" value="3"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">지연 오차</span><span class="v" id="an-e">—</span></div>
+        <div class="stat"><span class="k">잰 거리</span><span class="v" id="an-m">—</span></div>
+        <div class="stat"><span class="k">거리 오차</span><span class="v" id="an-x">—</span></div>
+      </div>
+      <div class="sim-note">해볼 것: ① 설정값을 0으로 두면 150 m 넘는 오차가 생긴다. ② 기본값(16,450 × 2 = 32,900)이 실제(32,920)보다 20 눈금(313 ps) 작으면 약 9 cm 길게 잰다. 오차는 거리와 무관한 고정 치우침이다. 모델: 두 기기가 같은 지연을 갖고 같은 값으로 설정한 양방향 측정(6장). 두 기기의 지연 오차가 왕복에 하나씩 들어가고 ÷2 하므로, 거리 오차 = c × (실제 − 설정) × 눈금.</div>
+    </div>
+    <p class="spec-ref">안테나 지연 기본값: Zephyr <code>ieee802154_dw1000.c</code>의 <code>DW1000_TX_ANT_DLY 16450</code>, <code>DW1000_RX_ANT_DLY 16450</code> · Decawave 드라이버는 기기별 설정값(<code>DW1000_DEVICE_0_RX_ANT_DLY</code> 등)을 받아 <code>dw1000_phy_set_rx_antennadelay()</code>로 적용</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="ppm">
+    <h2>두 시계는 같은 속도로 가지 않는다</h2>
+    <p>UWB 칩의 시계는 수정 진동자에서 나오고, 수정 진동자는 보통 ±10~20 <b>ppm</b>(100만분의 1) 오차가 있다. 1초에 20 µs씩 빠르거나 느리다는 뜻이다. 한 기기 안에서 시각의 차이를 재는 데에는 거의 문제가 없지만, <b>다른 기기의 시계로 잰 시간을 내 시계로 잰 시간과 섞으면</b> 문제가 된다.</p>
+    <p>양방향 거리 측정(6장)에서 상대는 내 신호를 받고 정해진 시간(응답 시간, 수백 µs~수 ms) 뒤에 답한다. 상대가 “500 µs 기다렸다”고 알려 와도, 상대 시계가 20 ppm 빠르면 실제로는 499.99 µs다. 그 10 ns 차이가 그대로 왕복 시간 오차가 되고, 거리로는 1.5 m다. 응답 시간 × ppm 차이가 거리 오차를 정한다. 6장의 양방향 측정(DS-TWR)과 반송파 주파수 오차 보정이 이 문제를 푼다.</p>
+    <div class="sim" id="sim-ppm">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>ppm 오차 × 응답 시간</h3></div>
+      <div class="sim-view"><canvas id="cv-ppm"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>두 시계의 차이 <output id="pp-p-out"></output></span><input type="range" id="pp-p" min="0" max="40" value="20"></label>
+        <label class="ctrl"><span>상대의 응답 시간 <output id="pp-r-out"></output></span><input type="range" id="pp-r" min="100" max="5000" step="50" value="500"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">응답 시간 착오</span><span class="v" id="pp-t">—</span></div>
+        <div class="stat"><span class="k">거리 오차(보정 없음)</span><span class="v" id="pp-e">—</span></div>
+        <div class="stat"><span class="k">반송파로 잰 ppm(9번 채널 Hz)</span><span class="v" id="pp-h">—</span></div>
+      </div>
+      <div class="sim-note">그래프: 응답 시간(가로)에 따른 단방향 측정의 거리 오차, ppm 차이별 선. 해볼 것: ① 20 ppm, 500 µs면 오차가 1.5 m다. UWB의 장점이 사라진다. ② 응답 시간을 100 µs로 줄여도 30 cm. 그래서 보정이 필요하다. ③ 오른쪽 아래 값: 수신기는 상대 반송파와 자기 반송파의 주파수 차이를 재서 ppm을 알아낸다. 9번 채널(7,987.2 MHz)에서 1 ppm은 7,987 Hz다. 이 값으로 보정하면(6장의 skew) 오차가 크게 준다.</div>
+    </div>
+    <p class="spec-ref">Hz → ppm 환산 <code>DWT_HZ_TO_PPM_MULTIPLIER_CHAN_n = 1.0e6 / UWB_CH_FREQ_CHAN_n</code>: <code>uwb-core</code> <code>uwb_mac.h</code> · 시계 차이 비율 계산 <code>dw1000_calc_clock_offset_ratio()</code>: <code>uwb-dw1000</code> <code>dw1000_mac.c</code></p>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>타임스탬프 1 눈금 = 1/(128 × 499.2 MHz) = 15.65 ps = 빛으로 4.69 mm.</li>
+      <li>40비트 시계는 약 17.2초마다 넘친다. 시각 차이는 2⁴⁰을 법으로 뺀다.</li>
+      <li>안테나 지연(DW1000 기본 송신·수신 각 16,450 눈금 ≈ 257 ns)을 기기마다 보정해야 한다. 기기 하나의 지연이 1 ns 틀리면 15 cm.</li>
+      <li>상대 시계로 잰 응답 시간에는 ppm 오차가 곱해진다. 20 ppm × 500 µs = 10 ns = 1.5 m.</li>
+      <li>반송파 주파수 차이(9번 채널에서 1 ppm ≈ 8 kHz)로 시계 차이를 재서 보정한다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>UWB 타임스탬프 1 눈금은 빛으로 몇 mm인가?</p><div class="opts">
+        <button class="opt">0.47 mm</button><button class="opt" data-correct>약 4.7 mm</button><button class="opt">4.7 cm</button><button class="opt">30 cm</button>
+      </div><div class="quiz-exp">15.65 ps × 3×10⁸ m/s ≈ 4.69 mm.</div></div>
+      <div class="quiz-q"><p>40비트 타임스탬프에서 TX = 0x0000000100, RX = 0xFFFFFFFF00일 때 올바른 차이(TX − RX)는?</p><div class="opts">
+        <button class="opt">음수 (오류)</button><button class="opt" data-correct>0x200 눈금 (넘침을 고려해 2⁴⁰을 법으로)</button><button class="opt">0xFFFFFFFE00</button><button class="opt">계산할 수 없다</button>
+      </div><div class="quiz-exp">(0x100 − 0xFFFFFFFF00) mod 2⁴⁰ = 0x200.</div></div>
+      <div class="quiz-q"><p>한 기기의 안테나 지연(송신 + 수신 합)을 1 ns 잘못 넣으면 거리 오차는?</p><div class="opts">
+        <button class="opt">1.5 cm</button><button class="opt" data-correct>약 15 cm</button><button class="opt">30 cm</button><button class="opt">1.5 m</button>
+      </div><div class="quiz-exp">거리 = (왕복 − 응답) ÷ 2이므로 1 ns 오차는 비행시간에 0.5 ns로 들어간다 → 0.5 ns × c ≈ 15 cm.</div></div>
+      <div class="quiz-q"><p>시계 차이 20 ppm, 상대 응답 시간 500 µs면 보정 없는 단방향 측정의 거리 오차는?</p><div class="opts">
+        <button class="opt">1.5 cm</button><button class="opt">15 cm</button><button class="opt" data-correct>1.5 m</button><button class="opt">15 m</button>
+      </div><div class="quiz-exp">500 µs × 20×10⁻⁶ = 10 ns, ÷2 = 5 ns → 1.5 m.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const C_AIR = 299792458 / 1.000293;
+  /** 타임스탬프 1 눈금(초) = 1/(128 × 499.2 MHz) */
+  function tickSeconds() { return 1 / (499.2e6 * 128); }
+  /** 40비트 시계 차이: (a − b) mod 2⁴⁰ */
+  function tsDiff40(a, b) { const M = 2n ** 40n; return Number((((BigInt(a) - BigInt(b)) % M) + M) % M); }
+  /** 안테나 지연 설정 오차에 따른 거리 치우침(m): 양 기기 같은 오차 ticksErr, 왕복에 두 번 더해지고 ÷2 */
+  function antennaBias(ticksErr) { return (C_AIR * ticksErr * tickSeconds() * 2) / 2; } // 두 기기 × 오차 ÷ 2
+  /** 단방향 TWR에서 상대 시계 ppm 차이 × 응답 시간이 만드는 거리 오차(m) */
+  function ppmError(ppm, replyUs) { return (C_AIR * replyUs * 1e-6 * ppm * 1e-6) / 2; }
+  /** ppm → 반송파 주파수 차이(Hz) */
+  function ppmToHz(ppm, fcHz) { return (ppm * fcHz) / 1e6; }
+
+  /* ================================================================ 1. 확대경 */
+  (function () {
+    const LV = [[1e-3, "1 ms (평균 규칙의 창, 3장)"], [140e-6, "140 µs (거리 측정 프레임, 4장)"], [1.0256e-6, "1.0256 µs (UWB 마이크로초)"], [16e-9, "16 ns (칩 8개)"], [2.003e-9, "2.003 ns (칩 하나)"], [0.25e-9, "250 ps (눈금 16개)"]];
+    const z = UW.range("tk-z", (v) => LV[v][1], draw);
+    const cv = UW.canvas($("cv-tick"), (ctx, w, h) => {
+      const P = UW.palette(), [span] = LV[z()], L = 14, R = w - 14, ticks = span / tickSeconds();
+      ctx.strokeStyle = P.axis; ctx.beginPath(); ctx.moveTo(L, 40); ctx.lineTo(R, 40); ctx.stroke();
+      if (ticks <= 200) for (let i = 0; i <= ticks; i++) { const x = L + ((R - L) * i) / ticks; ctx.beginPath(); ctx.moveTo(x, 32); ctx.lineTo(x, 48); ctx.stroke(); }
+      else { ctx.fillStyle = P.accent; ctx.fillRect(L, 34, R - L, 12); UW.text(ctx, "눈금이 너무 촘촘함: " + Math.round(ticks).toLocaleString() + "개", (L + R) / 2, 28, { size: 11, color: P.dim, align: "center" }); }
+      UW.text(ctx, "시간 폭 " + LV[z()][1], L, 18, { size: 12, color: P.text, bold: true });
+      const dist = C_AIR * span; UW.text(ctx, "빛이 가는 거리: " + (dist >= 1000 ? (dist / 1000).toFixed(1) + " km" : dist >= 1 ? dist.toFixed(1) + " m" : (dist * 100).toFixed(1) + " cm"), L, 74, { size: 12, color: P.accent2, bold: true });
+    }, { aspect: 0.2, minHeight: 90, maxHeight: 100 });
+    function draw() { const t = tickSeconds(); UW.stat("tk-1", (t * 1e12).toFixed(2) + " ps"); UW.stat("tk-d", (C_AIR * t * 1000).toFixed(2) + " mm"); UW.stat("tk-w", (2 ** 40 * t).toFixed(2) + " s"); cv.redraw(); }
+    draw();
+  })();
+
+  /* ================================================================ 2. 안테나 지연 */
+  (function () {
+    const r = UW.range("an-r", (v) => v + " (" + (v * tickSeconds() * 1e9).toFixed(1) + " ns)", draw), s = UW.range("an-s", (v) => String(v), draw), d = UW.range("an-d", (v) => v + " m", draw);
+    const cv = UW.canvas($("cv-ant"), (ctx, w, h) => {
+      const P = UW.palette(), bias = antennaBias(r() - s()), m = d() + bias, mx = Math.max(25, m * 1.1), L = 20, W = w - 40, X = (v) => L + (W * Math.max(0, v)) / mx;
+      ctx.fillStyle = P.grid; ctx.fillRect(L, 36, W, 6);
+      ctx.fillStyle = P.ok; ctx.beginPath(); ctx.arc(X(d()), 39, 7, 0, 7); ctx.fill(); UW.text(ctx, "실제", X(d()), 24, { size: 11, color: P.ok, align: "center", bold: true });
+      ctx.fillStyle = P.bad; ctx.beginPath(); ctx.arc(X(m), 39, 7, 0, 7); ctx.fill(); UW.text(ctx, "잰 거리", X(m), 64, { size: 11, color: P.bad, align: "center", bold: true });
+      UW.text(ctx, "0", L, h - 6, { size: 10, color: P.faint }); UW.text(ctx, mx.toFixed(0) + " m", L + W, h - 6, { size: 10, color: P.faint, align: "right" });
+    }, { aspect: 0.2, minHeight: 90, maxHeight: 100 });
+    function draw() { const e = r() - s(), b = antennaBias(e); UW.stat("an-e", e + " 눈금 (" + (e * tickSeconds() * 1e9).toFixed(2) + " ns)"); UW.stat("an-m", (d() + b).toFixed(2) + " m"); UW.stat("an-x", (b >= 0 ? "+" : "") + (Math.abs(b) >= 1 ? b.toFixed(1) + " m" : (b * 100).toFixed(1) + " cm")); cv.redraw(); }
+    draw();
+  })();
+
+  /* ================================================================ 3. ppm */
+  (function () {
+    const p = UW.range("pp-p", (v) => v + " ppm", draw), r = UW.range("pp-r", (v) => v + " µs", draw);
+    const cv = UW.canvas($("cv-ppm"), (ctx, w, h) => {
+      const P = UW.palette(), S = (ppm, col) => { const d = []; for (let t = 100; t <= 5000; t += 50) d.push([t, ppmError(ppm, t)]); return { data: d, color: col, width: ppm === p() ? 2.6 : 1.2 }; };
+      const ch = UW.chart(ctx, null, { x: [100, 5000], y: [0, 16], xLabel: "응답 시간 (µs)", yLabel: "거리 오차 (m)", series: [S(5, P.faint), S(10, P.faint), S(40, P.faint), S(p(), P.accent)] });
+      ctx.fillStyle = P.accent2; ctx.beginPath(); ctx.arc(ch.X(r()), ch.Y(Math.min(16, ppmError(p(), r()))), 6, 0, 7); ctx.fill();
+    }, { aspect: 0.48, minHeight: 230, maxHeight: 320 });
+    function draw() { const t = r() * p() * 1e-6; UW.stat("pp-t", (t * 1000).toFixed(1) + " ns"); const e = ppmError(p(), r()); UW.stat("pp-e", e >= 1 ? e.toFixed(2) + " m" : (e * 100).toFixed(1) + " cm"); UW.stat("pp-h", "1 ppm = " + ppmToHz(1, 7987.2e6).toFixed(0) + " Hz"); cv.redraw(); }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>
