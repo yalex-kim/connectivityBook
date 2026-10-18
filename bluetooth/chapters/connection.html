@@ -97,6 +97,7 @@
     </div>
     <p class="spec-ref">페리페럴 지연·서브레이팅 규칙(subrate × (latency + 1) ≤ 500, 그 시간 × 2 &lt; 타임아웃): <b>[Vol 6] Part B §4.5.1</b> · 감독 타임아웃 100 ms ~ 32 s와 6 이벤트 규칙: <b>§4.5.2</b></p>
 
+    <div class="callout analogy"><strong>정각마다 만나는 약속</strong><p>카페에서 두 사람이 “매 30분 정각에 잠깐 이야기하자”고 약속한다. 할 말이 없으면 몇 번은 빠져도 되고(페리페럴 지연), 너무 오래 안 나타나면 헤어진 것으로 친다(감독 타임아웃). 약속 간격이 짧으면 대답이 빠르지만 자주 일어나야 하니 피곤하다. 연결 파라미터가 이 약속이다.</p></div>
     <div class="sim" id="sim-cp">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>연결 파라미터 설계기: 반응 속도, 배터리, 규칙 검사</h3></div>
       <div class="sim-view"><canvas id="cv-cp"></canvas></div>

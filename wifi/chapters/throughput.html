@@ -59,6 +59,12 @@
     </ul>
     <p>둘을 겹쳐 쓸 수도 있다(A-MSDU 여러 개를 A-MPDU로). 한 묶음에 넣을 수 있는 양은 세대마다 늘었다. A-MPDU 안의 프레임 수는 블록 ACK 창 크기에 묶이는데 Wi-Fi 4·5는 64개, Wi-Fi 6는 256개, Wi-Fi 7은 1,024개다. 묶음 전체 크기는 Wi-Fi 4가 최대 64 KB, Wi-Fi 5부터는 최대 약 1 MB까지 알릴 수 있다.</p>
     <p class="spec-ref">블록 ACK 창: Linux <code>include/linux/ieee80211-ht.h</code>의 <code>IEEE80211_MAX_AMPDU_BUF_HT = 0x40</code>, <code>_HE = 0x100</code>, <code>_EHT = 0x400</code> · A-MPDU 최대 길이 지수: 같은 파일 <code>IEEE80211_HT_MAX_AMPDU_FACTOR = 13</code>(2<sup>13+3</sup> − 1 = 65,535바이트), <code>ieee80211-vht.h</code>의 <code>IEEE80211_VHT_MAX_AMPDU_1024K</code></p>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">링크 속도 1,201 Mb/s인 Wi-Fi 6에서 1,500바이트 패킷을 묶지 않고 하나씩 보내면 실제 처리량은?</p><p class="wi-hint">매 전송마다 대기, 프리앰블, ACK가 붙는다.</p><div class="opts">
+      <button class="opt">약 1,100 Mb/s</button>
+      <button class="opt">약 600 Mb/s</button>
+      <button class="opt">약 300 Mb/s</button>
+      <button class="opt" data-correct>약 60 Mb/s</button>
+    </div><div class="quiz-exp">이 책의 계산으로 약 57 Mb/s, 링크 속도의 5%다. 데이터 자체는 10 µs면 끝나지만 대기·백오프·프리앰블·ACK가 200 µs 가까이 든다. 64개를 묶으면 약 884 Mb/s가 된다. 아래에서 묶음 크기를 바꿔 보자.</div></div>
     <div class="sim" id="sim-agg">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>묶음 크기와 실제 처리량</h3></div>
       <div class="sim-view"><canvas id="cv-agg"></canvas></div>

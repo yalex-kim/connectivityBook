@@ -48,6 +48,13 @@
       <li>B가 잰 응답 시간 <b>T<sub>reply</sub></b> = B의 송신 시각 − B의 수신 시각 (Response 안에 담아 알려 준다)</li>
     </ul>
     <p>왕복에서 B가 기다린 시간을 빼면 신호가 두 번 날아간 시간이 남는다. 그래서 <b>ToF = (T<sub>round</sub> − T<sub>reply</sub>) ÷ 2</b>. 각자 자기 시계 안에서의 차이만 쓰므로, 두 시계가 맞을 필요가 없다. 대신 5장에서 본 대로 시계의 <b>빠르기</b>가 다르면 T<sub>reply</sub>가 A의 단위로 틀리게 전달된다.</p>
+    <div class="callout analogy"><strong>메아리와 답장 시간</strong><p>산에서 “야호”를 외치고 메아리가 2초 뒤에 오면, 소리가 왕복한 시간이 2초라서 산까지 1초 거리다. 사람이 답한다면 답하기 전에 망설인 시간을 빼야 한다. TWR은 상대가 “나는 받고 나서 정확히 이만큼 있다가 답했다”고 알려 줘서 그 시간을 뺀다. 문제는 상대의 시계도 조금 틀리다는 것이다.</p></div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">두 기기의 시계가 서로 20 ppm 어긋나 있다. DS-TWR(메시지 셋)를 쓰면 이 오차는?</p><p class="wi-hint">DS-TWR은 양쪽이 한 번씩 응답해 왕복을 두 번 잰다.</p><div class="opts">
+      <button class="opt">SS-TWR과 같다</button>
+      <button class="opt">두 배가 된다</button>
+      <button class="opt" data-correct>거의 사라진다</button>
+      <button class="opt">응답 시간에 비례해 더 커진다</button>
+    </div><div class="quiz-exp">양쪽 왕복을 곱셈 꼴로 묶으면(비대칭 DS-TWR 식) 시계 오차 항이 서로 상쇄되어 남는 오차는 ppm × 비행시간 수준, 즉 mm 이하가 된다. 아래 타임라인에서 SS와 DS를 바꿔 보자.</div></div>
     <div class="sim" id="sim-tl">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>타임라인으로 보는 SS-TWR와 DS-TWR</h3></div>
       <div class="sim-view"><canvas id="cv-tl"></canvas></div>

@@ -57,6 +57,12 @@
     <h2>세기 대신 시간으로</h2>
     <p>블루투스로 거리를 짐작할 때는 받은 신호의 세기(RSSI)를 쓴다. 전파는 멀어질수록 약해지니까. 그런데 손에 쥔 방향, 사람 몸, 벽, 반사에 따라 세기가 수 dB씩 흔들리고, 세기는 거리의 로그로 변하기 때문에 작은 dB 오차가 큰 거리 오차가 된다. 실내에서 RSSI 거리 오차가 몇 미터에 이르는 이유다.</p>
     <p>UWB는 신호가 날아간 <span class="term">비행시간</span><span class="en">(Time of Flight, ToF)</span>을 잰다. 거리 = 빛의 속도 × 시간이고, 시간을 1 나노초만 정확히 재도 30 cm다. UWB 칩의 시계 눈금은 15.65 피코초(5장)라서, 잘 보정하면 거리 오차는 10 cm 수준이 된다. 그리고 세기와 달리 시간은 손에 쥔 방향이나 송신 세기에 거의 흔들리지 않는다.</p>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">거리를 30 cm 정확도로 재려면, 신호의 도착 시각을 얼마나 정확히 짚어야 할까?</p><p class="wi-hint">빛은 1 ns(10억분의 1초)에 약 30 cm를 간다.</p><div class="opts">
+      <button class="opt">1 ms</button>
+      <button class="opt">1 µs</button>
+      <button class="opt" data-correct>약 1 ns</button>
+      <button class="opt">약 1 ps</button>
+    </div><div class="quiz-exp">30 cm ÷ 3 × 10<sup>8</sup> m/s = 1 ns. 그래서 UWB 칩의 시계 눈금은 15.65 ps(4.7 mm)로 아주 촘촘하다(5장). 아래 시뮬레이터에서 세기로 잴 때와 시간으로 잴 때의 오차를 비교해 보자.</div></div>
     <div class="sim" id="sim-rt">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>신호 세기로 재기 대 시간으로 재기</h3></div>
       <div class="sim-view"><canvas id="cv-rt"></canvas></div>

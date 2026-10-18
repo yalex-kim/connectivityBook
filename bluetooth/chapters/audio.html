@@ -95,6 +95,7 @@
       <li><b>지터 버퍼</b>: 도착 시각이 들쭉날쭉해도 끊김 없이 재생하려고 받는 쪽이 쌓아 두는 양. 클래식 A2DP에서 가장 큰 항목이다.</li>
       <li><b>표시 지연</b><span class="en">(presentation delay)</span>: LE 오디오에서 여러 수신기가 같은 순간에 재생하도록 정한 기준 시각까지의 여유.</li>
     </ul>
+    <div class="callout analogy"><strong>카페 공연을 전화로 들려주기</strong><p>카페의 라이브 공연을 전화로 친구에게 들려준다고 해 보자. 잡음 때문에 가끔 말이 끊기니, 몇 초씩 모아 두었다가 보내면 끊김은 줄지만 친구는 그만큼 늦게 듣는다. 블루투스 오디오도 같다. 재전송 기회와 버퍼를 늘리면 끊김이 줄고 지연이 늘어난다. 음악은 지연을 참을 수 있지만 게임과 통화는 못 참는다.</p></div>
     <div class="sim" id="sim-lat">
       <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>지연 예산 쌓기: 클래식 A2DP vs LE 오디오</h3></div>
       <div class="sim-view"><canvas id="cv-lat"></canvas></div>

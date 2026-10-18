@@ -256,4 +256,14 @@ new vm.Script(fs.readFileSync(path.join(root, 'js/common.js'), 'utf8'));
 const tctx = vm.createContext({ window: {} }); vm.runInContext(fs.readFileSync(path.join(root, 'js/terms.js'), 'utf8'), tctx);
 const slugs = new Set([...fs.readFileSync(path.join(root, 'js/common.js'), 'utf8').matchAll(/slug: "([\w-]+)"/g)].map((m) => m[1]));
 ok(tctx.window.BT_TERMS.every((t) => t.length === 4 && slugs.has(t[3])), 'every term points to a chapter');
+// 책의 설명 흐름(CONTRIBUTING.md): 용어집을 뺀 모든 장에 비유·예측해 보기·시뮬레이터·핵심 정리·퀴즈가 있고, 문제마다 정답이 하나인가
+for (const f of fs.readdirSync(path.join(root, 'chapters')).filter((x) => x.endsWith('.html') && x !== 'glossary.html')) {
+  const s = fs.readFileSync(path.join(root, 'chapters', f), 'utf8');
+  ok(s.includes('class="callout analogy"'), `${f} has an analogy callout`);
+  ok(s.includes('class="whatif quiz-q"'), `${f} has a 예측해 보기 block`);
+  ok(/class="sim[ "]/.test(s), `${f} has a simulator`);
+  ok(s.includes('class="keypoints"'), `${f} has 핵심 정리`);
+  ok(s.includes('class="quiz-sec"'), `${f} has a quiz`);
+  for (const m of s.matchAll(/class="(?:whatif )?quiz-q"[\s\S]*?class="quiz-exp"/g)) ok((m[0].match(/data-correct/g) || []).length === 1, `${f}: every question has exactly one correct option`);
+}
 console.log({ checks, compiledScriptBlocks: scripts, terms: tctx.window.BT_TERMS.length });

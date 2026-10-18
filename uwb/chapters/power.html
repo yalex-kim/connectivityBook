@@ -51,6 +51,13 @@
   <!-- ============================================================ -->
   <section id="battery">
     <h2>측정 한 번의 전력</h2>
+    <div class="callout analogy"><strong>현관의 센서 등</strong><p>현관 등을 밤새 켜 두면 전기가 많이 들지만, 동작 감지기를 달면 사람이 올 때만 켜진다. 감지기는 아주 적은 전기로 늘 깨어 있다. UWB 태그에서는 BLE가 감지기이고 UWB가 등이다. BLE로 근처에 있는지 알아챈 다음에야 UWB를 켜서 거리를 잰다.</p></div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">태그의 역할을 TWR 응답자에서 UL-TDoA(보내기만)로 바꾸면 측정 한 번에 쓰는 전하는?</p><p class="wi-hint">UL-TDoA 태그는 수신 창을 열지 않는다.</p><div class="opts">
+      <button class="opt">늘어난다</button>
+      <button class="opt">거의 같다</button>
+      <button class="opt" data-correct>절반 이하로 준다</button>
+      <button class="opt">0이 된다</button>
+    </div><div class="quiz-exp">이 책의 예시 전류로 TWR 응답자는 깨어남 4 + 수신 10.8 + 송신 4.2 ≈ 19 µC, UL-TDoA는 깨어남 + 송신 ≈ 8.2 µC다. 받는 일이 가장 비싸다. 대신 앵커들의 시계를 맞춰야 한다(9장). 아래 계산기에서 역할을 바꿔 보자.</div></div>
     <div class="sim" id="sim-bat">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>태그 배터리 계산기</h3></div>
       <div class="sim-view"><canvas id="cv-bat"></canvas></div>

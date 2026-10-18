@@ -46,6 +46,13 @@
   <section id="grid">
     <h2>탐색 격자</h2>
     <p>수신기는 위성 하나마다 두 축을 뒤진다. 코드 위상은 1,023칩을 반 칩 간격으로 2,046칸, 도플러는 칸 폭을 적분 시간에 맞춰(대략 1/(2T)) 나눈다. 1 ms 적분이면 500 Hz 칸, ±5 kHz면 20칸, 모두 약 4만 칸이다. 각 칸에서 복제 신호와 받은 신호를 상관시켜 크기를 보고, 문턱을 넘는 봉우리가 있으면 “찾았다”.</p>
+    <div class="callout analogy"><strong>다이얼 두 개짜리 라디오</strong><p>주파수 다이얼과 시간 다이얼이 둘 다 맞아야만 소리가 들리는 라디오가 있다고 하자. 하나만 맞아서는 아무것도 들리지 않으니, 두 다이얼의 모든 조합을 하나씩 돌려 볼 수밖에 없다. 위성 신호 찾기가 이렇다. 도플러가 주파수 다이얼, 코드 위상이 시간 다이얼이다.</p></div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">약한 신호를 잡으려고 적분을 1 ms에서 10 ms로 늘렸다. 위성 하나의 탐색 칸 수는?</p><p class="wi-hint">도플러 칸 폭은 대략 1/(2T)이다.</p><div class="opts">
+      <button class="opt">그대로</button>
+      <button class="opt" data-correct>10배로 늘어난다</button>
+      <button class="opt">10분의 1로 준다</button>
+      <button class="opt">100배로 늘어난다</button>
+    </div><div class="quiz-exp">칸 폭이 500 Hz에서 50 Hz로 좁아져 ±5 kHz를 덮는 도플러 칸이 20개에서 200개가 된다. 칸 하나에 쓰는 시간도 10배이므로 탐색 시간은 약 100배가 된다. 감도를 얻으려면 A-GNSS로 도플러 범위를 미리 좁혀야 하는 이유다.</div></div>
     <div class="sim" id="sim-grid">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>코드 위상 × 도플러 격자에서 봉우리 찾기</h3></div>
       <div class="sim-view"><canvas id="cv-grid"></canvas></div>

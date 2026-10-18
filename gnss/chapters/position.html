@@ -67,6 +67,13 @@
       <li><b>HDOP</b>: 수평(동·북) · <b>VDOP</b>: 수직 · <b>PDOP</b>: 3차원 위치 · <b>TDOP</b>: 시계 · <b>GDOP</b>: 전체</li>
     </ul>
     <p>위성이 하늘 곳곳(높은 위성 하나 + 지평선 근처 사방)에 퍼져 있을수록 DOP가 작다. 위성이 한쪽에 몰리거나 모두 높이 떠 있으면(빌딩 숲) DOP가 커진다. 위성은 모두 지평선 위에만 있으므로 위아래 방향은 늘 한쪽에서만 재는 셈이고, 그래서 VDOP가 HDOP보다 크다. GNSS 높이 오차가 수평 오차의 1.5~2배인 이유다.</p>
+    <div class="callout analogy"><strong>두 사람이 가리키는 별</strong><p>두 사람이 같은 별을 가리킬 때, 둘이 거의 같은 자리에 서 있으면 팔이 그리는 두 선이 거의 겹쳐 만나는 점이 흐릿하다. 멀리 떨어져 서서 직각에 가깝게 가리키면 만나는 점이 또렷하다. 위성도 하늘에 고루 흩어져 있어야 위치가 또렷하다. 몰려 있으면 같은 측정 오차가 큰 위치 오차가 된다. 이 배수가 DOP다.</p></div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">위성 4개가 모두 하늘의 한쪽 좁은 곳에 몰려 있다. DOP는 어떻게 될까?</p><p class="wi-hint">방향이 비슷한 거리 측정은 서로 같은 정보를 준다.</p><div class="opts">
+      <button class="opt">작아진다 (좋아진다)</button>
+      <button class="opt">그대로다</button>
+      <button class="opt" data-correct>크게 커진다 (나빠진다)</button>
+      <button class="opt">위성이 4개면 항상 1이다</button>
+    </div><div class="quiz-exp">방향 벡터가 비슷하면 행렬이 거의 특이해져 DOP가 수십까지 커진다. 같은 5 m 측정 오차가 수십~수백 m 위치 오차가 된다. 아래 시뮬레이터의 ‘한쪽에 몰림’ 배치를 눌러 보자.</div></div>
     <div class="sim" id="sim-dop">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>위성을 켜고 끄며 보는 DOP</h3></div>
       <div class="sim-body side">

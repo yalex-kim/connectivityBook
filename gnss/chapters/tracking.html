@@ -39,6 +39,13 @@
   <section id="dll">
     <h2>코드 추적: 얼리와 레이트의 균형</h2>
     <p>4장에서 코드 상관은 맞는 위치에서 봉우리를 이루는 삼각형 모양이었다(봉우리 양옆으로 1칩씩). 수신기는 복제 코드 셋을 함께 돌린다. 지금 생각하는 위치(<b>프롬프트</b>), 그보다 조금 이른 것(<b>얼리</b>), 조금 늦은 것(<b>레이트</b>). 맞게 붙잡았다면 얼리와 레이트는 삼각형 양쪽 비탈의 같은 높이에 있다. 신호가 조금 늦어지면 레이트가 커지고 얼리가 작아진다. 그 차이(E − L)로 복제 코드를 밀어 다시 균형을 맞춘다. 이것이 <span class="term">DLL</span><span class="en">(Delay Lock Loop)</span>이다. 균형점의 프롬프트 위치가 곧 신호의 도착 시각, <b>의사거리</b>다.</p>
+    <div class="callout analogy"><strong>시소의 가운데 찾기</strong><p>시소 양쪽에 같은 무게가 올라가면 수평이 된다. 얼리 상관과 레이트 상관을 양쪽에 올려 두고, 한쪽이 무거우면 복제 코드를 그쪽으로 조금 민다. 수평이 되는 자리가 신호가 도착한 시각이다. 반사파가 한쪽에만 무게를 더하면 수평점이 밀려 거리가 틀린다.</p></div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">반사파가 섞였을 때 상관기 간격을 0.5칩에서 0.1칩으로 좁히면 거리 오차는?</p><p class="wi-hint">반사파는 상관 삼각형의 늦은 쪽만 부풀린다.</p><div class="opts">
+      <button class="opt">커진다</button>
+      <button class="opt">거의 그대로</button>
+      <button class="opt" data-correct>작아진다</button>
+      <button class="opt">0이 된다</button>
+    </div><div class="quiz-exp">간격이 좁으면 봉우리 바로 옆만 보므로 늦은 반사파의 영향이 적다. 반사 세기 0.5, 지연 0.5칩일 때 이 책의 모델로 약 37 m에서 약 7 m로 준다. 0이 되지는 않는다. 아래에서 간격을 바꿔 보자.</div></div>
     <div class="sim" id="sim-dll">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>얼리·프롬프트·레이트와 다중 경로</h3></div>
       <div class="sim-view"><canvas id="cv-dll"></canvas></div>

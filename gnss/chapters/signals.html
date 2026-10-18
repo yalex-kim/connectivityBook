@@ -50,6 +50,12 @@
   <section id="rel">
     <h2>늦게 맞춰 둔 시계: 상대론</h2>
     <p>위성 시계는 지상에서 볼 때 두 가지 이유로 다르게 간다. 위성이 빠르게 움직여서(특수 상대론) <b>느리게</b> 가고, 지구 중력에서 멀리 있어서(일반 상대론) <b>빠르게</b> 간다. 둘을 합치면 위성 시계가 하루에 약 38 µs 빨리 간다. 거리로 치면 하루에 11 km씩 어긋나는 셈이다. 그래서 GPS는 위성 안의 기준 주파수를 <b>일부러 조금 낮게</b> 맞춰, 지상에서 보면 정확히 10.23 MHz가 되게 한다. 규격은 그 비율을 Δf/f = −4.4647 × 10⁻¹⁰, 즉 10.2299999954326 MHz라고 적는다.</p>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">위성 시계를 일부러 늦춰 두지 않으면 하루에 얼마나 빨라질까?</p><p class="wi-hint">규격의 비율은 4.4647 × 10<sup>−10</sup>, 하루는 86,400초.</p><div class="opts">
+      <button class="opt">약 0.4 ns</button>
+      <button class="opt" data-correct>약 38 µs</button>
+      <button class="opt">약 4 ms</button>
+      <button class="opt">약 1초</button>
+    </div><div class="quiz-exp">4.4647 × 10<sup>−10</sup> × 86,400 s ≈ 38.6 µs. 빛으로 약 11.6 km다. 그래서 IS-GPS-200N 3.3.1.1은 위성의 기준 주파수를 10.23 MHz보다 Δf/f = −4.4647 × 10<sup>−10</sup>만큼 낮게 맞춰 둔다.</div></div>
     <div class="sim" id="sim-rel">
       <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>상대론 보정을 직접 계산하기</h3></div>
       <div class="sim-view"><canvas id="cv-rel"></canvas></div>
@@ -71,6 +77,7 @@
     <h2>잡음 아래에서 건져 올리기</h2>
     <p>GPS 규격은 지상의 0 dBi 안테나에서 L1 C/A 신호를 <b>최소 −158.5 dBW</b>(−128.5 dBm)로 보장한다. 신호가 차지하는 약 2 MHz 폭의 열잡음은 −174 dBm/Hz + 63 dB ≈ −111 dBm이다. 신호가 잡음보다 17 dB 넘게 약하다.</p>
     <p>비밀은 4장의 PRN 코드다. 수신기는 받은 신호에 같은 코드를 곱해 더한다(상관). 코드와 맞는 신호는 계속 쌓이고, 잡음은 들쭉날쭉해 덜 쌓인다. 1 ms(코드 한 주기) 동안 더하면 1/(1 kHz)의 좁은 폭으로 줄인 셈이 되어, 2 MHz 대비 약 30 dB를 얻는다. 그래서 GNSS 신호의 세기는 대역 안의 SNR이 아니라 <span class="term">C/N0</span><span class="en">(carrier-to-noise density)</span>, 1 Hz당 잡음에 대한 신호 세기(dB-Hz)로 말한다. 맑은 하늘에서 휴대폰은 보통 35~45 dB-Hz를 본다.</p>
+    <div class="callout analogy"><strong>시끄러운 운동장의 박수 신호</strong><p>운동장 소음 속에서 친구 하나가 미리 정한 박자로 손뼉을 친다. 한 번만 치면 묻히지만, 같은 박자를 오래 들을수록 소음은 서로 상쇄되고 박자만 쌓여서 들린다. 코드를 아는 수신기가 적분 시간을 늘리는 것이 바로 이것이다. 적분 시간을 10배 늘리면 신호 대 잡음비가 10 dB 오른다.</p></div>
     <div class="sim" id="sim-cn0">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>수신 전력에서 C/N0와 적분 이득까지</h3></div>
       <div class="sim-view"><canvas id="cv-cn0"></canvas></div>

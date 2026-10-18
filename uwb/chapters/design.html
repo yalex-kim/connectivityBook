@@ -37,6 +37,13 @@
   <!-- ============================================================ -->
   <section id="play">
     <h2>공간에 앵커 깔기</h2>
+    <div class="callout analogy"><strong>축구장의 코너 깃발</strong><p>축구장 네 귀퉁이에 깃발이 있으면 어디에 서 있든 깃발들이 사방에 있어 위치가 또렷하다. 깃발을 한쪽 골대 옆에만 모으면 반대편에서는 모두 같은 방향에 보여 위치가 흐릿하다. 앵커 배치도 같다. 공간을 둘러싸게 두고, 벽·기둥에 가려 NLOS가 되지 않게 높이 둔다.</p></div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">창고에서 태그 수백 개를 1초마다 추적해야 한다. 어떤 방식이 알맞을까?</p><p class="wi-hint">태그 수가 많으면 공중 시간과 배터리가 먼저 모자란다.</p><div class="opts">
+      <button class="opt">태그마다 DS-TWR</button>
+      <button class="opt" data-correct>UL-TDoA (태그는 보내기만)</button>
+      <button class="opt">AoA 하나로</button>
+      <button class="opt">블루투스 RSSI만</button>
+    </div><div class="quiz-exp">UL-TDoA는 태그가 짧은 blink 하나만 보내 태그 수가 많아도 공중 시간과 전력이 적다. 대신 앵커끼리 시계를 맞추는 기반 시설이 필요하다. 휴대폰처럼 기기가 스스로 위치를 알아야 하면 DL-TDoA를 쓴다. 아래 계산기에서 비교해 보자.</div></div>
     <div class="sim" id="sim-plan">
       <div class="sim-head"><span class="sim-tag">PLAYGROUND</span><h3>UWB 측위 설계</h3></div>
       <div class="sim-view"><canvas id="cv-plan"></canvas></div>
@@ -82,6 +89,20 @@
       <li>태그 수 한계: TWR(라운드가 길다) &lt; UL-TDoA &lt; DL-TDoA(무제한). 전력: UL-TDoA 태그가 가장 적다.</li>
       <li>요구 사항(누가 위치를 아나, 태그 수 × 주기, 정확도, 배터리, 보안)에서 방식을 고른다.</li>
     </ol>
+  </section>
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>앵커 배치의 기본 원칙은?</p><div class="opts">
+        <button class="opt">한쪽 벽에 일렬로</button><button class="opt" data-correct>공간을 둘러싸게, 어디서나 넷 이상 보이게</button><button class="opt">천장 가운데 한 곳에 모아서</button><button class="opt">바닥 가까이</button>
+      </div><div class="quiz-exp">둘러싸야 DOP가 작고, 넷 이상이 보여야 하나가 NLOS여도 버틴다.</div></div>
+      <div class="quiz-q"><p>위치 오차를 어림하는 식은?</p><div class="opts">
+        <button class="opt">DOP ÷ 거리 오차</button><button class="opt" data-correct>DOP × 거리 오차 (+ NLOS)</button><button class="opt">앵커 수 × 거리 오차</button><button class="opt">거리 오차²</button>
+      </div><div class="quiz-exp">배치가 측정 오차를 몇 배로 키우는지가 DOP다. NLOS는 따로 더해지는 큰 오차다.</div></div>
+      <div class="quiz-q"><p>휴대폰 수천 대가 각자 자기 위치를 알아야 하는 박물관 안내. 알맞은 방식은?</p><div class="opts">
+        <button class="opt">TWR</button><button class="opt">UL-TDoA</button><button class="opt" data-correct>DL-TDoA</button><button class="opt">AoA 하나</button>
+      </div><div class="quiz-exp">DL-TDoA는 앵커만 보내고 기기는 듣기만 하므로 기기 수에 제한이 없고, 위치는 기기가 계산한다.</div></div>
+    </div>
   </section>
 </main>
 

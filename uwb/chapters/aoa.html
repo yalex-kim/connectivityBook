@@ -42,6 +42,7 @@
     <div class="formula">PDoA = 2π · d · sin θ ÷ λ &nbsp;⇒&nbsp; θ = arcsin(PDoA · λ ÷ (2π · d))
       <div class="where">λ = c ÷ f. 9번 채널(7,987.2 MHz)에서 λ = 3.75 cm, 5번(6,489.6 MHz)에서 4.62 cm. 출처: Decawave <code>uwb-core</code> <code>uwb.c</code>의 <code>uwb_calc_aoa(pdoa, channel, antenna_separation)</code> — 채널별 주파수로 파장을 구하고 asin(pdoa ÷ 2π × λ ÷ 간격)을 돌려준다.</div>
     </div>
+    <div class="callout analogy"><strong>두 귀로 듣는 방향</strong><p>오른쪽에서 소리가 나면 오른쪽 귀에 아주 조금 먼저 닿는다. 뇌는 그 작은 시간 차이로 방향을 안다. 귀 사이가 좁으면 차이가 작아 둔하고, 너무 넓으면 높은 소리에서 어느 쪽 파도의 마루인지 헷갈린다. UWB는 두 안테나에 닿는 위상 차이로 같은 일을 한다.</p></div>
     <div class="sim" id="sim-wave">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>평면파와 두 안테나</h3></div>
       <div class="sim-body side">
@@ -65,6 +66,12 @@
   <section id="ambiguity">
     <h2>반 파장의 이유: 모호성</h2>
     <p>위상은 360°마다 같은 값으로 돌아온다. 경로 차이가 λ를 넘을 수 있으면, 위상 30°는 경로 차이 λ/12일 수도, λ + λ/12일 수도 있다. 경로 차이는 최대 d(θ = ±90°)이므로, <b>d ≤ λ/2</b>면 위상 차이가 −180°~180° 안에서 각도와 일대일로 대응한다. 그래서 UWB 안테나는 반 파장 간격, 9번 채널이면 약 1.9 cm 간격으로 놓는다. 휴대폰 뒷면에 들어갈 만큼 작은 이유이기도 하다.</p>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">안테나 간격을 λ/2에서 λ로 넓혔다. 같은 위상 차이에 해당하는 각도 후보는?</p><p class="wi-hint">위상은 360°마다 같은 값으로 돌아온다.</p><div class="opts">
+      <button class="opt">여전히 하나</button>
+      <button class="opt" data-correct>두 개 이상이 된다</button>
+      <button class="opt">0개</button>
+      <button class="opt">항상 정면</button>
+    </div><div class="quiz-exp">간격이 λ/2보다 넓으면 위상이 한 바퀴 넘게 돌 수 있어, 같은 위상 차이가 서로 다른 두 각도에서 나온다. 간격을 넓히면 정밀해지지만 모호해진다. 아래에서 간격을 바꿔 후보 수를 보자.</div></div>
     <div class="sim" id="sim-amb">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>같은 위상, 여러 각도</h3></div>
       <div class="sim-view"><canvas id="cv-amb"></canvas></div>

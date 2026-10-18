@@ -40,6 +40,7 @@
     <h2>채널 임펄스 응답</h2>
     <p>송신기가 펄스 하나를 보내면 수신기에는 여러 개가 도착한다. 곧장 온 <b>직접파</b>, 벽에 한 번 튕겨 온 반사파들, 두 번 튕긴 것들… 각각은 더 돈 거리만큼 늦고, 반사·거리 때문에 더 약하다. 시간에 따라 도착한 신호의 세기를 그린 것이 <span class="term">채널 임펄스 응답</span><span class="en">(CIR, Channel Impulse Response)</span>이다. UWB 수신기는 프리앰블을 상관해 쌓으면서(4장) 이 CIR을 직접 재고, 거리 측정은 그 안에서 <span class="term">첫 경로</span><span class="en">(first path)</span>의 시각을 짚는다.</p>
     <p>2장에서 봤듯 대역이 넓을수록 경로들이 갈라져 보인다. 그러나 아무리 넓어도 남는 문제가 둘 있다. 첫째, <b>직접파가 가장 세다는 보장이 없다</b>. 둘째, <b>직접파가 너무 약하면 잡음 속에서 보이지 않는다</b>.</p>
+    <div class="callout analogy"><strong>메아리 속의 첫소리</strong><p>계곡에서 손뼉을 치면 소리가 여러 번 되돌아온다. 가장 큰 소리가 꼭 가장 가까운 절벽에서 오는 것은 아니다. 거리를 알려 주는 것은 <b>가장 먼저</b> 온 소리다. 그런데 그 길이 바위에 가려 약해져 있으면, 그것을 놓치고 나중에 온 큰 메아리를 첫소리로 잘못 짚는다.</p></div>
     <div class="sim" id="sim-room">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>방 안의 경로와 CIR</h3></div>
       <div class="sim-view"><canvas id="cv-room"></canvas></div>
@@ -75,6 +76,12 @@
     <div class="formula">d = |RSSI − FPPL| → d &lt; 6 dB: LOS(1.0) · d &gt; 10 dB: NLOS(0.0) · 그 사이: 1 − (d − 6) ÷ 4
       <div class="where">출처: Decawave <code>uwb-dw1000</code> <code>dw1000_mac.c</code>의 <code>dw1000_estimate_los()</code>(주석: “Taken from 4.7 of DW1000 manual”). 칩 제조사의 경험 규칙이며 802.15.4 표준이 정한 것은 아니다.</div>
     </div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">전체 수신 세기가 첫 경로 세기보다 12 dB 크다. 무엇을 의심해야 할까?</p><p class="wi-hint">LOS에서는 에너지 대부분이 첫 경로에 있다.</p><div class="opts">
+      <button class="opt">정상 LOS</button>
+      <button class="opt" data-correct>NLOS(첫 경로가 가려짐)</button>
+      <button class="opt">송신 출력이 너무 셈</button>
+      <button class="opt">안테나 지연 오류</button>
+    </div><div class="quiz-exp">차이가 6 dB 미만이면 LOS, 10 dB를 넘으면 NLOS로 본다(<code>dw1000_estimate_los()</code>의 기준). 12 dB면 첫 경로가 약하고 반사파가 대부분이라는 뜻이다. 거리가 길게 나왔을 가능성이 크다. 아래 계산기로 확인해 보자.</div></div>
     <div class="sim" id="sim-los">
       <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>LOS 가능성 계산</h3></div>
       <div class="sim-view"><canvas id="cv-los"></canvas></div>

@@ -39,6 +39,13 @@
   <section id="trilat">
     <h2>원 셋의 교점</h2>
     <p>앵커 A까지 3 m라면 태그는 A를 중심으로 하는 반지름 3 m 원 위 어딘가에 있다. 앵커 B까지의 거리로 원이 하나 더 생기면 후보가 두 점으로 줄고, C가 있으면 한 점이 된다(평면). 3차원이면 앵커가 넷 필요하다. 실제 거리에는 오차가 있어 원들이 한 점에서 만나지 않으므로, 모든 원에서 “가장 덜 어긋나는” 점을 찾는다. 이것이 <b>최소 제곱</b> 풀이다. 앵커가 많을수록, 그리고 잘 퍼져 있을수록 오차가 줄어든다.</p>
+    <div class="callout analogy"><strong>“나는 너한테서 5 m”</strong><p>운동장에 선 세 친구가 각자 “너는 나한테서 몇 m”라고 외친다. 한 친구 말만으로는 그 친구를 중심으로 한 원 위 어딘가다. 둘이면 원 두 개가 만나는 두 점, 셋이면 한 점으로 좁혀진다. 친구들이 한 줄로 서 있으면 원들이 비슷하게 겹쳐 점이 또렷하지 않다.</p></div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">앵커 3개를 한쪽 벽에 일직선으로 붙였다. 방 안 위치는?</p><p class="wi-hint">직선 위의 원들은 그 직선에 대해 대칭이다.</p><div class="opts">
+      <button class="opt">더 정확해진다</button>
+      <button class="opt" data-correct>벽의 거울 쪽 위치와 구별할 수 없다</button>
+      <button class="opt">변하지 않는다</button>
+      <button class="opt">높이만 틀린다</button>
+    </div><div class="quiz-exp">일직선 앵커의 원은 모두 그 선에 대칭이라 선 앞뒤 두 점이 같은 거리를 준다. 벽 밖 위치는 버릴 수 있지만, 앵커 줄 가까이에서는 벽과 수직인 방향을 잡지 못해 DOP가 치솟는다. 앵커는 방을 둘러싸게 둔다. 아래에서 ‘한쪽 벽에 일렬’ 배치를 골라 보자.</div></div>
     <div class="sim" id="sim-tri">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>삼변 측량과 DOP 지도</h3></div>
       <div class="sim-view"><canvas id="cv-tri"></canvas></div>

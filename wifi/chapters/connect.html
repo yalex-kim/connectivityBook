@@ -53,6 +53,7 @@
       <li><b>능동 스캔</b>: 채널에 가자마자 <b>프로브 요청</b>을 보내고 AP들의 <b>프로브 응답</b>을 기다린다. 훨씬 빠르지만, 먼저 전파를 내도 되는 채널에서만 쓸 수 있다. 레이더 보호가 필요한 DFS 채널(2장)에서는 비컨을 듣기 전까지 보낼 수 없어 수동 스캔을 한다.</li>
     </ul>
     <p>6 GHz는 채널이 너무 많아 다른 길을 쓴다. AP가 2.4·5 GHz 비컨 안에 “나는 6 GHz 몇 번 채널에도 있다”는 <b>RNR</b><span class="en">(Reduced Neighbor Report)</span>을 넣어 알려 주고, 단말은 스캔할 때 PSC 15개 채널(2장)만 직접 살핀다.</p>
+    <div class="callout analogy"><strong>회의실 건물 둘러보기</strong><p>처음 온 건물에서 회의에 들어가려면 층마다 다니며 문 앞 안내판(비컨)을 보거나, 복도에서 “여기 ○○ 회의 있어요?”라고 묻는다(프로브). 회의를 고르면 사회자에게 이름을 대고(인증·연결), 출입증을 받는다(4방향 핸드셰이크). 걸어 다니다 더 가까운 회의실로 옮기는 것이 로밍이다.</p></div>
     <div class="sim" id="sim-scan">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>전체 스캔에 걸리는 시간</h3></div>
       <div class="sim-view"><canvas id="cv-scan"></canvas></div>

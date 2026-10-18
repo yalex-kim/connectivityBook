@@ -69,6 +69,7 @@
   <section id="preamble">
     <h2>프리앰블 심볼과 펄스율</h2>
     <p>프리앰블 심볼 하나는 길이 31, 127, 91인 <b>3진 코드</b>(+1, 0, −1)를 펄스로 보낸 것이다. 코드의 각 자리(“칩”) 사이에는 빈 칩을 끼워 펄스 간격을 벌린다. 그래서 심볼 시간 = 코드 길이 × 펼침 칩 수 ÷ 499.2 MHz다.</p>
+    <div class="callout analogy"><strong>“여보세요, 여보세요… 지금부터 말합니다”</strong><p>잡음이 심한 무전기로 말을 걸 때 먼저 “여보세요”를 여러 번 반복해 상대가 귀를 맞추게 하고, “지금부터”라고 말한 다음 본론을 꺼낸다. 프리앰블이 반복되는 “여보세요”이고, SFD가 “지금부터”다. 반복이 많을수록 잡음 속에서도 알아채기 쉽지만 말하는 시간은 길어진다.</p></div>
     <div class="sim" id="sim-sym">
       <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>프리앰블 심볼 시간 만들기</h3></div>
       <div class="sim-view"><canvas id="cv-sym"></canvas></div>
@@ -114,6 +115,12 @@
     <div class="formula">SHR = ⌈T<sub>psym</sub> × (N<sub>sync</sub> + N<sub>sfd</sub>)⌉ · 데이터 = ⌈T<sub>bsym</sub> × N<sub>phr</sub> + T<sub>dsym</sub> × (8(n + 2) + 48 × (1 + ⌊8(n + 2)/330⌋))⌉ µs
       <div class="where">n = FCS를 뺀 바이트, +2는 FCS 2바이트. T<sub>psym</sub> 1.0176 µs, T<sub>bsym</sub> 1.0256 µs(850 kb/s, PHR), T<sub>dsym</sub> 0.1282 µs/비트(6.81 Mb/s), N<sub>sfd</sub> 8, N<sub>phr</sub> 21 — Decawave <code>dw1000_phy_SHR_duration()</code>·<code>dw1000_phy_data_duration()</code>와 기본값(<code>dw1000_dev.c</code>, <code>dw1000_hal.c</code>)</div>
     </div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">프리앰블 64심볼, 데이터 6.8 Mb/s로 20바이트를 보낸다. 공중 시간에서 가장 큰 부분은?</p><p class="wi-hint">프리앰블 심볼 하나는 약 1 µs다.</p><div class="opts">
+      <button class="opt">페이로드 20바이트</button>
+      <button class="opt" data-correct>프리앰블과 SFD</button>
+      <button class="opt">PHR 헤더</button>
+      <button class="opt">모두 비슷하다</button>
+    </div><div class="quiz-exp">프리앰블 64심볼만으로 약 64 µs이고, 20바이트 페이로드는 6.8 Mb/s로 수십 µs가 안 된다. 짧은 거리 측정 메시지는 대부분의 시간을 “알아채기”에 쓴다. 아래 시뮬레이터로 길이를 바꿔 확인해 보자.</div></div>
     <div class="sim" id="sim-dur">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>프레임 모양과 공중 시간</h3></div>
       <div class="sim-view"><canvas id="cv-dur"></canvas></div>

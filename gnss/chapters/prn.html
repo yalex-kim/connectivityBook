@@ -48,6 +48,7 @@
     <h2>시프트 레지스터 두 개</h2>
     <p>C/A 코드는 10칸짜리 시프트 레지스터 두 개, G1과 G2로 만든다. 둘 다 처음에 모든 칸을 1로 채우고, 1.023 MHz 박자마다 한 칸씩 민다. 새로 들어오는 값은 정해진 칸들을 XOR한 값이다(G1은 3·10번 칸, G2는 2·3·6·8·9·10번 칸). 이런 레지스터는 1,023(= 2¹⁰ − 1)칩마다 같은 무늬가 돌아오는 가장 긴 수열(m-수열)을 만든다.</p>
     <p>위성마다 다른 코드는 G2를 <b>위성마다 정해진 칩 수만큼 늦춘 것</b>과 G1을 XOR해서 얻는다. 이렇게 두 m-수열을 엇갈려 섞은 것을 <b>골드 코드</b>라 한다. 규격 표는 늦출 칩 수와 함께, 늦추는 대신 G2의 두 칸을 XOR해 같은 결과를 내는 “두 탭” 방식(예: PRN 1은 2·6번 칸)도 적어 둔다.</p>
+    <div class="callout analogy"><strong>방송국마다 다른 시그널 음악</strong><p>여러 방송국이 같은 주파수로 동시에 정시를 알린다고 해 보자. 방송국마다 고유한 음악을 틀면, 그 음악을 아는 사람은 섞인 소리 속에서도 원하는 방송을 골라 듣는다. 음악이 어디까지 흘렀는지를 맞추면 언제 보낸 소리인지도 안다. PRN 코드가 그 음악이다.</p></div>
     <div class="sim" id="sim-gen">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>C/A 코드 발생기 한 칩씩</h3></div>
       <div class="sim-view" style="padding:14px">
@@ -77,6 +78,12 @@
       <li><b>자기 상관이 뾰족하다</b>: 코드를 자기 자신과 칩 단위로 맞춰 곱해 더하면 1,023이 나오지만, 한 칩만 어긋나도 거의 0(−1, −65, 63 중 하나)이다. 그래서 수신기가 자기 복제 코드를 밀어 가며 맞춰 보면, 딱 맞는 위치에서만 큰 봉우리가 선다. 그 위치가 <b>코드 위상</b>, 곧 신호가 날아온 시간이다.</li>
       <li><b>서로 다른 코드끼리는 상관이 작다</b>: PRN 1과 PRN 2를 어떻게 맞춰도 상관은 −65, −1, 63 셋 중 하나뿐이다. 그래서 같은 주파수에 위성 여럿이 겹쳐도 원하는 위성만 쌓인다.</li>
     </ul>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">PRN 1의 복제 코드로 PRN 2의 신호를 상관시키면 결과는?</p><p class="wi-hint">골드 코드의 상호 상관은 세 값만 나온다.</p><div class="opts">
+      <button class="opt">1,023에 가까운 큰 봉우리</button>
+      <button class="opt" data-correct>−65, −1, 63 중 하나로 작다</button>
+      <button class="opt">항상 정확히 0</button>
+      <button class="opt">PRN 1과 똑같다</button>
+    </div><div class="quiz-exp">C/A 코드끼리의 상호 상관은 −65, −1, 63 세 값뿐이라, 1,023인 자기 상관 봉우리보다 약 24 dB 낮다. 그래서 같은 주파수에서도 위성을 골라 들을 수 있다. 아래 시뮬레이터에서 다른 위성을 골라 확인해 보자.</div></div>
     <div class="sim" id="sim-corr">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>상관을 밀어 가며 보기</h3></div>
       <div class="sim-view"><canvas id="cv-corr"></canvas></div>
