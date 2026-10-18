@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>실내 측위 설계 플레이그라운드 · UWBBook</title>
+<meta name="description" content="창고·사무실에 UWB 앵커를 깔고 TWR·UL-TDoA·DL-TDoA 가운데 하나를 고르면, 공간 전체의 예상 위치 오차와 덮인 면적, 한 채널이 감당하는 태그 수, 태그 배터리 수명이 계산된다. 책 전체의 계산을 한 화면에 모은 설계 도구와 점검표.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/uwb/chapters/design.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="UWBBook">
+<meta property="og:title" content="실내 측위 설계 플레이그라운드 · UWBBook">
+<meta property="og:description" content="창고·사무실에 UWB 앵커를 깔고 TWR·UL-TDoA·DL-TDoA 가운데 하나를 고르면, 공간 전체의 예상 위치 오차와 덮인 면적, 한 채널이 감당하는 태그 수, 태그 배터리 수명이 계산된다. 책 전체의 계산을 한 화면에 모은 설계 도구와 점검표.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/uwb/chapters/design.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/uwb/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"실내 측위 설계 플레이그라운드","name":"실내 측위 설계 플레이그라운드 · UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/design.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/uwb/chapters/design.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":14,"image":"https://yalex-kim.github.io/yalexBook/uwb/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/uwb/#book","name":"UWBBook — 누구나 읽는 인터랙티브 UWB 교과서","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"publisher":{"@type":"Organization","name":"UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"description":"창고·사무실에 UWB 앵커를 깔고 TWR·UL-TDoA·DL-TDoA 가운데 하나를 고르면, 공간 전체의 예상 위치 오차와 덮인 면적, 한 채널이 감당하는 태그 수, 태그 배터리 수명이 계산된다. 책 전체의 계산을 한 화면에 모은 설계 도구와 점검표."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"UWBBook","item":"https://yalex-kim.github.io/yalexBook/uwb/"},{"@type":"ListItem","position":2,"name":"14 실내 측위 설계 플레이그라운드","item":"https://yalex-kim.github.io/yalexBook/uwb/chapters/design.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+</head>
+<body data-chapter="design">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 14</div>
+    <h1>실내 측위 설계 플레이그라운드</h1>
+    <p class="lead">물류 창고에서 지게차 30대와 작업자 200명의 위치를 1초마다 30 cm 안으로 알고 싶다. 앵커는 몇 개, 어떤 간격으로 달아야 할까? TWR과 TDoA 중 무엇을 고를까? 태그 배터리는 얼마나 갈까? 이 장은 책 전체의 계산 — 닿는 거리(3장), 프레임 시간(4장), DOP(9장), 라운드와 슬롯(11장), 전력(12장) — 을 한 화면에 모았다.</p>
+    <ul class="objectives">
+      <li>앵커 간격과 닿는 거리가 덮인 면적과 위치 오차를 어떻게 정하는지 지도로 본다.</li>
+      <li>TWR·UL-TDoA·DL-TDoA의 태그 수 한계와 태그 전력을 숫자로 비교한다.</li>
+      <li>요구 사항(정확도·갱신 주기·태그 수·배터리)에서 출발해 설계를 고르는 순서를 익힌다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="play">
+    <h2>공간에 앵커 깔기</h2>
+    <div class="sim" id="sim-plan">
+      <div class="sim-head"><span class="sim-tag">PLAYGROUND</span><h3>UWB 측위 설계</h3></div>
+      <div class="sim-view"><canvas id="cv-plan"></canvas></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>방식</span><div class="seg" id="pl-m"><button data-value="twr">TWR (태그가 앵커 넷과 핑퐁)</button><button data-value="ul" class="on">UL-TDoA (태그가 보내기만)</button><button data-value="dl">DL-TDoA (태그가 듣기만)</button></div></div>
+        <label class="ctrl"><span>공간 크기 <output id="pl-a-out"></output></span><input type="range" id="pl-a" min="20" max="120" step="5" value="60"></label>
+        <label class="ctrl"><span>앵커 간격 <output id="pl-g-out"></output></span><input type="range" id="pl-g" min="5" max="40" value="15"></label>
+        <label class="ctrl"><span>앵커가 닿는 거리(3장) <output id="pl-r-out"></output></span><input type="range" id="pl-r" min="10" max="60" value="25"></label>
+        <label class="ctrl"><span>거리(시각) 오차 <output id="pl-s-out"></output></span><input type="range" id="pl-s" min="0.05" max="0.5" step="0.01" value="0.1"></label>
+        <label class="ctrl"><span>태그 갱신 주기 <output id="pl-u-out"></output></span><input type="range" id="pl-u" min="0" max="6" value="3"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">앵커 수</span><span class="v" id="pl-n">—</span></div>
+        <div class="stat"><span class="k">덮인 면적(앵커 3개 이상, DOP &lt; 3)</span><span class="v" id="pl-c">—</span></div>
+        <div class="stat"><span class="k">위치 오차 중앙값 / 90%</span><span class="v" id="pl-e">—</span></div>
+        <div class="stat"><span class="k">한 채널의 태그 한계</span><span class="v" id="pl-t">—</span></div>
+        <div class="stat"><span class="k">태그 평균 전류</span><span class="v" id="pl-i">—</span></div>
+        <div class="stat"><span class="k">태그 수명(1,000 mAh)</span><span class="v" id="pl-l">—</span></div>
+      </div>
+      <div class="sim-note">정사각형 공간을 위에서 본 지도. 초록 = 앵커(격자, 벽에서 반 칸 안쪽), 색 = 그 자리의 예상 위치 오차(1σ), 회색 = 앵커 셋 이상에 닿지 않거나 DOP가 3을 넘는 곳. 해볼 것: ① 60 m 공간, 간격 15 m, 닿는 거리 25 m, UL-TDoA면 앵커 16개로 면적의 약 90%를 덮고 오차 중앙값 9 cm, 90%가 19 cm 안이다. 가장자리(앵커 바깥 띠)는 TDoA의 DOP가 커져 회색이 된다. 같은 배치에서 TWR은 100%를 덮는다. ② 간격을 30 m로 벌리면 앵커는 4개로 줄지만 대부분의 자리가 앵커 셋 이상에 닿지 않아 6%만 덮인다. ③ 갱신을 0.1초로 올리고 TWR로 바꾸면 한 채널이 감당하는 태그가 몇 대로 떨어진다. 이럴 땐 채널 나누기·공간 재사용·TDoA를 쓴다. 가정: 2차원, 각 지점은 닿는 앵커 가운데 가까운 넷만 사용, 위치 오차 = DOP × 거리 오차(TDoA는 거리 차이 DOP), NLOS·벽 없음. 태그 한계: TWR은 1 ms 슬롯 DS-TWR 일대다(앵커 넷) 라운드 12 ms, UL-TDoA는 blink 하나에 0.25 ms 칸, DL-TDoA는 무제한. 전류는 12장의 예시 값.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="choose">
+    <h2>무엇부터 정할까</h2>
+    <ol>
+      <li><b>위치를 누가 알아야 하나.</b> 서버(자산 추적) → UL-TDoA나 TWR. 사용자 본인만(길 찾기, 프라이버시) → DL-TDoA.</li>
+      <li><b>태그 수 × 갱신 주기.</b> 한 채널의 공중 시간이 한계다. TWR은 태그당 라운드가 길어 수십 대가 한계, UL-TDoA는 수천, DL-TDoA는 무제한(위 시뮬레이터).</li>
+      <li><b>정확도.</b> 거리 오차(칩·보정, 5·6장) × DOP(배치, 9장) + NLOS(7장). 앵커는 높이 달고 공간을 <b>둘러싸게</b>, 사람·선반이 가리지 않게.</li>
+      <li><b>앵커 간격.</b> 닿는 거리(3장: 출력 한도·감도·여유)보다 충분히 작게. 어느 지점에서든 앵커 넷 이상이 보이도록.</li>
+      <li><b>태그 배터리.</b> 받는 일이 비싸다(12장). 보내기만 하는 UL-TDoA 태그가 가장 오래가고, 움직임 센서로 멈춰 있을 때 갱신을 줄인다.</li>
+      <li><b>TDoA라면 앵커 동기.</b> 유선으로 시계를 나누거나 UWB 동기 메시지를 쓴다. 1 ns = 30 cm(9장).</li>
+      <li><b>보안이 필요하면.</b> 출입·결제·차 키처럼 거리가 권한이 되는 곳은 STS(동적·제공)와 보안 채널(10장).</li>
+    </ol>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>앵커 간격 &lt; 닿는 거리, 어디서나 앵커 넷 이상이 보이게, 공간을 둘러싸게.</li>
+      <li>위치 오차 ≈ DOP × 거리 오차 + NLOS. 앵커 배치가 칩 성능만큼 중요하다.</li>
+      <li>태그 수 한계: TWR(라운드가 길다) &lt; UL-TDoA &lt; DL-TDoA(무제한). 전력: UL-TDoA 태그가 가장 적다.</li>
+      <li>요구 사항(누가 위치를 아나, 태그 수 × 주기, 정확도, 배터리, 보안)에서 방식을 고른다.</li>
+    </ol>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  /** 격자 앵커: 공간 L×L, 간격 g, 벽에서 반 칸 안쪽 */
+  function gridAnchors(L, g) { const n = Math.max(1, Math.round(L / g)), step = L / n, out = []; for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) out.push({ x: step * (i + 0.5), y: step * (j + 0.5) }); return out; }
+  /** 2×2 대칭 행렬 (a b; b d)의 역의 대각합 */
+  const invTrace = (a, b, d) => { const det = a * d - b * b; return det <= 1e-12 ? Infinity : (a + d) / det; };
+  /** 거리 DOP(TWR) */
+  function dopRange(anchors, p) { let a = 0, b = 0, d = 0; anchors.forEach((A) => { const dx = p.x - A.x, dy = p.y - A.y, r = Math.hypot(dx, dy) || 1e-9; a += (dx / r) ** 2; b += (dx * dy) / r / r; d += (dy / r) ** 2; }); return Math.sqrt(invTrace(a, b, d)); }
+  /** 거리 차이 DOP(TDoA, 기준 앵커 0, 독립 잡음 근사) */
+  function dopTdoa(anchors, p) { const u = anchors.map((A) => { const dx = p.x - A.x, dy = p.y - A.y, r = Math.hypot(dx, dy) || 1e-9; return [dx / r, dy / r]; }); let a = 0, b = 0, d = 0; for (let i = 1; i < u.length; i++) { const hx = u[i][0] - u[0][0], hy = u[i][1] - u[0][1]; a += hx * hx; b += hx * hy; d += hy * hy; } return Math.sqrt(invTrace(a, b, d)); }
+  /** 지점 p에서 닿는 앵커 중 가까운 넷 */
+  function nearAnchors(anchors, p, range) { return anchors.map((A) => ({ A, r: Math.hypot(p.x - A.x, p.y - A.y) })).filter((o) => o.r <= range).sort((x, y) => x.r - y.r).slice(0, 4).map((o) => o.A); }
+  /** 지점의 예상 위치 오차(m), 못 덮으면 NaN */
+  function posError(mode, anchors, p, range, sigma) { const near = nearAnchors(anchors, p, range); if (near.length < 3) return NaN; const dop = mode === "twr" ? dopRange(near, p) : dopTdoa(near, p); return dop > 3 ? NaN : dop * sigma; }
+  /** 한 채널의 태그 한계: 갱신 간격 intervalMs 동안 태그당 필요한 시간 */
+  function tagCapacity(mode, intervalMs) { if (mode === "dl") return Infinity; const per = mode === "twr" ? 12 : 0.25; return Math.floor(intervalMs / per); }
+  /** 태그 평균 전류(µA): 측정당 전하(12장 예시) × 초당 횟수 + 잠·BLE 12 µA */
+  function tagCurrentUa(mode, intervalMs) { const q = mode === "twr" ? 4 + 2 * 4.2 + 4 * 10.8 : mode === "ul" ? 8.2 : 47.2; return (q * 1000) / intervalMs + 12; }
+  const UPD = [50, 100, 200, 500, 1000, 5000, 30000];
+
+  /* ================================================================ 플레이그라운드 */
+  (function () {
+    let mode = "ul";
+    const L = UW.range("pl-a", (v) => v + " m × " + v + " m", draw), g = UW.range("pl-g", (v) => v + " m", draw), R = UW.range("pl-r", (v) => v + " m", draw), s = UW.range("pl-s", (v) => (v * 100).toFixed(0) + " cm", draw), u = UW.range("pl-u", (v) => (UPD[v] >= 1000 ? UPD[v] / 1000 + "초" : UPD[v] + " ms") + "마다", draw);
+    UW.seg("pl-m", (v) => { mode = v; draw(); });
+    function evaluate() { const A = gridAnchors(L(), g()), errs = [], N = 40; let cov = 0; for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) { const e = posError(mode, A, { x: ((i + 0.5) * L()) / N, y: ((j + 0.5) * L()) / N }, R(), s()); if (isFinite(e)) { cov++; errs.push(e); } } errs.sort((a, b) => a - b); return { A, cov: cov / (N * N), med: errs[Math.floor(errs.length * 0.5)], p90: errs[Math.floor(errs.length * 0.9)] }; }
+    const cv = UW.canvas($("cv-plan"), (ctx, w, h) => {
+      const P = UW.palette(), sz = Math.min(w - 16, h - 30), ox = (w - sz) / 2, oy = 6, sc = sz / L(), A = gridAnchors(L(), g()), N = 48, cs = sz / N;
+      for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) { const e = posError(mode, A, { x: ((i + 0.5) * L()) / N, y: ((j + 0.5) * L()) / N }, R(), s()); ctx.fillStyle = isFinite(e) ? `hsla(${Math.max(0, 150 - (e / 0.5) * 150)}, 70%, 48%, .55)` : "rgba(128,128,128,.35)"; ctx.fillRect(ox + i * cs, oy + j * cs, cs + 0.5, cs + 0.5); }
+      ctx.strokeStyle = P.text; ctx.lineWidth = 2; ctx.strokeRect(ox, oy, sz, sz);
+      A.forEach((a) => { ctx.fillStyle = P.ok; ctx.fillRect(ox + a.x * sc - 4, oy + a.y * sc - 4, 8, 8); });
+      let lx = ox; [[0.05, "5 cm"], [0.15, "15"], [0.3, "30"], [0.5, "50 cm 이상"]].forEach(([e, t]) => { ctx.fillStyle = `hsla(${Math.max(0, 150 - (e / 0.5) * 150)}, 70%, 48%, .8)`; ctx.fillRect(lx, oy + sz + 8, 12, 10); UW.text(ctx, t, lx + 15, oy + sz + 17, { size: 10.5, color: P.dim }); lx += 30 + t.length * 8; });
+    }, { aspect: 1.06, minHeight: 300, maxHeight: 560 });
+    function draw() {
+      const r = evaluate(), cap = tagCapacity(mode, UPD[u()]), ia = tagCurrentUa(mode, UPD[u()]), life = (1000 * 1000) / ia / 24;
+      UW.stat("pl-n", r.A.length + "개"); UW.stat("pl-c", (r.cov * 100).toFixed(0) + "%"); UW.stat("pl-e", r.med !== undefined ? (r.med * 100).toFixed(0) + " / " + (r.p90 * 100).toFixed(0) + " cm" : "—");
+      UW.stat("pl-t", isFinite(cap) ? cap.toLocaleString() + "대" : "무제한"); UW.stat("pl-i", ia.toFixed(0) + " µA"); UW.stat("pl-l", life >= 365 ? (life / 365).toFixed(1) + "년" : life.toFixed(0) + "일"); cv.redraw();
+    }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

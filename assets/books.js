@@ -35,4 +35,21 @@ window.YB_BOOKS = [
     icon: "M6 13a14 14 0 0 1 20 0M9.5 16.8a9 9 0 0 1 13 0M13 20.4a4.2 4.2 0 0 1 6 0M16 24.2v.1", // 표지 아이콘(32×32 SVG path, 흰 선)
     topics: ["2.4·5·6 GHz 채널", "OFDM", "MCS", "MIMO·빔포밍", "CSMA/CA·EDCA", "프레임", "묶음 전송", "연결·로밍", "WPA3", "절전·TWT", "Wi-Fi 6 OFDMA", "Wi-Fi 7 MLO"],
   },
+  {
+    id: "uwbbook",
+    path: "uwb/",
+    title: "UWBBook",
+    subtitle: "누구나 읽는 UWB 교과서",
+    headline: "빛의 시간으로 재는 거리의 모든 것",
+    description: "나노초 펄스와 499.2 MHz 채널, HRP 프레임과 STS, 15.65 ps 타임스탬프, SS·DS-TWR, 다중 경로와 첫 경로, AoA, 삼변 측량과 TDoA, FiRa 세션, 디지털 키까지. Android·Decawave·Zephyr의 공개 코드와 공개 법령으로 값을 확인하며 계산을 돌려 보며 배운다.",
+    status: "published",
+    chapters: 15,
+    simulators: 33,
+    level: "입문 ~ 엔지니어",
+    reference: "IEEE 802.15.4z·FiRa (공개 구현으로 확인)",
+    color: "#0f766e",
+    colorDark: "#2dd4bf",
+    icon: "M6 17h4l2-8 3 14 3-11 2 5h6", // 표지 아이콘(32×32 SVG path, 흰 선)
+    topics: ["펄스·대역폭", "499.2 MHz 채널", "HRP 프레임·STS", "타임스탬프", "SS·DS-TWR", "첫 경로·NLOS", "AoA", "삼변 측량·TDoA", "FiRa 세션", "BLE·전력", "디지털 키", "실내 측위"],
+  },
 ];

@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>방향 찾기: PDoA와 AoA · UWBBook</title>
+<meta name="description" content="안테나 두 개에 도착한 위상의 차이(PDoA)로 신호가 온 각도(AoA)를 구한다. 반 파장 간격의 이유, 간격이 넓으면 생기는 모호성, 옆쪽으로 갈수록 나빠지는 정확도, 방위각과 앙각, 앞뒤 구별을 공개 코드의 uwb_calc_aoa()로 계산한다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/uwb/chapters/aoa.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="UWBBook">
+<meta property="og:title" content="방향 찾기: PDoA와 AoA · UWBBook">
+<meta property="og:description" content="안테나 두 개에 도착한 위상의 차이(PDoA)로 신호가 온 각도(AoA)를 구한다. 반 파장 간격의 이유, 간격이 넓으면 생기는 모호성, 옆쪽으로 갈수록 나빠지는 정확도, 방위각과 앙각, 앞뒤 구별을 공개 코드의 uwb_calc_aoa()로 계산한다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/uwb/chapters/aoa.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/uwb/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"방향 찾기: PDoA와 AoA","name":"방향 찾기: PDoA와 AoA · UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/aoa.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/uwb/chapters/aoa.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":8,"image":"https://yalex-kim.github.io/yalexBook/uwb/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/uwb/#book","name":"UWBBook — 누구나 읽는 인터랙티브 UWB 교과서","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"publisher":{"@type":"Organization","name":"UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"description":"안테나 두 개에 도착한 위상의 차이(PDoA)로 신호가 온 각도(AoA)를 구한다. 반 파장 간격의 이유, 간격이 넓으면 생기는 모호성, 옆쪽으로 갈수록 나빠지는 정확도, 방위각과 앙각, 앞뒤 구별을 공개 코드의 uwb_calc_aoa()로 계산한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"UWBBook","item":"https://yalex-kim.github.io/yalexBook/uwb/"},{"@type":"ListItem","position":2,"name":"08 방향 찾기: PDoA와 AoA","item":"https://yalex-kim.github.io/yalexBook/uwb/chapters/aoa.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+</head>
+<body data-chapter="aoa">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 08</div>
+    <h1>방향 찾기: PDoA와 AoA</h1>
+    <p class="lead">정밀 찾기 화면의 화살표는 거리만이 아니라 <b>방향</b>을 알려 준다. 거리는 6장의 왕복 시간으로 재지만, 방향은 다른 방법을 쓴다. 휴대폰 안의 UWB 안테나 두세 개에 신호가 도착한 <b>위상의 차이</b>를 재는 것이다. 이 장에서는 위상 차이에서 각도를 구하는 식, 안테나 간격이 반 파장이어야 하는 이유, 각도가 정확한 곳과 흔들리는 곳을 본다.</p>
+    <ul class="objectives">
+      <li>위상 차이(PDoA)에서 도착 각도(AoA)를 구하는 식을 경로 차이로 유도한다.</li>
+      <li>안테나 간격이 반 파장보다 넓으면 같은 위상 차이에 각도가 여럿 생기는 모호성을 확인한다.</li>
+      <li>정면에서는 정확하고 옆으로 갈수록 오차가 커지는 이유를 계산한다.</li>
+      <li>방위각·앙각에 안테나 셋이 필요하고, 두 안테나로는 앞뒤를 구별할 수 없음을 안다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="pdoa">
+    <h2>경로 차이 → 위상 차이 → 각도</h2>
+    <p>멀리서 온 신호는 거의 평면파로 도착한다. 안테나 둘이 d만큼 떨어져 있고 신호가 정면에서 θ만큼 비스듬히 오면, 한 안테나에 도착하는 길이 다른 쪽보다 <b>d·sin θ</b>만큼 길다. 이 길이 차이를 시간으로 재기엔 너무 짧다(2 cm면 67 ps). 대신 반송파의 <b>위상</b>으로 잰다. 파장 λ만큼의 길이 차이가 위상 2π(360°)이므로</p>
+    <div class="formula">PDoA = 2π · d · sin θ ÷ λ &nbsp;⇒&nbsp; θ = arcsin(PDoA · λ ÷ (2π · d))
+      <div class="where">λ = c ÷ f. 9번 채널(7,987.2 MHz)에서 λ = 3.75 cm, 5번(6,489.6 MHz)에서 4.62 cm. 출처: Decawave <code>uwb-core</code> <code>uwb.c</code>의 <code>uwb_calc_aoa(pdoa, channel, antenna_separation)</code> — 채널별 주파수로 파장을 구하고 asin(pdoa ÷ 2π × λ ÷ 간격)을 돌려준다.</div>
+    </div>
+    <div class="sim" id="sim-wave">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>평면파와 두 안테나</h3></div>
+      <div class="sim-body side">
+        <div class="sim-view"><canvas id="cv-wave"></canvas></div>
+        <div class="sim-controls">
+          <label class="ctrl"><span>실제 도착 각도 <output id="wv-a-out"></output></span><input type="range" id="wv-a" min="-85" max="85" value="30"></label>
+          <div class="ctrl"><span>채널</span><div class="seg" id="wv-c"><button data-value="5">5번</button><button data-value="9" class="on">9번</button></div></div>
+          <label class="ctrl"><span>안테나 간격 <output id="wv-d-out"></output></span><input type="range" id="wv-d" min="0.5" max="6" step="0.05" value="1.85"></label>
+        </div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">경로 차이</span><span class="v" id="wv-p">—</span></div>
+        <div class="stat"><span class="k">잰 위상 차이(−180°~180°)</span><span class="v" id="wv-ph">—</span></div>
+        <div class="stat"><span class="k">계산한 각도</span><span class="v" id="wv-r">—</span></div>
+      </div>
+      <div class="sim-note">그림: 비스듬히 오는 파면(평행선, 파장 간격)과 두 안테나. 해볼 것: ① 9번 채널, 간격 1.85 cm(약 반 파장)면 −85°~85° 어디서 와도 계산한 각도가 실제와 같다. ② 간격을 3.75 cm(한 파장)로 넓히고 각도를 30° 넘게 돌리면 위상이 한 바퀴 넘어 돌아가 엉뚱한 각도가 나온다(모호성, 아래 절). ③ 같은 간격에서 5번 채널로 바꾸면 파장이 길어 위상 차이가 작아진다. 잰 위상은 −180°~180°로 접은 값이고, 각도 계산은 <code>uwb_calc_aoa()</code>와 같은 식이다.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="ambiguity">
+    <h2>반 파장의 이유: 모호성</h2>
+    <p>위상은 360°마다 같은 값으로 돌아온다. 경로 차이가 λ를 넘을 수 있으면, 위상 30°는 경로 차이 λ/12일 수도, λ + λ/12일 수도 있다. 경로 차이는 최대 d(θ = ±90°)이므로, <b>d ≤ λ/2</b>면 위상 차이가 −180°~180° 안에서 각도와 일대일로 대응한다. 그래서 UWB 안테나는 반 파장 간격, 9번 채널이면 약 1.9 cm 간격으로 놓는다. 휴대폰 뒷면에 들어갈 만큼 작은 이유이기도 하다.</p>
+    <div class="sim" id="sim-amb">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>같은 위상, 여러 각도</h3></div>
+      <div class="sim-view"><canvas id="cv-amb"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>간격 ÷ 파장 <output id="am-r-out"></output></span><input type="range" id="am-r" min="0.25" max="2" step="0.05" value="0.5"></label>
+        <label class="ctrl"><span>잰 위상 차이 <output id="am-p-out"></output></span><input type="range" id="am-p" min="-180" max="180" value="60"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">가능한 각도 수</span><span class="v" id="am-n">—</span></div>
+        <div class="stat"><span class="k">후보 각도</span><span class="v" id="am-c">—</span></div>
+        <div class="stat"><span class="k">위상 감도</span><span class="v" id="am-s">—</span></div>
+      </div>
+      <div class="sim-note">그래프: 각도(가로)에 따른 접힌 위상 차이(세로). 수평선과 만나는 점이 후보 각도. 해볼 것: ① 0.5(반 파장)면 언제나 후보가 하나다. ② 1.0이면 대부분 둘, 2.0이면 넷까지 생긴다. ③ 간격이 넓으면 곡선이 가팔라 같은 위상 잡음에 각도가 덜 흔들린다. 그래서 정밀 측정 장비는 넓은 간격 + 다른 방법(여러 안테나, 움직임)으로 모호성을 푼다.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="accuracy">
+    <h2>정면은 정확하고 옆은 흐릿하다</h2>
+    <p>위상을 재는 데에도 잡음이 있다(수 도~10도). 식 θ = arcsin(…)에서 각도를 조금 바꿨을 때 위상이 얼마나 바뀌는지 보면, 정면(θ = 0)에서는 sin이 가팔라 위상이 크게 바뀌지만 옆(θ → 90°)에서는 sin이 거의 평평하다. 그래서 같은 위상 잡음이 <b>옆쪽 각도에서 훨씬 큰 각도 오차</b>가 된다. 오차는 대략 σ<sub>θ</sub> ≈ σ<sub>φ</sub> · λ ÷ (2π · d · cos θ).</p>
+    <div class="sim" id="sim-acc">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>각도별 각도 오차</h3></div>
+      <div class="sim-view"><canvas id="cv-acc"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>위상 잡음(표준편차) <output id="ac-p-out"></output></span><input type="range" id="ac-p" min="1" max="20" value="8"></label>
+        <label class="ctrl"><span>간격 ÷ 파장 <output id="ac-r-out"></output></span><input type="range" id="ac-r" min="0.3" max="0.5" step="0.01" value="0.5"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">정면(0°) 오차</span><span class="v" id="ac-0">—</span></div>
+        <div class="stat"><span class="k">60° 오차</span><span class="v" id="ac-60">—</span></div>
+        <div class="stat"><span class="k">±5° 안에 드는 범위</span><span class="v" id="ac-w">—</span></div>
+      </div>
+      <div class="sim-note">그래프: 실제 각도(가로)에 따른 각도 오차(표준편차). 해볼 것: 위상 잡음 8°, 반 파장 간격이면 정면은 약 2.5°, 60°에서는 약 5°다. 그래서 정밀 찾기 앱은 화살표가 정면 근처로 올 때까지 몸을 돌리라고 안내한다. 모델: 작은 잡음 근사, 다중 경로·NLOS(7장)·안테나 패턴 왜곡 제외.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="3d">
+    <h2>방위각, 앙각, 그리고 앞뒤</h2>
+    <p>안테나 두 개는 그 둘을 잇는 축에 대한 각도 하나만 안다. 좌우(방위각)와 위아래(앙각)를 모두 알려면 축이 다른 쌍이 하나 더 필요해, 보통 안테나 셋을 L자로 놓는다. Android UWB의 측정 설정에도 각도 보고를 “방위각만”, “앙각만”, “번갈아” 같은 방식으로 고르는 값이 있다.</p>
+    <p>또 하나, 두 안테나는 <b>앞에서 온 신호와 같은 각도로 뒤에서 온 신호를 구별하지 못한다</b>. 경로 차이 d·sin θ는 θ와 180° − θ에서 같기 때문이다. 휴대폰은 안테나 배치·기판·사람 몸이 뒤쪽 신호를 다르게 만드는 성질, 그리고 사용자가 움직일 때 거리·각도가 변하는 모양(관성 센서와 함께)을 이용해 앞뒤를 가린다. 정밀 찾기를 시작하면 휴대폰을 조금 움직여 보라고 하는 것이 그 때문이다.</p>
+    <p class="spec-ref">각도 보고 방식: Android <code>FiraParams.java</code>의 <code>AOA_RESULT_REQUEST_MODE_REQ_AOA_RESULTS_AZIMUTH_ONLY</code>, <code>_ELEVATION_ONLY</code>, <code>_INTERLEAVED</code> · 수신 진단의 PDoA: <code>uwb-core</code> <code>uwb_calc_pdoa()</code>(라디안)</p>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>PDoA = 2π·d·sin θ ÷ λ, θ = arcsin(PDoA·λ ÷ 2πd) (<code>uwb_calc_aoa()</code>). 9번 채널 λ = 3.75 cm.</li>
+      <li>간격 d ≤ λ/2면 모호성이 없다. 그래서 안테나 간격은 반 파장(9번 채널 약 1.9 cm).</li>
+      <li>각도 오차 ≈ σ<sub>φ</sub>·λ ÷ (2πd·cos θ). 정면이 가장 정확하고 옆으로 갈수록 나빠진다.</li>
+      <li>방위각 + 앙각에는 안테나 셋(L자). 두 안테나는 앞뒤를 구별하지 못해 움직임·배치로 가린다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>9번 채널에서 모호성이 없는 최대 안테나 간격은?</p><div class="opts">
+        <button class="opt">약 0.9 cm</button><button class="opt" data-correct>약 1.9 cm</button><button class="opt">약 3.75 cm</button><button class="opt">약 7.5 cm</button>
+      </div><div class="quiz-exp">λ/2 = 3.75 ÷ 2 ≈ 1.88 cm.</div></div>
+      <div class="quiz-q"><p>반 파장 간격에서 잰 위상 차이가 90°면 각도는?</p><div class="opts">
+        <button class="opt">90°</button><button class="opt">45°</button><button class="opt" data-correct>30°</button><button class="opt">15°</button>
+      </div><div class="quiz-exp">sin θ = (π/2 · λ) ÷ (2π · λ/2) = 0.5 → 30°.</div></div>
+      <div class="quiz-q"><p>각도 오차가 가장 작은 방향은?</p><div class="opts">
+        <button class="opt" data-correct>정면(0°)</button><button class="opt">45°</button><button class="opt">옆(90°)</button><button class="opt">방향과 무관</button>
+      </div><div class="quiz-exp">cos θ가 가장 커서 위상이 각도에 가장 민감하다.</div></div>
+      <div class="quiz-q"><p>안테나 두 개로 구별할 수 없는 것은?</p><div class="opts">
+        <button class="opt">왼쪽과 오른쪽</button><button class="opt" data-correct>앞과 뒤</button><button class="opt">가까움과 멂</button><button class="opt">채널 5와 9</button>
+      </div><div class="quiz-exp">θ와 180° − θ의 경로 차이가 같다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const SPEED_OF_LIGHT = 299792458.0;
+  const CH_FREQ = { 5: 6489.6e6, 9: 7987.2e6 }; // uwb-core UWB_CH_FREQ_CHAN_5/9
+  /** uwb-core uwb_calc_aoa(pdoa, channel, antenna_separation): asin(pdoa/2π × λ / 간격) (라디안) */
+  function calcAoa(pdoa, channel, sep) { const wavelength = SPEED_OF_LIGHT / CH_FREQ[channel]; return Math.asin(((pdoa / (2 * Math.PI)) * wavelength) / sep); }
+  /** 실제 각도 → 잰 위상 차이(−π, π]로 접음 */
+  function pdoaOf(theta, channel, sep) { const lam = SPEED_OF_LIGHT / CH_FREQ[channel]; let p = (2 * Math.PI * sep * Math.sin(theta)) / lam; p = ((p + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI; return p; }
+  /** 간격/파장 r에서 위상 phi(라디안)를 만드는 모든 각도(라디안) */
+  function candidates(phi, r) { const out = []; for (let k = -6; k <= 6; k++) { const s = (phi + 2 * Math.PI * k) / (2 * Math.PI * r); if (s >= -1 && s <= 1) out.push(Math.asin(s)); } return out.sort((a, b) => a - b); }
+  /** 각도 오차(표준편차, 라디안) ≈ σφ / (2π r cos θ) */
+  function aoaStd(sigmaPhi, r, theta) { return sigmaPhi / (2 * Math.PI * r * Math.cos(theta)); }
+  const deg = (r) => (r * 180) / Math.PI, rad = (d) => (d * Math.PI) / 180;
+
+  /* ================================================================ 1. 평면파 */
+  (function () {
+    let ch = 9;
+    const a = UW.range("wv-a", (v) => v + "°", draw), d = UW.range("wv-d", (v) => v.toFixed(2) + " cm", draw);
+    UW.seg("wv-c", (v) => { ch = +v; draw(); });
+    const cv = UW.canvas($("cv-wave"), (ctx, w, h) => {
+      const P = UW.palette(), th = rad(a()), lam = (SPEED_OF_LIGHT / CH_FREQ[ch]) * 100, sc = Math.min(w, h) / 14, cx = w / 2, cy = h * 0.8, sep = d() * sc;
+      const ax1 = cx - sep / 2, ax2 = cx + sep / 2, dir = { x: Math.sin(th), y: -Math.cos(th) };
+      ctx.strokeStyle = P.accent; ctx.globalAlpha = 0.45; ctx.lineWidth = 1.2;
+      for (let k = -1; k <= 12; k++) { const o = k * lam * sc, px = cx + dir.x * o, py = cy + dir.y * o; ctx.beginPath(); ctx.moveTo(px - dir.y * w, py + dir.x * w); ctx.lineTo(px + dir.y * w, py - dir.x * w); ctx.stroke(); }
+      ctx.globalAlpha = 1; ctx.strokeStyle = P.accent2; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + dir.x * h * 0.7, cy + dir.y * h * 0.7); ctx.stroke();
+      ctx.strokeStyle = P.faint; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, cy - h * 0.7); ctx.stroke(); ctx.setLineDash([]);
+      [ax1, ax2].forEach((x) => { ctx.fillStyle = P.text; ctx.fillRect(x - 4, cy - 4, 8, 8); });
+      UW.text(ctx, "d = " + d().toFixed(2) + " cm", cx, cy + 22, { size: 11.5, color: P.text, align: "center" });
+      UW.text(ctx, "λ = " + lam.toFixed(2) + " cm (파면 간격)", 10, 16, { size: 11.5, color: P.accent });
+    }, { aspect: 0.8, minHeight: 240, maxHeight: 330 });
+    function draw() {
+      const th = rad(a()), p = pdoaOf(th, ch, d() / 100), est = calcAoa(p, ch, d() / 100);
+      UW.stat("wv-p", (d() * Math.sin(th) * 10).toFixed(1) + " mm"); UW.stat("wv-ph", deg(p).toFixed(0) + "°"); UW.stat("wv-r", isFinite(est) ? deg(est).toFixed(1) + "°" + (Math.abs(deg(est) - a()) > 1 ? " ✗" : " ✓") : "계산 불가(|값| > 1)"); cv.redraw();
+    }
+    draw();
+  })();
+
+  /* ================================================================ 2. 모호성 */
+  (function () {
+    const r = UW.range("am-r", (v) => v.toFixed(2), draw), p = UW.range("am-p", (v) => v + "°", draw);
+    const cv = UW.canvas($("cv-amb"), (ctx, w, h) => {
+      const P = UW.palette(), d = []; for (let t = -90; t <= 90; t += 0.25) { let ph = 2 * Math.PI * r() * Math.sin(rad(t)); ph = ((ph + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI; d.push([t, deg(ph)]); }
+      // 접힌 곳에서 선이 이어지지 않게
+      const seg = [], out = []; d.forEach((pt, i) => { if (i && Math.abs(pt[1] - d[i - 1][1]) > 180) { out.push(seg.splice(0)); } seg.push(pt); }); out.push(seg);
+      const ch = UW.chart(ctx, null, { x: [-90, 90], y: [-180, 180], xLabel: "실제 각도 (°)", yLabel: "잰 위상 (°)", xTicks: [-90, -45, 0, 45, 90], yTicks: [-180, -90, 0, 90, 180], series: out.map((s) => ({ data: s, color: P.accent, width: 2 })), hlines: [{ y: p(), color: P.accent2, dash: [] }] });
+      candidates(rad(p()), r()).forEach((c) => { ctx.fillStyle = P.bad; ctx.beginPath(); ctx.arc(ch.X(deg(c)), ch.Y(p()), 6, 0, 7); ctx.fill(); });
+    }, { aspect: 0.5, minHeight: 230, maxHeight: 320 });
+    function draw() { const c = candidates(rad(p()), r()); UW.stat("am-n", c.length + "개"); UW.stat("am-c", c.map((x) => deg(x).toFixed(0) + "°").join(", ")); UW.stat("am-s", "정면에서 위상 1° ≈ 각도 " + (1 / (2 * Math.PI * r())).toFixed(2) + "°"); cv.redraw(); }
+    draw();
+  })();
+
+  /* ================================================================ 3. 정확도 */
+  (function () {
+    const p = UW.range("ac-p", (v) => v + "°", draw), r = UW.range("ac-r", (v) => v.toFixed(2), draw);
+    const cv = UW.canvas($("cv-acc"), (ctx, w, h) => {
+      const P = UW.palette(), d = []; for (let t = -85; t <= 85; t += 0.5) d.push([t, deg(aoaStd(rad(p()), r(), rad(t)))]);
+      UW.chart(ctx, null, { x: [-90, 90], y: [0, 20], xLabel: "실제 각도 (°)", yLabel: "각도 오차 (°)", xTicks: [-90, -60, -30, 0, 30, 60, 90], series: [{ data: d, color: P.accent, width: 2.4 }], hlines: [{ y: 5, label: "±5°", color: P.faint }] });
+    }, { aspect: 0.45, minHeight: 210, maxHeight: 300 });
+    function draw() {
+      const s0 = deg(aoaStd(rad(p()), r(), 0)), s60 = deg(aoaStd(rad(p()), r(), rad(60))); let lim = 0; for (let t = 0; t < 90; t += 0.5) if (deg(aoaStd(rad(p()), r(), rad(t))) <= 5) lim = t;
+      UW.stat("ac-0", s0.toFixed(1) + "°"); UW.stat("ac-60", s60.toFixed(1) + "°"); UW.stat("ac-w", s0 > 5 ? "없음" : "±" + lim.toFixed(0) + "°"); cv.redraw();
+    }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

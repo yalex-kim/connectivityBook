@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>다중 경로와 첫 경로 · UWBBook</title>
+<meta name="description" content="실내에서 받는 UWB 신호는 직접파와 반사파들의 합이다. 채널 임펄스 응답(CIR)에서 가장 센 경로가 아니라 첫 경로를 찾는 방법, 벽과 사람 몸이 직접파를 가릴 때(NLOS) 생기는 거리 오차, 받은 세기와 첫 경로 세기의 차이로 NLOS를 알아내는 공개 드라이버의 규칙을 시뮬레이터로 익힌다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/uwb/chapters/multipath.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="UWBBook">
+<meta property="og:title" content="다중 경로와 첫 경로 · UWBBook">
+<meta property="og:description" content="실내에서 받는 UWB 신호는 직접파와 반사파들의 합이다. 채널 임펄스 응답(CIR)에서 가장 센 경로가 아니라 첫 경로를 찾는 방법, 벽과 사람 몸이 직접파를 가릴 때(NLOS) 생기는 거리 오차, 받은 세기와 첫 경로 세기의 차이로 NLOS를 알아내는 공개 드라이버의 규칙을 시뮬레이터로 익힌다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/uwb/chapters/multipath.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/uwb/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"다중 경로와 첫 경로","name":"다중 경로와 첫 경로 · UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/multipath.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/uwb/chapters/multipath.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":7,"image":"https://yalex-kim.github.io/yalexBook/uwb/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/uwb/#book","name":"UWBBook — 누구나 읽는 인터랙티브 UWB 교과서","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"publisher":{"@type":"Organization","name":"UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"description":"실내에서 받는 UWB 신호는 직접파와 반사파들의 합이다. 채널 임펄스 응답(CIR)에서 가장 센 경로가 아니라 첫 경로를 찾는 방법, 벽과 사람 몸이 직접파를 가릴 때(NLOS) 생기는 거리 오차, 받은 세기와 첫 경로 세기의 차이로 NLOS를 알아내는 공개 드라이버의 규칙을 시뮬레이터로 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"UWBBook","item":"https://yalex-kim.github.io/yalexBook/uwb/"},{"@type":"ListItem","position":2,"name":"07 다중 경로와 첫 경로","item":"https://yalex-kim.github.io/yalexBook/uwb/chapters/multipath.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+</head>
+<body data-chapter="multipath">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 07</div>
+    <h1>다중 경로와 첫 경로</h1>
+    <p class="lead">거실에서는 UWB 거리 측정이 10 cm 안으로 맞는데, 휴대폰을 뒷주머니에 넣거나 벽 너머의 태그를 재면 30 cm, 1 m씩 길게 나온다. 시계도, 공식도 같은데 왜일까? 답은 수신기가 무엇을 “도착 시각”으로 짚느냐에 있다. 이 장에서는 실내의 반사파들이 만드는 <b>채널 임펄스 응답</b>을 직접 그려 보고, 첫 경로를 찾는 일이 왜 어렵고 중요한지 본다.</p>
+    <ul class="objectives">
+      <li>채널 임펄스 응답(CIR)이 직접파와 반사파의 지연·세기로 이루어짐을 방 안의 경로로 계산한다.</li>
+      <li>“가장 센 경로”가 아니라 “첫 경로”를 찾아야 하는 이유와 문턱의 맞바꿈을 안다.</li>
+      <li>벽·사람 몸이 직접파를 가릴 때(NLOS) 거리가 길게 나오는 두 가지 이유를 구분한다.</li>
+      <li>받은 세기와 첫 경로 세기의 차이로 NLOS 가능성을 판단하는 규칙을 공개 드라이버에서 확인한다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="cir">
+    <h2>채널 임펄스 응답</h2>
+    <p>송신기가 펄스 하나를 보내면 수신기에는 여러 개가 도착한다. 곧장 온 <b>직접파</b>, 벽에 한 번 튕겨 온 반사파들, 두 번 튕긴 것들… 각각은 더 돈 거리만큼 늦고, 반사·거리 때문에 더 약하다. 시간에 따라 도착한 신호의 세기를 그린 것이 <span class="term">채널 임펄스 응답</span><span class="en">(CIR, Channel Impulse Response)</span>이다. UWB 수신기는 프리앰블을 상관해 쌓으면서(4장) 이 CIR을 직접 재고, 거리 측정은 그 안에서 <span class="term">첫 경로</span><span class="en">(first path)</span>의 시각을 짚는다.</p>
+    <p>2장에서 봤듯 대역이 넓을수록 경로들이 갈라져 보인다. 그러나 아무리 넓어도 남는 문제가 둘 있다. 첫째, <b>직접파가 가장 세다는 보장이 없다</b>. 둘째, <b>직접파가 너무 약하면 잡음 속에서 보이지 않는다</b>.</p>
+    <div class="sim" id="sim-room">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>방 안의 경로와 CIR</h3></div>
+      <div class="sim-view"><canvas id="cv-room"></canvas></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>가로막는 것</span><div class="seg" id="rm-ob"><button data-value="0" class="on">없음</button><button data-value="8">사람 몸 (−8 dB)</button><button data-value="15">석고 벽 + 몸 (−15 dB)</button><button data-value="25">콘크리트 (−25 dB)</button></div></div>
+        <label class="ctrl"><span>첫 경로 문턱(잡음 위) <output id="rm-t-out"></output></span><input type="range" id="rm-t" min="3" max="25" value="10"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">실제 거리</span><span class="v" id="rm-d">—</span></div>
+        <div class="stat"><span class="k">첫 경로로 잰 거리</span><span class="v" id="rm-f">—</span></div>
+        <div class="stat"><span class="k">가장 센 경로로 잰 거리</span><span class="v" id="rm-s">—</span></div>
+        <div class="stat"><span class="k">LOS 가능성 (RSSI − FPPL)</span><span class="v" id="rm-l">—</span></div>
+      </div>
+      <div class="sim-note">위: 6 m × 4 m 방(위에서 본 모습). 녹색 = 앵커, 주황 = 태그(누르면 옮겨진다), 회색 막대 = 가로막는 것. 선은 직접파와 벽 네 곳의 한 번 반사 경로. 아래: CIR(dB). 해볼 것: ① 아무것도 없으면 첫 경로와 가장 센 경로가 같고 거리가 맞는다. ② “콘크리트”를 고르면 직접파가 문턱 아래로 내려가, 수신기가 반사파를 첫 경로로 잡아 약 1.3 m 길게 잰다. 그런데 LOS 가능성은 1.00으로 나온다. 잡힌 “첫 경로”(실은 반사파)가 세서 세기 차이가 작기 때문이다. 첫 경로를 놓치면 아래의 세기 차이 규칙도 속는다. ③ 문턱을 3 dB로 낮추면 약한 직접파를 찾아 오차가 재질 지연만큼(+21 cm)으로 줄고, 세기 차이가 19 dB라 NLOS(0.00)로 제대로 표시된다. 문턱을 너무 낮추면 잡음을 첫 경로로 착각할 위험이 커진다(이 모델은 잡음 봉우리를 그리지 않는다). 태그를 눌러 옮겨 보자. 모델: 2D 자유 공간 손실 + 벽 반사 −6 dB, 가로막는 것은 감쇠와 함께 재질 안에서 느려지는 지연(콘크리트 25 cm 두께면 약 +20 cm)을 더함, 500 MHz 가우스 펄스, 잡음 바닥 고정.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="nlos">
+    <h2>NLOS: 두 가지 치우침</h2>
+    <p>직접파가 막힌 상태를 <span class="term">NLOS</span><span class="en">(Non-Line-Of-Sight)</span>라고 한다. NLOS에서 UWB 거리는 거의 언제나 <b>길게</b> 나온다. 이유는 둘이다.</p>
+    <ol>
+      <li><b>재질 안에서 느려짐</b>: 전파는 콘크리트·유리·사람 몸 속에서 공기보다 느리다. 직접파가 벽을 뚫고 오면 그만큼 늦게 도착한다. 감쇠가 크지 않으면 첫 경로는 찾지만 수 cm~수십 cm 길게 잰다.</li>
+      <li><b>첫 경로를 놓침</b>: 직접파가 문턱 아래로 약해지면 수신기는 다음에 온 반사파를 첫 경로로 짚는다. 반사파가 더 돈 거리만큼 길게 잰다. 수십 cm~수 m.</li>
+    </ol>
+    <p>그래서 실제 제품은 측정마다 “이 값은 NLOS일 가능성이 높다”는 표시를 붙여, 위치 계산(9장)에서 그 값의 비중을 줄이거나 버린다. 휴대폰을 몸 앞에 들고 찾으라는 안내가 뜨는 것도, 사람 몸이 6 GHz 이상의 전파를 크게 흡수하기 때문이다.</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="detect">
+    <h2>세기 차이로 NLOS 알아보기</h2>
+    <p>수신기는 두 가지 세기를 함께 잰다. 받은 신호 전체의 세기(<b>RSSI</b>, 모든 경로의 합)와 첫 경로만의 세기(<b>FPPL</b>, First Path Power Level). 트인 곳에서는 첫 경로가 에너지 대부분을 갖고 있어 둘이 비슷하다. 직접파가 막히면 첫 경로는 약해지는데 반사파들은 그대로라 차이가 벌어진다. Decawave 드라이버의 규칙은 간단하다.</p>
+    <div class="formula">d = |RSSI − FPPL| → d &lt; 6 dB: LOS(1.0) · d &gt; 10 dB: NLOS(0.0) · 그 사이: 1 − (d − 6) ÷ 4
+      <div class="where">출처: Decawave <code>uwb-dw1000</code> <code>dw1000_mac.c</code>의 <code>dw1000_estimate_los()</code>(주석: “Taken from 4.7 of DW1000 manual”). 칩 제조사의 경험 규칙이며 802.15.4 표준이 정한 것은 아니다.</div>
+    </div>
+    <div class="sim" id="sim-los">
+      <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>LOS 가능성 계산</h3></div>
+      <div class="sim-view"><canvas id="cv-los"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>RSSI <output id="ls-r-out"></output></span><input type="range" id="ls-r" min="-105" max="-60" step="0.5" value="-80"></label>
+        <label class="ctrl"><span>첫 경로 세기 FPPL <output id="ls-f-out"></output></span><input type="range" id="ls-f" min="-115" max="-60" step="0.5" value="-88"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">차이</span><span class="v" id="ls-d">—</span></div>
+        <div class="stat"><span class="k">LOS 가능성</span><span class="v" id="ls-l">—</span></div>
+        <div class="stat"><span class="k">판단</span><span class="v" id="ls-j">—</span></div>
+      </div>
+      <div class="sim-note">그래프: 차이(가로)에 따른 LOS 가능성. 위 “방 안의 경로” 시뮬레이터에서도 같은 규칙으로 가능성을 계산해 보여 준다(그쪽 숫자는 CIR에서 구한 값).</div>
+    </div>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>CIR = 직접파와 반사파들의 시간별 세기. UWB는 프리앰블로 CIR을 재고 첫 경로의 시각을 짚는다.</li>
+      <li>가장 센 경로가 직접파라는 보장이 없다. “첫 경로”를 찾아야 한다. 문턱이 높으면 약한 직접파를 놓치고, 낮으면 잡음을 잡는다.</li>
+      <li>NLOS 거리는 거의 길게 나온다: 재질 안에서 느려짐(수 cm~수십 cm) + 첫 경로를 놓침(수십 cm~수 m).</li>
+      <li>|RSSI − FPPL| &lt; 6 dB면 LOS, &gt; 10 dB면 NLOS(<code>dw1000_estimate_los()</code>). 위치 계산에서 NLOS 측정의 비중을 줄인다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>UWB 수신기가 거리 측정에 쓰는 도착 시각은?</p><div class="opts">
+        <button class="opt">CIR에서 가장 센 경로</button><button class="opt" data-correct>CIR에서 첫 경로</button><button class="opt">CIR의 평균</button><button class="opt">마지막 경로</button>
+      </div><div class="quiz-exp">직접파가 가장 먼저 온다. 반사파가 더 셀 수 있으므로 “센 것”이 아니라 “먼저 온 것”.</div></div>
+      <div class="quiz-q"><p>NLOS에서 UWB 거리가 주로 어떻게 틀리는가?</p><div class="opts">
+        <button class="opt">짧게 나온다</button><button class="opt" data-correct>길게 나온다</button><button class="opt">0이 된다</button><button class="opt">틀리지 않는다</button>
+      </div><div class="quiz-exp">재질 안에서 느려지거나 반사파를 첫 경로로 잡기 때문이다. 둘 다 거리를 늘린다.</div></div>
+      <div class="quiz-q"><p>RSSI −82 dBm, FPPL −94 dBm이면 <code>dw1000_estimate_los()</code>의 결과는?</p><div class="opts">
+        <button class="opt">1.0 (LOS)</button><button class="opt">0.5</button><button class="opt" data-correct>0.0 (NLOS)</button><button class="opt">계산 불가</button>
+      </div><div class="quiz-exp">차이 12 dB &gt; 10 dB → 0.0.</div></div>
+      <div class="quiz-q"><p>정밀 찾기 앱이 휴대폰을 몸 앞에 들라고 하는 이유는?</p><div class="opts">
+        <button class="opt">화면을 보라고</button><button class="opt" data-correct>사람 몸이 UWB 전파를 크게 흡수해 직접파를 가리면 NLOS가 되기 때문에</button><button class="opt">GPS를 켜려고</button><button class="opt">배터리를 아끼려고</button>
+      </div><div class="quiz-exp">몸 뒤로 가면 첫 경로가 약해지고 거리·각도가 흔들린다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const C = 299792458;
+  /** Decawave dw1000_estimate_los(rssi, fppl) */
+  function estimateLos(rssi, fppl) { const d = Math.abs(rssi - fppl); if (d < 6) return 1; if (d > 10) return 0; return 1 - (d - 6) / 4; }
+  /** 두 선분 교차 */
+  function segCross(a, b, c, d) {
+    const den = (b.x - a.x) * (d.y - c.y) - (b.y - a.y) * (d.x - c.x); if (Math.abs(den) < 1e-12) return false;
+    const t = ((c.x - a.x) * (d.y - c.y) - (c.y - a.y) * (d.x - c.x)) / den, u = ((c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x)) / den;
+    return t > 0 && t < 1 && u >= 0 && u <= 1;
+  }
+  /** 직접파 + 네 벽 한 번 반사(거울상 방법). 방 [0,W]×[0,H]. 가로막는 선분 ob을 지나면 obDb 감쇠, extraM 지연 */
+  function paths(tx, rx, W, H, ob, obDb, extraM) {
+    const out = [], legs = (pts) => { let len = 0, hit = false; for (let i = 0; i < pts.length - 1; i++) { len += Math.hypot(pts[i + 1].x - pts[i].x, pts[i + 1].y - pts[i].y); if (ob && segCross(pts[i], pts[i + 1], ob[0], ob[1])) hit = true; } return { len, hit }; };
+    const add = (pts, reflDb, kind) => { const { len, hit } = legs(pts); out.push({ kind, pts, len: len + (hit ? extraM : 0), db: -20 * Math.log10(Math.max(len, 0.1)) - reflDb - (hit ? obDb : 0) }); };
+    add([tx, rx], 0, "직접파");
+    const imgs = [[{ x: -tx.x, y: tx.y }, (p) => ({ x: 0, y: p })], [{ x: 2 * W - tx.x, y: tx.y }, (p) => ({ x: W, y: p })], [{ x: tx.x, y: -tx.y }, (p) => ({ x: p, y: 0 })], [{ x: tx.x, y: 2 * H - tx.y }, (p) => ({ x: p, y: H })]];
+    imgs.forEach(([img, wallPt], i) => {
+      const t = i < 2 ? (wallPt(0).x - img.x) / (rx.x - img.x) : (wallPt(0).y - img.y) / (rx.y - img.y);
+      if (!(t > 0 && t < 1)) return;
+      const hitPt = i < 2 ? wallPt(img.y + t * (rx.y - img.y)) : wallPt(img.x + t * (rx.x - img.x));
+      add([tx, hitPt, rx], 6, "반사");
+    });
+    return out;
+  }
+  /** CIR 포락선(dB): 경로마다 가우스 펄스(σ ns), 잡음 바닥 noiseDb */
+  function cirDb(ps, tNs, sigmaNs, noiseDb) { let a = 0; ps.forEach((p) => { const dt = tNs - (p.len / C) * 1e9; a += Math.pow(10, p.db / 20) * Math.exp((-dt * dt) / (2 * sigmaNs * sigmaNs)); }); return 10 * Math.log10(a * a + Math.pow(10, noiseDb / 10)); }
+  /** 첫 경로: 잡음 + 문턱을 처음 넘는 봉우리의 시각(ns). 없으면 NaN */
+  function firstPath(ps, sigmaNs, noiseDb, threshDb, t0, t1) {
+    const step = sigmaNs / 20; let prev = -Infinity, rising = false;
+    for (let t = t0; t <= t1; t += step) { const v = cirDb(ps, t, sigmaNs, noiseDb), nx = cirDb(ps, t + step, sigmaNs, noiseDb); if (v > noiseDb + threshDb && v >= prev && v >= nx) return t; prev = v; }
+    return NaN;
+  }
+  /** RSSI = 모든 경로 세기의 합, FPPL = 첫 경로로 잡힌 경로의 세기(상대 dB) */
+  function rssiFppl(ps, fpNs) { const rssi = 10 * Math.log10(ps.reduce((a, p) => a + Math.pow(10, p.db / 10), 0)); const near = ps.reduce((a, p) => (Math.abs((p.len / C) * 1e9 - fpNs) < Math.abs((a.len / C) * 1e9 - fpNs) ? p : a)); return { rssi, fppl: near.db }; }
+  const SIGMA = 0.966, NOISE = -45; // 500 MHz 펄스(2장), 잡음 바닥(상대 dB)
+
+  /* ================================================================ 1. 방 */
+  (function () {
+    const W = 6, H = 4, anc = { x: 0.8, y: 2 }, tag = { x: 4.6, y: 2.6 }, OB = [{ x: 3.2, y: 1.2 }, { x: 3.2, y: 3.4 }];
+    let obDb = 0;
+    const th = UW.range("rm-t", (v) => v + " dB", draw);
+    UW.seg("rm-ob", (v) => { obDb = +v; draw(); });
+    const extra = () => (obDb === 0 ? 0 : obDb === 8 ? 0.05 : obDb === 15 ? 0.1 : 0.2); // 재질 안 추가 지연(m)
+    const ps = () => paths(anc, tag, W, H, obDb ? OB : null, obDb, extra());
+    let geo = null;
+    const cv = UW.canvas($("cv-room"), (ctx, w, h) => {
+      const P = UW.palette(), topH = h * 0.5, s = Math.min((w - 20) / W, (topH - 16) / H), ox = (w - W * s) / 2, oy = 8, X = (x) => ox + x * s, Y = (y) => oy + y * s; geo = { s, ox, oy };
+      ctx.strokeStyle = P.text; ctx.lineWidth = 3; ctx.strokeRect(X(0), Y(0), W * s, H * s);
+      const P2 = ps();
+      P2.forEach((p) => { ctx.strokeStyle = p.kind === "직접파" ? P.accent : P.faint; ctx.globalAlpha = p.kind === "직접파" ? 1 : 0.7; ctx.lineWidth = p.kind === "직접파" ? 2 : 1.2; ctx.beginPath(); p.pts.forEach((q, i) => (i ? ctx.lineTo(X(q.x), Y(q.y)) : ctx.moveTo(X(q.x), Y(q.y)))); ctx.stroke(); ctx.globalAlpha = 1; });
+      if (obDb) { ctx.strokeStyle = P.dim; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(X(OB[0].x), Y(OB[0].y)); ctx.lineTo(X(OB[1].x), Y(OB[1].y)); ctx.stroke(); }
+      ctx.fillStyle = P.ok; ctx.beginPath(); ctx.arc(X(anc.x), Y(anc.y), 7, 0, 7); ctx.fill(); ctx.fillStyle = P.accent2; ctx.beginPath(); ctx.arc(X(tag.x), Y(tag.y), 7, 0, 7); ctx.fill();
+      // CIR
+      const box = { x: 46, y: topH + 18, w: w - 58, h: h - topH - 52 }, d0 = Math.hypot(tag.x - anc.x, tag.y - anc.y), t0 = (d0 / C) * 1e9 - 6, t1 = t0 + 40, data = [];
+      for (let t = t0; t <= t1; t += 0.05) data.push([t, cirDb(P2, t, SIGMA, NOISE)]);
+      const fp = firstPath(P2, SIGMA, NOISE, th(), t0, t1);
+      UW.chart(ctx, box, { x: [t0, t1], y: [NOISE - 5, -5], xLabel: "도착 시각 (ns)", yLabel: "dB", series: [{ data, color: P.accent, width: 1.8 }], hlines: [{ y: NOISE + th(), label: "문턱", color: P.warn }], vlines: [{ x: (d0 / C) * 1e9, label: isFinite(fp) && Math.abs(fp - (d0 / C) * 1e9) < 2.5 ? "실제≈첫 경로" : "실제", color: P.ok }].concat(isFinite(fp) && Math.abs(fp - (d0 / C) * 1e9) >= 2.5 ? [{ x: fp, label: "첫 경로", color: P.bad }] : []) });
+    }, { aspect: 1, minHeight: 380, maxHeight: 560 });
+    cv.canvas.addEventListener("click", (e) => { if (!geo) return; const r = cv.canvas.getBoundingClientRect(), x = (e.clientX - r.left - geo.ox) / geo.s, y = (e.clientY - r.top - geo.oy) / geo.s; if (x < 0.2 || y < 0.2 || x > W - 0.2 || y > H - 0.2) return; tag.x = x; tag.y = y; draw(); });
+    function draw() {
+      const P2 = ps(), d0 = Math.hypot(tag.x - anc.x, tag.y - anc.y), t0 = (d0 / C) * 1e9 - 6, fp = firstPath(P2, SIGMA, NOISE, th(), t0, t0 + 40), strongest = P2.reduce((a, b) => (b.db > a.db ? b : a));
+      UW.stat("rm-d", d0.toFixed(2) + " m");
+      const ecm = Math.round((fp * 1e-9 * C - d0) * 100); UW.stat("rm-f", isFinite(fp) ? (fp * 1e-9 * C).toFixed(2) + " m (" + (ecm > 0 ? "+" : "") + (ecm === 0 ? "0" : ecm) + " cm)" : "못 찾음");
+      UW.stat("rm-s", strongest.len.toFixed(2) + " m");
+      const rs = rssiFppl(P2, fp); UW.stat("rm-l", isFinite(fp) ? estimateLos(rs.rssi, rs.fppl).toFixed(2) + " (차이 " + (rs.rssi - rs.fppl).toFixed(1) + " dB)" : "—");
+      cv.redraw();
+    }
+    draw();
+  })();
+
+  /* ================================================================ 2. LOS */
+  (function () {
+    const r = UW.range("ls-r", (v) => v + " dBm", draw), f = UW.range("ls-f", (v) => v + " dBm", draw);
+    const cv = UW.canvas($("cv-los"), (ctx, w, h) => {
+      const P = UW.palette(), d = []; for (let x = 0; x <= 16; x += 0.1) d.push([x, estimateLos(0, -x)]);
+      const ch = UW.chart(ctx, null, { x: [0, 16], y: [0, 1.1], xLabel: "|RSSI − FPPL| (dB)", yLabel: "LOS 가능성", series: [{ data: d, color: P.accent, width: 2.4 }], vlines: [{ x: 6, color: P.faint }, { x: 10, color: P.faint }] });
+      const dd = Math.min(16, Math.abs(r() - f())); ctx.fillStyle = P.accent2; ctx.beginPath(); ctx.arc(ch.X(dd), ch.Y(estimateLos(r(), f())), 6, 0, 7); ctx.fill();
+    }, { aspect: 0.4, minHeight: 190, maxHeight: 260 });
+    function draw() { const l = estimateLos(r(), f()); UW.stat("ls-d", Math.abs(r() - f()).toFixed(1) + " dB"); UW.stat("ls-l", l.toFixed(2)); UW.stat("ls-j", l >= 1 ? "LOS" : l <= 0 ? "NLOS" : "애매"); cv.redraw(); }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

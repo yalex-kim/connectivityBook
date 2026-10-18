@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>위치 찾기: 삼변 측량과 TDoA · UWBBook</title>
+<meta name="description" content="거리 셋으로 위치를 구하는 삼변 측량, 앵커 배치가 정하는 정확도(DOP), 거리의 차이로 쌍곡선을 그리는 TDoA, 태그가 듣기만 하는 DL-TDoA와 보내기만 하는 UL-TDoA를 시뮬레이터로 비교한다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/uwb/chapters/position.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="UWBBook">
+<meta property="og:title" content="위치 찾기: 삼변 측량과 TDoA · UWBBook">
+<meta property="og:description" content="거리 셋으로 위치를 구하는 삼변 측량, 앵커 배치가 정하는 정확도(DOP), 거리의 차이로 쌍곡선을 그리는 TDoA, 태그가 듣기만 하는 DL-TDoA와 보내기만 하는 UL-TDoA를 시뮬레이터로 비교한다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/uwb/chapters/position.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/uwb/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"위치 찾기: 삼변 측량과 TDoA","name":"위치 찾기: 삼변 측량과 TDoA · UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/position.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/uwb/chapters/position.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":9,"image":"https://yalex-kim.github.io/yalexBook/uwb/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/uwb/#book","name":"UWBBook — 누구나 읽는 인터랙티브 UWB 교과서","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"publisher":{"@type":"Organization","name":"UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"description":"거리 셋으로 위치를 구하는 삼변 측량, 앵커 배치가 정하는 정확도(DOP), 거리의 차이로 쌍곡선을 그리는 TDoA, 태그가 듣기만 하는 DL-TDoA와 보내기만 하는 UL-TDoA를 시뮬레이터로 비교한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"UWBBook","item":"https://yalex-kim.github.io/yalexBook/uwb/"},{"@type":"ListItem","position":2,"name":"09 위치 찾기: 삼변 측량과 TDoA","item":"https://yalex-kim.github.io/yalexBook/uwb/chapters/position.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+</head>
+<body data-chapter="position">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 09</div>
+    <h1>위치 찾기: 삼변 측량과 TDoA</h1>
+    <p class="lead">공장 천장에 UWB 앵커를 달면 지게차와 작업자의 위치가 지도 위에 10~30 cm로 찍힌다. 휴대폰 하나와 태그 하나는 “거리와 방향”만 알지만, 위치를 아는 앵커가 여럿 있으면 “어디에”를 알 수 있다. 방법은 두 가지다. 앵커마다 거리를 재서 원의 교점을 찾는 <b>삼변 측량</b>, 그리고 앵커들에 도착한 시각의 차이로 쌍곡선의 교점을 찾는 <b>TDoA</b>다.</p>
+    <ul class="objectives">
+      <li>거리 셋 이상으로 위치를 구하는 삼변 측량을 최소 제곱으로 풀어 본다.</li>
+      <li>같은 거리 오차라도 앵커 배치에 따라 위치 오차가 달라지는 DOP를 지도로 본다.</li>
+      <li>TDoA가 거리 대신 거리의 차이를 써서 태그의 송신 횟수를 줄이는 원리를 안다.</li>
+      <li>DL-TDoA와 UL-TDoA, TWR의 쓰임과 맞바꿈을 비교한다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="trilat">
+    <h2>원 셋의 교점</h2>
+    <p>앵커 A까지 3 m라면 태그는 A를 중심으로 하는 반지름 3 m 원 위 어딘가에 있다. 앵커 B까지의 거리로 원이 하나 더 생기면 후보가 두 점으로 줄고, C가 있으면 한 점이 된다(평면). 3차원이면 앵커가 넷 필요하다. 실제 거리에는 오차가 있어 원들이 한 점에서 만나지 않으므로, 모든 원에서 “가장 덜 어긋나는” 점을 찾는다. 이것이 <b>최소 제곱</b> 풀이다. 앵커가 많을수록, 그리고 잘 퍼져 있을수록 오차가 줄어든다.</p>
+    <div class="sim" id="sim-tri">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>삼변 측량과 DOP 지도</h3></div>
+      <div class="sim-view"><canvas id="cv-tri"></canvas></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>평면을 누르면</span><div class="seg" id="tr-tool"><button data-value="tag" class="on">태그 옮기기</button><button data-value="anc">가까운 앵커 옮기기</button></div></div>
+        <div class="ctrl"><span>앵커 배치</span><div class="seg" id="tr-lay"><button data-value="corner" class="on">네 모서리</button><button data-value="line">한쪽 벽에 일렬</button><button data-value="three">셋만</button></div></div>
+        <label class="ctrl"><span>거리 오차(표준편차) <output id="tr-s-out"></output></span><input type="range" id="tr-s" min="0" max="0.5" step="0.01" value="0.1"></label>
+        <label class="check"><input type="checkbox" id="tr-nlos"> 앵커 1번 측정이 NLOS로 +80 cm (7장)</label>
+        <label class="check"><input type="checkbox" id="tr-map" checked> DOP 지도 보기</label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">이 자리의 DOP</span><span class="v" id="tr-dop">—</span></div>
+        <div class="stat"><span class="k">예상 위치 오차(1σ)</span><span class="v" id="tr-ex">—</span></div>
+        <div class="stat"><span class="k">이번 측정의 위치 오차</span><span class="v" id="tr-err">—</span></div>
+      </div>
+      <div class="sim-note">8 m × 6 m 공간. 초록 = 앵커, 주황 = 실제 태그, 빨강 = 계산한 위치, 원 = 잰 거리. 배경 색은 DOP(밝을수록 좋음). 해볼 것: ① 네 모서리 배치에서 가운데는 DOP ≈ 1, 거리 오차 10 cm가 위치 오차 약 10 cm가 된다. ② “한쪽 벽에 일렬”로 바꾸면 방 안쪽은 생각보다 괜찮지만, 앵커 줄 가까이로 갈수록 벽과 수직인 방향을 잡지 못해 DOP가 치솟는다(줄 위에서는 무한대). 또 줄 반대편의 거울상 위치와 구별할 수 없다(벽 밖이라 버릴 수 있을 뿐이다). ④ 앵커를 하나 골라 방 가운데로 옮겨 보면 그 근처는 좋아지지만 모서리 쪽이 나빠진다. ③ 앵커 1번에 NLOS를 켜면 그 앵커 쪽으로 위치가 끌려간다. 그래서 7장의 NLOS 표시로 그런 측정의 비중을 줄인다. 계산: 가우스-뉴턴 최소 제곱, DOP = √(trace((HᵀH)⁻¹)), H = 태그 → 앵커 단위 벡터. 거리 오차는 정규 분포(고정 씨앗).</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="dop">
+    <h2>DOP: 배치가 오차를 키운다</h2>
+    <p>두 원이 거의 같은 방향에서 스치듯 만나면, 반지름이 조금만 바뀌어도 교점이 크게 미끄러진다. 원들이 수직에 가깝게 만나면 교점이 단단하다. 이 기하학적 증폭을 <span class="term">DOP</span><span class="en">(Dilution of Precision)</span>라 한다. 위치 오차 ≈ DOP × 거리 오차. GPS에서 위성 배치가 나쁠 때 위치가 튀는 것과 같은 원리다. 실내 측위 설계(14장)에서 앵커를 <b>둘러싸듯</b> 배치하라는 이유다. 앵커들로 둘러싸인 볼록한 영역 밖으로 나가거나 앵커들이 한 줄에 가까워지면 DOP가 빠르게 커진다.</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="tdoa">
+    <h2>TDoA: 거리 대신 거리의 차이</h2>
+    <p>TWR은 태그와 앵커 하나하나가 핑퐁을 해야 한다. 앵커가 넷이면 프레임이 여덟 개 이상이다. 태그가 많은 창고에서는 공중 시간과 태그 배터리가 감당이 안 된다. <span class="term">TDoA</span><span class="en">(Time Difference of Arrival)</span>는 <b>앵커들의 시계를 서로 맞춰 두고</b> 한 번의 송신만 쓴다.</p>
+    <ul>
+      <li><b>UL-TDoA</b>(상향): 태그가 짧은 신호(blink)를 <b>보내기만</b> 한다. 여러 앵커가 받은 시각을 서버로 보내고, 서버가 시각의 차이로 위치를 구한다. 태그는 받을 필요가 없어 전력이 아주 적다. 창고 자산 추적에 맞다.</li>
+      <li><b>DL-TDoA</b>(하향): 앵커들이 정해진 순서로 신호를 보내고, 태그(휴대폰)는 <b>듣기만</b> 한다. 태그가 스스로 위치를 계산하므로 아무도 태그의 위치를 모른다(프라이버시). 듣는 태그 수에 제한이 없어 GPS처럼 쓸 수 있다.</li>
+    </ul>
+    <p>앵커 i와 j에 도착한 시각 차이 × c = 두 앵커까지 거리의 차이. 거리 차이가 일정한 점들은 <b>쌍곡선</b>을 이룬다. 앵커 쌍 둘(앵커 셋)이면 평면에서 쌍곡선 둘의 교점으로 위치가 나온다. 대신 앵커 시계를 1 ns만 틀리게 맞춰도 30 cm 오차라, 앵커 동기(유선 시계 분배나 UWB 동기 메시지)가 TDoA 시스템의 핵심 비용이다.</p>
+    <div class="sim" id="sim-tdoa">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>쌍곡선의 교점</h3></div>
+      <div class="sim-view"><canvas id="cv-tdoa"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>앵커 시계 동기 오차(표준편차) <output id="td-s-out"></output></span><input type="range" id="td-s" min="0" max="2" step="0.05" value="0.3"></label>
+        <button class="btn" id="td-re">다시 측정</button>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">태그가 보낸 프레임</span><span class="v" id="td-n">—</span></div>
+        <div class="stat"><span class="k">같은 위치를 TWR로(앵커 4)</span><span class="v" id="td-t">—</span></div>
+        <div class="stat"><span class="k">위치 오차</span><span class="v" id="td-e">—</span></div>
+      </div>
+      <div class="sim-note">곡선 = 앵커 1번을 기준으로 한 거리 차이의 쌍곡선(2·3·4번과의 쌍). 평면을 누르면 태그가 옮겨진다. 해볼 것: ① 동기 오차 0.3 ns(9 cm)면 위치 오차는 대개 수 cm~20 cm대다(“다시 측정”으로 여러 번). 거리 차이를 쓰는 TDoA는 같은 시간 오차에도 삼변 측량보다 DOP가 커지기 쉽다. ② 1 ns를 넘기면 쌍곡선이 어긋나 오차가 수십 cm로 커진다. ③ 태그는 UL-TDoA에서 프레임 하나만 보낸다. TWR(SS)이라면 앵커마다 두 개씩, 여덟 개다. 계산: 기준 앵커 1번에 대한 거리 차이 셋으로 가우스-뉴턴 최소 제곱.</div>
+    </div>
+    <p class="spec-ref">측정 방식 이름: Android <code>FiraParams.java</code>의 <code>RANGING_ROUND_USAGE_UL_TDOA = 0</code>, <code>RANGING_ROUND_USAGE_DL_TDOA = 5</code>, <code>RANGING_DEVICE_ROLE_ADVERTISER</code>·<code>_OBSERVER</code> · 앵커 동기형 역방향 TDoA 구현: Decawave <code>uwb-core</code>의 <code>lib/rtdoa</code>, <code>apps/tdoa_sync_tag</code></p>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>삼변 측량: 앵커별 거리 → 원의 교점. 평면 3개, 공간 4개 이상. 오차가 있으므로 최소 제곱으로 푼다.</li>
+      <li>위치 오차 ≈ DOP × 거리 오차. 앵커로 둘러싼 안쪽은 DOP ≈ 1, 바깥·일렬 배치는 크다.</li>
+      <li>NLOS 측정 하나가 위치를 끌어당긴다. 측정 품질 표시로 비중을 줄인다.</li>
+      <li>TDoA: 동기된 앵커들의 도착 시각 차이 → 쌍곡선. UL(태그가 보내기만, 저전력), DL(태그가 듣기만, 프라이버시·무제한).</li>
+      <li>TDoA의 대가는 앵커 시계 동기. 1 ns 틀리면 30 cm.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>평면에서 거리만으로 위치를 하나로 정하려면 앵커가 최소 몇 개?</p><div class="opts">
+        <button class="opt">2</button><button class="opt" data-correct>3</button><button class="opt">4</button><button class="opt">1</button>
+      </div><div class="quiz-exp">원 둘은 교점이 두 개, 셋이어야 하나. 3차원은 넷.</div></div>
+      <div class="quiz-q"><p>DOP가 3인 곳에서 거리 오차가 10 cm면 위치 오차는 대략?</p><div class="opts">
+        <button class="opt">3 cm</button><button class="opt">10 cm</button><button class="opt" data-correct>30 cm</button><button class="opt">1 m</button>
+      </div><div class="quiz-exp">위치 오차 ≈ DOP × 거리 오차.</div></div>
+      <div class="quiz-q"><p>휴대폰이 앵커 신호를 듣기만 하고 자기 위치를 스스로 계산하는 방식은?</p><div class="opts">
+        <button class="opt">UL-TDoA</button><button class="opt" data-correct>DL-TDoA</button><button class="opt">SS-TWR</button><button class="opt">DS-TWR</button>
+      </div><div class="quiz-exp">태그가 아무것도 보내지 않으므로 위치가 밖으로 드러나지 않는다.</div></div>
+      <div class="quiz-q"><p>TDoA 시스템에서 가장 중요한 기반은?</p><div class="opts">
+        <button class="opt">태그 시계의 정확도</button><button class="opt" data-correct>앵커들 사이의 시계 동기</button><button class="opt">태그의 안테나 수</button><button class="opt">BLE 연결</button>
+      </div><div class="quiz-exp">시각 차이를 쓰므로 앵커 시계가 서로 맞아야 한다. 태그 시계는 상관없다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  /** 2×2 역행렬 */
+  const inv2 = (a, b, c, d) => { const det = a * d - b * c; return [d / det, -b / det, -c / det, a / det]; };
+  /** 삼변 측량: 가우스-뉴턴 최소 제곱. anchors [{x,y}], ranges [m], 시작점 p0 */
+  function solveTrilat(anchors, ranges, p0) {
+    let p = { ...p0 };
+    for (let it = 0; it < 30; it++) {
+      let a = 0, b = 0, d = 0, gx = 0, gy = 0;
+      anchors.forEach((A, i) => { const dx = p.x - A.x, dy = p.y - A.y, r = Math.hypot(dx, dy) || 1e-9, ux = dx / r, uy = dy / r, e = ranges[i] - r; a += ux * ux; b += ux * uy; d += uy * uy; gx += ux * e; gy += uy * e; });
+      const [i11, i12, i21, i22] = inv2(a, b, b, d), sx = i11 * gx + i12 * gy, sy = i21 * gx + i22 * gy;
+      p = { x: p.x + sx, y: p.y + sy }; if (Math.hypot(sx, sy) < 1e-9) break;
+    }
+    return p;
+  }
+  /** 거리 측정의 DOP = √trace((HᵀH)⁻¹), H 행 = 앵커 → 태그 단위 벡터 */
+  function dopRange(anchors, p) {
+    let a = 0, b = 0, d = 0; anchors.forEach((A) => { const dx = p.x - A.x, dy = p.y - A.y, r = Math.hypot(dx, dy) || 1e-9; a += (dx / r) ** 2; b += (dx * dy) / r / r; d += (dy / r) ** 2; });
+    const det = a * d - b * b; return det <= 1e-12 ? Infinity : Math.sqrt((a + d) / det);
+  }
+  /** TDoA: 기준 앵커 0에 대한 거리 차이 diffs[i-1] = |p − A_i| − |p − A_0| */
+  function solveTdoa(anchors, diffs, p0) {
+    let p = { ...p0 };
+    for (let it = 0; it < 50; it++) {
+      const r0 = Math.hypot(p.x - anchors[0].x, p.y - anchors[0].y) || 1e-9; let a = 0, b = 0, d = 0, gx = 0, gy = 0;
+      for (let i = 1; i < anchors.length; i++) {
+        const ri = Math.hypot(p.x - anchors[i].x, p.y - anchors[i].y) || 1e-9, hx = (p.x - anchors[i].x) / ri - (p.x - anchors[0].x) / r0, hy = (p.y - anchors[i].y) / ri - (p.y - anchors[0].y) / r0, e = diffs[i - 1] - (ri - r0);
+        a += hx * hx; b += hx * hy; d += hy * hy; gx += hx * e; gy += hy * e;
+      }
+      const [i11, i12, i21, i22] = inv2(a, b, b, d), sx = i11 * gx + i12 * gy, sy = i21 * gx + i22 * gy;
+      const k = Math.min(1, 2 / Math.max(1e-9, Math.hypot(sx, sy))); p = { x: p.x + sx * k, y: p.y + sy * k }; if (Math.hypot(sx, sy) < 1e-9) break;
+    }
+    return p;
+  }
+  const W = 8, H = 6, C = 0.299792458; // m/ns
+  const gaussFrom = (r) => () => Math.sqrt(-2 * Math.log(r() + 1e-12)) * Math.cos(2 * Math.PI * r());
+  const LAYOUT = { corner: [[0.3, 0.3], [7.7, 0.3], [7.7, 5.7], [0.3, 5.7]], line: [[0.3, 0.3], [2.8, 0.3], [5.2, 0.3], [7.7, 0.3]], three: [[0.3, 0.3], [7.7, 0.3], [4, 5.7]] };
+
+  /* ================================================================ 1. 삼변 측량 */
+  (function () {
+    let tool = "tag", anchors = LAYOUT.corner.map(([x, y]) => ({ x, y })), tag = { x: 5.2, y: 3.6 }, geo = null;
+    const s = UW.range("tr-s", (v) => (v * 100).toFixed(0) + " cm", draw);
+    UW.seg("tr-tool", (v) => { tool = v; }); UW.seg("tr-lay", (v) => { anchors = LAYOUT[v].map(([x, y]) => ({ x, y })); draw(); });
+    ["tr-nlos", "tr-map"].forEach((id) => $(id).addEventListener("change", draw));
+    const measure = () => { const g = gaussFrom(UW.rng(11)); return anchors.map((A, i) => Math.hypot(tag.x - A.x, tag.y - A.y) + s() * g() + (i === 0 && $("tr-nlos").checked ? 0.8 : 0)); };
+    const cv = UW.canvas($("cv-tri"), (ctx, w, h) => {
+      const P = UW.palette(), sc = Math.min((w - 16) / W, (h - 16) / H), ox = (w - W * sc) / 2, oy = 8, X = (x) => ox + x * sc, Y = (y) => oy + y * sc; geo = { sc, ox, oy };
+      if ($("tr-map").checked) { const st = 0.25; for (let x = 0; x < W; x += st) for (let y = 0; y < H; y += st) { const dp = dopRange(anchors, { x: x + st / 2, y: y + st / 2 }), t = Math.max(0, Math.min(1, (dp - 0.9) / 3)); ctx.fillStyle = `hsla(${160 - 160 * t}, 70%, 50%, ${0.12 + 0.3 * t})`; ctx.fillRect(X(x), Y(y), sc * st + 0.5, sc * st + 0.5); } }
+      ctx.strokeStyle = P.border; ctx.lineWidth = 2; ctx.strokeRect(X(0), Y(0), W * sc, H * sc);
+      const rs = measure(), est = solveTrilat(anchors, rs, { x: W / 2, y: H / 2 });
+      anchors.forEach((A, i) => { ctx.strokeStyle = i === 0 && $("tr-nlos").checked ? P.bad : P.accent; ctx.globalAlpha = 0.5; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(X(A.x), Y(A.y), rs[i] * sc, 0, 7); ctx.stroke(); ctx.globalAlpha = 1; ctx.fillStyle = P.ok; ctx.fillRect(X(A.x) - 6, Y(A.y) - 6, 12, 12); UW.text(ctx, String(i + 1), X(A.x), Y(A.y) + 4, { size: 9.5, color: "#fff", align: "center", bold: true }); });
+      ctx.fillStyle = P.accent2; ctx.beginPath(); ctx.arc(X(tag.x), Y(tag.y), 7, 0, 7); ctx.fill();
+      ctx.strokeStyle = P.bad; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(X(est.x) - 6, Y(est.y) - 6); ctx.lineTo(X(est.x) + 6, Y(est.y) + 6); ctx.moveTo(X(est.x) + 6, Y(est.y) - 6); ctx.lineTo(X(est.x) - 6, Y(est.y) + 6); ctx.stroke();
+    }, { aspect: 0.75, minHeight: 260, maxHeight: 460 });
+    cv.canvas.addEventListener("click", (e) => {
+      if (!geo) return; const r = cv.canvas.getBoundingClientRect(), x = Math.max(0.1, Math.min(W - 0.1, (e.clientX - r.left - geo.ox) / geo.sc)), y = Math.max(0.1, Math.min(H - 0.1, (e.clientY - r.top - geo.oy) / geo.sc));
+      if (tool === "tag") tag = { x, y }; else { let k = 0; anchors.forEach((A, i) => { if (Math.hypot(A.x - x, A.y - y) < Math.hypot(anchors[k].x - x, anchors[k].y - y)) k = i; }); anchors[k] = { x, y }; }
+      draw();
+    });
+    function draw() {
+      const dp = dopRange(anchors, tag), est = solveTrilat(anchors, measure(), { x: W / 2, y: H / 2 });
+      UW.stat("tr-dop", isFinite(dp) ? dp.toFixed(2) : "∞"); UW.stat("tr-ex", isFinite(dp) ? (dp * s() * 100).toFixed(0) + " cm" : "—"); UW.stat("tr-err", (Math.hypot(est.x - tag.x, est.y - tag.y) * 100).toFixed(0) + " cm"); cv.redraw();
+    }
+    draw();
+  })();
+
+  /* ================================================================ 2. TDoA */
+  (function () {
+    const anchors = LAYOUT.corner.map(([x, y]) => ({ x, y })); let tag = { x: 2.6, y: 2.2 }, seed = 5, geo = null;
+    const s = UW.range("td-s", (v) => v.toFixed(2) + " ns", draw);
+    $("td-re").addEventListener("click", () => { seed++; draw(); });
+    const diffs = () => { const g = gaussFrom(UW.rng(seed)), t = anchors.map((A) => Math.hypot(tag.x - A.x, tag.y - A.y) + C * s() * g()); return t.slice(1).map((v) => v - t[0]); };
+    const cv = UW.canvas($("cv-tdoa"), (ctx, w, h) => {
+      const P = UW.palette(), sc = Math.min((w - 16) / W, (h - 16) / H), ox = (w - W * sc) / 2, oy = 8, X = (x) => ox + x * sc, Y = (y) => oy + y * sc; geo = { sc, ox, oy };
+      ctx.strokeStyle = P.border; ctx.lineWidth = 2; ctx.strokeRect(X(0), Y(0), W * sc, H * sc);
+      const df = diffs(), cols = [P.accent, P.accent2, P.warn], st = 0.04;
+      df.forEach((dd, k) => { ctx.fillStyle = cols[k]; const A = anchors[k + 1]; for (let x = 0; x < W; x += st) for (let y = 0; y < H; y += st) { const v = Math.hypot(x - A.x, y - A.y) - Math.hypot(x - anchors[0].x, y - anchors[0].y) - dd; if (Math.abs(v) < 0.025) ctx.fillRect(X(x), Y(y), 2, 2); } });
+      anchors.forEach((A, i) => { ctx.fillStyle = P.ok; ctx.fillRect(X(A.x) - 6, Y(A.y) - 6, 12, 12); UW.text(ctx, String(i + 1), X(A.x), Y(A.y) + 4, { size: 9.5, color: "#fff", align: "center", bold: true }); });
+      const est = solveTdoa(anchors, df, { x: W / 2, y: H / 2 });
+      ctx.fillStyle = P.accent2; ctx.beginPath(); ctx.arc(X(tag.x), Y(tag.y), 7, 0, 7); ctx.fill();
+      ctx.strokeStyle = P.bad; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(X(est.x) - 6, Y(est.y) - 6); ctx.lineTo(X(est.x) + 6, Y(est.y) + 6); ctx.moveTo(X(est.x) + 6, Y(est.y) - 6); ctx.lineTo(X(est.x) - 6, Y(est.y) + 6); ctx.stroke();
+    }, { aspect: 0.75, minHeight: 260, maxHeight: 460 });
+    cv.canvas.addEventListener("click", (e) => { if (!geo) return; const r = cv.canvas.getBoundingClientRect(); tag = { x: Math.max(0.1, Math.min(W - 0.1, (e.clientX - r.left - geo.ox) / geo.sc)), y: Math.max(0.1, Math.min(H - 0.1, (e.clientY - r.top - geo.oy) / geo.sc)) }; draw(); });
+    function draw() { const est = solveTdoa(anchors, diffs(), { x: W / 2, y: H / 2 }); UW.stat("td-n", "1개 (UL-TDoA)"); UW.stat("td-t", "8개 (SS-TWR × 4)"); UW.stat("td-e", (Math.hypot(est.x - tag.x, est.y - tag.y) * 100).toFixed(0) + " cm"); cv.redraw(); }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

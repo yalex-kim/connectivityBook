@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<title>UWBBook · 누구나 읽는 UWB 교과서</title>
+<meta name="description" content="세기가 아니라 시간으로 거리를 재는 무선. 나노초 펄스와 499.2 MHz 채널, HRP 프레임과 STS, 15.65 ps 타임스탬프, SS·DS-TWR, 다중 경로와 첫 경로, AoA, 삼변 측량과 TDoA, FiRa 세션, 디지털 키까지 공개 구현(Android·Decawave·Zephyr)과 공개 법령으로 확인한 값으로 직접 만지며 배우는 인터랙티브 교과서.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/uwb/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="UWBBook">
+<meta property="og:title" content="UWBBook · 누구나 읽는 UWB 교과서">
+<meta property="og:description" content="세기가 아니라 시간으로 거리를 재는 무선. 나노초 펄스와 499.2 MHz 채널, HRP 프레임과 STS, 15.65 ps 타임스탬프, SS·DS-TWR, 다중 경로와 첫 경로, AoA, 삼변 측량과 TDoA, FiRa 세션, 디지털 키까지 공개 구현(Android·Decawave·Zephyr)과 공개 법령으로 확인한 값으로 직접 만지며 배우는 인터랙티브 교과서.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/uwb/">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/uwb/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://yalex-kim.github.io/yalexBook/uwb/#site","name":"UWBBook","alternateName":"UWB 교과서","url":"https://yalex-kim.github.io/yalexBook/uwb/","inLanguage":"ko"},{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/uwb/#book","name":"UWBBook — 누구나 읽는 인터랙티브 UWB 교과서","url":"https://yalex-kim.github.io/yalexBook/uwb/","inLanguage":"ko","isAccessibleForFree":true,"educationalLevel":"입문 (사전 지식 불필요)","about":["UWB","초광대역","IEEE 802.15.4z","FiRa","실내 측위","디지털 키"],"image":"https://yalex-kim.github.io/yalexBook/uwb/og.png","hasPart":[{"@type":"Chapter","position":1,"name":"UWB란 무엇인가","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/intro.html"},{"@type":"Chapter","position":2,"name":"펄스와 대역폭: 짧을수록 넓다","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/pulse.html"},{"@type":"Chapter","position":3,"name":"채널과 전파 규칙","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/channels.html"},{"@type":"Chapter","position":4,"name":"HRP 프레임: 프리앰블·SFD·STS","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/frame.html"},{"@type":"Chapter","position":5,"name":"시계와 타임스탬프: 15.65 피코초","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/timestamp.html"},{"@type":"Chapter","position":6,"name":"양방향 거리 측정: SS-TWR와 DS-TWR","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/twr.html"},{"@type":"Chapter","position":7,"name":"다중 경로와 첫 경로","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/multipath.html"},{"@type":"Chapter","position":8,"name":"방향 찾기: PDoA와 AoA","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/aoa.html"},{"@type":"Chapter","position":9,"name":"위치 찾기: 삼변 측량과 TDoA","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/position.html"},{"@type":"Chapter","position":10,"name":"안전한 거리: STS와 중계 방어","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/security.html"},{"@type":"Chapter","position":11,"name":"FiRa 세션: 라운드·슬롯·역할","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/fira.html"},{"@type":"Chapter","position":12,"name":"전력과 공존: BLE가 깨우는 UWB","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/power.html"},{"@type":"Chapter","position":13,"name":"디지털 키와 정밀 찾기","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/apps.html"},{"@type":"Chapter","position":14,"name":"실내 측위 설계 플레이그라운드","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/design.html"},{"@type":"Chapter","position":15,"name":"용어집 & 종합 퀴즈","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/glossary.html"}],"description":"세기가 아니라 시간으로 거리를 재는 무선. 나노초 펄스와 499.2 MHz 채널, HRP 프레임과 STS, 15.65 ps 타임스탬프, SS·DS-TWR, 다중 경로와 첫 경로, AoA, 삼변 측량과 TDoA, FiRa 세션, 디지털 키까지 공개 구현(Android·Decawave·Zephyr)과 공개 법령으로 확인한 값으로 직접 만지며 배우는 인터랙티브 교과서."}]}</script>
+<link rel="stylesheet" href="css/style.css">
+<script src="js/common.js"></script>
+<style>
+  .hero-3d { cursor: pointer; height: auto; touch-action: auto; padding-bottom: 46px; }
+  .hero-3d canvas { display: block; width: 100%; }
+  .paths { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .path { padding: 18px 20px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg-elev); }
+  .path h3 { margin: 0 0 6px; font-size: 17px; }
+  .path p { margin: 0 0 10px; color: var(--text-dim); font-size: 14.5px; }
+  .path .steps { display: flex; flex-wrap: wrap; gap: 6px; }
+  .path .steps a { font-family: var(--mono); font-size: 12px; padding: 3px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+  .path .steps a:hover { text-decoration: none; filter: brightness(1.1); }
+  .numbers { display: grid; gap: 1px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .numbers div { background: var(--bg-elev); padding: 18px 20px; }
+  .numbers b { display: block; font-family: var(--mono); font-size: 24px; letter-spacing: -0.02em; color: var(--text); }
+  .numbers span { color: var(--text-dim); font-size: 14px; }
+  .hero-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
+  .hero-badges span { font-size: 13px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border); color: var(--text-dim); background: var(--bg-elev); }
+  .hero-resume { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; justify-content: space-between; padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-elev); box-shadow: var(--shadow); }
+  .hero-resume[hidden] { display: none; }
+  .hero-resume small { display: block; font-size: 12px; color: var(--text-faint); letter-spacing: .05em; }
+  .hero-resume a { font-size: 16px; }
+  .hero-resume .hr-meta { font-size: 13.5px; color: var(--text-dim); }
+  .hero-resume button { font: inherit; border: 0; background: none; color: var(--text-faint); text-decoration: underline; cursor: pointer; padding: 0; }
+  .part-title { font-size: 13px; letter-spacing: .1em; font-weight: 700; color: var(--text-faint); margin: 28px 0 10px; text-transform: uppercase; }
+  .part-title:first-of-type { margin-top: 0; }
+  .stack-fig svg { display: block; width: 100%; height: auto; }
+  .stack-fig a:hover rect { stroke: var(--accent); stroke-width: 2; }
+  .howto { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .howto div { padding: 16px 18px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-elev); font-size: 14.5px; color: var(--text-dim); }
+  .howto b { display: block; color: var(--text); font-size: 16px; margin-bottom: 4px; }
+  .howto .sim-tag { display: inline-block; margin-bottom: 8px; }
+</style>
+</head>
+<body data-root="">
+
+<section class="home-hero">
+  <div class="inner">
+    <div>
+      <div class="eyebrow">Interactive UWB Textbook · 802.15.4z</div>
+      <h1>빛의 시간으로 재는 거리,<br><span class="grad">UWB의 모든 것</span></h1>
+      <p>휴대폰이 잃어버린 태그를 화살표로 가리키고, 주머니 속 휴대폰으로 차 문이 열린다. 그 뒤에는 몇 나노초짜리 펄스와 15.65 피코초 눈금의 시계, 그리고 “보내고, 답을 받고, 걸린 시간을 반으로 나누기”가 있다. 펄스와 대역폭, 499.2 MHz 채널과 −41.3 dBm/MHz 규제, 프레임과 STS, 양방향 거리 측정, 다중 경로와 첫 경로, 위상으로 재는 각도, 삼변 측량과 TDoA, FiRa 세션과 디지털 키까지. 원문 표준 대신 <b>Android UWB 스택과 Decawave·Zephyr의 공개 코드, 공개 법령</b>으로 값을 확인하고 그 코드의 시험 값으로 계산을 검증하며 배우는 UWB 교과서입니다.</p>
+      <div class="cta">
+        <a class="primary" href="chapters/intro.html">1장부터 시작하기 →</a>
+        <a class="ghost" href="chapters/design.html">설계 플레이그라운드</a>
+      </div>
+      <div class="hero-badges" id="badges">
+        <span>15개 챕터</span><span>33개 시뮬레이터</span><span>공개 구현 코드로 근거 표기</span><span>uwb-core 시험 값으로 검증한 거리 계산</span><span>사전 지식 불필요</span><span>설치 없이 브라우저에서</span>
+      </div>
+      <div class="hero-resume" id="uw-resume" hidden></div>
+    </div>
+    <div class="hero-3d" id="hero"><canvas id="cv-hero"></canvas><span class="hint">기기를 누르면 해당 장으로 이동합니다 · 움직이는 점은 거리 측정 프레임</span></div>
+  </div>
+</section>
+
+<section class="home-section">
+  <h2>UWB는 펄스에서 위치까지 쌓은 탑이다</h2>
+  <p class="sub">아래층은 펄스와 프레임, 가운데는 시각을 찍어 거리와 각도를 재는 일, 위층은 그것들을 엮어 위치를 구하고 세션을 굴리는 일입니다. 층을 누르면 해당 장으로 갑니다.</p>
+  <figure class="diagram stack-fig">
+    <div style="overflow-x:auto">
+    <svg viewBox="0 0 860 330" role="img" aria-label="UWB 계층과 이 책의 장" style="min-width:620px">
+      <a href="chapters/apps.html"><rect x="10" y="10" width="270" height="40" rx="10" class="f-acc-soft"/><text x="145" y="35" text-anchor="middle" class="t-acc">디지털 키 · 정밀 찾기 · 13장</text></a>
+      <a href="chapters/design.html"><rect x="290" y="10" width="270" height="40" rx="10" class="f-acc-soft"/><text x="425" y="35" text-anchor="middle" class="t-acc">실내 측위 설계 · 14장</text></a>
+      <a href="chapters/power.html"><rect x="570" y="10" width="280" height="40" rx="10" class="f-elev" stroke="var(--border)"/><text x="710" y="35" text-anchor="middle" class="t">BLE·전력·공존 · 12장</text></a>
+      <a href="chapters/fira.html"><rect x="10" y="66" width="420" height="46" rx="10" class="f-elev" stroke="var(--border)"/><text x="220" y="94" text-anchor="middle" class="t">FiRa 세션·라운드·UCI · 11장</text></a>
+      <a href="chapters/security.html"><rect x="440" y="66" width="410" height="46" rx="10" class="f-elev" stroke="var(--border)"/><text x="645" y="94" text-anchor="middle" class="t">STS·중계 방어 · 10장</text></a>
+      <rect x="10" y="128" width="840" height="86" rx="12" fill="none" stroke="var(--accent)" stroke-dasharray="6 5"/><text x="24" y="146" class="t-acc">재기</text>
+      <a href="chapters/twr.html"><rect x="70" y="154" width="180" height="46" rx="10" class="f-elev" stroke="var(--border)"/><text x="160" y="182" text-anchor="middle" class="t">TWR · 6장</text></a>
+      <a href="chapters/multipath.html"><rect x="260" y="154" width="180" height="46" rx="10" class="f-elev" stroke="var(--border)"/><text x="350" y="182" text-anchor="middle" class="t">첫 경로 · 7장</text></a>
+      <a href="chapters/aoa.html"><rect x="450" y="154" width="180" height="46" rx="10" class="f-elev" stroke="var(--border)"/><text x="540" y="182" text-anchor="middle" class="t">AoA · 8장</text></a>
+      <a href="chapters/position.html"><rect x="640" y="154" width="200" height="46" rx="10" class="f-elev" stroke="var(--border)"/><text x="740" y="182" text-anchor="middle" class="t">위치·TDoA · 9장</text></a>
+      <rect x="10" y="226" width="840" height="94" rx="12" fill="none" stroke="var(--accent-2)" stroke-dasharray="6 5"/><text x="24" y="244" class="t-dim">PHY</text>
+      <a href="chapters/pulse.html"><rect x="70" y="252" width="180" height="56" rx="10" class="f-elev" stroke="var(--border)"/><text x="160" y="285" text-anchor="middle" class="t">펄스·대역폭 · 2장</text></a>
+      <a href="chapters/channels.html"><rect x="260" y="252" width="180" height="56" rx="10" class="f-elev" stroke="var(--border)"/><text x="350" y="285" text-anchor="middle" class="t">채널·규제 · 3장</text></a>
+      <a href="chapters/frame.html"><rect x="450" y="252" width="180" height="56" rx="10" class="f-elev" stroke="var(--border)"/><text x="540" y="285" text-anchor="middle" class="t">프레임·STS · 4장</text></a>
+      <a href="chapters/timestamp.html"><rect x="640" y="252" width="200" height="56" rx="10" class="f-elev" stroke="var(--border)"/><text x="740" y="285" text-anchor="middle" class="t">시계·타임스탬프 · 5장</text></a>
+    </svg>
+    </div>
+    <figcaption><b>그림 0-1.</b> UWB 계층과 이 책의 장. 802.15.4z가 PHY·MAC과 STS를, FiRa가 세션과 상호 운용을, CCC가 자동차 키를 정한다.</figcaption>
+  </figure>
+</section>
+
+<section class="home-section" style="padding-top:0">
+  <h2>숫자로 보는 UWB</h2>
+  <p class="sub">이 책을 끝내면 아래 숫자가 왜 그 값인지, 서로 어떻게 얽혀 있는지 설명할 수 있게 됩니다. 모두 공개 코드나 공개 법령, 그것으로 검증한 계산에서 확인한 값입니다.</p>
+  <div class="numbers">
+    <div><b>499.2 MHz</b><span>모든 것의 기준. 채널 중심도, 칩 시간 2.003 ns도, 시계 눈금도 이 수에서 나온다</span></div>
+    <div><b>15.65 ps</b><span>타임스탬프 한 눈금 = 빛으로 4.7 mm. 40비트라 17초마다 한 바퀴</span></div>
+    <div><b>−41.3 dBm/MHz</b><span>FCC의 평균 방사 한도. 채널 전체로 약 37 µW</span></div>
+    <div><b>1 ns = 30 cm</b><span>시간 오차가 곧 거리 오차. 20 ppm × 500 µs = 1.5 m</span></div>
+    <div><b>(R − P) ÷ 2</b><span>단방향 TWR의 비행시간. 공개 라이브러리의 시험 값으로 검증</span></div>
+    <div><b>λ/2 ≈ 1.9 cm</b><span>9번 채널 각도 측정용 안테나 간격. 넓으면 모호해진다</span></div>
+    <div><b>2,400 RSTU</b><span>Android 기본 슬롯 = 2 ms. 25슬롯 라운드, 200 ms 간격</span></div>
+    <div><b>&gt; 10 dB</b><span>받은 세기와 첫 경로 세기의 차이가 이보다 크면 NLOS로 본다</span></div>
+  </div>
+</div>
+</section>
+
+<section class="home-section" style="padding-top:0">
+  <h2>이 책을 읽는 방법</h2>
+  <p class="sub">수식이나 전문 지식 없이도 따라올 수 있도록 만들었습니다. 각 장은 같은 흐름으로 진행됩니다.</p>
+  <div class="howto">
+    <div><span class="pill" style="background:color-mix(in srgb, var(--warn) 14%, transparent);color:var(--warn);border:0">비유</span><b>박수로 이해하기</b>짧은 손뼉은 도착 순간이 또렷하다(펄스), 손뼉으로 왕복하면 거리를 안다(TWR), 메아리보다 먼저 온 소리를 듣는다(첫 경로), 두 귀의 시차로 방향을 안다(AoA), 매번 바뀌는 비밀 박자는 흉내 낼 수 없다(STS). 익숙한 장면으로 먼저 감을 잡습니다.</div>
+    <div><span class="sim-tag">SIMULATOR</span><b>직접 만지기</b>태그를 옮기고, 벽을 세우고, 앵커를 깔아 보세요. “예측해 보기”로 먼저 짐작하고 시뮬레이터로 확인합니다. 거리 계산은 Decawave uwb-core의 자체 시험 타임스탬프로, 프레임 시간·각도·NLOS 판단은 공개 드라이버의 식으로 자동 검증합니다.</div>
+    <div><span class="pill acc">근거</span><b>코드로 확인하기</b>원문 표준 대신 표준을 구현한 공개 코드와 공개 법령을 근거로 삼고, 수치마다 <span style="font-family:var(--mono);font-size:13px">FiraParams.java</span>나 <span style="font-family:var(--mono);font-size:13px">47 CFR §15.519</span> 같은 출처를 달았습니다. 장 끝의 핵심 정리와 퀴즈, 마지막 장의 용어집과 종합 퀴즈로 복습합니다.</div>
+  </div>
+</section>
+
+<section class="home-section" style="padding-top:0">
+  <h2>추천 학습 경로</h2>
+  <p class="sub">처음부터 순서대로 읽는 것이 가장 좋지만, 관심사에 따라 골라 읽어도 됩니다.</p>
+  <div class="paths" id="paths"></div>
+</section>
+
+<section class="home-section" style="padding-top:0" id="chapters">
+  <h2>전체 목차</h2>
+  <p class="sub">모든 장에 직접 조작하는 시뮬레이터가 들어 있습니다.</p>
+  <div id="ch-parts"></div>
+  <p class="sub" style="margin-top:24px">이 책은 <a href="../index.html">yalexBook 서재</a>의 한 권이며, 구성과 설명 방식은 <a href="https://books.euiyun.com/">Books · 인터랙티브 교과서 시리즈</a>를 따릅니다. UWB를 깨우는 BLE는 <a href="../bluetooth/">BluetoothBook</a>, 같은 6 GHz를 나눠 쓰는 와이파이는 <a href="../wifi/">WiFiBook</a>과 함께 읽으면 좋습니다.</p>
+</section>
+
+<script>
+(function () {
+  "use strict";
+  const byNum = (n) => UW.CHAPTERS.find((c) => c.num === n);
+  const PATHS = [
+    ["🧭 전체 일주 (추천)", "UWB를 처음 배운다면 1장부터 차례로. 각 장이 앞 장 위에 쌓입니다.", UW.CHAPTERS.filter((c) => c.slug !== "glossary").map((c) => [c.num, ""])],
+    ["📍 거리와 위치의 원리", "시간을 재서 거리를, 거리를 모아 위치를.", [["05", "시계"], ["06", "TWR"], ["07", "첫 경로"], ["08", "AoA"], ["09", "위치"]]],
+    ["📡 무선·RF 엔지니어", "펄스, 채널, 프레임, 다중 경로의 물리.", [["02", "펄스"], ["03", "채널"], ["04", "프레임"], ["07", "CIR"], ["12", "공존"]]],
+    ["🛠 제품·펌웨어 개발자", "세션, 시간표, 전력, 설계.", [["06", "TWR"], ["11", "FiRa"], ["12", "전력"], ["13", "응용"], ["14", "설계"]]],
+    ["🔐 보안과 자동차 키", "중계를 막는 거리 증명.", [["06", "TWR"], ["10", "STS"], ["13", "디지털 키"]]],
+  ];
+  document.getElementById("paths").innerHTML = PATHS.map(([t, d, steps]) => `<div class="path"><h3>${t}</h3><p>${d}</p><div class="steps">${steps.map(([n, l]) => { const c = byNum(n); return `<a href="chapters/${c.slug}.html" title="${c.title}">${n}${l ? " " + l : ""}</a>`; }).join("")}</div></div>`).join("");
+
+  let html = "", last = "";
+  UW.CHAPTERS.forEach((c) => {
+    if (c.part !== last) { if (last) html += "</div>"; html += `<div class="part-title">${c.part}</div><div class="ch-grid">`; last = c.part; }
+    html += `<a class="ch-card" href="chapters/${c.slug}.html"><span class="num">CHAPTER ${c.num}</span><h3>${c.title}</h3><p>${c.desc}</p><div class="tags">${c.tags.map((t) => `<span class="${t === "sim" ? "is-sim" : ""}">${t === "sim" ? "시뮬레이터" : t}</span>`).join("")}</div></a>`;
+  });
+  document.getElementById("ch-parts").innerHTML = html + "</div>";
+
+  const PG = UW.progress.load().ch || {};
+  document.querySelectorAll("#ch-parts .ch-card").forEach((a, i) => {
+    const c = UW.CHAPTERS[i], p = PG[c.slug]; if (!p || p.pct < 2) return;
+    a.classList.toggle("is-done", !!p.done);
+    a.insertAdjacentHTML("beforeend", `<div class="ch-prog" title="${Math.round(p.pct)}% 읽음"><i style="width:${p.done ? 100 : Math.round(p.pct)}%"></i></div>`);
+    if (p.done) a.querySelector(".num").insertAdjacentHTML("beforeend", '<span class="done-badge">✓ 다 읽음</span>');
+  });
+  const lastRead = UW.progress.last(), rs = document.getElementById("uw-resume");
+  if (lastRead && UW.CHAPTERS.some((c) => c.slug === lastRead.slug)) {
+    const c = UW.CHAPTERS.find((x) => x.slug === lastRead.slug), done = UW.progress.doneCount();
+    rs.hidden = false;
+    rs.innerHTML = `<div><small>이어 읽기</small><a href="chapters/${c.slug}.html${lastRead.sec ? "#" + lastRead.sec : ""}"><b>${c.num} ${c.title}</b> →</a></div><div class="hr-meta">${UW.CHAPTERS.length}장 중 <b>${done}</b>장 다 읽음 · <button type="button" id="uw-reset">기록 지우기</button></div>`;
+    document.getElementById("uw-reset").onclick = () => { if (confirm("이 브라우저에 저장된 읽기 기록과 퀴즈 답을 모두 지울까요?")) { UW.progress.reset(); location.reload(); } };
+  }
+
+  // hero: 휴대폰을 중심으로 주변 기기들과 패킷이 오간다. 패킷 색은 채널(주파수)이 바뀌는 것을 나타낸다.
+  const PLACES = [
+    { k: "phone", x: 0.5, y: 0.47, label: "휴대폰", sub: "TWR · 6장", slug: "twr", icon: "phone", main: true },
+    { k: "tag", x: 0.18, y: 0.24, label: "분실물 태그", sub: "정밀 찾기 · 13장", slug: "apps", icon: "tag" },
+    { k: "car", x: 0.82, y: 0.24, label: "자동차", sub: "디지털 키 · 10장", slug: "security", icon: "car" },
+    { k: "anchor", x: 0.18, y: 0.7, label: "앵커", sub: "위치 · 9장", slug: "position", icon: "anchor" },
+    { k: "pulse", x: 0.5, y: 0.1, label: "펄스", sub: "2장", slug: "pulse", icon: "pulse" },
+    { k: "door", x: 0.82, y: 0.7, label: "출입문", sub: "응용 · 13장", slug: "apps", icon: "lock" },
+    { k: "anchor2", x: 0.5, y: 0.82, label: "앵커", sub: "TDoA · 9장", slug: "position", icon: "anchor" },
+  ];
+  const LINKS = PLACES.slice(1).filter((p) => p.k !== "pulse").map((p) => ["phone", p.k]).concat([["anchor", "anchor2"], ["phone", "pulse"]]);
+  const P_ = Object.fromEntries(PLACES.map((p) => [p.k, p]));
+  const dots = Array.from({ length: 22 }, (_, i) => ({ l: i % LINKS.length, t: Math.random(), s: 0.3 + Math.random() * 0.5, dir: Math.random() < 0.5 ? 1 : -1, ch: Math.floor(Math.random() * 3) }));
+  let hover = null, tt = 0;
+  const cvEl = document.getElementById("cv-hero");
+  function icon(ctx, kind, x, y, s, col) {
+    ctx.save(); ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = 1.8; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.beginPath();
+    if (kind === "phone") { UW.rrect(ctx, x - s * 0.5, y - s * 0.85, s, s * 1.7, 3); ctx.stroke(); ctx.beginPath(); ctx.arc(x, y + s * 0.6, 1.4, 0, 7); ctx.fill(); }
+    else if (kind === "tag") { ctx.arc(x, y, s * 0.6, 0, 7); ctx.stroke(); ctx.beginPath(); ctx.arc(x, y, s * 0.18, 0, 7); ctx.fill(); }
+    else if (kind === "car") { UW.rrect(ctx, x - s, y - s * 0.2, s * 2, s * 0.6, 3); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x - s * 0.6, y - s * 0.2); ctx.lineTo(x - s * 0.35, y - s * 0.6); ctx.lineTo(x + s * 0.35, y - s * 0.6); ctx.lineTo(x + s * 0.6, y - s * 0.2); ctx.stroke(); ctx.beginPath(); ctx.arc(x - s * 0.55, y + s * 0.45, s * 0.18, 0, 7); ctx.arc(x + s * 0.55, y + s * 0.45, s * 0.18, 0, 7); ctx.fill(); }
+    else if (kind === "anchor") { ctx.moveTo(x, y - s * 0.8); ctx.lineTo(x, y + s * 0.6); ctx.stroke(); ctx.beginPath(); ctx.arc(x, y - s * 0.8, s * 0.2, 0, 7); ctx.fill(); ctx.beginPath(); ctx.arc(x, y - s * 0.8, s * 0.55, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x - s * 0.5, y + s * 0.6); ctx.lineTo(x + s * 0.5, y + s * 0.6); ctx.stroke(); }
+    else if (kind === "pulse") { ctx.moveTo(x - s, y); ctx.lineTo(x - s * 0.3, y); ctx.lineTo(x - s * 0.15, y - s * 0.8); ctx.lineTo(x, y + s * 0.8); ctx.lineTo(x + s * 0.15, y); ctx.lineTo(x + s, y); ctx.stroke(); }
+    else if (kind === "lock") { UW.rrect(ctx, x - s * 0.6, y - s * 0.1, s * 1.2, s * 0.9, 3); ctx.stroke(); ctx.beginPath(); ctx.arc(x, y - s * 0.1, s * 0.4, Math.PI, 0); ctx.stroke(); }
+    ctx.restore();
+  }
+  const hero = UW.canvas(cvEl, (ctx, w, h) => {
+    const P = UW.palette(), pos = (p) => [p.x * w, p.y * h];
+    LINKS.forEach(([a, b]) => { const [x1, y1] = pos(P_[a]), [x2, y2] = pos(P_[b]); ctx.strokeStyle = P.border; ctx.lineWidth = 1.5; ctx.setLineDash([4, 6]); ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); ctx.setLineDash([]); });
+    dots.forEach((d) => {
+      const [a, b] = LINKS[d.l], t = d.dir > 0 ? d.t : 1 - d.t, [x1, y1] = pos(P_[a]), [x2, y2] = pos(P_[b]);
+      ctx.fillStyle = `hsl(${[175, 40, 175][d.ch]}, 75%, ${UW.isDark() ? 62 : 42}%)`; ctx.beginPath(); ctx.arc(UW.lerp(x1, x2, t), UW.lerp(y1, y2, t), 3.6, 0, 7); ctx.fill();
+    });
+    const small = w < 520, R = small ? 21 : 28;
+    PLACES.forEach((p) => {
+      const [x, y] = pos(p), on = hover === p.k;
+      if (p.main) { const pulse = 0.5 + 0.5 * Math.sin(tt * 3); ctx.fillStyle = P.accent; ctx.globalAlpha = 0.12 + 0.12 * pulse; ctx.beginPath(); ctx.arc(x, y, R + 10 + pulse * 5, 0, 7); ctx.fill(); ctx.globalAlpha = 1; }
+      ctx.beginPath(); ctx.arc(x, y, R, 0, 7); ctx.fillStyle = p.main ? P.accent : on ? P.accent2 : P.bg; ctx.fill();
+      ctx.strokeStyle = on || p.main ? P.accent : P.border; ctx.lineWidth = on ? 2.5 : 1.5; ctx.stroke();
+      icon(ctx, p.icon, x, y, R * 0.42, p.main || on ? "#fff" : P.text);
+      UW.text(ctx, p.label, x, y + R + 12, { align: "center", size: small ? 11.5 : 13, bold: true, color: on ? P.accent : P.text });
+      if (!small) UW.text(ctx, p.sub, x, y + R + 27, { align: "center", size: 11, color: P.dim });
+    });
+  }, { aspect: 0.82, minHeight: 300, maxHeight: 440 });
+  UW.loop(cvEl, (dt) => { tt += dt; dots.forEach((d) => { d.t += dt * d.s; if (d.t > 1) { d.t = 0; d.l = Math.floor(Math.random() * LINKS.length); d.dir = Math.random() < 0.5 ? 1 : -1; d.ch = Math.floor(Math.random() * 3); } }); hero.redraw(); });
+  const hit = (e) => { const r = cvEl.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top, R = (r.width < 520 ? 21 : 28) + 8; return PLACES.find((p) => Math.hypot(x - p.x * r.width, y - p.y * r.height) < R); };
+  cvEl.addEventListener("pointermove", (e) => { const p = hit(e); hover = p ? p.k : null; cvEl.style.cursor = p ? "pointer" : "default"; });
+  cvEl.addEventListener("pointerleave", () => (hover = null));
+  cvEl.addEventListener("click", (e) => { const p = hit(e); if (p) location.href = "chapters/" + p.slug + ".html"; });
+})();
+</script>
+</body>
+</html>

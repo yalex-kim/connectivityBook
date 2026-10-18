@@ -1,0 +1,10 @@
+{
+  "id": "uwbbook",
+  "title": "UWBBook",
+  "description": "나노초 펄스와 499.2 MHz 채널, HRP 프레임과 STS, 15.65 ps 타임스탬프, SS·DS-TWR, 다중 경로와 첫 경로, AoA, 삼변 측량과 TDoA, FiRa 세션, 디지털 키까지. Android UWB 스택과 Decawave·Zephyr의 공개 코드, 공개 법령으로 값을 확인하며 계산을 돌려 보고 UWB를 이해하도록 썼습니다.",
+  "url": "https://yalex-kim.github.io/yalexBook/uwb/",
+  "repo": "https://github.com/yalex-kim/yalexBook/tree/main/uwb",
+  "field": "electronics",
+  "status": "published",
+  "path": "uwb/"
+}

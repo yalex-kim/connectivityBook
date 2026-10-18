@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>채널과 전파 규칙 · UWBBook</title>
+<meta name="description" content="499.2 MHz의 배수로 놓인 UWB 채널, 휴대폰이 쓰는 5번·9번 채널, 1 MHz당 −41.3 dBm 규제가 정하는 총출력과 거리, 1 ms 평균 규칙과 짧은 패킷, Wi-Fi 6E·5G와의 이웃 관계를 공개 코드와 공개 법령으로 확인한다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/uwb/chapters/channels.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="UWBBook">
+<meta property="og:title" content="채널과 전파 규칙 · UWBBook">
+<meta property="og:description" content="499.2 MHz의 배수로 놓인 UWB 채널, 휴대폰이 쓰는 5번·9번 채널, 1 MHz당 −41.3 dBm 규제가 정하는 총출력과 거리, 1 ms 평균 규칙과 짧은 패킷, Wi-Fi 6E·5G와의 이웃 관계를 공개 코드와 공개 법령으로 확인한다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/uwb/chapters/channels.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/uwb/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"채널과 전파 규칙","name":"채널과 전파 규칙 · UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/channels.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/uwb/chapters/channels.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":3,"image":"https://yalex-kim.github.io/yalexBook/uwb/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/uwb/#book","name":"UWBBook — 누구나 읽는 인터랙티브 UWB 교과서","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"publisher":{"@type":"Organization","name":"UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"description":"499.2 MHz의 배수로 놓인 UWB 채널, 휴대폰이 쓰는 5번·9번 채널, 1 MHz당 −41.3 dBm 규제가 정하는 총출력과 거리, 1 ms 평균 규칙과 짧은 패킷, Wi-Fi 6E·5G와의 이웃 관계를 공개 코드와 공개 법령으로 확인한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"UWBBook","item":"https://yalex-kim.github.io/yalexBook/uwb/"},{"@type":"ListItem","position":2,"name":"03 채널과 전파 규칙","item":"https://yalex-kim.github.io/yalexBook/uwb/chapters/channels.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+</head>
+<body data-chapter="channels">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 03</div>
+    <h1>채널과 전파 규칙</h1>
+    <p class="lead">휴대폰 설정에는 UWB를 끄고 켜는 스위치만 있지만, 칩 안에서는 “9번 채널, 프리앰블 코드 10” 같은 값이 정해져 있다. 어떤 나라에서는 같은 휴대폰이 UWB를 아예 끄기도 한다. UWB 채널은 어디에 놓여 있고, 왜 이렇게 약하게만 보낼 수 있으며, 그 약한 출력으로 몇 미터까지 닿을까?</p>
+    <ul class="objectives">
+      <li>UWB 채널 중심 주파수가 499.2 MHz의 배수라는 규칙을 공개 코드로 확인한다.</li>
+      <li>휴대폰이 5번·9번 채널을 쓰는 이유와 나라별 사정을 안다.</li>
+      <li>−41.3 dBm/MHz 규제에서 총출력과 도달 거리를 계산한다.</li>
+      <li>1 ms 평균 규칙이 짧은 패킷에 주는 여유를 이해한다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="grid">
+    <h2>499.2 MHz의 눈금</h2>
+    <p>802.15.4 UWB(HRP)의 모든 시간과 주파수는 하나의 기준 주파수 <b>499.2 MHz</b>에서 나온다. 칩 하나의 길이(칩 시간)가 1/499.2 MHz ≈ 2.003 ns이고, 채널 중심 주파수는 그 정수배다. 펄스 폭도, 시계 눈금(5장)도, 거리 측정 시간 단위 RSTU(11장)도 이 수의 배수나 약수다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>대역</th><th>채널</th><th class="num">중심 주파수</th><th class="num">= 499.2 MHz ×</th><th>쓰임</th></tr></thead>
+      <tbody id="ch-tb"></tbody>
+    </table></div>
+    <p class="spec-ref">1·2·3·5·7·9번 중심 주파수: Decawave <code>uwb-core</code>의 <code>uwb_mac.h</code> <code>UWB_CH_FREQ_CHAN_*</code> · 4번 = 2번, 7번 = 5번(같은 중심의 넓은 채널): Zephyr <code>ieee802154_dw1000_regs.h</code>의 <code>DWT_FS_PLLCFG_CH4 = DWT_FS_PLLCFG_CH2</code>, <code>DWT_FS_PLLCFG_CH7 = DWT_FS_PLLCFG_CH5</code> · 휴대폰 지원 채널 5·6·8·9·10·12·13·14: Android <code>FiraParams.java</code>의 <code>UWB_CHANNEL_*</code>, CCC 디지털 키는 5·9번만(<code>CccParams.java</code>) · 나머지 채널 값은 같은 499.2 MHz 배수 규칙으로 채운 것</p>
+    <div class="callout spec"><strong>공개 구현끼리 다를 때</strong><p><code>uwb-core</code>의 <code>uwb_mac.h</code>는 4번 채널을 4,492.8 MHz(3번과 같은 값)로 적고 있다. 그러나 같은 칩용 Zephyr 드라이버는 4번 채널의 PLL 설정을 2번과 똑같이 쓰고(<code>DWT_FS_PLLCFG_CH4 = DWT_FS_PLLCFG_CH2</code>), 7번도 5번과 같다. 4·7번은 2·5번과 같은 중심에 폭만 넓힌 채널이라는 뜻이다. 이 책은 PLL 설정을 근거로 4번 = 3,993.6 MHz로 적었다. <code>uwb_calc_aoa()</code>가 4번 채널의 파장을 구할 때 쓰는 값이 이 상수라, 그 라이브러리로 4번 채널 각도를 계산하면 약 11% 어긋날 수 있다(8장).</p></div>
+    <div class="sim" id="sim-map">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>3~10 GHz 이웃 지도</h3></div>
+      <div class="sim-view"><canvas id="cv-map"></canvas></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>채널 고르기</span><div class="seg" id="mp-ch"><button data-value="5">5번</button><button data-value="9" class="on">9번</button><button data-value="6">6번</button><button data-value="8">8번</button><button data-value="2">2번</button></div></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">채널 범위</span><span class="v" id="mp-r">—</span></div>
+        <div class="stat"><span class="k">겹치는 이웃</span><span class="v" id="mp-o">—</span></div>
+        <div class="stat"><span class="k">한국 허용 대역 안(알려진 범위)</span><span class="v" id="mp-k">—</span></div>
+      </div>
+      <div class="sim-note">위에서부터 FCC UWB 대역(3.1~10.6 GHz), 이동통신 5G(3.3~4.2·4.4~5.0 GHz 일부 대역), 와이파이 5 GHz(5.15~5.85)·6 GHz(5.925~7.125), 한국 UWB 대역(3.1~4.8·7.2~10.2 GHz로 알려진 범위), UWB 채널(499.2 MHz 폭). 해볼 것: ① 5번 채널(6.24~6.74 GHz)은 Wi-Fi 6E 한가운데에 있다. ② 9번 채널(7.74~8.24 GHz)은 와이파이·5G와 떨어져 있고 한국 허용 범위 안이다. 그래서 국내 휴대폰은 9번을 쓴다. 한국 허용 대역은 공개 보도·제품 자료로 확인한 범위이며, 고시 원문은 이 책에서 확인하지 못했다.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="power">
+    <h2>1 MHz당 −41.3 dBm</h2>
+    <p>FCC는 3.1~10.6 GHz에서 UWB의 평균 방사를 <b>1 MHz당 −41.3 dBm EIRP</b>로 묶었다(실내용·휴대용 모두). 74 나노와트다. 이 값은 미국의 다른 전자 기기가 의도치 않게 내는 잡음 한도와 같은 수준으로, “잡음만큼만” 내라는 뜻이다. 채널 폭 전체로 더하면 −41.3 + 10·log₁₀(499.2) ≈ <b>−14.3 dBm</b>, 약 37 µW다. 블루투스(0~10 dBm)의 100분의 1, 와이파이(20 dBm)의 2,700분의 1 수준이다.</p>
+    <p>측정 방법도 정해져 있다. 1 MHz 분해능 대역폭에서 <b>1 ms 이하로 평균한 RMS 값</b>이 한도를 넘지 않아야 한다. 따라서 1 ms 창 안의 평균만 맞으면 되므로, 패킷이 그보다 짧으면 패킷이 나가는 동안의 세기를 그만큼 올릴 수 있다. 다만 50 MHz 폭에서 최대 0 dBm이라는 <b>피크 한도</b>가 따로 있어 무한정 올릴 수는 없다.</p>
+    <p class="spec-ref">평균 한도 3,100~10,600 MHz −41.3 dBm EIRP(1 MHz), 피크 한도 50 MHz당 0 dBm: 47 CFR §15.519(c)·(e)(휴대용), §15.517(실내용) · RMS 평균 1 ms 이하, 피크 측정 폭 변환 20·log(RBW/50): §15.521(d)·(g)</p>
+    <div class="sim" id="sim-pw">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>규제가 정하는 거리</h3></div>
+      <div class="sim-view"><canvas id="cv-pw"></canvas></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>채널</span><div class="seg" id="pw-ch"><button data-value="5">5번 (6.5 GHz)</button><button data-value="9" class="on">9번 (8.0 GHz)</button></div></div>
+        <label class="ctrl"><span>패킷 길이(1 ms 창 안에 하나) <output id="pw-t-out"></output></span><input type="range" id="pw-t" min="50" max="1000" step="10" value="1000"></label>
+        <label class="ctrl"><span>수신 감도 <output id="pw-s-out"></output></span><input type="range" id="pw-s" min="-105" max="-80" value="-98"></label>
+        <label class="ctrl"><span>여유(몸·벽 손실) <output id="pw-m-out"></output></span><input type="range" id="pw-m" min="0" max="30" value="6"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">패킷 중 총출력</span><span class="v" id="pw-p">—</span></div>
+        <div class="stat"><span class="k">자유 공간 1 m 손실</span><span class="v" id="pw-l">—</span></div>
+        <div class="stat"><span class="k">닿는 거리(자유 공간 어림)</span><span class="v" id="pw-d">—</span></div>
+      </div>
+      <div class="sim-note">그래프: 거리에 따른 받는 세기(자유 공간)와 감도·여유. 해볼 것: ① 1 ms 내내 보내면 총출력 −14.3 dBm, 감도 −98 dBm, 여유 6 dB에서 9번 채널은 약 23 m. 여유를 사람 몸 하나(약 10 dB 더)만큼 늘리면 7 m 남짓으로 준다. ② 패킷을 200 µs로 줄이면 1 ms 평균 규칙 안에서 7 dB를 올릴 수 있어 거리가 두 배 넘게 는다. 실제로는 피크 한도·칩의 송신 한계 때문에 이만큼 다 올리지 못하는 경우가 많다. ③ 같은 조건에서 5번 채널이 9번보다 조금 멀리 간다(주파수가 낮을수록 같은 안테나 조건의 자유 공간 손실이 작다). 계산: 송신 = −41.3 + 10·log₁₀(499.2) + 10·log₁₀(1,000 µs ÷ 패킷 길이), 자유 공간 손실 = 20·log₁₀(4πdf/c), 안테나 이득 0 dBi. 손실 식은 <code>uwb-core</code>의 <code>uwb_rng_path_loss()</code>와 같다(검증 스크립트).</div>
+    </div>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>UWB 채널 중심은 499.2 MHz의 정수배: 5번 6,489.6 MHz(×13), 9번 7,987.2 MHz(×16). 4·7번은 2·5번과 같은 중심의 넓은 채널.</li>
+      <li>휴대폰은 5·9번을 주로 쓴다. 5번은 Wi-Fi 6E와 겹치고, 한국은 알려진 허용 대역상 9번을 쓴다.</li>
+      <li>평균 −41.3 dBm/MHz(1 ms RMS 평균) → 채널 전체 약 −14.3 dBm. 피크 한도는 50 MHz당 0 dBm.</li>
+      <li>약한 출력이라 닿는 거리는 수십 m. 짧은 패킷은 1 ms 평균 규칙 안에서 세기를 올릴 수 있다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>9번 채널의 중심 주파수는?</p><div class="opts">
+        <button class="opt">6,489.6 MHz</button><button class="opt" data-correct>7,987.2 MHz</button><button class="opt">8,486.4 MHz</button><button class="opt">9,000 MHz</button>
+      </div><div class="quiz-exp">499.2 × 16 = 7,987.2 MHz.</div></div>
+      <div class="quiz-q"><p>−41.3 dBm/MHz로 499.2 MHz 채널 전체를 채우면 총출력은?</p><div class="opts">
+        <button class="opt">−41.3 dBm</button><button class="opt" data-correct>약 −14.3 dBm</button><button class="opt">0 dBm</button><button class="opt">+20 dBm</button>
+      </div><div class="quiz-exp">−41.3 + 10·log₁₀(499.2) ≈ −14.3 dBm.</div></div>
+      <div class="quiz-q"><p>5번 채널이 와이파이와 문제가 될 수 있는 이유는?</p><div class="opts">
+        <button class="opt">2.4 GHz와 같아서</button><button class="opt" data-correct>6.24~6.74 GHz로 Wi-Fi 6E의 6 GHz 대역 안에 있어서</button><button class="opt">출력이 와이파이보다 세서</button><button class="opt">채널 폭이 같아서</button>
+      </div><div class="quiz-exp">UWB는 약하지만 받는 쪽 입장에서는 같은 주파수에 있다. 반대로 강한 와이파이는 UWB 수신을 방해할 수 있다(12장).</div></div>
+      <div class="quiz-q"><p>FCC의 UWB 평균 측정은 얼마 이하의 시간으로 평균하는가?</p><div class="opts">
+        <button class="opt">1 µs</button><button class="opt" data-correct>1 ms</button><button class="opt">1 s</button><button class="opt">1분</button>
+      </div><div class="quiz-exp">47 CFR §15.521(d): 1 MHz 분해능, RMS 검출, 1 ms 이하 평균.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const C = 299792458, BASE = 499.2;
+  /** HRP UWB 채널 → 499.2 MHz의 배수(넓은 채널 4·7·11·15는 2·5·9·13과 같은 중심) */
+  const MULT = { 0: 1, 1: 7, 2: 8, 3: 9, 4: 8, 5: 13, 6: 14, 7: 13, 8: 15, 9: 16, 10: 17, 11: 16, 12: 18, 13: 19, 14: 20, 15: 19 };
+  function channelFreq(ch) { return MULT[ch] * BASE; }
+  /** 채널 전체 평균 EIRP(dBm): −41.3 dBm/MHz × 폭, 1 ms 창 안에 길이 tUs의 패킷 하나 */
+  function channelPower(bwMHz, packetUs) { return -41.3 + 10 * Math.log10(bwMHz) + 10 * Math.log10(1000 / Math.min(1000, packetUs)); }
+  /** 받는 세기(dBm): uwb-core uwb_rng_path_loss()와 같은 식(G = 안테나 이득 dB) */
+  function rxPower(ptDbm, gDb, fHz, rM) { return ptDbm + 2 * gDb + 20 * Math.log10(C / 1.000293) - 20 * Math.log10(4 * Math.PI * fHz * rM); }
+  /** 받는 세기가 감도 + 여유가 되는 거리(m) */
+  function maxRange(ptDbm, fHz, sensDbm, marginDb) { return Math.pow(10, (ptDbm - sensDbm - marginDb + 20 * Math.log10(C / 1.000293) - 20 * Math.log10(4 * Math.PI * fHz)) / 20); }
+  /** 두 구간이 겹치는가 */
+  const overlap = (a0, a1, b0, b1) => Math.max(a0, b0) < Math.min(a1, b1);
+
+  /* ================================================================ 표 */
+  (function () {
+    const USE = { 5: "휴대폰(FiRa), CCC 디지털 키", 9: "휴대폰(FiRa), CCC 디지털 키, 국내 휴대폰", 6: "FiRa 선택", 8: "FiRa 선택", 10: "FiRa 선택", 12: "FiRa 선택", 13: "FiRa 선택", 14: "FiRa 선택", 2: "DW1000 등 초기 측위 칩", 3: "DW1000", 1: "DW1000", 4: "넓은 채널 (2번 중심)", 7: "넓은 채널 (5번 중심)", 11: "넓은 채널 (9번 중심)", 15: "넓은 채널 (13번 중심)", 0: "1 GHz 아래" };
+    const band = (ch) => (ch === 0 ? "1 GHz 아래" : ch <= 4 ? "낮은 대역" : "높은 대역");
+    $("ch-tb").innerHTML = Object.keys(MULT).map(Number).map((ch) => `<tr${ch === 5 || ch === 9 ? ' style="font-weight:600"' : ""}><td>${band(ch)}</td><td>${ch}</td><td class="num">${channelFreq(ch).toFixed(1)} MHz</td><td class="num">${MULT[ch]}</td><td>${USE[ch]}</td></tr>`).join("");
+  })();
+
+  /* ================================================================ 1. 지도 */
+  (function () {
+    let ch = 9;
+    const NEI = [["5G 3.3~4.2 GHz", 3300, 4200], ["5G 4.4~5.0 GHz", 4400, 5000], ["Wi-Fi 5 GHz", 5150, 5850], ["Wi-Fi 6 GHz (6E)", 5925, 7125]];
+    const KR = [[3100, 4800], [7200, 10200]];
+    UW.seg("mp-ch", (v) => { ch = +v; draw(); });
+    const cv = UW.canvas($("cv-map"), (ctx, w, h) => {
+      const P = UW.palette(), L = 12, R = w - 12, X = (f) => L + ((R - L) * (f - 3000)) / 8000, row = (y, a, b, col, lab) => { ctx.fillStyle = col; UW.rrect(ctx, X(a), y, Math.max(2, X(b) - X(a)), 16, 4); ctx.fill(); if (lab && X(b) - X(a) > 50) UW.text(ctx, lab, (X(a) + X(b)) / 2, y + 12, { size: 10, color: "#fff", align: "center", bold: true }); };
+      row(10, 3100, 10600, P.faint, "FCC UWB 3.1~10.6 GHz");
+      NEI.forEach(([n, a, b], i) => row(32 + (i % 2) * 20, a, b, i < 2 ? P.warn : P.accent2, n));
+      KR.forEach(([a, b]) => row(78, a, b, P.ok, "한국"));
+      [1, 2, 3, 5, 6, 8, 9, 10, 12, 13, 14].forEach((c) => { const f = channelFreq(c), on = c === ch; ctx.fillStyle = on ? P.accent : P.grid; UW.rrect(ctx, X(f - 249.6), 102, X(f + 249.6) - X(f - 249.6) - 1, 22, 4); ctx.fill(); UW.text(ctx, String(c), X(f), 117, { size: 10.5, color: on ? "#fff" : P.dim, align: "center", bold: on }); });
+      for (let f = 3000; f <= 10000; f += 1000) UW.text(ctx, f / 1000 + "", X(f), 142, { size: 10, color: P.faint, align: "center" });
+      UW.text(ctx, "GHz", R, 142, { size: 10, color: P.faint, align: "right" });
+      let lx = L; [[P.faint, "FCC UWB"], [P.warn, "5G"], [P.accent2, "Wi-Fi"], [P.ok, "한국 UWB"], [P.accent, "고른 채널"]].forEach(([c, t]) => { ctx.fillStyle = c; ctx.fillRect(lx, 156, 10, 10); UW.text(ctx, t, lx + 13, 165, { size: 10.5, color: P.dim }); lx += 22 + t.length * 8.5; });
+    }, { aspect: 0.34, minHeight: 176, maxHeight: 190 });
+    function draw() {
+      const f = channelFreq(ch), a = f - 249.6, b = f + 249.6, o = NEI.filter(([, x, y]) => overlap(a, b, x, y)).map((n) => n[0]);
+      UW.stat("mp-r", (a / 1000).toFixed(2) + "~" + (b / 1000).toFixed(2) + " GHz"); UW.stat("mp-o", o.length ? o.join(", ") : "없음"); UW.stat("mp-k", KR.some(([x, y]) => a >= x && b <= y) ? "예" : "아니오"); cv.redraw();
+    }
+    draw();
+  })();
+
+  /* ================================================================ 2. 출력과 거리 */
+  (function () {
+    let ch = 9;
+    const t = UW.range("pw-t", (v) => v + " µs", draw), s = UW.range("pw-s", (v) => v + " dBm", draw), m = UW.range("pw-m", (v) => v + " dB", draw);
+    UW.seg("pw-ch", (v) => { ch = +v; draw(); });
+    const cv = UW.canvas($("cv-pw"), (ctx, w, h) => {
+      const P = UW.palette(), pt = channelPower(499.2, t()), fz = channelFreq(ch) * 1e6, d = [];
+      for (let r = 0.5; r <= 200; r *= 1.05) d.push([r, rxPower(pt, 0, fz, r)]);
+      const ch2 = UW.chart(ctx, null, { x: [0.5, 200], logX: true, y: [-120, -40], xLabel: "거리 (m)", yLabel: "받는 세기 (dBm)", xTicks: [1, 3, 10, 30, 100], series: [{ data: d, color: P.accent, width: 2.4 }], hlines: [{ y: s(), label: "감도", color: P.bad }, { y: s() + m(), label: "감도 + 여유", color: P.warn }] });
+      const R = maxRange(pt, fz, s(), m()); if (R >= 0.5 && R <= 200) { ctx.fillStyle = P.accent2; ctx.beginPath(); ctx.arc(ch2.X(R), ch2.Y(s() + m()), 6, 0, 7); ctx.fill(); }
+    }, { aspect: 0.5, minHeight: 240, maxHeight: 330 });
+    function draw() { const pt = channelPower(499.2, t()), fz = channelFreq(ch) * 1e6; UW.stat("pw-p", pt.toFixed(1) + " dBm"); UW.stat("pw-l", (pt - rxPower(pt, 0, fz, 1)).toFixed(1) + " dB"); UW.stat("pw-d", maxRange(pt, fz, s(), m()).toFixed(0) + " m"); cv.redraw(); }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>
