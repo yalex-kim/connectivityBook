@@ -24,7 +24,7 @@
     { slug: "mesh",        num: "12", part: "응용",         title: "메시와 사물 인터넷",               desc: "광고로 소문 퍼뜨리기. 관리된 플러딩과 TTL, 릴레이·프렌드·저전력 노드, 주기적 광고와 응답(PAwR)으로 만드는 전자 가격표.", tags: ["응용", "sim"] },
     { slug: "coexistence", num: "13", part: "응용",         title: "공존: 2.4 GHz를 나눠 쓰는 법",        desc: "한 기기 안의 Wi-Fi·LTE·5G·Thread와 함께 사는 법. 필터와 격리, 순수 TDM과 하이브리드, LTE TDD에 시간표 맞추기, Vol 7의 공존 신호와 WCI-2.", tags: ["응용", "sim"] },
     { slug: "design",      num: "14", part: "종합",         title: "블루투스 제품 설계 플레이그라운드",  desc: "이어폰, 심박계, 분실물 태그, 가격표. 파라미터를 고르면 배터리 수명·지연·거리·처리량이 따라온다.", tags: ["종합", "sim"] },
-    { slug: "glossary",    num: "15", part: "종합",         title: "용어집 & 종합 퀴즈",               desc: "블루투스 핵심 용어를 검색하고, 종합 퀴즈로 배운 내용을 점검하자. 용어마다 Core 6.2의 근거 위치를 함께 적었다.", tags: ["정리"] },
+    { slug: "glossary",    num: "15", part: "종합",         title: "용어집 & 종합 퀴즈",               desc: "블루투스 핵심 용어를 검색하고, 종합 퀴즈로 배운 내용을 점검하자. 용어마다 Core 6.3의 근거 위치를 함께 적었다.", tags: ["정리"] },
   ];
   // @book-chapters-end
   const BT = (window.BT = {});
@@ -734,7 +734,7 @@
     }
     const foot = document.createElement("footer");
     foot.className = "sb-foot";
-    foot.innerHTML = `BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서 · 기준 사양: Bluetooth Core 6.2 · 시뮬레이터는 이해를 돕기 위해 단순화한 모델입니다.
+    foot.innerHTML = `BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서 · 기준 사양: Bluetooth Core 6.3 · 시뮬레이터는 이해를 돕기 위해 단순화한 모델입니다.
       <br>© 2026 <a href="https://github.com/yalex-kim">Yalex Kim</a> · <a href="${root}../index.html">yalexBook 서재</a> ·
       콘텐츠 <a href="https://creativecommons.org/licenses/by/4.0/deed.ko" rel="license">CC BY 4.0</a> ·
       코드 <a href="https://github.com/yalex-kim/yalexBook/blob/main/bluetooth/LICENSE-MIT">MIT</a> ·

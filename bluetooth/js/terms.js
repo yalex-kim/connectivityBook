@@ -1,6 +1,6 @@
 /* BluetoothBook 용어 데이터 — [한국어, 영어, 설명, 장 slug]
    용어집(glossary.html)과 본문 용어 툴팁(common.js)이 함께 쓴다.
-   설명 끝의 [Vol x] Part y §z는 Bluetooth Core Specification 6.2의 근거 위치다. */
+   설명 끝의 [Vol x] Part y §z는 Bluetooth Core Specification 6.3의 근거 위치다. */
 window.BT_TERMS = [
     // 01 intro
     ["블루투스 SIG", "Bluetooth Special Interest Group", "블루투스 사양을 만들고 제품 인증을 관리하는 단체. 1998년 에릭슨, IBM, 인텔, 노키아, 도시바가 세웠다.", "intro"],
@@ -39,7 +39,7 @@ window.BT_TERMS = [
     ["LE 1M", "LE 1M PHY", "1 Msym/s GFSK, 1 Mb/s. 모든 LE 기기가 지원해야 하는 기본 PHY. [Vol 6] Part A §1", "phy"],
     ["LE 2M", "LE 2M PHY", "2 Msym/s, 2 Mb/s. 같은 데이터를 절반 시간에 보낸다. 5.0의 선택 기능.", "phy"],
     ["LE Coded", "LE Coded PHY", "1 Msym/s에 부호화를 더해 S=2(500 kb/s) 또는 S=8(125 kb/s). 감도를 높여 거리를 늘린다. 5.0의 선택 기능. [Vol 6] Part B §2.2·§3.3", "phy"],
-    ["HDT", "High Data Throughput", "LE 최대 속도를 2 Mb/s에서 7.5 Mb/s로 올리는 새 PHY. 2 Msym/s에 QPSK·QAM 계열 변조와 FEC, 2·3·4·6·7.5 Mb/s, 패킷마다 속도 선택. Core 6.2에는 없고 다음 Core 사양에 들어갈 공개 초안(Change Request) 단계다.", "phy"],
+    ["HDT", "High Data Throughput", "LE 최대 속도를 2 Mb/s에서 7.5 Mb/s로 올리는 새 PHY. 2 Msym/s에 QPSK·QAM 계열 변조와 FEC, 2·3·4·6·7.5 Mb/s, 패킷마다 속도 선택. Core 6.3에도 없고 다음 Core 사양에 들어갈 공개 초안(Change Request) 단계다.", "phy"],
     ["컨볼루션 부호", "Convolutional code", "앞의 몇 비트와 섞어 여분의 비트를 만드는 오류 정정 부호. LE Coded는 부호율 ½, 구속장 K=4. [Vol 6] Part B §3.3.1", "phy"],
     ["패턴 매퍼", "Pattern mapper", "LE Coded S=8에서 부호 비트를 4심볼로 펼친다(0 → 0011, 1 → 1100). [Vol 6] Part B §3.3.2", "phy"],
     // 04 hopping
@@ -65,7 +65,7 @@ window.BT_TERMS = [
     ["CONNECT_IND", "Connect indication PDU", "센트럴이 광고에 응답해 보내는 연결 요청. 접근 주소, CRCInit, 간격, 지연, 타임아웃, 채널 맵, hopIncrement 등을 담는다. [Vol 6] Part B §2.3.3.1", "advertising"],
     ["접근 주소", "Access Address", "패킷 앞의 32비트 식별자. 광고는 0x8E89BED6, 연결마다 새 무작위 값. [Vol 6] Part B §2.1.2", "advertising"],
     // 06 connection
-    ["연결 간격", "connInterval", "연결 이벤트 사이의 간격. 6.2에서 125 µs 단위 375 µs ~ 4 s(SCI 미지원이면 1.25 ms 단위 7.5 ms 이상). [Vol 6] Part B §4.5.1", "connection"],
+    ["연결 간격", "connInterval", "연결 이벤트 사이의 간격. 6.2부터 125 µs 단위 375 µs ~ 4 s(SCI 미지원이면 1.25 ms 단위 7.5 ms 이상). [Vol 6] Part B §4.5.1", "connection"],
     ["연결 이벤트", "Connection event", "연결 간격마다 열리는 짧은 주고받기. 센트럴이 앵커 포인트에서 먼저 보낸다. [Vol 6] Part B §4.5.1", "connection"],
     ["앵커 포인트", "Anchor point", "연결 이벤트의 시작 시각. 센트럴이 첫 패킷을 보내는 순간.", "connection"],
     ["짧은 연결 간격", "Shorter Connection Intervals (SCI)", "6.2의 새 기능. 7.5 ms 미만(최소 375 µs)의 연결 간격을 허용한다. [Vol 6] Part B §4.5.1, §5.1.32~33", "connection"],
@@ -140,6 +140,7 @@ window.BT_TERMS = [
     ["발사각", "AoD, Angle of Departure", "보내는 쪽 안테나 배열을 바꿔 가며 보낸 신호로, 받는 쪽이 자기 방향을 계산하는 방법. 5.1.", "location"],
     ["일정 톤 확장", "CTE, Constant Tone Extension", "패킷 끝에 붙는 16~160 µs의 순수한 톤. 보호 4 µs, 기준 8 µs, 1·2 µs 슬롯. [Vol 6] Part B §2.5.1", "location"],
     ["채널 사운딩", "Channel Sounding (CS)", "6.0. 72개 1 MHz 채널의 위상 기울기(PBR)와 왕복 시간(RTT)으로 두 기기 사이 거리를 잰다. [Vol 1] Part A §9, [Vol 6] Part H", "location"],
+    ["위상 보정값 인라인 전송", "Inline PCT Transfer (IPT)", "6.3에서 더한 채널 사운딩 선택 기능. 반사기가 되돌려 보내는 톤의 위상을 맞춰 자기 PCT의 Q를 0으로 만들고 크기만 보고한다. 잰 위상을 따로 넘기는 대신 톤에 실어 넘긴다. [Vol 6] Part A §6.5, Part H §4.6", "location"],
     ["PBR", "Phase-Based Ranging", "주파수에 따른 왕복 위상의 기울기로 거리를 구하는 방법. x = −(dφ/df)·c/4π, 1 MHz 간격이면 150 m마다 모호하다. [Vol 1] Part A §9.2", "location"],
     ["RTT", "Round-Trip Time", "패킷 왕복 시간으로 거리를 재는 방법. 중계로 줄일 수 없어 거리 하한을 보장한다. [Vol 1] Part A §9.3", "location"],
     // 12 mesh

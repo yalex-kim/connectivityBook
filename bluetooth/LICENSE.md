@@ -30,4 +30,4 @@ BluetoothBook은 실행 코드와 교재 콘텐츠에 서로 다른 라이선스
 
 ## 상표와 사양 인용
 
-Bluetooth® 워드마크와 로고는 Bluetooth SIG, Inc.의 등록 상표이며, Auracast™도 Bluetooth SIG의 상표입니다. 이 책은 Bluetooth SIG와 관련이 없는 독립적인 교육 자료입니다. 본문은 Bluetooth Core Specification 6.2의 수치·규칙을 설명을 위해 짧게 인용하고 위치([Vol·Part·§])를 밝히며, 사양서 원문은 Bluetooth SIG의 저작물로 [bluetooth.com](https://www.bluetooth.com/specifications/specs/)에서 제공됩니다.
+Bluetooth® 워드마크와 로고는 Bluetooth SIG, Inc.의 등록 상표이며, Auracast™도 Bluetooth SIG의 상표입니다. 이 책은 Bluetooth SIG와 관련이 없는 독립적인 교육 자료입니다. 본문은 Bluetooth Core Specification 6.3의 수치·규칙을 설명을 위해 짧게 인용하고 위치([Vol·Part·§])를 밝히며, 사양서 원문은 Bluetooth SIG의 저작물로 [bluetooth.com](https://www.bluetooth.com/specifications/specs/)에서 제공됩니다.

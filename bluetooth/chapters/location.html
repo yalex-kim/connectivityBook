@@ -138,6 +138,10 @@
       <button class="opt">둘 다 속지 않는다</button>
     </div><div class="quiz-exp">세기는 증폭기로 꾸밀 수 있지만, 중계는 언제나 시간을 더한다. 그래서 RTT는 “적어도 이만큼은 멀다”는 하한을 보장한다(거리 한정). 공격자는 대신 신호의 일부를 미리 추측해 보내거나 진폭을 조작하는 더 정교한 공격을 시도하는데, 6.0은 위상 기반 공격 탐지를, 6.2는 진폭 기반 공격 대응(Amplitude-based Attack Resilience)을 추가했다.</div></div>
     <p class="spec-ref">CS 공격 탐지 요구(위상 기반, 진폭 기반 DFT 탐지): <b>[Vol 6] Part H §3.5</b> · 6.2의 Channel Sounding Amplitude-based Attack Resilience: <b>[Vol 1] Part C §16.1</b></p>
+    <h3>6.3에서 더해진 것</h3>
+    <p>이 책의 기준 판인 6.3은 채널 사운딩에 두 가지를 더했다. 첫째는 <b><span class="term">위상 보정값 인라인 전송</span></b><span class="en">(Inline PCT Transfer, IPT)</span>이다. 위상 방식에서는 시작기(initiator)와 반사기(reflector)가 각자 받은 톤의 위상을 재서 I·Q 값(PCT)으로 남긴다. IPT를 켜면 반사기는 자기가 되돌려 보내는 톤의 위상을 미리 맞춰서, 자기가 보고하는 PCT의 허수부(Q)가 0이 되고 실수부(I)에는 신호 크기만 남게 한다. 반사기가 잰 위상을 따로 넘기는 대신 되돌려 보내는 톤에 실어(인라인으로) 넘기는 셈이다. 이때 안테나 전환 시간은 반사기가 알려 준 IPT용 값(T_SW_IPT)까지 고려해 정한다.</p>
+    <p>둘째는 <b>PHY별 RTT 정확도</b>다. 왕복 시간(RTT)용 패킷은 필수인 LE 1M 말고도 선택 기능인 LE 2M·LE 2M 2BT로 보낼 수 있는데, 6.3부터는 2M 계열 PHY의 RTT 정확도 요구를 1M과 따로 정해 능력 교환 때 알릴 수 있다. 두 기능 모두 양쪽 칩이 지원해야 쓰는 선택 기능이다.</p>
+    <p class="spec-ref">IPT: <b>[Vol 6] Part A §6.5</b> · 반사기의 톤 위상과 PCT: <b>[Vol 6] Part H §4.6</b> · IPT의 안테나 전환 시간: <b>Part H §4.3.3</b> · 능력 교환(IPT 비트, RTT_PHY 비트, 2M용 RTT 필드): <b>[Vol 6] Part B §2.4.2.44</b> · 6.3 새 기능 목록: <b>[Vol 1] Part C §17.1</b></p>
   </section>
 
   <!-- ============================================================ -->

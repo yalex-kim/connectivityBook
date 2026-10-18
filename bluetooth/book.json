@@ -1,7 +1,7 @@
 {
   "id": "bluetoothbook",
   "title": "BluetoothBook",
-  "description": "2.4 GHz 전파와 GFSK, 주파수 도약, 광고와 연결, GATT, 페어링과 보안, 코인 전지로 몇 년 가는 전력 설계, LE 오디오와 Auracast, 채널 사운딩, 메시까지. Bluetooth Core 6.2를 근거로 패킷을 직접 만들고 계산을 돌려 보며 블루투스를 이해하도록 썼습니다.",
+  "description": "2.4 GHz 전파와 GFSK, 주파수 도약, 광고와 연결, GATT, 페어링과 보안, 코인 전지로 몇 년 가는 전력 설계, LE 오디오와 Auracast, 채널 사운딩, 메시까지. Bluetooth Core 6.3을 근거로 패킷을 직접 만들고 계산을 돌려 보며 블루투스를 이해하도록 썼습니다.",
   "url": "https://yalex-kim.github.io/yalexBook/bluetooth/",
   "repo": "https://github.com/yalex-kim/yalexBook/tree/main/bluetooth",
   "field": "electronics",
@@ -11,7 +11,7 @@
     "ns": "BT",
     "prefix": "bt",
     "short": "블루투스 교과서",
-    "footer": "BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서 · 기준 사양: Bluetooth Core 6.2",
+    "footer": "BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서 · 기준 사양: Bluetooth Core 6.3",
     "specLabel": "사양 들여다보기",
     "colors": {
       "light": {

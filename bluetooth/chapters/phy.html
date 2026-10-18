@@ -5,19 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <title>비트를 전파에 싣기: GFSK와 PHY · BluetoothBook</title>
-<meta name="description" content="블루투스가 0과 1을 전파에 싣는 방법. 가우시안 필터를 거친 주파수 편이 변조(GFSK)와 변조 지수, 잡음 속 비트 판정과 수신 감도, EDR의 위상 변조, LE 1M·2M·Coded PHY의 속도와 거리 교환을 Core 6.2 기준으로 다룬다.">
+<meta name="description" content="블루투스가 0과 1을 전파에 싣는 방법. 가우시안 필터를 거친 주파수 편이 변조(GFSK)와 변조 지수, 잡음 속 비트 판정과 수신 감도, EDR의 위상 변조, LE 1M·2M·Coded PHY의 속도와 거리 교환을 Core 6.3 기준으로 다룬다.">
 <link rel="canonical" href="https://yalex-kim.github.io/yalexBook/bluetooth/chapters/phy.html">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="BluetoothBook">
 <meta property="og:title" content="비트를 전파에 싣기: GFSK와 PHY · BluetoothBook">
-<meta property="og:description" content="블루투스가 0과 1을 전파에 싣는 방법. 가우시안 필터를 거친 주파수 편이 변조(GFSK)와 변조 지수, 잡음 속 비트 판정과 수신 감도, EDR의 위상 변조, LE 1M·2M·Coded PHY의 속도와 거리 교환을 Core 6.2 기준으로 다룬다.">
+<meta property="og:description" content="블루투스가 0과 1을 전파에 싣는 방법. 가우시안 필터를 거친 주파수 편이 변조(GFSK)와 변조 지수, 잡음 속 비트 판정과 수신 감도, EDR의 위상 변조, LE 1M·2M·Coded PHY의 속도와 거리 교환을 Core 6.3 기준으로 다룬다.">
 <meta property="og:url" content="https://yalex-kim.github.io/yalexBook/bluetooth/chapters/phy.html">
 <meta property="og:image" content="https://yalex-kim.github.io/yalexBook/bluetooth/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"비트를 전파에 싣기: GFSK와 PHY","name":"비트를 전파에 싣기: GFSK와 PHY · BluetoothBook","url":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/phy.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/phy.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":3,"image":"https://yalex-kim.github.io/yalexBook/bluetooth/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/bluetooth/#book","name":"BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth/"},"publisher":{"@type":"Organization","name":"BluetoothBook","url":"https://yalex-kim.github.io/yalexBook/bluetooth/"},"description":"블루투스가 0과 1을 전파에 싣는 방법. 가우시안 필터를 거친 주파수 편이 변조(GFSK)와 변조 지수, 잡음 속 비트 판정과 수신 감도, EDR의 위상 변조, LE 1M·2M·Coded PHY의 속도와 거리 교환을 Core 6.2 기준으로 다룬다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook","item":"https://yalex-kim.github.io/yalexBook/bluetooth/"},{"@type":"ListItem","position":2,"name":"03 비트를 전파에 싣기: GFSK와 PHY","item":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/phy.html"}]}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"비트를 전파에 싣기: GFSK와 PHY","name":"비트를 전파에 싣기: GFSK와 PHY · BluetoothBook","url":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/phy.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/phy.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":3,"image":"https://yalex-kim.github.io/yalexBook/bluetooth/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/bluetooth/#book","name":"BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth/"},"publisher":{"@type":"Organization","name":"BluetoothBook","url":"https://yalex-kim.github.io/yalexBook/bluetooth/"},"description":"블루투스가 0과 1을 전파에 싣는 방법. 가우시안 필터를 거친 주파수 편이 변조(GFSK)와 변조 지수, 잡음 속 비트 판정과 수신 감도, EDR의 위상 변조, LE 1M·2M·Coded PHY의 속도와 거리 교환을 Core 6.3 기준으로 다룬다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook","item":"https://yalex-kim.github.io/yalexBook/bluetooth/"},{"@type":"ListItem","position":2,"name":"03 비트를 전파에 싣기: GFSK와 PHY","item":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/phy.html"}]}]}</script>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -198,7 +198,7 @@
   <!-- ============================================================ -->
   <section id="hdt">
     <h2>곧 올 PHY: HDT (공개 초안)</h2>
-    <div class="callout warn"><strong>이 절은 Core 6.2 밖의 내용이다</strong><p>HDT는 이 책의 기준인 Core 6.2에 <b>들어 있지 않다</b>. Bluetooth SIG가 Core 6.2를 바탕으로 만든 <b>공개 초안</b>(Change Request)과 SIG의 소개 글(2026년 7월)을 근거로 쓴다. SIG는 다음 Core 사양에 넣을 예정이라고 밝혔다. 정식 사양이 나오면 수치와 이름이 바뀔 수 있다.</p></div>
+    <div class="callout warn"><strong>이 절은 Core 6.3 밖의 내용이다</strong><p>HDT는 이 책의 기준인 Core 6.3에도 <b>들어 있지 않다</b>. Bluetooth SIG가 Core 6.2를 바탕으로 만든 <b>공개 초안</b>(Change Request)과 SIG의 소개 글(2026년 7월)을 근거로 쓴다. SIG는 다음 Core 사양에 넣을 예정이라고 밝혔다. 정식 사양이 나오면 수치와 이름이 바뀔 수 있다.</p></div>
     <p>LE 2M의 2 Mb/s는 6장에서 계산해 보면 앱 처리량 약 1.4 Mb/s가 상한이다. 무손실 오디오나 수백 MB 펌웨어에는 모자란다. <span class="term">HDT</span><span class="en">(High Data Throughput)</span>는 LE에 새 PHY를 더해 최대 <b>7.5 Mb/s</b>까지 올리려는 기능이다. 지금까지 이 장에서 본 생각들이 그대로 다시 쓰인다.</p>
     <ul>
       <li><b>심볼 속도는 그대로, 심볼당 비트를 늘린다</b>: 모든 HDT 속도는 LE 2M과 같은 <b>2 Msym/s</b>로 보낸다. 대신 GFSK가 아니라 QPSK·QAM 계열의 고차 변조를 쓴다. 클래식 EDR이 1 Msym/s에 위상 변조로 2~3 Mb/s를 실은 것과 같은 발상이다(위 성좌도 시뮬레이터). 7.5 Mb/s면 오류 정정 비트를 빼고도 심볼 하나에 평균 3.75비트를 싣는 셈이다.</li>
@@ -225,7 +225,7 @@
       <button class="opt" data-correct>아니다. QAM 변조와 새 FEC를 처리하는 무선 회로가 필요해 새 칩이 있어야 하고, 상대 기기도 지원해야 한다</button>
       <button class="opt">휴대폰만 업데이트하면 된다</button>
     </div><div class="quiz-exp">HDT는 PHY, 즉 컨트롤러의 무선 회로를 바꾸는 기능이다. 1장에서 본 것처럼 선택 기능은 양쪽 기기가 모두 지원해야 쓸 수 있다. 첫 제품은 정식 채택 뒤 새 칩을 넣은 기기부터 나온다.</div></div>
-    <p class="spec-ref">Core 6.2에는 없음 · Bluetooth SIG, “Introducing Bluetooth High Data Throughput (HDT)” (2026-07-28)과 공개 초안 <b>HDT Change Request</b>(Core 6.2 기반) · 채택 예정: 다음 Core 사양</p>
+    <p class="spec-ref">Core 6.3에도 없음 · Bluetooth SIG, “Introducing Bluetooth High Data Throughput (HDT)” (2026-07-28)과 공개 초안 <b>HDT Change Request</b>(Core 6.2 기반) · 채택 예정: 다음 Core 사양</p>
   </section>
 
   <!-- ============================================================ -->
@@ -254,7 +254,7 @@
       <li>클래식 EDR은 1 Msym/s에 위상 변조로 <b>2 Mb/s(π/4-DQPSK)</b>, <b>3 Mb/s(8DPSK)</b>를 싣는다. 점 간격이 좁아 더 강한 신호가 필요하다. 3-DH5의 최대 처리량은 2,178.1 kb/s다.</li>
       <li>LE PHY는 넷: <b>1M</b>(필수), <b>2M</b>(시간 절반), <b>Coded S=2</b>(500 kb/s), <b>S=8</b>(125 kb/s). Coded는 부호율 ½·K=4 컨볼루션 부호와 패턴 매퍼로 비트를 퍼뜨려 감도를 높인다(사양 최소 −75/−82 dBm).</li>
       <li>가까우면 2M이 가장 경제적이고, 멀면 Coded가 닿는다. 느린 PHY는 전력과 충돌 기회를 늘린다.</li>
-      <li><b>HDT</b>(공개 초안, Core 6.2에는 없음)는 2 Msym/s에 QPSK·QAM 계열 변조와 FEC를 더해 2~7.5 Mb/s를 패킷마다 골라 쓰는 새 LE PHY다. 새 무선 회로가 필요하다.</li>
+      <li><b>HDT</b>(공개 초안, Core 6.3에도 없음)는 2 Msym/s에 QPSK·QAM 계열 변조와 FEC를 더해 2~7.5 Mb/s를 패킷마다 골라 쓰는 새 LE PHY다. 새 무선 회로가 필요하다.</li>
     </ol>
   </section>
 
@@ -288,7 +288,7 @@
         <button class="opt">3 Mb/s는 암호화를 지원하지 않아서</button>
         <button class="opt">클래식은 거리가 멀면 LE로 바뀌어서</button>
       </div><div class="quiz-exp">심볼당 비트를 늘리면 점 사이 간격이 줄어 잡음 여유가 줄어든다. 링크가 나빠지면 더 튼튼한 변조로 내려간다.</div></div>
-      <div class="quiz-q"><p>Core 6.2 사양이 LE Coded S=8 수신기에 요구하는 최소 감도는?</p><div class="opts">
+      <div class="quiz-q"><p>Core 6.3 사양이 LE Coded S=8 수신기에 요구하는 최소 감도는?</p><div class="opts">
         <button class="opt">≤ −70 dBm</button><button class="opt">≤ −75 dBm</button><button class="opt" data-correct>≤ −82 dBm</button><button class="opt">≤ −104 dBm</button>
       </div><div class="quiz-exp">[Vol 6] Part A Table 4.2: 비부호화 −70, S=2 −75, S=8 −82 dBm. −104 dBm 같은 값은 좋은 상용 칩의 실제 성능이다.</div></div>
     </div>
@@ -313,7 +313,7 @@
   function berNoncoherentFsk(snrDb) { return 0.5 * Math.exp(-Math.pow(10, snrDb / 10) / 2); }
   /** 패킷 오류율: 비트 수 n */
   function packetErrorRate(ber, nBits) { return 1 - Math.pow(1 - ber, nBits); }
-  /** LE Coded FEC 부호기: 부호율 1/2, K=4, G0=1+x+x^2+x^3, G1=1+x^2+x^3. Core 6.2 [Vol 6] Part B §3.3.1 */
+  /** LE Coded FEC 부호기: 부호율 1/2, K=4, G0=1+x+x^2+x^3, G1=1+x^2+x^3. Core 6.3 [Vol 6] Part B §3.3.1 */
   function fecEncode(bits) {
     let s1 = 0, s2 = 0, s3 = 0; const out = [];
     bits.forEach((b) => {
