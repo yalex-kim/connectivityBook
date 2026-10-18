@@ -1,4 +1,4 @@
-// BluetoothBook 사실 검증: 챕터 안의 계산 함수를 꺼내 Bluetooth Core 6.2의 값·샘플 데이터와 맞춰 본다.
+// BluetoothBook 사실 검증: 챕터 안의 계산 함수를 꺼내 Bluetooth Core 6.3의 값·샘플 데이터와 맞춰 본다.
 // 실행: node scripts/verify-factcheck.cjs
 const fs = require('node:fs');
 const path = require('node:path');

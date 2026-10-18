@@ -9,7 +9,7 @@
 
 ## 원칙
 - **한국어**, 대상은 **블루투스를 배운 적 없는 일반인**(뒤쪽 장은 펌웨어·RF 입문 엔지니어도 읽을 깊이). 전문 용어는 처음 나올 때 쉬운 말로 풀고 `<span class="term">연결 간격</span><span class="en">(connInterval)</span>`처럼 원어를 병기한다.
-- **기준 사양은 Bluetooth Core Specification 6.2**다. 사양이 정한 수치·규칙에는 근거 위치를 `<p class="spec-ref">설명: <b>[Vol 6] Part B §4.5.1</b></p>`로 단다. 사양서에서 직접 확인하지 않은 값은 쓰지 않는다.
+- **기준 사양은 Bluetooth Core Specification 6.3**이다. 사양이 정한 수치·규칙에는 근거 위치를 `<p class="spec-ref">설명: <b>[Vol 6] Part B §4.5.1</b></p>`로 단다. 사양서에서 직접 확인하지 않은 값은 쓰지 않는다.
 - 사양이 정한 값(shall/should)과 **칩·제품의 대표값**을 구분한다. 대표값은 “대표값”, “흔히”라고 밝히고 `sim-note`에 가정을 적는다.
 - Core 밖의 사양(Assigned Numbers, Core Specification Supplement, A2DP·HFP·LC3·BAP, Mesh Protocol, 각종 서비스 사양)을 다룰 때는 “Core 밖”이라고 밝힌다.
 - 수식 대신 비유와 숫자 감각을 쓴다(필요하면 `.formula` 블록에 간단한 식만, KaTeX 없음). 책 전체의 공통 비유는 **시끄러운 카페에서의 대화**다: 2.4 GHz = 시끄러운 카페(Wi-Fi·전자레인지도 떠든다), 채널 = 테이블, 광고 채널 = 입구 쪽 세 테이블, 광고 = 자기소개 외치기, 스캔 = 귀 기울이기, 연결 = 정해진 시각마다 정해진 순서로 테이블을 옮겨 가며 만나는 약속, 연결 간격 = 만남 주기, 주파수 도약 = 테이블 옮기기, GATT = 메뉴판(서비스 = 분류, 특성 = 항목, 핸들 = 번호), 알림 = 진동벨, 페어링 = 둘만의 암호 정하기, 본딩 = 연락처 저장, RPA = 친구만 알아보는 가명, 메시 = 소문 전하기, 호스트·컨트롤러 = 손님과 비서.
@@ -22,6 +22,7 @@
 ## 계산 함수와 검증
 - 시뮬레이터의 계산은 페이지 스크립트 최상위 IIFE 바로 안에 `  function 이름(…) { … }`(들여쓰기 2칸)으로 두고, 그리기 코드와 분리한다. `scripts/verify-factcheck.cjs`가 이 함수를 꺼내 사양 값·샘플 데이터와 맞춰 본다.
 - 사양에 샘플 데이터가 있는 계산(CRC, 화이트닝, 채널 선택, LE Coded 부호기, AES-CMAC·g2·ah 등)은 반드시 샘플로 검증하는 테스트를 추가한다.
+- 기준 Core 판을 올릴 때는 `python3 tools/check_spec_refs.py <판> --titles`로 본문이 인용한 절·표가 새 판에 그대로 있는지와 제목을 확인하고, 새 판의 [Vol 1] Part C “Changes from …”(새 기능·삭제 기능·정오표)을 읽어 바뀐 내용을 반영한다. “6.2에서 추가된” 같은 역사 서술은 그대로 둔다.
 - 저장소 루트의 `.github/workflows/pages.yml`이 배포 전에 `node bluetooth/scripts/verify-factcheck.cjs`를 실행한다. 통과해야 배포된다.
 
 ## head 템플릿

@@ -30,7 +30,7 @@ def inject(path, url, kind, ld):
     ]) + '\n'
     s = s[:m.end()] + block + s[m.end():]
     io.open(path, 'w', encoding='utf-8', newline='').write(s)
-book = {'@type': 'Book', '@id': BASE + '#book', 'name': 'BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서', 'url': BASE, 'inLanguage': 'ko', 'isAccessibleForFree': True, 'educationalLevel': '입문 (사전 지식 불필요)', 'about': ['블루투스', 'Bluetooth Low Energy', '무선 통신', 'Bluetooth Core Specification 6.2', '사물 인터넷', '무선 오디오'], 'image': BASE + 'og.png'}
+book = {'@type': 'Book', '@id': BASE + '#book', 'name': 'BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서', 'url': BASE, 'inLanguage': 'ko', 'isAccessibleForFree': True, 'educationalLevel': '입문 (사전 지식 불필요)', 'about': ['블루투스', 'Bluetooth Low Energy', '무선 통신', 'Bluetooth Core Specification 6.3', '사물 인터넷', '무선 오디오'], 'image': BASE + 'og.png'}
 urls = [BASE]
 home = dict(book, hasPart=[{'@type': 'Chapter', 'position': int(n), 'name': t, 'url': f'{BASE}chapters/{s}.html'} for s, n, t in chs])
 inject('index.html', BASE, 'website', [{'@type': 'WebSite', '@id': BASE + '#site', 'name': SITE, 'alternateName': '블루투스 교과서', 'url': BASE, 'inLanguage': 'ko'}, home])

@@ -5,19 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <title>페어링과 보안 · BluetoothBook</title>
-<meta name="description" content="LE 페어링의 세 단계, 입출력 능력으로 정해지는 Just Works·숫자 비교·패스키·OOB, 레거시 페어링의 약점과 LE Secure Connections의 P-256 타원곡선 키 교환, 본딩과 키 배포, 추적을 막는 RPA를 AES-128·AES-CMAC 실제 계산과 Core 6.2 샘플 데이터로 다룬다.">
+<meta name="description" content="LE 페어링의 세 단계, 입출력 능력으로 정해지는 Just Works·숫자 비교·패스키·OOB, 레거시 페어링의 약점과 LE Secure Connections의 P-256 타원곡선 키 교환, 본딩과 키 배포, 추적을 막는 RPA를 AES-128·AES-CMAC 실제 계산과 Core 6.3 샘플 데이터로 다룬다.">
 <link rel="canonical" href="https://yalex-kim.github.io/yalexBook/bluetooth/chapters/security.html">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="BluetoothBook">
 <meta property="og:title" content="페어링과 보안 · BluetoothBook">
-<meta property="og:description" content="LE 페어링의 세 단계, 입출력 능력으로 정해지는 Just Works·숫자 비교·패스키·OOB, 레거시 페어링의 약점과 LE Secure Connections의 P-256 타원곡선 키 교환, 본딩과 키 배포, 추적을 막는 RPA를 AES-128·AES-CMAC 실제 계산과 Core 6.2 샘플 데이터로 다룬다.">
+<meta property="og:description" content="LE 페어링의 세 단계, 입출력 능력으로 정해지는 Just Works·숫자 비교·패스키·OOB, 레거시 페어링의 약점과 LE Secure Connections의 P-256 타원곡선 키 교환, 본딩과 키 배포, 추적을 막는 RPA를 AES-128·AES-CMAC 실제 계산과 Core 6.3 샘플 데이터로 다룬다.">
 <meta property="og:url" content="https://yalex-kim.github.io/yalexBook/bluetooth/chapters/security.html">
 <meta property="og:image" content="https://yalex-kim.github.io/yalexBook/bluetooth/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"페어링과 보안","name":"페어링과 보안 · BluetoothBook","url":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/security.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/security.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":8,"image":"https://yalex-kim.github.io/yalexBook/bluetooth/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/bluetooth/#book","name":"BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth/"},"publisher":{"@type":"Organization","name":"BluetoothBook","url":"https://yalex-kim.github.io/yalexBook/bluetooth/"},"description":"LE 페어링의 세 단계, 입출력 능력으로 정해지는 Just Works·숫자 비교·패스키·OOB, 레거시 페어링의 약점과 LE Secure Connections의 P-256 타원곡선 키 교환, 본딩과 키 배포, 추적을 막는 RPA를 AES-128·AES-CMAC 실제 계산과 Core 6.2 샘플 데이터로 다룬다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook","item":"https://yalex-kim.github.io/yalexBook/bluetooth/"},{"@type":"ListItem","position":2,"name":"08 페어링과 보안","item":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/security.html"}]}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"페어링과 보안","name":"페어링과 보안 · BluetoothBook","url":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/security.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/security.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":8,"image":"https://yalex-kim.github.io/yalexBook/bluetooth/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/bluetooth/#book","name":"BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth/"},"publisher":{"@type":"Organization","name":"BluetoothBook","url":"https://yalex-kim.github.io/yalexBook/bluetooth/"},"description":"LE 페어링의 세 단계, 입출력 능력으로 정해지는 Just Works·숫자 비교·패스키·OOB, 레거시 페어링의 약점과 LE Secure Connections의 P-256 타원곡선 키 교환, 본딩과 키 배포, 추적을 막는 RPA를 AES-128·AES-CMAC 실제 계산과 Core 6.3 샘플 데이터로 다룬다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook","item":"https://yalex-kim.github.io/yalexBook/bluetooth/"},{"@type":"ListItem","position":2,"name":"08 페어링과 보안","item":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/security.html"}]}]}</script>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -71,7 +71,7 @@
     <div class="flow">
       <div><b>① 기능 교환</b>Pairing Request/Response로 입출력 능력, OOB 데이터 유무, MITM 보호 요구, Secure Connections 지원, 본딩 여부, 키 길이(7~16바이트)를 알린다.</div>
       <div><b>② 키 생성</b>①의 정보로 방식(Just Works, 숫자 비교, 패스키, OOB)을 정하고 키를 만든다. 레거시는 TK → STK, Secure Connections는 ECDH → LTK.</div>
-      <div><b>③ 키 배포</b>링크를 암호화한 뒤 오래 쓸 키를 나눈다. 주소 해석용 IRK와 신원 주소, 서명용 CSRK, (레거시면) LTK.</div>
+      <div><b>③ 키 배포</b>링크를 암호화한 뒤 오래 쓸 키를 나눈다. 주소 해석용 IRK와 신원 주소, (레거시면) LTK. 예전에는 서명용 CSRK도 나눴지만 6.3에서 데이터 서명이 삭제되었다.</div>
     </div>
     <p>③에서 받은 키를 저장해 두는 것이 <span class="term">본딩</span><span class="en">(bonding)</span>이다. 본딩한 두 기기는 다음 연결 때 페어링 없이 저장된 <span class="term">LTK</span>로 바로 암호화를 시작한다(링크 계층의 Encryption Start, 6장). 휴대폰 블루투스 설정의 “등록된 기기” 목록이 본딩 목록이다. 암호화는 컨트롤러가 <span class="term">AES-CCM</span>으로 하며, 패킷마다 4바이트 <span class="term">MIC</span>(메시지 무결성 코드)를 붙여 위조를 막는다.</p>
     <p class="spec-ref">페어링 방식·키 생성·배포: <b>[Vol 3] Part H §2.3·§2.4</b> · 키 길이 7~16바이트: <b>§2.3.4</b> · AES-CCM 링크 암호화와 MIC: <b>[Vol 6] Part E §1</b> · LE 보안 모드 1의 네 단계(보안 없음 / 미인증 암호화 / 인증 암호화 / 128비트 LE Secure Connections 인증): <b>[Vol 3] Part C §10.2.1</b></p>
@@ -103,7 +103,7 @@
         <label class="check"><input type="checkbox" id="pr-oi"> 개시자가 상대의 OOB 데이터 보유</label>
         <label class="check"><input type="checkbox" id="pr-or"> 응답자가 상대의 OOB 데이터 보유</label>
       </div>
-      <div class="sim-note">해볼 것: ① 휴대폰(DisplayYesNo) ↔ 이어폰(NoInputNoOutput): 어떤 설정이든 Just Works다. 이어폰에는 숫자를 보여 줄 화면도, “예”를 누를 버튼도 없기 때문이다. ② 휴대폰 ↔ 휴대폰: Secure Connections면 숫자 비교, 끄면(레거시) Just Works로 떨어진다. ③ 노트북(KeyboardDisplay) ↔ 키보드(KeyboardOnly): 노트북이 보여 주고 키보드로 입력한다. 레거시에서는 같은 패스키 입력이라도 6.2 사양 표가 “미인증” 키로 분류한다는 점을 보자(아래 설명). ④ 한쪽만 OOB 데이터를 가져도 Secure Connections면 OOB, 레거시면 양쪽 모두 가져야 OOB다.</div>
+      <div class="sim-note">해볼 것: ① 휴대폰(DisplayYesNo) ↔ 이어폰(NoInputNoOutput): 어떤 설정이든 Just Works다. 이어폰에는 숫자를 보여 줄 화면도, “예”를 누를 버튼도 없기 때문이다. ② 휴대폰 ↔ 휴대폰: Secure Connections면 숫자 비교, 끄면(레거시) Just Works로 떨어진다. ③ 노트북(KeyboardDisplay) ↔ 키보드(KeyboardOnly): 노트북이 보여 주고 키보드로 입력한다. 레거시에서는 같은 패스키 입력이라도 6.2부터 사양 표가 “미인증” 키로 분류한다는 점을 보자(아래 설명). ④ 한쪽만 OOB 데이터를 가져도 Secure Connections면 OOB, 레거시면 양쪽 모두 가져야 OOB다.</div>
     </div>
     <p class="spec-ref">IO 능력 매핑(Table 2.5), 레거시 OOB·MITM 규칙(Table 2.6), Secure Connections 규칙(Table 2.7), 방식 표(Table 2.8): <b>[Vol 3] Part H §2.3.2·§2.3.5.1</b> · 패스키 000000~999999, 0도 포함해 6자리 모두 표시: <b>§2.3.5.3</b></p>
   </section>
@@ -134,7 +134,7 @@
       </div>
       <div class="sim-note">“새로 페어링”을 누를 때마다 브라우저의 WebCrypto로 두 기기의 실제 P-256 키 쌍과 128비트 난수 Na·Nb를 만들고, 사양의 g2 = AES-CMAC<sub>Na</sub>(PKax ∥ PKbx ∥ Nb) mod 2³²를 계산해 하위 6자리를 보여 준다(AES-128과 CMAC은 이 페이지가 직접 계산한다). 해볼 것: ① 그냥 누르면 두 화면의 숫자가 같다. ② “중간자”를 켜면 A는 중간자와, B도 중간자와 따로 키를 만든다. 두 화면의 숫자가 다르게 나와 사람이 “아니요”를 누르게 된다. ③ “사양 샘플 D.5 계산”을 누르면 사양의 U·V·X·Y로 계산한 AES-CMAC이 1536d18d…2f9ed5ba와 같은지 확인한다. 단순화: 실제로는 DHKey로 LTK를 만들고(f5), 확인값(f4, f6)도 주고받는다.</div>
     </div>
-    <div class="callout warn"><strong>6.2가 짚은 것: 레거시 패스키는 “미인증”</strong><p>Core 6.2의 방식 표(Table 2.8)는 같은 패스키 입력이라도 <b>레거시 페어링에서는 미인증(Unauthenticated)</b>, Secure Connections에서는 인증(Authenticated) 키로 분류한다. 위에서 본 것처럼 레거시 패스키는 녹음 뒤 대입으로 풀리므로 “사람이 확인했다”는 보장이 의미가 없기 때문이다. 6.2에는 클래식(BR/EDR)의 Secure Simple Pairing 구현이 약한 패스키를 만들 수 있다는 보안 정정(erratum 24489)도 반영되었다. 클래식에서는 2019년 키 길이 협상을 1바이트까지 낮추는 KNOB 공격이 알려진 뒤, 최소 7바이트 키를 강제하는 것이 권고되었다.</p></div>
+    <div class="callout warn"><strong>6.2가 짚은 것: 레거시 패스키는 “미인증”</strong><p>Core 6.2부터 방식 표(Table 2.8)는 같은 패스키 입력이라도 <b>레거시 페어링에서는 미인증(Unauthenticated)</b>, Secure Connections에서는 인증(Authenticated) 키로 분류한다. 위에서 본 것처럼 레거시 패스키는 녹음 뒤 대입으로 풀리므로 “사람이 확인했다”는 보장이 의미가 없기 때문이다. 6.2에는 클래식(BR/EDR)의 Secure Simple Pairing 구현이 약한 패스키를 만들 수 있다는 보안 정정(erratum 24489)도 반영되었다. 클래식에서는 2019년 키 길이 협상을 1바이트까지 낮추는 KNOB 공격이 알려진 뒤, 최소 7바이트 키를 강제하는 것이 권고되었다.</p></div>
     <p class="spec-ref">레거시 패스키의 Unauthenticated 분류: <b>[Vol 3] Part H Table 2.8</b> · 6.2 보안 정정 24489: <b>[Vol 1] Part C §16.3</b></p>
     <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">LE Secure Connections를 지원하는 휴대폰과 이어폰(입출력 없음)이 페어링한다. 근처에서 녹음만 하는 도청자와, 중간에서 쪽지를 바꾸는 중간자 중 누구를 막을 수 있을까?</p><p class="wi-hint">위 판정기에서 방식을 확인하고, ECDH가 무엇을 막는지 떠올려 보자.</p><div class="opts">
       <button class="opt">둘 다 막는다</button>

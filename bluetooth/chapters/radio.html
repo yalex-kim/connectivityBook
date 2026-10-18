@@ -88,7 +88,7 @@
         <div class="stat"><span class="k">1 mW와 비교</span><span class="v" id="dbm-r">—</span></div>
         <div class="stat"><span class="k">가장 가까운 기준점</span><span class="v" id="dbm-near">—</span></div>
       </div>
-      <div class="sim-note">눈금 하나가 10 dB, 즉 10배다. 해볼 것: 슬라이더를 0 dBm(1 mW)에서 −70 dBm까지 내려 보자. 7칸, 즉 1000만 분의 1로 줄었는데도 사양이 요구하는 최소 수신 감도에 겨우 닿는다. 기준점의 출처: 송신 전력 범위와 수신 감도 −70/−75/−82 dBm은 Core 6.2 [Vol 6] Part A §3·§4.1, “요즘 칩의 감도”는 여러 상용 칩 데이터시트의 대표값(약 −94~−105 dBm), 열잡음 바닥은 kTB(1 MHz, 상온) ≈ −114 dBm.</div>
+      <div class="sim-note">눈금 하나가 10 dB, 즉 10배다. 해볼 것: 슬라이더를 0 dBm(1 mW)에서 −70 dBm까지 내려 보자. 7칸, 즉 1000만 분의 1로 줄었는데도 사양이 요구하는 최소 수신 감도에 겨우 닿는다. 기준점의 출처: 송신 전력 범위와 수신 감도 −70/−75/−82 dBm은 Core 6.3 [Vol 6] Part A §3·§4.1, “요즘 칩의 감도”는 여러 상용 칩 데이터시트의 대표값(약 −94~−105 dBm), 열잡음 바닥은 kTB(1 MHz, 상온) ≈ −114 dBm.</div>
     </div>
     <p>송신 전력은 사양이 범위를 정한다. LE 기기의 최대 송신 전력은 <b>0.01 mW(−20 <span class="term">dBm</span>)~100 mW(+20 dBm)</b> 사이여야 하고, 최대 출력에 따라 아래와 같은 <b><span class="term">전력 등급</span></b>으로 나뉜다. 클래식도 비슷한 세 등급이 있다. 흔히 “블루투스는 10 m”라는 말은 옛날 클래스 2(최대 2.5 mW) 기기를 기준으로 한 이야기다.</p>
     <div class="table-wrap"><table>
@@ -205,7 +205,7 @@
       </div><div class="quiz-exp">자유 공간 경로 손실은 20·log₁₀(d)를 따르므로 거리 2배마다 6 dB(1/4)씩 준다. 실내에서는 경로 손실 지수가 2보다 커서 더 빨리 준다.</div></div>
       <div class="quiz-q"><p>LE 사양이 요구하는 LE 1M PHY의 최소 수신 감도(이보다 나빠서는 안 되는 값)는?</p><div class="opts">
         <button class="opt">−97 dBm 이하</button><button class="opt" data-correct>−70 dBm 이하</button><button class="opt">−82 dBm 이하</button><button class="opt">−50 dBm 이하</button>
-      </div><div class="quiz-exp">Core 6.2 [Vol 6] Part A Table 4.2: LE 비부호화 PHY ≤ −70 dBm, Coded S=2 ≤ −75 dBm, S=8 ≤ −82 dBm. −97 dBm 같은 값은 실제 칩의 성능이다.</div></div>
+      </div><div class="quiz-exp">Core 6.3 [Vol 6] Part A Table 4.2: LE 비부호화 PHY ≤ −70 dBm, Coded S=2 ≤ −75 dBm, S=8 ≤ −82 dBm. −97 dBm 같은 값은 실제 칩의 성능이다.</div></div>
       <div class="quiz-q"><p>책상 위에서 블루투스 스피커를 5 cm 옮겼더니 RSSI가 15 dB 바뀌었다. 가장 그럴듯한 원인은?</p><div class="opts">
         <button class="opt">거리 변화로 인한 경로 손실</button><button class="opt">스피커의 송신 전력이 바뀌어서</button><button class="opt" data-correct>반사파들이 보강·상쇄되는 다중 경로 페이딩</button><button class="opt">RSSI는 원래 거리와 무관한 숫자라서</button>
       </div><div class="quiz-exp">5 cm는 반 파장(약 6 cm)에 가까워, 반사파와 직접파의 위상 관계가 크게 바뀐다. 경로 손실로는 5 cm 이동에 0.1 dB도 변하지 않는다.</div></div>
@@ -222,7 +222,7 @@
   const $ = (id) => document.getElementById(id);
   const C = 299792458;
 
-  /** LE 채널 번호 → 중심 주파수(MHz). Core 6.2 [Vol 6] Part B Table 1.3 */
+  /** LE 채널 번호 → 중심 주파수(MHz). Core 6.3 [Vol 6] Part B Table 1.3 */
   function leFreq(ch) {
     if (ch === 37) return 2402;
     if (ch === 38) return 2426;
