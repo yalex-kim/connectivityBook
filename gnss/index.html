@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<title>GNSSBook · 누구나 읽는 GNSS 교과서</title>
+<meta name="description" content="2만 km 위의 시계로 위치를 아는 기술. 궤도와 신호, PRN 코드, 신호 획득과 추적, 항법 메시지, 위성 위치 계산, 의사거리와 DOP, 전리층·대류층, 도시 환경, RTK·PPP, 휴대폰 GNSS까지 공개 규격(IS-GPS-200, Galileo OS SIS ICD)과 RTKLIB로 확인한 값으로 직접 만지며 배우는 인터랙티브 교과서.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/gnss/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="GNSSBook">
+<meta property="og:title" content="GNSSBook · 누구나 읽는 GNSS 교과서">
+<meta property="og:description" content="2만 km 위의 시계로 위치를 아는 기술. 궤도와 신호, PRN 코드, 신호 획득과 추적, 항법 메시지, 위성 위치 계산, 의사거리와 DOP, 전리층·대류층, 도시 환경, RTK·PPP, 휴대폰 GNSS까지 공개 규격(IS-GPS-200, Galileo OS SIS ICD)과 RTKLIB로 확인한 값으로 직접 만지며 배우는 인터랙티브 교과서.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/gnss/">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/gnss/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://yalex-kim.github.io/yalexBook/gnss/#site","name":"GNSSBook","alternateName":"GNSS 교과서","url":"https://yalex-kim.github.io/yalexBook/gnss/","inLanguage":"ko"},{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/gnss/#book","name":"GNSSBook — 누구나 읽는 인터랙티브 GNSS 교과서","url":"https://yalex-kim.github.io/yalexBook/gnss/","inLanguage":"ko","isAccessibleForFree":true,"educationalLevel":"입문 (사전 지식 불필요)","about":["GNSS","GPS","위성 항법","Galileo","RTK","위치 측정"],"image":"https://yalex-kim.github.io/yalexBook/gnss/og.png","hasPart":[{"@type":"Chapter","position":1,"name":"GNSS란 무엇인가","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/intro.html"},{"@type":"Chapter","position":2,"name":"궤도: 2만 km 위의 별자리","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/orbits.html"},{"@type":"Chapter","position":3,"name":"신호와 주파수: 잡음 아래의 목소리","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/signals.html"},{"@type":"Chapter","position":4,"name":"PRN 코드: 위성마다 다른 무늬","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/prn.html"},{"@type":"Chapter","position":5,"name":"신호 찾기: 코드 위상 × 도플러","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/acquisition.html"},{"@type":"Chapter","position":6,"name":"추적: 코드와 반송파 붙잡기","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/tracking.html"},{"@type":"Chapter","position":7,"name":"항법 메시지와 GPS 시간","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/navmsg.html"},{"@type":"Chapter","position":8,"name":"위성 위치 계산","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/satpos.html"},{"@type":"Chapter","position":9,"name":"위치 계산: 넷의 미지수와 DOP","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/position.html"},{"@type":"Chapter","position":10,"name":"오차의 지도: 전리층에서 다중 경로까지","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/errors.html"},{"@type":"Chapter","position":11,"name":"도시와 실내: 막히고 튕기는 신호","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/urban.html"},{"@type":"Chapter","position":12,"name":"정밀 측위: DGNSS·SBAS·RTK·PPP","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/precise.html"},{"@type":"Chapter","position":13,"name":"휴대폰 속 GNSS","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/phone.html"},{"@type":"Chapter","position":14,"name":"GNSS 설계 플레이그라운드","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/design.html"},{"@type":"Chapter","position":15,"name":"용어집 & 종합 퀴즈","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/glossary.html"}],"description":"2만 km 위의 시계로 위치를 아는 기술. 궤도와 신호, PRN 코드, 신호 획득과 추적, 항법 메시지, 위성 위치 계산, 의사거리와 DOP, 전리층·대류층, 도시 환경, RTK·PPP, 휴대폰 GNSS까지 공개 규격(IS-GPS-200, Galileo OS SIS ICD)과 RTKLIB로 확인한 값으로 직접 만지며 배우는 인터랙티브 교과서."}]}</script>
+<link rel="stylesheet" href="css/style.css">
+<script src="js/common.js"></script>
+<style>
+  .hero-3d { cursor: pointer; height: auto; touch-action: auto; padding-bottom: 46px; }
+  .hero-3d canvas { display: block; width: 100%; }
+  .paths { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .path { padding: 18px 20px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg-elev); }
+  .path h3 { margin: 0 0 6px; font-size: 17px; }
+  .path p { margin: 0 0 10px; color: var(--text-dim); font-size: 14.5px; }
+  .path .steps { display: flex; flex-wrap: wrap; gap: 6px; }
+  .path .steps a { font-family: var(--mono); font-size: 12px; padding: 3px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+  .path .steps a:hover { text-decoration: none; filter: brightness(1.1); }
+  .numbers { display: grid; gap: 1px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .numbers div { background: var(--bg-elev); padding: 18px 20px; }
+  .numbers b { display: block; font-family: var(--mono); font-size: 24px; letter-spacing: -0.02em; color: var(--text); }
+  .numbers span { color: var(--text-dim); font-size: 14px; }
+  .hero-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
+  .hero-badges span { font-size: 13px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border); color: var(--text-dim); background: var(--bg-elev); }
+  .hero-resume { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; justify-content: space-between; padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-elev); box-shadow: var(--shadow); }
+  .hero-resume[hidden] { display: none; }
+  .hero-resume small { display: block; font-size: 12px; color: var(--text-faint); letter-spacing: .05em; }
+  .hero-resume a { font-size: 16px; }
+  .hero-resume .hr-meta { font-size: 13.5px; color: var(--text-dim); }
+  .hero-resume button { font: inherit; border: 0; background: none; color: var(--text-faint); text-decoration: underline; cursor: pointer; padding: 0; }
+  .part-title { font-size: 13px; letter-spacing: .1em; font-weight: 700; color: var(--text-faint); margin: 28px 0 10px; text-transform: uppercase; }
+  .part-title:first-of-type { margin-top: 0; }
+  .stack-fig svg { display: block; width: 100%; height: auto; }
+  .stack-fig a:hover rect { stroke: var(--accent); stroke-width: 2; }
+  .howto { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .howto div { padding: 16px 18px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-elev); font-size: 14.5px; color: var(--text-dim); }
+  .howto b { display: block; color: var(--text); font-size: 16px; margin-bottom: 4px; }
+  .howto .sim-tag { display: inline-block; margin-bottom: 8px; }
+</style>
+</head>
+<body data-root="">
+
+<section class="home-hero">
+  <div class="inner">
+    <div>
+      <div class="eyebrow">Interactive GNSS Textbook · GPS · Galileo</div>
+      <h1>하늘의 시계로 아는 위치,<br><span class="grad">GNSS의 모든 것</span></h1>
+      <p>지도 앱의 파란 점은 2만 km 위에서 날아온, 휴대폰에 닿을 때는 잡음보다 약한 신호에서 나온다. 위성마다 다른 1,023칩 코드로 신호를 골라 듣고, 도착 시각을 재어 거리를 구하고, 넷 이상의 거리로 위치와 시계 오차를 함께 푼다. 궤도와 신호, PRN 코드, 획득과 추적, 항법 메시지, 위성 위치 계산, DOP, 전리층과 대류층, 빌딩 숲, RTK와 PPP, 휴대폰 GNSS까지. <b>공개된 GPS·Galileo 규격(IS-GPS-200N, Galileo OS SIS ICD)과 공개 구현 RTKLIB</b>으로 값을 확인하고 규격의 표와 RTKLIB 코드로 계산을 검증하며 배우는 GNSS 교과서입니다.</p>
+      <div class="cta">
+        <a class="primary" href="chapters/intro.html">1장부터 시작하기 →</a>
+        <a class="ghost" href="chapters/design.html">설계 플레이그라운드</a>
+      </div>
+      <div class="hero-badges" id="badges">
+        <span>15개 챕터</span><span>32개 시뮬레이터</span><span>공개 규격 조항으로 근거 표기</span><span>ICD 코드 표·RTKLIB로 검증한 계산</span><span>사전 지식 불필요</span><span>설치 없이 브라우저에서</span>
+      </div>
+      <div class="hero-resume" id="gn-resume" hidden></div>
+    </div>
+    <div class="hero-3d" id="hero"><canvas id="cv-hero"></canvas><span class="hint">위성과 기기를 누르면 해당 장으로 이동합니다 · 움직이는 점은 위성 신호</span></div>
+  </div>
+</section>
+
+<section class="home-section">
+  <h2>GNSS는 신호에서 위치까지 이어진 사슬이다</h2>
+  <p class="sub">위성이 신호를 보내고, 수신기가 그것을 찾아 붙잡아 시각과 궤도를 읽고, 거리를 모아 위치를 푼 뒤, 오차를 줄여 정밀하게 만든다. 칸을 누르면 해당 장으로 갑니다.</p>
+  <figure class="diagram stack-fig">
+    <div style="overflow-x:auto">
+    <svg viewBox="0 0 860 330" role="img" aria-label="GNSS 처리 과정과 이 책의 장" style="min-width:620px">
+      <a href="chapters/phone.html"><rect x="10" y="10" width="270" height="40" rx="10" class="f-acc-soft"/><text x="145" y="35" text-anchor="middle" class="t-acc">휴대폰 GNSS · 13장</text></a>
+      <a href="chapters/design.html"><rect x="290" y="10" width="270" height="40" rx="10" class="f-acc-soft"/><text x="425" y="35" text-anchor="middle" class="t-acc">측위 설계 · 14장</text></a>
+      <a href="chapters/precise.html"><rect x="570" y="10" width="280" height="40" rx="10" class="f-elev" stroke="var(--border)"/><text x="710" y="35" text-anchor="middle" class="t">DGNSS·RTK·PPP · 12장</text></a>
+      <a href="chapters/errors.html"><rect x="10" y="66" width="420" height="46" rx="10" class="f-elev" stroke="var(--border)"/><text x="220" y="94" text-anchor="middle" class="t">전리층·대류층·오차 예산 · 10장</text></a>
+      <a href="chapters/urban.html"><rect x="440" y="66" width="410" height="46" rx="10" class="f-elev" stroke="var(--border)"/><text x="645" y="94" text-anchor="middle" class="t">빌딩 숲·실내 · 11장</text></a>
+      <rect x="10" y="128" width="840" height="86" rx="12" fill="none" stroke="var(--accent)" stroke-dasharray="6 5"/><text x="24" y="146" class="t-acc">풀기</text>
+      <a href="chapters/navmsg.html"><rect x="70" y="154" width="240" height="46" rx="10" class="f-elev" stroke="var(--border)"/><text x="190" y="182" text-anchor="middle" class="t">항법 메시지·시간 · 7장</text></a>
+      <a href="chapters/satpos.html"><rect x="320" y="154" width="250" height="46" rx="10" class="f-elev" stroke="var(--border)"/><text x="445" y="182" text-anchor="middle" class="t">위성 위치 계산 · 8장</text></a>
+      <a href="chapters/position.html"><rect x="580" y="154" width="260" height="46" rx="10" class="f-elev" stroke="var(--border)"/><text x="710" y="182" text-anchor="middle" class="t">위치 풀기·DOP · 9장</text></a>
+      <rect x="10" y="226" width="840" height="94" rx="12" fill="none" stroke="var(--accent-2)" stroke-dasharray="6 5"/><text x="24" y="244" class="t-dim">신호</text>
+      <a href="chapters/orbits.html"><rect x="70" y="252" width="140" height="56" rx="10" class="f-elev" stroke="var(--border)"/><text x="140" y="285" text-anchor="middle" class="t">궤도 · 2장</text></a>
+      <a href="chapters/signals.html"><rect x="220" y="252" width="140" height="56" rx="10" class="f-elev" stroke="var(--border)"/><text x="290" y="285" text-anchor="middle" class="t">신호 · 3장</text></a>
+      <a href="chapters/prn.html"><rect x="370" y="252" width="140" height="56" rx="10" class="f-elev" stroke="var(--border)"/><text x="440" y="285" text-anchor="middle" class="t">PRN 코드 · 4장</text></a>
+      <a href="chapters/acquisition.html"><rect x="520" y="252" width="150" height="56" rx="10" class="f-elev" stroke="var(--border)"/><text x="595" y="285" text-anchor="middle" class="t">획득 · 5장</text></a>
+      <a href="chapters/tracking.html"><rect x="680" y="252" width="160" height="56" rx="10" class="f-elev" stroke="var(--border)"/><text x="760" y="285" text-anchor="middle" class="t">추적 · 6장</text></a>
+    </svg>
+    </div>
+    <figcaption><b>그림 0-1.</b> GNSS 처리 과정과 이 책의 장. 아래에서 위로: 위성 신호를 받아 붙잡고(2~6장), 시각과 궤도로 위치를 풀고(7~9장), 오차를 줄여 쓴다(10~14장).</figcaption>
+  </figure>
+</section>
+
+<section class="home-section" style="padding-top:0">
+  <h2>숫자로 보는 GNSS</h2>
+  <p class="sub">이 책을 끝내면 아래 숫자가 왜 그 값인지, 서로 어떻게 얽혀 있는지 설명할 수 있게 됩니다. 모두 공개 규격이나 RTKLIB, 그것으로 검증한 계산에서 확인한 값입니다.</p>
+  <div class="numbers">
+    <div><b>10.23 MHz</b><span>모든 것의 기준. L1 = 154배, L5 = 115배, C/A 칩 = 1/10</span></div>
+    <div><b>−158.5 dBW</b><span>L1 C/A 최소 수신 전력. 잡음보다 약해서 코드로 끌어올린다</span></div>
+    <div><b>1,023칩 · 1 ms</b><span>C/A 코드 한 주기. 1칩 ≈ 293 m</span></div>
+    <div><b>1 µs = 300 m</b><span>그래서 시계 오차를 네 번째 미지수로 함께 푼다</span></div>
+    <div><b>−4.4647 × 10⁻¹⁰</b><span>위성 시계를 일부러 늦춰 둔 비율. 상대론으로 하루 38 µs 빨라지기 때문</span></div>
+    <div><b>50 bps</b><span>항법 메시지 속도. 궤도력을 다 받으려면 18~30초</span></div>
+    <div><b>18초</b><span>2017년부터 GPS 시간이 UTC보다 앞선 양(윤초)</span></div>
+    <div><b>DOP × UERE</b><span>위치 오차 = 위성 배치 × 거리 오차. RTKLIB dops()로 검증</span></div>
+  </div>
+</div>
+</section>
+
+<section class="home-section" style="padding-top:0">
+  <h2>이 책을 읽는 방법</h2>
+  <p class="sub">수식이나 전문 지식 없이도 따라올 수 있도록 만들었습니다. 각 장은 같은 흐름으로 진행됩니다.</p>
+  <div class="howto">
+    <div><span class="pill" style="background:color-mix(in srgb, var(--warn) 14%, transparent);color:var(--warn);border:0">비유</span><b>시보로 이해하기</b>여러 방송국이 저마다의 음악(PRN 코드)에 맞춰 정시를 알리고, 소리가 늦게 들린 만큼 멀리 있다(의사거리). 내 시계가 틀리면 모든 방송이 똑같이 늦게 들린다(시계 오차). 익숙한 장면으로 먼저 감을 잡습니다.</div>
+    <div><span class="sim-tag">SIMULATOR</span><b>직접 만지기</b>위성을 옮기고, 빌딩을 세우고, 시계를 틀어 보세요. “예측해 보기”로 먼저 짐작하고 시뮬레이터로 확인합니다. C/A 코드는 규격의 코드 표 37개 전부와, 위성 위치·전리층·대류층·DOP·패리티는 RTKLIB 코드와 자동으로 맞춰 봅니다.</div>
+    <div><span class="pill acc">근거</span><b>규격으로 확인하기</b>GPS와 Galileo의 신호 규격은 누구나 내려받을 수 있습니다. 수치마다 <span style="font-family:var(--mono);font-size:13px">IS-GPS-200N 표 20-IV</span>나 <span style="font-family:var(--mono);font-size:13px">rtkcmn.c</span> 같은 출처를 달았습니다. 장 끝의 핵심 정리와 퀴즈, 마지막 장의 용어집과 종합 퀴즈로 복습합니다.</div>
+  </div>
+</section>
+
+<section class="home-section" style="padding-top:0">
+  <h2>추천 학습 경로</h2>
+  <p class="sub">처음부터 순서대로 읽는 것이 가장 좋지만, 관심사에 따라 골라 읽어도 됩니다.</p>
+  <div class="paths" id="paths"></div>
+</section>
+
+<section class="home-section" style="padding-top:0" id="chapters">
+  <h2>전체 목차</h2>
+  <p class="sub">모든 장에 직접 조작하는 시뮬레이터가 들어 있습니다.</p>
+  <div id="ch-parts"></div>
+  <p class="sub" style="margin-top:24px">이 책은 <a href="../index.html">yalexBook 서재</a>의 한 권이며, 구성과 설명 방식은 <a href="https://books.euiyun.com/">Books · 인터랙티브 교과서 시리즈</a>를 따릅니다. GNSS가 닿지 않는 실내에서 위치를 잇는 기술은 <a href="../uwb/">UWBBook</a>, <a href="../wifi/">WiFiBook</a>, <a href="../bluetooth/">BluetoothBook</a>과 함께 읽으면 좋습니다.</p>
+</section>
+
+<script>
+(function () {
+  "use strict";
+  const byNum = (n) => GN.CHAPTERS.find((c) => c.num === n);
+  const PATHS = [
+    ["🧭 전체 일주 (추천)", "GNSS를 처음 배운다면 1장부터 차례로. 각 장이 앞 장 위에 쌓입니다.", GN.CHAPTERS.filter((c) => c.slug !== "glossary").map((c) => [c.num, ""])],
+    ["📍 위치는 어떻게 나오나", "거리 넷으로 위치와 시계를.", [["01", "원리"], ["07", "시간"], ["08", "위성 위치"], ["09", "DOP"]]],
+    ["📡 수신기·신호처리", "코드, 상관, 루프의 물리.", [["03", "신호"], ["04", "PRN"], ["05", "획득"], ["06", "추적"], ["11", "도시"]]],
+    ["🎯 정확도를 올리려면", "오차의 정체와 지우는 법.", [["10", "오차"], ["11", "도시"], ["12", "RTK·PPP"], ["14", "설계"]]],
+    ["📱 앱·제품 개발자", "휴대폰과 제품의 GNSS.", [["05", "TTFF"], ["09", "DOP"], ["13", "휴대폰"], ["14", "설계"]]],
+  ];
+  document.getElementById("paths").innerHTML = PATHS.map(([t, d, steps]) => `<div class="path"><h3>${t}</h3><p>${d}</p><div class="steps">${steps.map(([n, l]) => { const c = byNum(n); return `<a href="chapters/${c.slug}.html" title="${c.title}">${n}${l ? " " + l : ""}</a>`; }).join("")}</div></div>`).join("");
+
+  let html = "", last = "";
+  GN.CHAPTERS.forEach((c) => {
+    if (c.part !== last) { if (last) html += "</div>"; html += `<div class="part-title">${c.part}</div><div class="ch-grid">`; last = c.part; }
+    html += `<a class="ch-card" href="chapters/${c.slug}.html"><span class="num">CHAPTER ${c.num}</span><h3>${c.title}</h3><p>${c.desc}</p><div class="tags">${c.tags.map((t) => `<span class="${t === "sim" ? "is-sim" : ""}">${t === "sim" ? "시뮬레이터" : t}</span>`).join("")}</div></a>`;
+  });
+  document.getElementById("ch-parts").innerHTML = html + "</div>";
+
+  const PG = GN.progress.load().ch || {};
+  document.querySelectorAll("#ch-parts .ch-card").forEach((a, i) => {
+    const c = GN.CHAPTERS[i], p = PG[c.slug]; if (!p || p.pct < 2) return;
+    a.classList.toggle("is-done", !!p.done);
+    a.insertAdjacentHTML("beforeend", `<div class="ch-prog" title="${Math.round(p.pct)}% 읽음"><i style="width:${p.done ? 100 : Math.round(p.pct)}%"></i></div>`);
+    if (p.done) a.querySelector(".num").insertAdjacentHTML("beforeend", '<span class="done-badge">✓ 다 읽음</span>');
+  });
+  const lastRead = GN.progress.last(), rs = document.getElementById("gn-resume");
+  if (lastRead && GN.CHAPTERS.some((c) => c.slug === lastRead.slug)) {
+    const c = GN.CHAPTERS.find((x) => x.slug === lastRead.slug), done = GN.progress.doneCount();
+    rs.hidden = false;
+    rs.innerHTML = `<div><small>이어 읽기</small><a href="chapters/${c.slug}.html${lastRead.sec ? "#" + lastRead.sec : ""}"><b>${c.num} ${c.title}</b> →</a></div><div class="hr-meta">${GN.CHAPTERS.length}장 중 <b>${done}</b>장 다 읽음 · <button type="button" id="gn-reset">기록 지우기</button></div>`;
+    document.getElementById("gn-reset").onclick = () => { if (confirm("이 브라우저에 저장된 읽기 기록과 퀴즈 답을 모두 지울까요?")) { GN.progress.reset(); location.reload(); } };
+  }
+
+  // hero: 휴대폰을 중심으로 주변 기기들과 패킷이 오간다. 패킷 색은 채널(주파수)이 바뀌는 것을 나타낸다.
+  const PLACES = [
+    { k: "phone", x: 0.5, y: 0.66, label: "휴대폰", sub: "위치 풀기 · 9장", slug: "position", icon: "phone", main: true },
+    { k: "s1", x: 0.14, y: 0.2, label: "GPS", sub: "궤도 · 2장", slug: "orbits", icon: "sat" },
+    { k: "s2", x: 0.38, y: 0.08, label: "Galileo", sub: "신호 · 3장", slug: "signals", icon: "sat" },
+    { k: "s3", x: 0.64, y: 0.1, label: "BeiDou", sub: "PRN 코드 · 4장", slug: "prn", icon: "sat" },
+    { k: "s4", x: 0.87, y: 0.24, label: "GPS", sub: "궤도력 · 8장", slug: "satpos", icon: "sat" },
+    { k: "city", x: 0.16, y: 0.74, label: "빌딩 숲", sub: "도시 · 11장", slug: "urban", icon: "city" },
+    { k: "base", x: 0.84, y: 0.74, label: "기준국", sub: "RTK · 12장", slug: "precise", icon: "base" },
+  ];
+  const LINKS = [["s1", "phone"], ["s2", "phone"], ["s3", "phone"], ["s4", "phone"], ["s1", "city"], ["s4", "base"], ["base", "phone"]];
+  const P_ = Object.fromEntries(PLACES.map((p) => [p.k, p]));
+  const dots = Array.from({ length: 22 }, (_, i) => ({ l: i % LINKS.length, t: Math.random(), s: 0.3 + Math.random() * 0.5, dir: Math.random() < 0.5 ? 1 : -1, ch: Math.floor(Math.random() * 3) }));
+  let hover = null, tt = 0;
+  const cvEl = document.getElementById("cv-hero");
+  function icon(ctx, kind, x, y, s, col) {
+    ctx.save(); ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = 1.8; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.beginPath();
+    if (kind === "phone") { GN.rrect(ctx, x - s * 0.5, y - s * 0.85, s, s * 1.7, 3); ctx.stroke(); ctx.beginPath(); ctx.arc(x, y + s * 0.6, 1.4, 0, 7); ctx.fill(); }
+    else if (kind === "sat") { GN.rrect(ctx, x - s * 0.3, y - s * 0.3, s * 0.6, s * 0.6, 2); ctx.stroke(); ctx.strokeRect(x - s * 1.05, y - s * 0.25, s * 0.6, s * 0.5); ctx.strokeRect(x + s * 0.45, y - s * 0.25, s * 0.6, s * 0.5); ctx.beginPath(); ctx.moveTo(x, y + s * 0.3); ctx.lineTo(x, y + s * 0.65); ctx.stroke(); }
+    else if (kind === "city") { ctx.strokeRect(x - s * 0.9, y - s * 0.2, s * 0.6, s); ctx.strokeRect(x - s * 0.3, y - s * 0.8, s * 0.6, s * 1.6); ctx.strokeRect(x + s * 0.3, y - s * 0.45, s * 0.6, s * 1.25); }
+    else if (kind === "base") { ctx.moveTo(x - s * 0.5, y + s * 0.8); ctx.lineTo(x, y - s * 0.3); ctx.lineTo(x + s * 0.5, y + s * 0.8); ctx.stroke(); ctx.beginPath(); ctx.arc(x, y - s * 0.45, s * 0.18, 0, 7); ctx.fill(); ctx.beginPath(); ctx.arc(x, y - s * 0.45, s * 0.55, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke(); }
+    ctx.restore();
+  }
+  const hero = GN.canvas(cvEl, (ctx, w, h) => {
+    const P = GN.palette(), pos = (p) => [p.x * w, p.y * h];
+    LINKS.forEach(([a, b]) => { const [x1, y1] = pos(P_[a]), [x2, y2] = pos(P_[b]); ctx.strokeStyle = P.border; ctx.lineWidth = 1.5; ctx.setLineDash([4, 6]); ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); ctx.setLineDash([]); });
+    dots.forEach((d) => {
+      const [a, b] = LINKS[d.l], t = d.t, [x1, y1] = pos(P_[a]), [x2, y2] = pos(P_[b]);
+      ctx.fillStyle = `hsl(${[142, 220, 142][d.ch]}, 70%, ${GN.isDark() ? 62 : 40}%)`; ctx.beginPath(); ctx.arc(GN.lerp(x1, x2, t), GN.lerp(y1, y2, t), 3.6, 0, 7); ctx.fill();
+    });
+    const small = w < 520, R = small ? 21 : 28;
+    PLACES.forEach((p) => {
+      const [x, y] = pos(p), on = hover === p.k;
+      if (p.main) { const pulse = 0.5 + 0.5 * Math.sin(tt * 3); ctx.fillStyle = P.accent; ctx.globalAlpha = 0.12 + 0.12 * pulse; ctx.beginPath(); ctx.arc(x, y, R + 10 + pulse * 5, 0, 7); ctx.fill(); ctx.globalAlpha = 1; }
+      ctx.beginPath(); ctx.arc(x, y, R, 0, 7); ctx.fillStyle = p.main ? P.accent : on ? P.accent2 : P.bg; ctx.fill();
+      ctx.strokeStyle = on || p.main ? P.accent : P.border; ctx.lineWidth = on ? 2.5 : 1.5; ctx.stroke();
+      icon(ctx, p.icon, x, y, R * 0.42, p.main || on ? "#fff" : P.text);
+      GN.text(ctx, p.label, x, y + R + 12, { align: "center", size: small ? 11.5 : 13, bold: true, color: on ? P.accent : P.text });
+      if (!small) GN.text(ctx, p.sub, x, y + R + 27, { align: "center", size: 11, color: P.dim });
+    });
+  }, { aspect: 0.82, minHeight: 300, maxHeight: 440 });
+  GN.loop(cvEl, (dt) => { tt += dt; dots.forEach((d) => { d.t += dt * d.s; if (d.t > 1) { d.t = 0; d.l = Math.floor(Math.random() * LINKS.length); d.dir = Math.random() < 0.5 ? 1 : -1; d.ch = Math.floor(Math.random() * 3); } }); hero.redraw(); });
+  const hit = (e) => { const r = cvEl.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top, R = (r.width < 520 ? 21 : 28) + 8; return PLACES.find((p) => Math.hypot(x - p.x * r.width, y - p.y * r.height) < R); };
+  cvEl.addEventListener("pointermove", (e) => { const p = hit(e); hover = p ? p.k : null; cvEl.style.cursor = p ? "pointer" : "default"; });
+  cvEl.addEventListener("pointerleave", () => (hover = null));
+  cvEl.addEventListener("click", (e) => { const p = hit(e); if (p) location.href = "chapters/" + p.slug + ".html"; });
+})();
+</script>
+</body>
+</html>

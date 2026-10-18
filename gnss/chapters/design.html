@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>GNSS 설계 플레이그라운드 · GNSSBook</title>
+<meta name="description" content="위성군·주파수·보강 방식·환경·시각을 고르면 보이는 위성 수, HDOP·VDOP, 오차 예산, 예상 수평·수직 오차와 첫 위치 시간이 계산된다. 책 전체의 궤도·DOP·오차·정밀 측위 계산을 한 화면에 모은 설계 도구와 점검표.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/gnss/chapters/design.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="GNSSBook">
+<meta property="og:title" content="GNSS 설계 플레이그라운드 · GNSSBook">
+<meta property="og:description" content="위성군·주파수·보강 방식·환경·시각을 고르면 보이는 위성 수, HDOP·VDOP, 오차 예산, 예상 수평·수직 오차와 첫 위치 시간이 계산된다. 책 전체의 궤도·DOP·오차·정밀 측위 계산을 한 화면에 모은 설계 도구와 점검표.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/gnss/chapters/design.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/gnss/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"GNSS 설계 플레이그라운드","name":"GNSS 설계 플레이그라운드 · GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/design.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/gnss/chapters/design.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":14,"image":"https://yalex-kim.github.io/yalexBook/gnss/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/gnss/#book","name":"GNSSBook — 누구나 읽는 인터랙티브 GNSS 교과서","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"publisher":{"@type":"Organization","name":"GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"description":"위성군·주파수·보강 방식·환경·시각을 고르면 보이는 위성 수, HDOP·VDOP, 오차 예산, 예상 수평·수직 오차와 첫 위치 시간이 계산된다. 책 전체의 궤도·DOP·오차·정밀 측위 계산을 한 화면에 모은 설계 도구와 점검표."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"GNSSBook","item":"https://yalex-kim.github.io/yalexBook/gnss/"},{"@type":"ListItem","position":2,"name":"14 GNSS 설계 플레이그라운드","item":"https://yalex-kim.github.io/yalexBook/gnss/chapters/design.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+</head>
+<body data-chapter="design">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 14</div>
+    <h1>GNSS 설계 플레이그라운드</h1>
+    <p class="lead">자전거 속도계, 차량 블랙박스, 농기계 자율 주행, 드론 측량, 휴대폰 지도 앱. 모두 GNSS를 쓰지만 필요한 정확도·위성군·주파수·보강 방식이 다르다. 이 장은 궤도(2장), DOP(9장), 오차 예산(10장), 도시 환경(11장), 정밀 측위(12장), 휴대폰(13장)의 계산을 한 화면에 모았다.</p>
+    <ul class="objectives">
+      <li>위성군과 환경이 보이는 위성 수·DOP를 어떻게 바꾸는지 비교한다.</li>
+      <li>주파수·보강 방식이 오차 예산과 최종 정확도를 어떻게 바꾸는지 비교한다.</li>
+      <li>응용의 요구 사항에서 출발해 수신기 사양을 고르는 순서를 익힌다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="play">
+    <h2>수신기 고르기</h2>
+    <div class="sim" id="sim-pg">
+      <div class="sim-head"><span class="sim-tag">PLAYGROUND</span><h3>GNSS 설계 계산기</h3></div>
+      <div class="sim-body side">
+        <div class="sim-view"><canvas id="cv-pg"></canvas></div>
+        <div class="sim-controls">
+          <div class="ctrl"><span>위성군</span><div style="display:flex;flex-wrap:wrap;gap:6px 14px">
+            <label class="check"><input type="checkbox" id="pg-gps" checked> GPS</label>
+            <label class="check"><input type="checkbox" id="pg-gal" checked> Galileo</label>
+            <label class="check"><input type="checkbox" id="pg-bds"> BeiDou</label>
+            <label class="check"><input type="checkbox" id="pg-glo"> GLONASS</label>
+          </div></div>
+          <div class="ctrl"><span>환경</span><div class="seg" id="pg-env"><button data-value="open" class="on">트인 하늘</button><button data-value="sub">교외·가로수</button><button data-value="urban">도심</button></div></div>
+          <div class="ctrl"><span>주파수</span><div class="seg" id="pg-f"><button data-value="1" class="on">L1</button><button data-value="2">L1 + L5</button></div></div>
+          <div class="ctrl"><span>보강</span><div class="seg" id="pg-aug"><button data-value="none" class="on">없음</button><button data-value="sbas">SBAS</button><button data-value="rtk">RTK</button></div></div>
+          <label class="ctrl"><span>시각 <output id="pg-t-out"></output></span><input type="range" id="pg-t" min="0" max="24" step="0.25" value="9"></label>
+        </div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">쓸 수 있는 위성</span><span class="v" id="pg-n">—</span></div>
+        <div class="stat"><span class="k">HDOP / VDOP</span><span class="v" id="pg-d">—</span></div>
+        <div class="stat"><span class="k">UERE</span><span class="v" id="pg-u">—</span></div>
+        <div class="stat"><span class="k">수평 오차(95%)</span><span class="v" id="pg-h">—</span></div>
+        <div class="stat"><span class="k">수직 오차(95%)</span><span class="v" id="pg-v">—</span></div>
+        <div class="stat"><span class="k">하루 중 위성이 넷 미만인 시간</span><span class="v" id="pg-o">—</span></div>
+      </div>
+      <div class="sim-note">스카이 플롯: 서울(37.5°N) 하늘, 색 = 위성군, 회색 = 환경 마스크 아래. 모델(예시 값): 2장의 이상적 원 궤도 위성군 각 24기(GPS 55°·26,560 km, Galileo 56°·29,600 km, BeiDou MEO 55°·27,906 km, GLONASS 64.8°·25,510 km), 마스크 트인 10° · 교외 20° · 도심은 길 방향을 뺀 대부분 40°, 오차 예산은 10장(도심 다중 경로·NLOS 4 m, 교외 1.5 m), L1+L5는 전리층 0.1 m·잡음 × 2.59, SBAS는 궤도·시계·전리층을 0.3·0.5 m로, RTK는 위성 5기 이상·이중 주파수일 때 수평 2 cm·수직 3 cm(도심은 확정 실패로 float 0.5 m). 95% ≈ 2 × 1σ.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="choose">
+    <h2>응용별 고르기</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>응용</th><th>필요 정확도</th><th>권장</th><th>주의</th></tr></thead>
+      <tbody>
+        <tr><td>휴대폰 지도·피트니스</td><td>수 m</td><td>다중 위성군 + L1/L5 + A-GNSS + 센서 융합</td><td>배터리(듀티 사이클), 도심 NLOS</td></tr>
+        <tr><td>차량 내비게이션·블랙박스</td><td>차선 구별(1~2 m) 이하</td><td>다중 위성군 + L1/L5 + 바퀴 속도·관성 융합</td><td>터널·고가 아래, 안테나 위치(유리 열선)</td></tr>
+        <tr><td>항공 접근</td><td>m + 무결성</td><td>SBAS(WAAS·EGNOS·KASS) 인증 수신기</td><td>무결성 경보 시간</td></tr>
+        <tr><td>드론 측량·농기계</td><td>cm</td><td>이중 주파수 RTK(기준국·네트워크 RTK)</td><td>확정 검증, 사이클 슬립, 기준선 길이</td></tr>
+        <tr><td>해양·원격지 정밀</td><td>cm~dm</td><td>PPP(Galileo HAS 등)</td><td>수렴 시간</td></tr>
+        <tr><td>시각 동기(통신 기지국 등)</td><td>수십 ns</td><td>고정 위치 시각 모드 수신기</td><td>재밍·스푸핑 감시</td></tr>
+      </tbody>
+    </table></div>
+    <h3>점검표</h3>
+    <ol>
+      <li><b>정확도 목표</b>(수평·수직, 95%)와 <b>가용성</b>(언제나? 트인 하늘에서만?)을 먼저 정한다.</li>
+      <li><b>환경</b>을 본다. 도심·숲이면 위성군 수와 L5, NLOS 걸러내기, 센서 융합이 정확도보다 먼저다(11장).</li>
+      <li><b>안테나</b>: 하늘이 트인 곳, 금속판(접지면) 위, 사람 몸·배터리에서 멀리. 측량은 원편파 안테나.</li>
+      <li><b>첫 위치 시간</b>: 통신이 있으면 A-GNSS, 없으면 냉시동 30초 이상을 감안한다(5·7장).</li>
+      <li><b>cm가 필요하면</b> 이중 주파수 + RTK(기준국 거리 수십 km 이내) 또는 PPP(수렴 시간 감수, 12장).</li>
+      <li><b>안전에 쓰이면</b> 무결성(SBAS·RAIM)과 재밍·스푸핑 대비를 따로 검토한다.</li>
+    </ol>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>위성군을 더하면 위성 수가 늘고 DOP가 줄어, 특히 도심에서 가용성이 크게 오른다.</li>
+      <li>정확도 ≈ DOP × UERE. L5는 전리층·다중 경로를, SBAS는 궤도·시계·전리층을, RTK는 거의 모든 공통 오차를 줄인다.</li>
+      <li>요구 사항(정확도·가용성·첫 위치 시간·무결성·전력)에서 출발해 위성군·주파수·보강·안테나를 고른다.</li>
+    </ol>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const D = Math.PI / 180, RE = 6378137, MU = 3.986005e14, OMGE = 7.2921151467e-5;
+  const SYS = { gps: [26559710, 55, 6, 4, 0], gal: [29600000, 56, 3, 8, 15], bds: [27906000, 55, 3, 8, 40], glo: [25510000, 64.8, 3, 8, 20] };
+  /** 이상적 위성군 위성 ECEF 목록 */
+  function sats(kinds, tt) {
+    const out = [];
+    kinds.forEach((k) => { const [a, inc, np, ns, ph] = SYS[k], T = 2 * Math.PI * Math.sqrt(a ** 3 / MU); for (let p = 0; p < np; p++) for (let s = 0; s < ns; s++) { const u = ((s * 360) / ns + p * 15 + ph) * D + (2 * Math.PI * tt) / T, O = (p * 360) / np * D + ph * D - OMGE * tt, x = a * Math.cos(u), y = a * Math.sin(u); out.push({ k, p: [x * Math.cos(O) - y * Math.cos(inc * D) * Math.sin(O), x * Math.sin(O) + y * Math.cos(inc * D) * Math.cos(O), y * Math.sin(inc * D)] }); } });
+    return out;
+  }
+  function azEl(lat, lon, s) { const p = [RE * Math.cos(lat) * Math.cos(lon), RE * Math.cos(lat) * Math.sin(lon), RE * Math.sin(lat)], d = s.map((v, i) => v - p[i]); const e = -Math.sin(lon) * d[0] + Math.cos(lon) * d[1], n = -Math.sin(lat) * Math.cos(lon) * d[0] - Math.sin(lat) * Math.sin(lon) * d[1] + Math.cos(lat) * d[2], u = Math.cos(lat) * Math.cos(lon) * d[0] + Math.cos(lat) * Math.sin(lon) * d[1] + Math.sin(lat) * d[2]; return [Math.atan2(e, n), Math.atan2(u, Math.hypot(e, n))]; }
+  /** 환경 마스크(라디안): 도심은 길 방향(북에서 20°) ±25°만 15°, 나머지 40° */
+  function mask(env, az) { if (env === "open") return 10 * D; if (env === "sub") return 20 * D; const d = Math.abs(((az / D - 20 + 540) % 180) - 90); return d > 65 ? 15 * D : 40 * D; }
+  /** HDOP·VDOP */
+  function hvdop(azel) {
+    if (azel.length < 4) return null; const H = azel.map(([a, e]) => [Math.cos(e) * Math.sin(a), Math.cos(e) * Math.cos(a), Math.sin(e), 1]), N = [0, 1, 2, 3].map((i) => [0, 1, 2, 3].map((j) => H.reduce((s, h) => s + h[i] * h[j], 0)));
+    const A = N.map((r, i) => [...r, ...[0, 1, 2, 3].map((j) => (i === j ? 1 : 0))]); for (let c = 0; c < 4; c++) { let p = c; for (let r = c + 1; r < 4; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r; if (Math.abs(A[p][c]) < 1e-12) return null; [A[c], A[p]] = [A[p], A[c]]; const v = A[c][c]; for (let j = 0; j < 8; j++) A[c][j] /= v; for (let r = 0; r < 4; r++) if (r !== c) { const k = A[r][c]; for (let j = 0; j < 8; j++) A[r][j] -= k * A[c][j]; } }
+    const Q = A.map((r) => r.slice(4)); return [Math.sqrt(Q[0][0] + Q[1][1]), Math.sqrt(Q[2][2])];
+  }
+  /** 오차 예산(1σ, m) → UERE */
+  function uere(env, dual, aug) {
+    const amp = 2.59, orb = aug === "sbas" ? 0.3 : 0.6, iono = dual ? 0.1 : aug === "sbas" ? 0.5 : 3, tropo = 0.2, mp = env === "urban" ? 4 : env === "sub" ? 1.5 : 0.5, nz = 0.5 * (dual ? amp : 1);
+    return Math.sqrt(orb * orb + iono * iono + tropo * tropo + (mp * (dual ? 0.8 : 1)) ** 2 + nz * nz);
+  }
+  /** 최종 1σ 오차 [수평, 수직](m) */
+  function accuracy(env, dual, aug, d, n) {
+    if (!d) return null;
+    if (aug === "rtk" && dual && n >= 5) return env === "urban" ? [0.5, 0.8] : [0.02, 0.03];
+    const u = uere(env, dual, aug); return [d[0] * u, d[1] * u];
+  }
+
+  /* ================================================================ 플레이그라운드 */
+  (function () {
+    let env = "open", dual = false, aug = "none";
+    const t = GN.range("pg-t", (v) => v.toFixed(2) + "시", draw);
+    ["pg-gps", "pg-gal", "pg-bds", "pg-glo"].forEach((id) => $(id).addEventListener("change", draw));
+    GN.seg("pg-env", (v) => { env = v; draw(); }); GN.seg("pg-f", (v) => { dual = v === "2"; draw(); }); GN.seg("pg-aug", (v) => { aug = v; draw(); });
+    const kinds = () => ["gps", "gal", "bds", "glo"].filter((k) => $("pg-" + k).checked);
+    const vis = (tt) => sats(kinds(), tt * 3600).map((s) => ({ k: s.k, ae: azEl(37.5 * D, 127 * D, s.p) })).filter((s) => s.ae[1] > 0);
+    const COL = (P) => ({ gps: P.accent, gal: P.accent2, bds: P.warn, glo: P.bad });
+    const cv = GN.canvas($("cv-pg"), (ctx, w, h) => {
+      const P = GN.palette(), cx = w / 2, cy = h / 2, R = Math.min(w, h) / 2 - 16, rOf = (el) => (R * (90 - el / D)) / 90;
+      ctx.fillStyle = P.grid; ctx.beginPath(); for (let k = 0; k <= 360; k++) { const az = k * D, r = rOf(mask(env, az)); const x = cx + Math.sin(az) * r, y = cy - Math.cos(az) * r; k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.arc(cx, cy, R, 0, 2 * Math.PI, true); ctx.fill("evenodd");
+      ctx.strokeStyle = P.border; ctx.beginPath(); ctx.arc(cx, cy, R, 0, 7); ctx.stroke();
+      vis(t()).forEach((s) => { const [az, el] = s.ae, on = el > mask(env, az), r = rOf(el); ctx.fillStyle = on ? COL(P)[s.k] : P.faint; ctx.beginPath(); ctx.arc(cx + Math.sin(az) * r, cy - Math.cos(az) * r, 5, 0, 7); ctx.fill(); });
+      GN.text(ctx, "북", cx, cy - R - 4, { size: 11, color: P.faint, align: "center" });
+    }, { aspect: 1, minHeight: 240, maxHeight: 340 });
+    function draw() {
+      const use = vis(t()).filter((s) => s.ae[1] > mask(env, s.ae[0])), d = hvdop(use.map((s) => s.ae)), acc = accuracy(env, dual, aug, d, use.length);
+      let out = 0; for (let tt = 0; tt < 24; tt += 0.5) { const n = vis(tt).filter((s) => s.ae[1] > mask(env, s.ae[0])).length; if (n < 4) out += 0.5; }
+      const fm = (m) => (m < 1 ? (m * 100).toFixed(0) + " cm" : m.toFixed(1) + " m");
+      GN.stat("pg-n", use.length + "기"); GN.stat("pg-d", d ? d[0].toFixed(2) + " / " + d[1].toFixed(2) : "4기 미만"); GN.stat("pg-u", aug === "rtk" && dual && use.length >= 5 ? "반송파(RTK)" : uere(env, dual, aug).toFixed(2) + " m");
+      GN.stat("pg-h", acc ? fm(2 * acc[0]) : "—"); GN.stat("pg-v", acc ? fm(2 * acc[1]) : "—"); GN.stat("pg-o", out.toFixed(1) + "시간");
+      cv.redraw();
+    }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

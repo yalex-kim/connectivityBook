@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>휴대폰 속 GNSS · GNSSBook</title>
+<meta name="description" content="휴대폰의 GNSS는 작은 안테나, 다중 위성군·이중 주파수 칩, 통신망의 도움(A-GNSS), 배터리를 아끼는 듀티 사이클, 관성 센서와의 융합으로 이루어진다. Android의 원시 측정값 API로 의사거리를 직접 계산하고, 듀티 사이클과 터널 속 관성 항법의 대가를 시뮬레이터로 본다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/gnss/chapters/phone.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="GNSSBook">
+<meta property="og:title" content="휴대폰 속 GNSS · GNSSBook">
+<meta property="og:description" content="휴대폰의 GNSS는 작은 안테나, 다중 위성군·이중 주파수 칩, 통신망의 도움(A-GNSS), 배터리를 아끼는 듀티 사이클, 관성 센서와의 융합으로 이루어진다. Android의 원시 측정값 API로 의사거리를 직접 계산하고, 듀티 사이클과 터널 속 관성 항법의 대가를 시뮬레이터로 본다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/gnss/chapters/phone.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/gnss/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"휴대폰 속 GNSS","name":"휴대폰 속 GNSS · GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/phone.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/gnss/chapters/phone.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":13,"image":"https://yalex-kim.github.io/yalexBook/gnss/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/gnss/#book","name":"GNSSBook — 누구나 읽는 인터랙티브 GNSS 교과서","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"publisher":{"@type":"Organization","name":"GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"description":"휴대폰의 GNSS는 작은 안테나, 다중 위성군·이중 주파수 칩, 통신망의 도움(A-GNSS), 배터리를 아끼는 듀티 사이클, 관성 센서와의 융합으로 이루어진다. Android의 원시 측정값 API로 의사거리를 직접 계산하고, 듀티 사이클과 터널 속 관성 항법의 대가를 시뮬레이터로 본다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"GNSSBook","item":"https://yalex-kim.github.io/yalexBook/gnss/"},{"@type":"ListItem","position":2,"name":"13 휴대폰 속 GNSS","item":"https://yalex-kim.github.io/yalexBook/gnss/chapters/phone.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<style>
+  .kv { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 6px 10px; font-size: 13px; align-items: center; }
+  .kv input { font: 12.5px var(--mono); padding: 5px 7px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--text); width: 100%; box-sizing: border-box; }
+</style>
+</head>
+<body data-chapter="phone">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 13</div>
+    <h1>휴대폰 속 GNSS</h1>
+    <p class="lead">측량용 GNSS 수신기는 접시만 한 안테나를 쓰는데, 휴대폰은 손톱만 한 안테나를 기기 귀퉁이에 넣는다. 그런데도 지도 앱은 몇 초 만에 몇 m 안으로 위치를 잡고, 배터리도 크게 줄지 않는다. 이 장은 지금까지의 내용이 휴대폰 안에서 어떻게 합쳐지는지 보고, Android가 열어 둔 원시 측정값으로 의사거리를 직접 계산해 본다.</p>
+    <ul class="objectives">
+      <li>휴대폰 GNSS의 약점(작은 선편파 안테나, 몸, 배터리)과 그것을 메우는 방법을 안다.</li>
+      <li>Android의 GnssClock·GnssMeasurement 값으로 의사거리를 직접 계산한다.</li>
+      <li>듀티 사이클이 배터리를 아끼는 대신 무엇을 잃는지 안다.</li>
+      <li>터널처럼 GNSS가 끊긴 동안 관성 센서만으로 위치를 이어 갈 때 오차가 어떻게 커지는지 계산한다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="chip">
+    <h2>작은 안테나, 많은 위성</h2>
+    <p>위성 신호는 오른쪽으로 도는 원편파다. 휴대폰 안테나는 공간이 없어 대개 선편파이고 이득도 낮아, 그것만으로 3 dB 이상 잃고 손·몸·케이스가 더 깎는다. 그래서 휴대폰의 맑은 하늘 C/N0는 측량 수신기보다 5~10 dB 낮다. 대신 요즘 칩은 다음으로 메운다.</p>
+    <ul>
+      <li><b>여러 위성군</b>: GPS·GLONASS·Galileo·BeiDou·QZSS를 함께 들어 하늘의 위성 수십 기를 쓴다(2·11장). Android는 위성군을 번호로 구분한다: GPS 1, SBAS 2, GLONASS 3, QZSS 4, BeiDou 5, Galileo 6, NavIC(IRNSS) 7.</li>
+      <li><b>이중 주파수</b>: 2018년 이후 L1 + L5(E1 + E5a) 휴대폰이 나와 전리층을 지우고(10장) 도시의 다중 경로에 강해졌다(11장).</li>
+      <li><b>A-GNSS</b>: 통신망에서 궤도력·대략 위치·시각을 받아 몇 초 만에 첫 위치를 잡는다(5장).</li>
+      <li><b>센서 융합</b>: 가속도·자이로·기압계·와이파이·셀 위치와 함께 계산해, 신호가 흔들리거나 끊겨도 위치를 이어 간다.</li>
+    </ul>
+    <p class="spec-ref">위성군 번호: Android <code>frameworks/base</code> <code>GnssStatus.java</code>의 <code>CONSTELLATION_GPS = 1</code> … <code>CONSTELLATION_IRNSS = 7</code></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="raw">
+    <h2>원시 측정값으로 의사거리 계산하기</h2>
+    <p>Android 7(2016)부터 앱이 칩의 <b>원시 측정값</b>을 받을 수 있다. 위치 결과만이 아니라, 9장에서 수신기가 쓰는 재료 그대로다. 의사거리는 “받은 시각 − 보낸 시각”에 빛의 속도를 곱한 것이고, Android는 두 시각을 이렇게 준다.</p>
+    <ul>
+      <li><b>받은 시각</b>(GPS 시간): <code>TimeNanos − (FullBiasNanos + BiasNanos)</code>. TimeNanos는 칩 하드웨어 시계, FullBiasNanos는 그 시계와 1980년 1월 6일부터의 GPS 시간의 차이(7장).</li>
+      <li><b>보낸 시각</b>: <code>ReceivedSvTimeNanos</code>, 그 주 일요일 0시부터의 위성 시각(TOW를 해독했을 때, <code>STATE_TOW_DECODED</code>).</li>
+    </ul>
+    <div class="sim" id="sim-raw">
+      <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>GnssClock + GnssMeasurement → 의사거리</h3></div>
+      <div class="sim-view" style="padding:14px"><div class="kv" id="rw-in"></div></div>
+      <div class="sim-controls"><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="rw-ex">예시 값 다시</button></div></div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">받은 시각(주내 ns)</span><span class="v" id="rw-rx">—</span></div>
+        <div class="stat"><span class="k">비행시간</span><span class="v" id="rw-t">—</span></div>
+        <div class="stat"><span class="k">의사거리</span><span class="v" id="rw-p">—</span></div>
+      </div>
+      <div class="sim-note">계산: t<sub>Rx</sub> = TimeNanos + TimeOffsetNanos − (FullBiasNanos + BiasNanos), 주내 시각 = t<sub>Rx</sub> mod 604,800 × 10⁹, 의사거리 = (주내 t<sub>Rx</sub> − ReceivedSvTimeNanos) × c × 10⁻⁹. 예시 값은 설명용이다(실제 기록과 같은 크기). 해볼 것: FullBiasNanos를 1 µs(1,000 ns) 바꾸면 의사거리가 300 m 바뀐다. 모든 위성에 똑같이 바뀌므로 위치가 아니라 시계 오차로 흡수된다(1·9장). 같은 측정의 반송파 위상은 <code>AccumulatedDeltaRangeMeters</code>로 오고, 사이클 슬립은 <code>ADR_STATE_CYCLE_SLIP</code>으로 표시된다(6장).</div>
+    </div>
+    <p class="spec-ref">“local estimate of GPS time = TimeNanos − (FullBiasNanos + BiasNanos)”, GPS 시간 기준 1980-01-06: Android <code>GnssClock.java</code> · <code>getReceivedSvTimeNanos()</code>, <code>getAccumulatedDeltaRangeMeters()</code>, <code>getCn0DbHz()</code>, <code>STATE_TOW_DECODED</code>, <code>ADR_STATE_CYCLE_SLIP</code>: <code>GnssMeasurement.java</code></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="duty">
+    <h2>듀티 사이클: 배터리와 맞바꾸기</h2>
+    <p>GNSS 칩이 쉬지 않고 추적하면 휴대폰에서 꽤 큰 전류를 쓴다. 그래서 칩은 위치가 필요 없는 짧은 순간마다 수신부를 껐다 켜는 <b>듀티 사이클</b>을 한다. 꺼져 있는 동안에도 시계와 대략의 위치·도플러를 기억하므로 다시 켜면 금방 잡지만(열시동, 5장), 반송파 위상의 연속성은 끊긴다(6장). 그래서 정밀 측정이 필요한 앱을 위해 Android에는 듀티 사이클을 끄고 전체 측정을 강제하는 개발자 옵션이 있다.</p>
+    <div class="sim" id="sim-duty">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>듀티 사이클과 배터리</h3></div>
+      <div class="sim-view"><canvas id="cv-duty"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>켜져 있는 비율 <output id="dt-r-out"></output></span><input type="range" id="dt-r" min="5" max="100" step="5" value="25"></label>
+        <label class="ctrl"><span>내비게이션 시간 <output id="dt-h-out"></output></span><input type="range" id="dt-h" min="0.5" max="10" step="0.5" value="2"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">평균 전류</span><span class="v" id="dt-i">—</span></div>
+        <div class="stat"><span class="k">배터리(5,000 mAh) 중 GNSS 몫</span><span class="v" id="dt-b">—</span></div>
+        <div class="stat"><span class="k">반송파 위상 연속</span><span class="v" id="dt-c">—</span></div>
+      </div>
+      <div class="sim-note">그래프: 1초 안의 수신부 켜짐(막대). 가정(예시 값, 칩마다 크게 다름): 추적 중 25 mA, 꺼짐 1 mA. 해볼 것: 25%면 전류가 약 7 mA로, 2시간 내비게이션에 배터리의 0.3%쯤이다. 화면과 통신이 훨씬 많이 쓴다. 대신 반송파 위상이 끊겨 RTK·정밀 앱(12장)에는 부적합하다.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="fusion">
+    <h2>터널 속 위치: 관성 센서의 한계</h2>
+    <p>터널에 들어가면 GNSS가 끊긴다. 휴대폰은 마지막 속도와 가속도·자이로로 위치를 이어 간다(추측 항법). 문제는 센서의 작은 치우침이 시간의 제곱으로 위치 오차가 된다는 것이다. 가속도계가 0.05 m/s²만 치우쳐도 30초 뒤 위치는 ½·0.05·30² ≈ 22 m 벗어난다. 그래서 차량 내비게이션은 바퀴 속도나 지도의 도로(지도 맞추기)로 함께 묶어, 터널을 나오면 다시 GNSS로 바로잡는다.</p>
+    <div class="sim" id="sim-tun">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>GNSS 없이 버티는 시간</h3></div>
+      <div class="sim-view"><canvas id="cv-tun"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>가속도계 치우침 <output id="tn-a-out"></output></span><input type="range" id="tn-a" min="0.005" max="0.2" step="0.005" value="0.05"></label>
+        <label class="ctrl"><span>터널 길이(초) <output id="tn-t-out"></output></span><input type="range" id="tn-t" min="5" max="180" step="5" value="60"></label>
+        <label class="check"><input type="checkbox" id="tn-v" checked> 차량 속도·지도 맞추기 함께 쓰기(속도 오차 1%)</label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">관성 센서만</span><span class="v" id="tn-i">—</span></div>
+        <div class="stat"><span class="k">속도·지도 함께</span><span class="v" id="tn-m">—</span></div>
+        <div class="stat"><span class="k">출구에서 다시 잡는 데</span><span class="v" id="tn-r">—</span></div>
+      </div>
+      <div class="sim-note">그래프: 터널 안 시간(가로)에 따른 위치 오차(세로, 로그). 모델: 관성 센서만 = ½·치우침·t², 속도·지도 = 진행 방향 1% 오차(시속 60 km) + 지도가 옆 방향을 잡아 줌. 출구 재획득은 열시동(5장의 A-GNSS 열시동, 약 1~2 s).</div>
+    </div>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>휴대폰 안테나는 작고 선편파라 C/N0가 낮다. 여러 위성군, L1+L5, A-GNSS, 센서 융합으로 메운다.</li>
+      <li>Android 원시 측정값: 받은 시각 = TimeNanos − (FullBiasNanos + BiasNanos), 보낸 시각 = ReceivedSvTimeNanos, 의사거리 = 차이 × c.</li>
+      <li>듀티 사이클은 배터리를 아끼지만 반송파 위상 연속성을 끊는다. 정밀 앱은 전체 측정을 강제한다.</li>
+      <li>관성 센서만의 위치 오차는 t²로 자란다(0.05 m/s², 30 s → 22 m). 속도·지도와 묶고 GNSS로 다시 잡는다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>Android에서 Galileo의 위성군 번호는?</p><div class="opts">
+        <button class="opt">1</button><button class="opt">3</button><button class="opt">5</button><button class="opt" data-correct>6</button>
+      </div><div class="quiz-exp">GnssStatus.CONSTELLATION_GALILEO = 6. BeiDou는 5.</div></div>
+      <div class="quiz-q"><p>FullBiasNanos가 모든 위성에 1 µs 틀리면?</p><div class="opts">
+        <button class="opt">위치가 300 m 틀린다</button><button class="opt" data-correct>의사거리가 모두 300 m 늘지만 수신기 시계 오차로 흡수되어 위치는 그대로다</button><button class="opt">위성이 안 보인다</button><button class="opt">반송파 위상만 틀린다</button>
+      </div><div class="quiz-exp">모든 위성에 공통인 오차는 네 번째 미지수가 먹는다.</div></div>
+      <div class="quiz-q"><p>듀티 사이클의 대가는?</p><div class="opts">
+        <button class="opt">위성을 못 찾는다</button><button class="opt" data-correct>반송파 위상 측정의 연속성이 끊긴다</button><button class="opt">시각을 모른다</button><button class="opt">L5를 못 쓴다</button>
+      </div><div class="quiz-exp">RTK 같은 정밀 계산에 부적합해진다.</div></div>
+      <div class="quiz-q"><p>가속도계 치우침 0.1 m/s²로 20초 버티면 위치 오차는?</p><div class="opts">
+        <button class="opt">2 m</button><button class="opt" data-correct>20 m</button><button class="opt">40 m</button><button class="opt">200 m</button>
+      </div><div class="quiz-exp">½ × 0.1 × 20² = 20 m.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const C = 299792458, WEEK_NS = 604800e9;
+  /** Android 원시 측정 → 의사거리(m). 큰 정수는 BigInt로 */
+  function pseudorange(m) {
+    const tRx = BigInt(m.timeNanos) - BigInt(m.fullBiasNanos), wk = BigInt(604800) * 1000000000n;
+    const rxWeek = Number(((tRx % wk) + wk) % wk) + m.timeOffsetNanos - m.biasNanos;
+    return { rxWeek, tofNs: rxWeek - m.receivedSvTimeNanos, pr: ((rxWeek - m.receivedSvTimeNanos) * C) / 1e9 };
+  }
+  /** 듀티 사이클 평균 전류(mA) */
+  function dutyCurrent(r, onMa, offMa) { return onMa * r + offMa * (1 - r); }
+  /** 관성 센서만의 위치 오차(m) = ½·b·t² */
+  function inertialDrift(b, t) { return 0.5 * b * t * t; }
+  /** 속도 1% 오차 + 지도 맞추기(옆 방향 고정)의 오차(m), 시속 60 km */
+  function odoDrift(t) { return 0.01 * (60 / 3.6) * t; }
+
+  /* ================================================================ 1. 원시 측정 */
+  (function () {
+    const EX = { timeNanos: "123456789012345", fullBiasNanos: "-1316950000123456789", biasNanos: 0.375, timeOffsetNanos: 0, receivedSvTimeNanos: 0 };
+    const F = [["TimeNanos (하드웨어 시계)", "timeNanos"], ["FullBiasNanos", "fullBiasNanos"], ["BiasNanos", "biasNanos"], ["TimeOffsetNanos", "timeOffsetNanos"], ["ReceivedSvTimeNanos (보낸 시각, 주내)", "receivedSvTimeNanos"]];
+    function fill() { const tRx = BigInt(EX.timeNanos) - BigInt(EX.fullBiasNanos), wk = 604800n * 1000000000n, rx = Number(((tRx % wk) + wk) % wk) - EX.biasNanos; EX.receivedSvTimeNanos = Math.round(rx - 72.3456e6); $("rw-in").innerHTML = F.map(([n, k]) => `<span>${n}</span><input id="rw-${k}" value="${EX[k]}">`).join(""); F.forEach(([, k]) => $("rw-" + k).addEventListener("input", draw)); draw(); }
+    function draw() {
+      const m = {}; try { F.forEach(([, k]) => { const v = $("rw-" + k).value.trim(); m[k] = k === "timeNanos" || k === "fullBiasNanos" ? v : +v; }); const r = pseudorange(m); GN.stat("rw-rx", Math.round(r.rxWeek).toLocaleString()); GN.stat("rw-t", (r.tofNs / 1e6).toFixed(4) + " ms"); GN.stat("rw-p", (r.pr / 1000).toFixed(3) + " km"); } catch (e) { GN.stat("rw-p", "입력 오류"); }
+    }
+    $("rw-ex").addEventListener("click", fill); fill();
+  })();
+
+  /* ================================================================ 2. 듀티 */
+  (function () {
+    const r = GN.range("dt-r", (v) => v + "%", draw), h = GN.range("dt-h", (v) => v + "시간", draw);
+    const cv = GN.canvas($("cv-duty"), (ctx, w, hh) => { const P = GN.palette(), L = 12, W = w - 24; ctx.fillStyle = P.grid; ctx.fillRect(L, 20, W, 26); for (let k = 0; k < 5; k++) { ctx.fillStyle = P.accent; ctx.fillRect(L + (W * k) / 5, 20, ((W / 5) * r()) / 100, 26); } GN.text(ctx, "0", L, 62, { size: 10, color: P.faint }); GN.text(ctx, "1 s", L + W, 62, { size: 10, color: P.faint, align: "right" }); }, { aspect: 0.16, minHeight: 70, maxHeight: 76 });
+    function draw() { const i = dutyCurrent(r() / 100, 25, 1); GN.stat("dt-i", i.toFixed(1) + " mA"); GN.stat("dt-b", ((i * h()) / 5000 * 100).toFixed(2) + "%"); GN.stat("dt-c", r() === 100 ? "연속 ✓" : "끊김"); cv.redraw(); }
+    draw();
+  })();
+
+  /* ================================================================ 3. 터널 */
+  (function () {
+    const a = GN.range("tn-a", (v) => v.toFixed(3) + " m/s²", draw), t = GN.range("tn-t", (v) => v + " s", draw);
+    $("tn-v").addEventListener("change", draw);
+    const cv = GN.canvas($("cv-tun"), (ctx, w, h) => {
+      const P = GN.palette(), A = [], B = []; for (let x = 1; x <= 180; x += 1) { A.push([x, inertialDrift(a(), x)]); B.push([x, Math.max(0.01, odoDrift(x))]); }
+      const ch = GN.chart(ctx, null, { x: [0, 180], y: [0.1, 1000], logY: true, xLabel: "터널 안 시간 (s)", yLabel: "위치 오차 (m)", series: [{ data: A, color: P.bad, width: 2.2 }].concat($("tn-v").checked ? [{ data: B, color: P.ok, width: 2.2 }] : []), vlines: [{ x: t(), label: "출구", color: P.faint }] });
+    }, { aspect: 0.45, minHeight: 210, maxHeight: 300 });
+    function draw() { const fm = (m) => (m >= 1000 ? (m / 1000).toFixed(1) + " km" : m.toFixed(1) + " m"); GN.stat("tn-i", fm(inertialDrift(a(), t()))); GN.stat("tn-m", $("tn-v").checked ? fm(odoDrift(t())) : "—"); GN.stat("tn-r", "약 1~2 s"); cv.redraw(); }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

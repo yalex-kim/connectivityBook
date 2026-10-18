@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>PRN 코드: 위성마다 다른 무늬 · GNSSBook</title>
+<meta name="description" content="모든 GPS 위성이 같은 주파수로 동시에 말해도 섞이지 않는 비결. 시프트 레지스터 두 개로 만드는 C/A 골드 코드를 직접 만들어 규격 표의 처음 10칩과 맞춰 보고, 자기 상관과 상호 상관, 코드 위상이 거리가 되는 원리를 시뮬레이터로 익힌다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/gnss/chapters/prn.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="GNSSBook">
+<meta property="og:title" content="PRN 코드: 위성마다 다른 무늬 · GNSSBook">
+<meta property="og:description" content="모든 GPS 위성이 같은 주파수로 동시에 말해도 섞이지 않는 비결. 시프트 레지스터 두 개로 만드는 C/A 골드 코드를 직접 만들어 규격 표의 처음 10칩과 맞춰 보고, 자기 상관과 상호 상관, 코드 위상이 거리가 되는 원리를 시뮬레이터로 익힌다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/gnss/chapters/prn.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/gnss/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"PRN 코드: 위성마다 다른 무늬","name":"PRN 코드: 위성마다 다른 무늬 · GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/prn.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/gnss/chapters/prn.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":4,"image":"https://yalex-kim.github.io/yalexBook/gnss/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/gnss/#book","name":"GNSSBook — 누구나 읽는 인터랙티브 GNSS 교과서","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"publisher":{"@type":"Organization","name":"GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"description":"모든 GPS 위성이 같은 주파수로 동시에 말해도 섞이지 않는 비결. 시프트 레지스터 두 개로 만드는 C/A 골드 코드를 직접 만들어 규격 표의 처음 10칩과 맞춰 보고, 자기 상관과 상호 상관, 코드 위상이 거리가 되는 원리를 시뮬레이터로 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"GNSSBook","item":"https://yalex-kim.github.io/yalexBook/gnss/"},{"@type":"ListItem","position":2,"name":"04 PRN 코드: 위성마다 다른 무늬","item":"https://yalex-kim.github.io/yalexBook/gnss/chapters/prn.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<style>
+  .reg { display: flex; gap: 3px; flex-wrap: wrap; font: 600 12px var(--mono); }
+  .reg span { width: 22px; height: 26px; display: grid; place-items: center; border-radius: 5px; border: 1px solid var(--border); background: var(--surface); }
+  .reg span.one { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .reg span.tap { outline: 2px solid var(--accent-2); outline-offset: 1px; }
+  .chips { font: 13px var(--mono); word-break: break-all; line-height: 1.7; }
+  .chips b { color: var(--accent); }
+</style>
+</head>
+<body data-chapter="prn">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 04</div>
+    <h1>PRN 코드: 위성마다 다른 무늬</h1>
+    <p class="lead">하늘의 GPS 위성 열 몇 기가 모두 1,575.42 MHz라는 같은 주파수로, 같은 순간에 방송한다. 라디오라면 섞여서 아무것도 못 알아들을 것이다. 그런데 수신기는 위성 하나하나를 골라 듣는다. 위성마다 다른 “무늬”를 신호에 곱해 보내기 때문이다. 이 무늬가 <span class="term">PRN 코드</span><span class="en">(Pseudo-Random Noise code)</span>다. 이 장에서는 그 무늬를 규격대로 직접 만들어 보고, 규격 표와 칩 하나까지 맞춰 본다.</p>
+    <ul class="objectives">
+      <li>G1·G2 두 시프트 레지스터로 C/A 코드(1,023칩)를 만드는 과정을 단계별로 따라간다.</li>
+      <li>만든 코드의 처음 10칩을 IS-GPS-200 표 3-Ia의 8진수 값과 맞춰 본다.</li>
+      <li>자기 상관이 뾰족하고 상호 상관이 작다는 성질이 “골라 듣기”와 “거리 재기”를 동시에 가능하게 함을 이해한다.</li>
+      <li>코드 위상 1칩이 약 293 m라는 것과, 1 ms마다 반복되는 코드의 모호성을 안다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="gen">
+    <h2>시프트 레지스터 두 개</h2>
+    <p>C/A 코드는 10칸짜리 시프트 레지스터 두 개, G1과 G2로 만든다. 둘 다 처음에 모든 칸을 1로 채우고, 1.023 MHz 박자마다 한 칸씩 민다. 새로 들어오는 값은 정해진 칸들을 XOR한 값이다(G1은 3·10번 칸, G2는 2·3·6·8·9·10번 칸). 이런 레지스터는 1,023(= 2¹⁰ − 1)칩마다 같은 무늬가 돌아오는 가장 긴 수열(m-수열)을 만든다.</p>
+    <p>위성마다 다른 코드는 G2를 <b>위성마다 정해진 칩 수만큼 늦춘 것</b>과 G1을 XOR해서 얻는다. 이렇게 두 m-수열을 엇갈려 섞은 것을 <b>골드 코드</b>라 한다. 규격 표는 늦출 칩 수와 함께, 늦추는 대신 G2의 두 칸을 XOR해 같은 결과를 내는 “두 탭” 방식(예: PRN 1은 2·6번 칸)도 적어 둔다.</p>
+    <div class="sim" id="sim-gen">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>C/A 코드 발생기 한 칩씩</h3></div>
+      <div class="sim-view" style="padding:14px">
+        <div style="font-size:12.5px;color:var(--text-dim);margin-bottom:4px">G1 (되먹임 3⊕10)</div><div class="reg" id="gn-g1"></div>
+        <div style="font-size:12.5px;color:var(--text-dim);margin:10px 0 4px">G2 (되먹임 2⊕3⊕6⊕8⊕9⊕10, 주황 테두리 = 이 위성의 두 탭)</div><div class="reg" id="gn-g2"></div>
+        <div class="chips" id="gn-out" style="margin-top:12px"></div>
+      </div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>위성 PRN <output id="gn-p-out"></output></span><input type="range" id="gn-p" min="1" max="32" value="1"></label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" id="gn-step">한 칩</button><button class="btn" id="gn-ten">10칩</button><button class="btn" id="gn-reset">처음으로</button></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">처음 10칩(8진수 표기)</span><span class="v" id="gn-oct">—</span></div>
+        <div class="stat"><span class="k">규격 표 3-Ia</span><span class="v" id="gn-icd">—</span></div>
+        <div class="stat"><span class="k">G2 지연 / 두 탭</span><span class="v" id="gn-dl">—</span></div>
+      </div>
+      <div class="sim-note">출력 칩 = G1의 10번 칸 ⊕ (이 위성의 두 탭 XOR). 8진수 표기는 규격의 방식 그대로다: 첫 칩을 맨 앞 자리(1)로 쓰고 나머지 9칩을 3비트씩 8진수로 쓴다. 해볼 것: “10칩”을 눌러 처음 10칩을 만들면 규격 표 값과 같아진다. 모든 PRN 1~37이 같은지는 검증 스크립트가 확인한다(34번과 37번은 규격대로 같은 코드).</div>
+    </div>
+    <p class="spec-ref">G1 = X¹⁰ + X³ + 1, G2 = X¹⁰ + X⁹ + X⁸ + X⁶ + X³ + X² + 1, 초기값 1111111111, 1.023 MHz: IS-GPS-200N 3.3.2.3(p.29, PDF 48쪽) · 위성별 두 탭·G2 지연·처음 10칩 8진수: 표 3-Ia(p.6~7) · 코드 길이 1,023칩, 1 ms: 3.2.1.3</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="corr">
+    <h2>골라 듣기와 거리 재기</h2>
+    <p>골드 코드는 두 가지 성질을 함께 갖는다.</p>
+    <ul>
+      <li><b>자기 상관이 뾰족하다</b>: 코드를 자기 자신과 칩 단위로 맞춰 곱해 더하면 1,023이 나오지만, 한 칩만 어긋나도 거의 0(−1, −65, 63 중 하나)이다. 그래서 수신기가 자기 복제 코드를 밀어 가며 맞춰 보면, 딱 맞는 위치에서만 큰 봉우리가 선다. 그 위치가 <b>코드 위상</b>, 곧 신호가 날아온 시간이다.</li>
+      <li><b>서로 다른 코드끼리는 상관이 작다</b>: PRN 1과 PRN 2를 어떻게 맞춰도 상관은 −65, −1, 63 셋 중 하나뿐이다. 그래서 같은 주파수에 위성 여럿이 겹쳐도 원하는 위성만 쌓인다.</li>
+    </ul>
+    <div class="sim" id="sim-corr">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>상관을 밀어 가며 보기</h3></div>
+      <div class="sim-view"><canvas id="cv-corr"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>받은 신호의 위성 <output id="cr-a-out"></output></span><input type="range" id="cr-a" min="1" max="32" value="7"></label>
+        <label class="ctrl"><span>수신기가 만든 복제 코드 <output id="cr-b-out"></output></span><input type="range" id="cr-b" min="1" max="32" value="7"></label>
+        <label class="ctrl"><span>신호가 늦게 온 칩 수(코드 위상) <output id="cr-d-out"></output></span><input type="range" id="cr-d" min="0" max="1022" value="300"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">가장 큰 상관값 / 위치</span><span class="v" id="cr-pk">—</span></div>
+        <div class="stat"><span class="k">나머지 값들</span><span class="v" id="cr-v">—</span></div>
+        <div class="stat"><span class="k">코드 위상 → 거리(1 ms 안)</span><span class="v" id="cr-m">—</span></div>
+      </div>
+      <div class="sim-note">그래프: 복제 코드를 0~1,022칩 밀었을 때의 주기 상관값. 해볼 것: ① 같은 위성이면 늦게 온 칩 수 위치에 1,023의 봉우리가 선다. ② 다른 위성으로 바꾸면 봉우리가 사라지고 값이 −65, −1, 63 셋으로만 나온다(골드 코드의 3값 상관). ③ 늦게 온 칩 수를 바꾸면 봉우리가 따라 움직인다. 칩 하나 = 1/1.023 MHz ≈ 977.5 ns ≈ 293 m.</div>
+    </div>
+    <p>C/A 코드는 1 ms마다 반복하므로, 코드 위상만으로는 0~300 km 안의 거리만 안다. 실제 거리(약 2만 km)의 나머지 “1 ms의 몇 배”는 항법 메시지의 시각(7장)으로 채운다. 대신 1 ms마다 다시 맞춰 볼 수 있어 찾기가 빠르다. Galileo E1 코드는 4,092칩(4 ms)이고, 수학식이 아니라 규격 부록에 실린 무작위 수열을 그대로 쓴다(메모리 코드).</p>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>C/A 코드 = G1 ⊕ (위성마다 다르게 늦춘 G2). G1 = X¹⁰+X³+1, G2 = X¹⁰+X⁹+X⁸+X⁶+X³+X²+1, 초기값 모두 1.</li>
+      <li>1,023칩, 1.023 Mchip/s, 1 ms마다 반복. 1칩 ≈ 293 m.</li>
+      <li>자기 상관은 맞을 때만 1,023, 상호 상관은 −65/−1/63. 같은 주파수에서 위성을 골라 듣고 시간을 잰다.</li>
+      <li>코드 위상은 1 ms(300 km) 안의 거리만 준다. 나머지는 항법 메시지의 시각으로.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>C/A 코드 한 주기의 길이는?</p><div class="opts">
+        <button class="opt">511칩, 0.5 ms</button><button class="opt" data-correct>1,023칩, 1 ms</button><button class="opt">4,092칩, 4 ms</button><button class="opt">10,230칩, 10 ms</button>
+      </div><div class="quiz-exp">2¹⁰ − 1 = 1,023칩을 1.023 Mchip/s로.</div></div>
+      <div class="quiz-q"><p>규격 표의 PRN 1 처음 10칩 “1440”(8진수)을 2진수로 쓰면?</p><div class="opts">
+        <button class="opt">1010010000</button><button class="opt" data-correct>1100100000</button><button class="opt">1110000001</button><button class="opt">0000001440</button>
+      </div><div class="quiz-exp">첫 자리 1 = 첫 칩, 나머지 440(8진) = 100 100 000.</div></div>
+      <div class="quiz-q"><p>같은 주파수의 위성 여럿을 구별할 수 있는 이유는?</p><div class="opts">
+        <button class="opt">시간을 나눠 보내서</button><button class="opt" data-correct>위성마다 상호 상관이 작은 다른 PRN 코드를 써서</button><button class="opt">세기가 달라서</button><button class="opt">편파가 달라서</button>
+      </div><div class="quiz-exp">CDMA. (GLONASS는 주파수를 나눈다.)</div></div>
+      <div class="quiz-q"><p>C/A 코드 1칩은 거리로 대략?</p><div class="opts">
+        <button class="opt">3 m</button><button class="opt">29 m</button><button class="opt" data-correct>293 m</button><button class="opt">2.9 km</button>
+      </div><div class="quiz-exp">c ÷ 1.023 MHz. 수신기는 칩의 수십~수백분의 1까지 맞춰 m 단위를 얻는다(6장).</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  /** 위성별 G2 두 탭(PRN 1~37), IS-GPS-200 표 3-Ia */
+  const TAPS = [[2, 6], [3, 7], [4, 8], [5, 9], [1, 9], [2, 10], [1, 8], [2, 9], [3, 10], [2, 3], [3, 4], [5, 6], [6, 7], [7, 8], [8, 9], [9, 10], [1, 4], [2, 5], [3, 6], [4, 7], [5, 8], [6, 9], [1, 3], [4, 6], [5, 7], [6, 8], [7, 9], [8, 10], [1, 6], [2, 7], [3, 8], [4, 9], [5, 10], [4, 10], [1, 7], [2, 8], [4, 10]];
+  /** 위성별 G2 지연(칩), 표 3-Ia */
+  const DELAY = [5, 6, 7, 8, 17, 18, 139, 140, 141, 251, 252, 254, 255, 256, 257, 258, 469, 470, 471, 472, 473, 474, 509, 512, 513, 514, 515, 516, 859, 860, 861, 862, 863, 950, 947, 948, 950];
+  /** 처음 10칩(8진수 표기), 표 3-Ia */
+  const FIRST10 = ["1440", "1620", "1710", "1744", "1133", "1455", "1131", "1454", "1626", "1504", "1642", "1750", "1764", "1772", "1775", "1776", "1156", "1467", "1633", "1715", "1746", "1763", "1063", "1706", "1743", "1761", "1770", "1774", "1127", "1453", "1625", "1712", "1745", "1713", "1134", "1456", "1713"];
+  /** 두 탭 방식 C/A 코드 생성(IS-GPS-200N 3.3.2.3): 칩 배열(0/1) */
+  function caCode(prn, n = 1023) {
+    const g1 = new Array(10).fill(1), g2 = new Array(10).fill(1), [a, b] = TAPS[prn - 1], out = [];
+    for (let i = 0; i < n; i++) {
+      out.push(g1[9] ^ (g2[a - 1] ^ g2[b - 1]));
+      const f1 = g1[2] ^ g1[9], f2 = g2[1] ^ g2[2] ^ g2[5] ^ g2[7] ^ g2[8] ^ g2[9];
+      g1.pop(); g1.unshift(f1); g2.pop(); g2.unshift(f2);
+    }
+    return out;
+  }
+  /** G2 지연 방식: G1 ⊕ G2(i − delay) */
+  function caCodeDelay(prn) {
+    const g1 = new Array(10).fill(1), g2 = new Array(10).fill(1), G1 = [], G2 = [];
+    for (let i = 0; i < 1023; i++) { G1.push(g1[9]); G2.push(g2[9]); const f1 = g1[2] ^ g1[9], f2 = g2[1] ^ g2[2] ^ g2[5] ^ g2[7] ^ g2[8] ^ g2[9]; g1.pop(); g1.unshift(f1); g2.pop(); g2.unshift(f2); }
+    const d = DELAY[prn - 1]; return G1.map((v, i) => v ^ G2[(i - d + 1023 * 4) % 1023]);
+  }
+  /** 처음 10칩을 규격 표기(첫 칩 + 나머지 9칩의 8진수)로 */
+  function octal10(chips) { const rest = chips.slice(1, 10).join(""); return String(chips[0]) + parseInt(rest, 2).toString(8).padStart(3, "0"); }
+  /** ±1 주기 상관 */
+  function circCorr(a, b) { const n = a.length, A = a.map((v) => 1 - 2 * v), B = b.map((v) => 1 - 2 * v), out = new Array(n); for (let k = 0; k < n; k++) { let s = 0; for (let i = 0; i < n; i++) s += A[(i + k) % n] * B[i]; out[k] = s; } return out; }
+  const CHIP_M = 299792458 / 1.023e6;
+
+  /* ================================================================ 1. 발생기 */
+  (function () {
+    let g1, g2, out;
+    const p = GN.range("gn-p", (v) => "PRN " + v, reset);
+    function reset() { g1 = new Array(10).fill(1); g2 = new Array(10).fill(1); out = []; render(); }
+    function step() { const [a, b] = TAPS[p() - 1]; out.push(g1[9] ^ (g2[a - 1] ^ g2[b - 1])); const f1 = g1[2] ^ g1[9], f2 = g2[1] ^ g2[2] ^ g2[5] ^ g2[7] ^ g2[8] ^ g2[9]; g1.pop(); g1.unshift(f1); g2.pop(); g2.unshift(f2); }
+    function render() {
+      const [a, b] = TAPS[p() - 1];
+      $("gn-g1").innerHTML = g1.map((v, i) => `<span class="${v ? "one" : ""}" title="${i + 1}번 칸">${v}</span>`).join("");
+      $("gn-g2").innerHTML = g2.map((v, i) => `<span class="${v ? "one" : ""} ${i + 1 === a || i + 1 === b ? "tap" : ""}" title="${i + 1}번 칸">${v}</span>`).join("");
+      $("gn-out").innerHTML = "출력: " + (out.length ? out.map((c, i) => (i < 10 ? `<b>${c}</b>` : c)).join("") : "(아직 없음)") + ` <span style="color:var(--text-faint)">(${out.length}칩)</span>`;
+      GN.stat("gn-oct", out.length >= 10 ? octal10(out) : "10칩 필요"); GN.stat("gn-icd", FIRST10[p() - 1] + (out.length >= 10 ? (octal10(out) === FIRST10[p() - 1] ? " ✓" : " ✗") : ""));
+      GN.stat("gn-dl", DELAY[p() - 1] + "칩 / " + a + "⊕" + b);
+    }
+    $("gn-step").addEventListener("click", () => { step(); render(); });
+    $("gn-ten").addEventListener("click", () => { for (let i = 0; i < 10; i++) step(); render(); });
+    $("gn-reset").addEventListener("click", reset);
+    reset();
+  })();
+
+  /* ================================================================ 2. 상관 */
+  (function () {
+    const a = GN.range("cr-a", (v) => "PRN " + v, draw), b = GN.range("cr-b", (v) => "PRN " + v, draw), d = GN.range("cr-d", (v) => v + "칩", draw);
+    const cache = {}; const code = (p) => (cache[p] = cache[p] || caCode(p));
+    const corr = () => { const rx = code(a()), sh = rx.map((_, i) => rx[(i - d() + 1023) % 1023]); return circCorr(sh, code(b())); };
+    const cv = GN.canvas($("cv-corr"), (ctx, w, h) => {
+      const P = GN.palette(), c = corr(), data = c.map((v, k) => [k, v]);
+      GN.chart(ctx, null, { x: [0, 1022], y: [-100, 1100], xLabel: "복제 코드를 민 칩 수", yLabel: "상관", series: [{ data, color: P.accent, width: 1.2 }], hlines: [{ y: 63, color: P.faint }, { y: -65, color: P.faint }] });
+    }, { aspect: 0.45, minHeight: 210, maxHeight: 300 });
+    function draw() { const c = corr(), mx = Math.max(...c), at = c.indexOf(mx), others = [...new Set(c.filter((_, k) => k !== at))].sort((x, y) => x - y); GN.stat("cr-pk", mx + " @ " + at + "칩"); GN.stat("cr-v", others.length <= 4 ? others.join(", ") : others.length + "가지"); GN.stat("cr-m", (d() * CHIP_M / 1000).toFixed(2) + " km"); cv.redraw(); }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

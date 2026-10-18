@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>용어집 &amp; 종합 퀴즈 · GNSSBook</title>
+<meta name="description" content="궤도와 신호, PRN 코드, 획득과 추적, 항법 메시지, 위성 위치, DOP, 전리층·대류층, 도시 환경, RTK·PPP, 휴대폰까지 이 책의 GNSS 핵심 용어를 검색하고, 장별 종합 퀴즈로 실력을 점검한다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/gnss/chapters/glossary.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="GNSSBook">
+<meta property="og:title" content="용어집 &amp; 종합 퀴즈 · GNSSBook">
+<meta property="og:description" content="궤도와 신호, PRN 코드, 획득과 추적, 항법 메시지, 위성 위치, DOP, 전리층·대류층, 도시 환경, RTK·PPP, 휴대폰까지 이 책의 GNSS 핵심 용어를 검색하고, 장별 종합 퀴즈로 실력을 점검한다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/gnss/chapters/glossary.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/gnss/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"용어집 & 종합 퀴즈","name":"용어집 & 종합 퀴즈 · GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/glossary.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/gnss/chapters/glossary.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":15,"image":"https://yalex-kim.github.io/yalexBook/gnss/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/gnss/#book","name":"GNSSBook — 누구나 읽는 인터랙티브 GNSS 교과서","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"publisher":{"@type":"Organization","name":"GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"description":"궤도와 신호, PRN 코드, 획득과 추적, 항법 메시지, 위성 위치, DOP, 전리층·대류층, 도시 환경, RTK·PPP, 휴대폰까지 이 책의 GNSS 핵심 용어를 검색하고, 장별 종합 퀴즈로 실력을 점검한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"GNSSBook","item":"https://yalex-kim.github.io/yalexBook/gnss/"},{"@type":"ListItem","position":2,"name":"15 용어집 & 종합 퀴즈","item":"https://yalex-kim.github.io/yalexBook/gnss/chapters/glossary.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<script src="../js/terms.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  .gl-tools { display: grid; gap: 10px; margin-bottom: 18px; }
+  .gl-tools .row { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+  .gl-tools .seg button { font-size: 12.5px; padding: 4px 9px; }
+  .gl-search { margin-bottom: 0 !important; }
+  .gl-count { font-size: 13px; color: var(--text-faint); margin-left: auto; }
+  #gl-list { max-height: min(78vh, 980px); overflow-y: auto; overscroll-behavior: contain; padding: 2px 6px 2px 2px; }
+  .gl-group { position: sticky; top: 0; z-index: 1; background: var(--bg); font-family: var(--mono); font-weight: 700; font-size: 13px; color: var(--accent); letter-spacing: .04em; margin: 14px 0 6px; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
+  .gl-group:first-child { margin-top: 0; }
+  .gl-item { margin-bottom: 8px; }
+  .gl-item mark { background: color-mix(in srgb, var(--warn) 35%, transparent); color: inherit; border-radius: 3px; padding: 0 1px; }
+  .gl-empty { padding: 24px; text-align: center; color: var(--text-dim); border: 1px dashed var(--border); border-radius: 12px; }
+  .fq { background: var(--bg-elev); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .fq-top { display: flex; justify-content: space-between; gap: 10px; padding: 12px 18px 8px; font-size: 13px; color: var(--text-dim); font-family: var(--mono); }
+  .fq-bar { height: 6px; background: var(--surface-2); margin: 0 18px; border-radius: 3px; overflow: hidden; }
+  .fq-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .3s ease; }
+  .fq-card, .fq-result { padding: 18px 20px 20px; }
+  .fq-ch { font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 6px; }
+  .fq-q { font-weight: 700; font-size: 17px; margin: 0 0 14px !important; }
+  .fq-opts { display: grid; gap: 8px; }
+  .fq-opt { text-align: left; font: inherit; font-size: 15px; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; line-height: 1.5; }
+  .fq-opt:hover:not(:disabled) { border-color: var(--accent); }
+  .fq-opt:disabled { cursor: default; }
+  .fq-opt.right { border-color: var(--ok); background: color-mix(in srgb, var(--ok) 15%, transparent); font-weight: 600; }
+  .fq-opt.wrong { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 12%, transparent); }
+  .fq-exp { margin-top: 12px; font-size: 15px; color: var(--text-dim); padding: 12px 14px; border-radius: 8px; background: var(--surface); }
+  .fq-nav { display: flex; justify-content: flex-end; margin-top: 14px; }
+  .fq-result { text-align: center; }
+  .fq-title { font-size: clamp(24px, 5vw, 32px); font-weight: 800; margin: 4px 0; background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .fq-big { font-family: var(--mono); font-size: 40px; font-weight: 700; }
+  .fq-big small { font-size: 18px; color: var(--text-dim); }
+  .fq-rows { text-align: left; display: grid; gap: 6px; margin: 16px 0; }
+  .fq-rows div { display: grid; grid-template-columns: 170px 1fr 52px; gap: 10px; align-items: center; font-size: 13.5px; }
+  @media (max-width: 520px) { .fq-rows div { grid-template-columns: 110px 1fr 44px; font-size: 12.5px; } }
+  .fq-rows i { display: block; height: 10px; border-radius: 5px; background: var(--surface-2); overflow: hidden; }
+  .fq-rows i b { display: block; height: 100%; background: var(--accent); }
+  .fq-rows a { color: var(--text); }
+</style>
+</head>
+<body data-chapter="glossary">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 15</div>
+    <h1>용어집 &amp; 종합 퀴즈</h1>
+    <p class="lead">이 책에 나온 핵심 용어를 한곳에 모았다. 모르는 말이 나오면 검색해 보고, 설명 아래의 링크로 해당 장으로 돌아가 시뮬레이터를 다시 만져 보자. 마지막에는 모든 장을 아우르는 종합 퀴즈로 실력을 점검할 수 있다.</p>
+  </header>
+
+  <section id="glossary" data-nonum>
+    <h2>용어집</h2>
+    <div class="gl-tools">
+      <input class="gl-search" id="gl-q" type="search" placeholder="용어, 영어 이름, 설명으로 검색 (예: 의사거리, DOP, RTK, 클로부차)" aria-label="용어 검색">
+      <div class="row"><div class="seg" id="gl-part"><button data-value="all" class="on">전체</button></div><span class="gl-count" id="gl-count"></span></div>
+    </div>
+    <div id="gl-list"></div>
+  </section>
+
+  <section id="final" data-nonum>
+    <h2>종합 퀴즈</h2>
+    <p>각 장에서 골고루 뽑은 문제다. 보기를 고르면 바로 해설이 나온다. 끝까지 풀면 장별 결과를 보여 준다.</p>
+    <div class="fq" id="fq"></div>
+  </section>
+
+  <section id="refs" data-nonum>
+    <h2>참고 자료</h2>
+    <p>GNSS 신호 규격은 무료로 공개되어 있다. 이 책은 아래 규격과 공개 구현을 근거로 삼고, 계산 함수는 규격의 표·식과 RTKLIB 코드로 자동 검증한다(<code>scripts/verify-factcheck.cjs</code>).</p>
+    <ul>
+      <li><b>IS-GPS-200N</b>, Navstar GPS Space Segment/Navigation User Segment Interfaces (2022-08-01, Distribution A: public release) — 주파수·상대론 오프셋(3.3.1.1), 최소 수신 전력(표 3-Va), C/A 코드 생성(3.3.2.3)과 코드 표(표 3-Ia), LNAV 구조(20.3.2)와 패리티(표 20-XIV), 위성 위치·시계 계산(표 20-IV, 20.3.3.3.3.1), 클로부차 모델(그림 20-4), GPS 주 번호(6.2.4).</li>
+      <li><b>Galileo OS SIS ICD Issue 2.2</b> (2025년 11월, European Union) — 기준 궤도(Table 1), 주파수, E1 CBOC.</li>
+      <li><a href="https://github.com/tomojitakasu/RTKLIB">RTKLIB</a>(BSD-2) — <code>eph2pos()</code>, <code>ionmodel()</code>, <code>tropmodel()</code>, <code>dops()</code>, <code>decode_word()</code>, <code>estpos()</code>, 윤초 표.</li>
+      <li>Android <code>frameworks/base</code>의 <code>GnssStatus</code>·<code>GnssClock</code>·<code>GnssMeasurement</code> — 위성군 번호, 원시 측정값의 시각 정의.</li>
+      <li>IERS Conventions (2010) — 지오이드 퍼텐셜 상수 L<sub>G</sub>(3장의 상대론 계산).</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const T = window.GN_TERMS || [];
+  const chOf = (slug) => GN.CHAPTERS.find((c) => c.slug === slug);
+  // part filter buttons
+  const parts = [...new Set(GN.CHAPTERS.filter((c) => c.slug !== "glossary").map((c) => c.part))];
+  $("gl-part").insertAdjacentHTML("beforeend", parts.map((p) => `<button data-value="${p}">${p}</button>`).join(""));
+  const part = GN.seg("gl-part", render);
+  const q = $("gl-q"); q.addEventListener("input", render);
+  try { const qq = new URLSearchParams(location.search).get("q"); if (qq) q.value = qq; } catch (e) {}
+  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  function hl(s, term) { if (!term) return esc(s); const i = s.toLowerCase().indexOf(term.toLowerCase()); if (i < 0) return esc(s); return esc(s.slice(0, i)) + "<mark>" + esc(s.slice(i, i + term.length)) + "</mark>" + esc(s.slice(i + term.length)); }
+  function render() {
+    const term = q.value.trim(), p = part();
+    const list = T.filter(([ko, en, def, ch]) => (p === "all" || chOf(ch).part === p) && (!term || (ko + " " + en + " " + def).toLowerCase().includes(term.toLowerCase())));
+    let html = "", last = "";
+    list.forEach(([ko, en, def, ch]) => {
+      const c = chOf(ch);
+      if (c.slug !== last) { html += `<div class="gl-group">${c.num} ${c.title}</div>`; last = c.slug; }
+      html += `<div class="gl-item"><h4>${hl(ko, term)}<span class="en">${hl(en, term)}</span></h4><p>${hl(def, term)}</p><a class="ch" href="${c.slug}.html">→ ${c.num}장에서 보기</a></div>`;
+    });
+    $("gl-list").innerHTML = html || `<div class="gl-empty">“${esc(term)}”에 맞는 용어가 없습니다.</div>`;
+    $("gl-count").textContent = `${list.length} / ${T.length}개`;
+  }
+  render();
+
+  /* ---------------- final quiz ---------------- */
+  const QZ = [
+/*QZ-BEGIN*/
+    ["intro", "위치를 구하는 데 위성이 최소 넷 필요한 이유는?", ["위성 시계가 부정확해서", "위치 셋에 수신기 시계 오차까지 미지수가 넷이라서", "지구가 둥글어서", "전리층 때문에"], 1, "x, y, z, b."],
+    ["intro", "수신기 시계가 1 µs 틀리면 거리 오차는?", ["30 cm", "3 m", "300 m", "300 km"], 2, "c × 10⁻⁶ s."],
+    ["orbits", "GPS 위성의 공전 주기는?", ["90분", "약 11시간 58분", "23시간 56분", "24시간"], 1, "반 항성일."],
+    ["orbits", "Galileo 기준 궤도 반지름은?", ["20,200 km", "26,560 km", "29,600 km", "42,164 km"], 2, "Galileo OS SIS ICD Table 1."],
+    ["signals", "L1 주파수는 10.23 MHz의 몇 배인가?", ["115", "120", "154", "160"], 2, "1,575.42 MHz."],
+    ["signals", "GPS 위성 시계를 일부러 늦춰 두는 이유는?", ["전력 절약", "상대론으로 궤도에서 시계가 빨리 가서", "도플러 때문", "윤초 때문"], 1, "Δf/f = −4.4647 × 10⁻¹⁰(IS-GPS-200N 3.3.1.1)."],
+    ["prn", "C/A 코드 한 주기는?", ["511칩", "1,023칩, 1 ms", "4,092칩", "10,230칩"], 1, "2¹⁰ − 1 칩."],
+    ["prn", "C/A 코드 1칩은 거리로 대략?", ["3 m", "29 m", "293 m", "2.9 km"], 2, "c ÷ 1.023 MHz."],
+    ["acquisition", "결맞음 적분을 20 ms보다 길게 하기 어려운 이유는?", ["코드가 20 ms라서", "항법 비트가 20 ms마다 뒤집힐 수 있어서", "도플러가 없어서", "규정"], 1, "50 bps."],
+    ["acquisition", "휴대폰이 몇 초 만에 위치를 잡는 이유는?", ["위성이 찾아 줘서", "A-GNSS로 궤도력·시각·대략 위치를 받아서", "L5만 써서", "와이파이로 대신해서"], 1, "탐색과 메시지 받기를 줄인다."],
+    ["tracking", "좁은 상관기의 장점은?", ["찾기가 빠르다", "잡음과 다중 경로 오차가 준다", "전력이 적다", "도플러를 잘 잰다"], 1, "최대 다중 경로 오차 ≈ 반사 세기 × 간격 ÷ 2칩."],
+    ["tracking", "반송파 위상이 코드보다 정밀한 이유는?", ["신호가 세서", "파장(19 cm)이 칩(293 m)보다 훨씬 짧아서", "다중 경로가 없어서", "전리층이 없어서"], 1, "대신 정수 모호성."],
+    ["navmsg", "LNAV 서브프레임 하나의 길이는?", ["1초", "6초", "30초", "12.5분"], 1, "300비트 ÷ 50 bps."],
+    ["navmsg", "2026년 GPS 시간과 UTC의 차이는?", ["0초", "13초", "18초", "37초"], 2, "2017-01-01 이후."],
+    ["satpos", "케플러 방정식에서 반복으로 구하는 것은?", ["M", "E", "e", "t_oe"], 1, "이심 근점 이각."],
+    ["satpos", "사냐크 보정이 필요한 이유는?", ["위성 시계", "신호가 날아오는 동안 지구가 돌아서", "다중 경로", "윤초"], 1, "약 70 ms."],
+    ["position", "HDOP 1.2, 측정 오차 5 m면 수평 오차는?", ["1.2 m", "4.2 m", "6 m", "12 m"], 2, "DOP × 오차."],
+    ["position", "GNSS 높이 오차가 수평보다 큰 이유는?", ["중력", "위성이 모두 지평선 위에 있어서", "대기", "지구가 둥글어서"], 1, "VDOP > HDOP."],
+    ["errors", "같은 전자량에서 L5의 전리층 지연은 L1의 몇 배?", ["0.56", "1", "약 1.79", "3.2"], 2, "(1575.42/1176.45)²."],
+    ["errors", "전리층 제거 조합의 대가는?", ["대류층 증가", "잡음 2.6~3배", "시계 못 풂", "위성 감소"], 1, "계수 2.26, −1.26."],
+    ["urban", "NLOS가 다중 경로보다 위험한 이유는?", ["더 세서", "직접파가 없어 상관기 기법이 안 듣고 의사거리가 통째로 길어져서", "주파수가 달라서", "PRN이 바뀌어서"], 1, "걸러내야 한다."],
+    ["urban", "도시에서 L5가 유리한 점은?", ["더 세다", "칩이 짧아 다중 경로 오차가 작다", "건물을 통과한다", "위성이 많다"], 1, "BPSK(10)."],
+    ["precise", "L1·L5 와이드레인 파장은?", ["19 cm", "25.5 cm", "약 75 cm", "약 2.9 m"], 2, "c/(f1 − f5)."],
+    ["precise", "PPP의 단점은?", ["기준국이 가까워야 함", "수렴에 수십 분", "단일 주파수", "수 m"], 1, "모호성·대류층 수렴."],
+    ["phone", "Android에서 Galileo의 위성군 번호는?", ["1", "3", "5", "6"], 3, "GnssStatus.CONSTELLATION_GALILEO = 6."],
+    ["phone", "가속도계 치우침 0.1 m/s²로 20초 버티면 위치 오차는?", ["2 m", "20 m", "40 m", "200 m"], 1, "½ b t²."],
+    ["design", "도심에서 가용성을 가장 크게 올리는 것은?", ["클로부차 모델", "위성군 추가", "DTIM", "PPP"], 1, "보이는 위성 수가 늘어 DOP가 준다."],
+/*QZ-END*/
+  ];
+  let qi = 0, results = [];
+  // shuffle options deterministically per load
+  function renderQ() {
+    const [ch, q, opts, ans, exp] = QZ[qi]; const c = chOf(ch);
+    $("fq").innerHTML = `<div class="fq-top"><span>${qi + 1} / ${QZ.length}</span><span>맞힌 문제 ${results.filter(Boolean).length}</span></div><div class="fq-bar"><i style="width:${(qi / QZ.length) * 100}%"></i></div>
+      <div class="fq-card"><div class="fq-ch">${c.num} · ${c.title}</div><p class="fq-q">${q}</p><div class="fq-opts">${opts.map((o, k) => `<button class="fq-opt" data-k="${k}">${o}</button>`).join("")}</div><div id="fq-after"></div></div>`;
+    $("fq").querySelectorAll(".fq-opt").forEach((b) => b.onclick = () => {
+      const k = Number(b.dataset.k), ok = k === ans; results[qi] = ok;
+      $("fq").querySelectorAll(".fq-opt").forEach((x) => { x.disabled = true; if (Number(x.dataset.k) === ans) x.classList.add("right"); });
+      if (!ok) b.classList.add("wrong");
+      $("fq-after").innerHTML = `<div class="fq-exp"><b style="color:${ok ? "var(--ok)" : "var(--bad)"}">${ok ? "정답!" : "아쉽다."}</b> ${exp}</div><div class="fq-nav"><button class="btn primary" id="fq-next">${qi < QZ.length - 1 ? "다음 문제 →" : "결과 보기"}</button></div>`;
+      $("fq-next").onclick = () => { qi++; qi < QZ.length ? renderQ() : renderResult(); };
+    });
+  }
+  function renderResult() {
+    const score = results.filter(Boolean).length, pct = score / QZ.length;
+    const title = pct >= 0.9 ? "GNSS 박사" : pct >= 0.7 ? "든든한 이해자" : pct >= 0.5 ? "성장 중인 탐험가" : "이제 막 출발한 여행자";
+    const by = {}; QZ.forEach(([ch], k) => { by[ch] = by[ch] || [0, 0]; by[ch][1]++; if (results[k]) by[ch][0]++; });
+    $("fq").innerHTML = `<div class="fq-result"><div class="scale-note">결과</div><div class="fq-title">${title}</div><div class="fq-big">${score}<small> / ${QZ.length}</small></div>
+      <div class="fq-rows">${Object.keys(by).map((ch) => { const c = chOf(ch), [a, n] = by[ch]; return `<div><a href="${c.slug}.html">${c.num} ${c.title}</a><i><b style="width:${(a / n) * 100}%;background:${a === n ? "var(--ok)" : a === 0 ? "var(--bad)" : "var(--accent)"}"></b></i><span class="mono">${a}/${n}</span></div>`; }).join("")}</div>
+      <p class="scale-note">틀린 문제가 있는 장의 시뮬레이터를 다시 만져 보면 금방 감이 온다.</p><button class="btn primary" id="fq-again">다시 풀기</button></div>`;
+    $("fq-again").onclick = () => { qi = 0; results = []; renderQ(); };
+  }
+  renderQ();
+})();
+</script>
+</body>
+</html>

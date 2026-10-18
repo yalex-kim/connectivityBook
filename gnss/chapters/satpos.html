@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>위성 위치 계산 · GNSSBook</title>
+<meta name="description" content="항법 메시지의 궤도력 값 16개에서 위성의 지구 고정 좌표를 계산한다. IS-GPS-200 표 20-IV의 식을 한 줄씩 따라가며 케플러 방정식, 진근점 이각, 2차 조화 보정, 지구 자전, 위성 시계와 상대론 보정, 신호가 날아오는 동안의 지구 자전 보정을 시뮬레이터로 계산하고 RTKLIB과 비교한다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/gnss/chapters/satpos.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="GNSSBook">
+<meta property="og:title" content="위성 위치 계산 · GNSSBook">
+<meta property="og:description" content="항법 메시지의 궤도력 값 16개에서 위성의 지구 고정 좌표를 계산한다. IS-GPS-200 표 20-IV의 식을 한 줄씩 따라가며 케플러 방정식, 진근점 이각, 2차 조화 보정, 지구 자전, 위성 시계와 상대론 보정, 신호가 날아오는 동안의 지구 자전 보정을 시뮬레이터로 계산하고 RTKLIB과 비교한다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/gnss/chapters/satpos.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/gnss/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"위성 위치 계산","name":"위성 위치 계산 · GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/satpos.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/gnss/chapters/satpos.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":8,"image":"https://yalex-kim.github.io/yalexBook/gnss/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/gnss/#book","name":"GNSSBook — 누구나 읽는 인터랙티브 GNSS 교과서","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"publisher":{"@type":"Organization","name":"GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"description":"항법 메시지의 궤도력 값 16개에서 위성의 지구 고정 좌표를 계산한다. IS-GPS-200 표 20-IV의 식을 한 줄씩 따라가며 케플러 방정식, 진근점 이각, 2차 조화 보정, 지구 자전, 위성 시계와 상대론 보정, 신호가 날아오는 동안의 지구 자전 보정을 시뮬레이터로 계산하고 RTKLIB과 비교한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"GNSSBook","item":"https://yalex-kim.github.io/yalexBook/gnss/"},{"@type":"ListItem","position":2,"name":"08 위성 위치 계산","item":"https://yalex-kim.github.io/yalexBook/gnss/chapters/satpos.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<style>
+  .steps { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 4px 12px; font-size: 13px; }
+  .steps span:nth-child(odd) { color: var(--text-dim); }
+  .steps code { background: none; padding: 0; font-size: 12.5px; }
+</style>
+</head>
+<body data-chapter="satpos">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 08</div>
+    <h1>위성 위치 계산</h1>
+    <p class="lead">거리만 알아서는 위치를 못 구한다. “어디에 있는 위성까지의 거리”인지 알아야 한다. 위성은 자기 위치를 좌표로 보내지 않는다. 대신 궤도를 설명하는 값 16개(궤도력)를 보내고, 수신기가 원하는 순간의 위치를 직접 계산한다. GPS 규격은 그 계산법을 표 하나(표 20-IV)에 담았다. 이 장에서는 그 표를 한 줄씩 따라간다.</p>
+    <ul class="objectives">
+      <li>궤도력의 값들(√A, e, M<sub>0</sub>, Δn, ω, Ω<sub>0</sub>, Ω̇, i<sub>0</sub>, IDOT, 보정 계수 6개, t<sub>oe</sub>)이 무엇을 뜻하는지 안다.</li>
+      <li>규격 표 20-IV의 순서대로 위성의 지구 고정(ECEF) 좌표를 계산한다.</li>
+      <li>위성 시계 보정과 상대론 보정(Δt<sub>r</sub> = F·e·√A·sin E<sub>k</sub>)을 계산한다.</li>
+      <li>신호가 날아오는 70 ms 동안의 지구 자전을 보정하지 않으면 생기는 오차를 안다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="table">
+    <h2>표 20-IV를 따라서</h2>
+    <p>계산은 크게 다섯 단계다.</p>
+    <ol>
+      <li><b>평균 운동과 평균 근점 이각</b>: n = √(μ/A³) + Δn, M<sub>k</sub> = M<sub>0</sub> + n·t<sub>k</sub>. t<sub>k</sub>는 궤도력 기준 시각 t<sub>oe</sub>에서 지난 시간(주 경계를 넘으면 604,800초를 더하거나 뺌).</li>
+      <li><b>케플러 방정식</b>: M<sub>k</sub> = E<sub>k</sub> − e·sin E<sub>k</sub>를 반복으로 풀어 이심 근점 이각 E<sub>k</sub>를 얻는다(규격: 최소 세 번 반복).</li>
+      <li><b>궤도면 안의 위치</b>: 진근점 이각 ν<sub>k</sub>, 위도 인수 Φ<sub>k</sub> = ν<sub>k</sub> + ω, 그리고 지구가 완전한 구가 아니어서 생기는 2차 조화 보정(C<sub>us</sub>·C<sub>uc</sub>, C<sub>rs</sub>·C<sub>rc</sub>, C<sub>is</sub>·C<sub>ic</sub>)으로 u<sub>k</sub>, r<sub>k</sub>, i<sub>k</sub>.</li>
+      <li><b>승교점 경도</b>: Ω<sub>k</sub> = Ω<sub>0</sub> + (Ω̇ − Ω̇<sub>e</sub>)·t<sub>k</sub> − Ω̇<sub>e</sub>·t<sub>oe</sub>. 지구가 도는 만큼(Ω̇<sub>e</sub> = 7.2921151467 × 10⁻⁵ rad/s) 빼서 지구 고정 좌표로.</li>
+      <li><b>회전</b>: 궤도면 좌표 (r cos u, r sin u)를 i<sub>k</sub>와 Ω<sub>k</sub>로 돌려 x, y, z.</li>
+    </ol>
+    <div class="sim" id="sim-pos">
+      <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>궤도력 → 위성 좌표, 한 줄씩</h3></div>
+      <div class="sim-view"><canvas id="cv-pos"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>궤도력 기준 시각에서 지난 시간 t_k <output id="ps-t-out"></output></span><input type="range" id="ps-t" min="-14400" max="14400" step="60" value="0"></label>
+        <label class="ctrl"><span>이심률 e <output id="ps-e-out"></output></span><input type="range" id="ps-e" min="0" max="0.03" step="0.0005" value="0.0105"></label>
+      </div>
+      <div class="sim-view" style="padding:14px;border-top:1px solid var(--border)"><div class="steps" id="ps-steps"></div></div>
+      <div class="sim-note">그림: 위에서 본 지구(원)와 위성 궤도, 지금 위치(빨강). 궤도력 값은 실제 GPS 위성과 비슷한 크기로 만든 설명용 예시다(√A 5,153.65 m<sup>½</sup>, M<sub>0</sub> 1.2, Δn 4.5 × 10⁻⁹, ω 0.82, Ω<sub>0</sub> −2.5, Ω̇ −8.1 × 10⁻⁹, i<sub>0</sub> 0.9615, IDOT 2 × 10⁻¹⁰(라디안 단위), C<sub>uc</sub> −1.5 × 10⁻⁶, C<sub>us</sub> 8 × 10⁻⁶, C<sub>ic</sub> 6 × 10⁻⁸, C<sub>is</sub> −1 × 10⁻⁷ rad, C<sub>rc</sub> 230, C<sub>rs</sub> −30 m, t<sub>oe</sub> = t<sub>oc</sub> 345,600 s, a<sub>f0</sub> 1.2 × 10⁻⁴ s, a<sub>f1</sub> −3.4 × 10⁻¹² s/s). 해볼 것: ① t<sub>k</sub>를 움직이면 위성이 약 12시간에 한 바퀴 돈다(그림은 지구가 도는 좌표라 궤적이 휜다). ② 이심률을 0.03으로 키우면 케플러 반복 횟수가 늘고, 상대론 보정이 커진다. 검증 스크립트는 같은 값을 RTKLIB의 <code>eph2pos()</code>에 넣은 결과와 mm 단위로 맞춰 본다.</div>
+    </div>
+    <p class="spec-ref">계산식과 상수(μ = 3.986005 × 10¹⁴, Ω̇<sub>e</sub> = 7.2921151467 × 10⁻⁵, π = 3.1415926535898, t<sub>k</sub>의 주 경계 처리): IS-GPS-200N 표 20-IV(sheet 1~2, p.106~107) · 같은 계산의 구현: RTKLIB <code>ephemeris.c</code> <code>eph2pos()</code></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="clock">
+    <h2>위성 시계와 상대론 보정</h2>
+    <p>위성 시계도 GPS 시간과 조금씩 다르다. 관제국이 그 차이를 다항식(a<sub>f0</sub> + a<sub>f1</sub>·(t − t<sub>oc</sub>) + a<sub>f2</sub>·(t − t<sub>oc</sub>)²)으로 보내 준다. 여기에 3장에서 미리 맞춰 두지 못한 상대론 효과가 남는다. 궤도가 완전한 원이 아니어서(이심률 e), 위성이 지구에 가까울 때는 빠르고 낮은 곳에서 시계가 느리게, 멀 때는 반대로 간다. 이 주기적 효과가 Δt<sub>r</sub> = F·e·√A·sin E<sub>k</sub>, F = −4.442807633 × 10⁻¹⁰ s/m<sup>½</sup>다. e = 0.01이면 최대 약 23 ns, 거리로 7 m다.</p>
+    <p class="spec-ref">시계 보정 Δt<sub>sv</sub> = a<sub>f0</sub> + a<sub>f1</sub>(t − t<sub>oc</sub>) + a<sub>f2</sub>(t − t<sub>oc</sub>)² + Δt<sub>r</sub>, Δt<sub>r</sub> = F e √A sin E<sub>k</sub>, F = −2√μ/c² = −4.442807633 × 10⁻¹⁰: IS-GPS-200N 20.3.3.3.3.1(p.98) · RTKLIB은 같은 값을 −2√(μA)·e·sin E/c²로 계산(<code>eph2pos()</code> “relativity correction”)</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="sagnac">
+    <h2>날아오는 동안 지구가 돈다</h2>
+    <p>위성 위치는 신호를 <b>보낸 순간</b>의 것이어야 하고, 좌표는 수신기가 받는 순간의 지구 고정 좌표여야 한다. 신호가 약 70 ms 날아오는 동안 지구는 Ω̇<sub>e</sub> × 0.07 s ≈ 5.1 × 10⁻⁶ rad 돈다. 위성 좌표가 100~160 m 옮겨지는 셈이고, 그중 시선 방향 성분이 거리 오차가 된다. 동·서쪽 낮은 위성에서 약 30 m다. 그래서 보낸 순간의 위성 좌표를 그만큼 z축 둘레로 돌려 쓴다(사냐크 보정).</p>
+    <div class="sim" id="sim-sag">
+      <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>지구 자전 보정의 크기</h3></div>
+      <div class="sim-controls" style="border-top:0">
+        <label class="ctrl"><span>위성 앙각 <output id="sg-e-out"></output></span><input type="range" id="sg-e" min="5" max="90" value="20"></label>
+        <label class="ctrl"><span>위성 방위 <output id="sg-a-out"></output></span><input type="range" id="sg-a" min="0" max="359" value="90"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">비행시간</span><span class="v" id="sg-t">—</span></div>
+        <div class="stat"><span class="k">위성 좌표가 도는 거리</span><span class="v" id="sg-d">—</span></div>
+        <div class="stat"><span class="k">거리 오차(보정 안 하면)</span><span class="v" id="sg-r">—</span></div>
+      </div>
+      <div class="sim-note">수신기: 위도 37.5°, 경도 127°, 위성: 반지름 26,560 km. 해볼 것: 동쪽·서쪽 낮은 위성에서 거리 오차가 가장 크고(수십 m), 머리 위나 남북 방향에서는 작다. 계산: 보정 = Ω̇<sub>e</sub>·(x<sub>s</sub>·y<sub>r</sub> − y<sub>s</sub>·x<sub>r</sub>)/c 를 거리로(RTKLIB <code>geodist()</code>와 같은 식).</div>
+    </div>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>위성은 좌표가 아니라 궤도력(케플러 요소 + 보정 항)을 보내고, 수신기가 표 20-IV로 위치를 계산한다.</li>
+      <li>평균 운동 → 케플러 방정식(반복) → 진근점 이각 → 2차 조화 보정 → 지구 자전을 뺀 승교점 → 회전.</li>
+      <li>위성 시계 = a<sub>f0</sub> + a<sub>f1</sub>Δt + a<sub>f2</sub>Δt² + Δt<sub>r</sub>, Δt<sub>r</sub> = F·e·√A·sin E(e = 0.01이면 최대 약 7 m).</li>
+      <li>신호가 날아오는 70 ms의 지구 자전을 보정한다(사냐크). 안 하면 수십 m.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>케플러 방정식 M = E − e·sin E에서 수신기가 반복으로 구하는 것은?</p><div class="opts">
+        <button class="opt">M (평균 근점 이각)</button><button class="opt" data-correct>E (이심 근점 이각)</button><button class="opt">e</button><button class="opt">t<sub>oe</sub></button>
+      </div><div class="quiz-exp">M은 시간에 비례해 쉽게 구하고, E는 닫힌 식이 없어 반복한다.</div></div>
+      <div class="quiz-q"><p>Ω<sub>k</sub> 계산에서 Ω̇<sub>e</sub>·t를 빼는 이유는?</p><div class="opts">
+        <button class="opt">위성이 느려서</button><button class="opt" data-correct>지구가 도는 만큼 빼서 지구 고정 좌표로 바꾸려고</button><button class="opt">상대론 보정</button><button class="opt">전리층 보정</button>
+      </div><div class="quiz-exp">궤도면은 우주에 대해 거의 고정이고 지구가 그 아래서 돈다.</div></div>
+      <div class="quiz-q"><p>상대론 보정 Δt<sub>r</sub>가 0인 궤도는?</p><div class="opts">
+        <button class="opt" data-correct>완전한 원 궤도(e = 0)</button><button class="opt">정지 궤도만</button><button class="opt">경사 55° 궤도</button><button class="opt">없다</button>
+      </div><div class="quiz-exp">Δt<sub>r</sub> ∝ e. 원 궤도의 일정한 효과는 3장의 주파수 오프셋이 이미 처리했다.</div></div>
+      <div class="quiz-q"><p>사냐크(지구 자전) 보정이 필요한 이유는?</p><div class="opts">
+        <button class="opt">위성 시계가 틀려서</button><button class="opt" data-correct>신호가 날아오는 동안 지구 고정 좌표계가 돌기 때문에</button><button class="opt">다중 경로 때문에</button><button class="opt">윤초 때문에</button>
+      </div><div class="quiz-exp">약 70 ms 동안 지구가 돌아 위성 좌표를 그만큼 돌려야 한다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const MU = 3.986005e14, OMGE = 7.2921151467e-5, PI = 3.1415926535898, F = -4.442807633e-10, C = 299792458;
+  /** 설명용 예시 궤도력 */
+  const EPH = { sqrtA: 5153.65, e: 0.0105, M0: 1.2, dn: 4.5e-9, omg: 0.82, OMG0: -2.5, OMGd: -8.1e-9, i0: 0.9615, idot: 2.0e-10, cuc: -1.5e-6, cus: 8.0e-6, crc: 230, crs: -30, cic: 6e-8, cis: -1e-7, toe: 345600, af0: 1.2e-4, af1: -3.4e-12, af2: 0, toc: 345600 };
+  /** IS-GPS-200N 표 20-IV: 궤도력과 GPS 시각 t → ECEF(m)와 중간값 */
+  function satPos(eph, t) {
+    const A = eph.sqrtA * eph.sqrtA, n0 = Math.sqrt(MU / (A * A * A));
+    let tk = t - eph.toe; if (tk > 302400) tk -= 604800; else if (tk < -302400) tk += 604800;
+    const n = n0 + eph.dn, M = eph.M0 + n * tk;
+    let E = M, iters = 0; for (let j = 0; j < 30; j++) { const En = E + (M - E + eph.e * Math.sin(E)) / (1 - eph.e * Math.cos(E)); iters++; const done = Math.abs(En - E) < 1e-14 && j >= 2; E = En; if (done) break; }
+    const nu = 2 * Math.atan(Math.sqrt((1 + eph.e) / (1 - eph.e)) * Math.tan(E / 2)), phi = nu + eph.omg, s2 = Math.sin(2 * phi), c2 = Math.cos(2 * phi);
+    const u = phi + eph.cus * s2 + eph.cuc * c2, r = A * (1 - eph.e * Math.cos(E)) + eph.crs * s2 + eph.crc * c2, i = eph.i0 + eph.cis * s2 + eph.cic * c2 + eph.idot * tk;
+    const xp = r * Math.cos(u), yp = r * Math.sin(u), O = eph.OMG0 + (eph.OMGd - OMGE) * tk - OMGE * eph.toe;
+    return { x: xp * Math.cos(O) - yp * Math.cos(i) * Math.sin(O), y: xp * Math.sin(O) + yp * Math.cos(i) * Math.cos(O), z: yp * Math.sin(i), tk, n, M, E, iters, nu, phi, u, r, i, O, A };
+  }
+  /** 위성 시계 보정(s): 다항식 + 상대론 */
+  function satClock(eph, t, E) { const dt = t - eph.toc; return eph.af0 + eph.af1 * dt + eph.af2 * dt * dt + F * eph.e * eph.sqrtA * Math.sin(E); }
+  /** 사냐크 보정 거리(m): Ω̇e(xs·yr − ys·xr)/c */
+  function sagnac(s, r) { return (OMGE * (s[0] * r[1] - s[1] * r[0])) / C; }
+  /** 위도·경도·높이(구형 근사 아닌 WGS84) → ECEF */
+  function llh2ecef(lat, lon, h) { const a = 6378137, f = 1 / 298.257223563, e2 = f * (2 - f), N = a / Math.sqrt(1 - e2 * Math.sin(lat) ** 2); return [(N + h) * Math.cos(lat) * Math.cos(lon), (N + h) * Math.cos(lat) * Math.sin(lon), (N * (1 - e2) + h) * Math.sin(lat)]; }
+
+  /* ================================================================ 1. 계산기 */
+  (function () {
+    const t = GN.range("ps-t", (v) => (v >= 0 ? "+" : "") + (v / 3600).toFixed(2) + " h", draw), e = GN.range("ps-e", (v) => v.toFixed(4), draw);
+    const eph = () => ({ ...EPH, e: e() });
+    const cv = GN.canvas($("cv-pos"), (ctx, w, h) => {
+      const P = GN.palette(), cx = w / 2, cy = h / 2, sc = Math.min(w, h) / 2 / 28e6;
+      ctx.fillStyle = P.accentSoft || "rgba(21,128,61,.15)"; ctx.beginPath(); ctx.arc(cx, cy, 6378137 * sc, 0, 7); ctx.fill(); ctx.strokeStyle = P.border; ctx.stroke();
+      ctx.strokeStyle = P.accent; ctx.lineWidth = 1.4; ctx.beginPath(); for (let k = -43200; k <= 43200; k += 300) { const p = satPos(eph(), EPH.toe + k); const X = cx + p.x * sc, Y = cy - p.y * sc; k === -43200 ? ctx.moveTo(X, Y) : ctx.lineTo(X, Y); } ctx.stroke();
+      const p = satPos(eph(), EPH.toe + t()); ctx.fillStyle = P.bad; ctx.beginPath(); ctx.arc(cx + p.x * sc, cy - p.y * sc, 6, 0, 7); ctx.fill();
+      GN.text(ctx, "위에서 본 지구 고정 좌표(x→, y↑)", 8, 16, { size: 11, color: P.dim });
+    }, { aspect: 0.7, minHeight: 240, maxHeight: 360 });
+    function draw() {
+      const E = eph(), p = satPos(E, EPH.toe + t()), clk = satClock(E, EPH.toe + t(), p.E), rel = F * E.e * E.sqrtA * Math.sin(p.E), deg = (r) => ((r * 180) / PI).toFixed(4) + "°", km = (m) => (m / 1000).toLocaleString(undefined, { maximumFractionDigits: 3 }) + " km";
+      const rows = [["① t<sub>k</sub>", p.tk + " s"], ["① 평균 운동 n", p.n.toExponential(6) + " rad/s"], ["① 평균 근점 이각 M<sub>k</sub>", deg(p.M)], ["② 이심 근점 이각 E<sub>k</sub> (반복 " + p.iters + "번)", deg(p.E)], ["③ 진근점 이각 ν<sub>k</sub>", deg(p.nu)], ["③ 보정된 u<sub>k</sub> / r<sub>k</sub>", deg(p.u) + " / " + km(p.r)], ["③ 보정된 i<sub>k</sub>", deg(p.i)], ["④ Ω<sub>k</sub> (0~360°로 접음)", deg(((p.O % (2 * PI)) + 2 * PI) % (2 * PI))], ["⑤ x, y, z", `<code>${km(p.x)}, ${km(p.y)}, ${km(p.z)}</code>`], ["반지름 / 고도", km(Math.hypot(p.x, p.y, p.z)) + " / " + km(Math.hypot(p.x, p.y, p.z) - 6378137)], ["상대론 Δt<sub>r</sub>", (rel * 1e9).toFixed(2) + " ns (" + (rel * C).toFixed(2) + " m)"], ["시계 보정 합 Δt<sub>sv</sub>", (clk * 1e6).toFixed(4) + " µs"]];
+      $("ps-steps").innerHTML = rows.map(([a, b]) => `<span>${a}</span><span>${b}</span>`).join("");
+      cv.redraw();
+    }
+    draw();
+  })();
+
+  /* ================================================================ 2. 사냐크 */
+  (function () {
+    const el = GN.range("sg-e", (v) => v + "°", draw), az = GN.range("sg-a", (v) => v + "°", draw);
+    function draw() {
+      const lat = (37.5 * PI) / 180, lon = (127 * PI) / 180, rr = llh2ecef(lat, lon, 0), E = (el() * PI) / 180, A = (az() * PI) / 180;
+      const R = 26559710, enu = [Math.cos(E) * Math.sin(A), Math.cos(E) * Math.cos(A), Math.sin(E)], sl = Math.sin(lat), cl = Math.cos(lat), so = Math.sin(lon), co = Math.cos(lon);
+      const d = [-so * enu[0] - sl * co * enu[1] + cl * co * enu[2], co * enu[0] - sl * so * enu[1] + cl * so * enu[2], cl * enu[1] + sl * enu[2]], rd = rr[0] * d[0] + rr[1] * d[1] + rr[2] * d[2];
+      const rho = -rd + Math.sqrt(rd * rd + R * R - (rr[0] ** 2 + rr[1] ** 2 + rr[2] ** 2)), s = rr.map((v, i) => v + rho * d[i]);
+      const tau = rho / C; GN.stat("sg-t", (tau * 1000).toFixed(1) + " ms"); GN.stat("sg-d", (OMGE * tau * Math.hypot(s[0], s[1])).toFixed(1) + " m"); GN.stat("sg-r", sagnac(s, rr).toFixed(1) + " m");
+    }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>
