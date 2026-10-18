@@ -270,4 +270,13 @@ for (const f of fs.readdirSync(path.join(root, 'chapters')).filter((x) => x.ends
   ok(s.includes('class="quiz-sec"'), `${f} has a quiz`);
   for (const m of s.matchAll(/class="(?:whatif )?quiz-q"[\s\S]*?class="quiz-exp"/g)) ok((m[0].match(/data-correct/g) || []).length === 1, `${f}: every question has exactly one correct option`);
 }
+// 상대 링크(다른 책으로 가는 “함께 읽기” 포함)가 실제 파일로 이어지는가
+for (const f of ['../index.html', ...fs.readdirSync(path.join(root, 'chapters')).filter((x) => x.endsWith('.html'))]) {
+  const s = fs.readFileSync(path.join(root, 'chapters', f), 'utf8');
+  for (const m of s.matchAll(/href="([^"#:${}]+)(?:#[^"]*)?"/g)) {
+    let target = path.resolve(path.dirname(path.join(root, 'chapters', f)), m[1]);
+    if (m[1].endsWith('/')) target = path.join(target, 'index.html');
+    ok(fs.existsSync(target), `${f}: link ${m[1]} exists`);
+  }
+}
 console.log({ checks, compiledScriptBlocks: scripts, terms: tctx.window.UW_TERMS.length });
