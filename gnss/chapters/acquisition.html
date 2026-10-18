@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>신호 찾기: 코드 위상 × 도플러 · GNSSBook</title>
+<meta name="description" content="잡음 속 위성 신호를 처음 찾는 일은 코드 위상과 도플러 두 축의 숨바꼭질이다. 탐색 격자의 크기, 위성 운동과 수신기 시계가 만드는 도플러, 적분 시간과 항법 비트의 한계, 냉·온·열 시동과 A-GNSS의 첫 위치 시간을 시뮬레이터로 계산한다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/gnss/chapters/acquisition.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="GNSSBook">
+<meta property="og:title" content="신호 찾기: 코드 위상 × 도플러 · GNSSBook">
+<meta property="og:description" content="잡음 속 위성 신호를 처음 찾는 일은 코드 위상과 도플러 두 축의 숨바꼭질이다. 탐색 격자의 크기, 위성 운동과 수신기 시계가 만드는 도플러, 적분 시간과 항법 비트의 한계, 냉·온·열 시동과 A-GNSS의 첫 위치 시간을 시뮬레이터로 계산한다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/gnss/chapters/acquisition.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/gnss/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"신호 찾기: 코드 위상 × 도플러","name":"신호 찾기: 코드 위상 × 도플러 · GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/acquisition.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/gnss/chapters/acquisition.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":5,"image":"https://yalex-kim.github.io/yalexBook/gnss/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/gnss/#book","name":"GNSSBook — 누구나 읽는 인터랙티브 GNSS 교과서","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"publisher":{"@type":"Organization","name":"GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"description":"잡음 속 위성 신호를 처음 찾는 일은 코드 위상과 도플러 두 축의 숨바꼭질이다. 탐색 격자의 크기, 위성 운동과 수신기 시계가 만드는 도플러, 적분 시간과 항법 비트의 한계, 냉·온·열 시동과 A-GNSS의 첫 위치 시간을 시뮬레이터로 계산한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"GNSSBook","item":"https://yalex-kim.github.io/yalexBook/gnss/"},{"@type":"ListItem","position":2,"name":"05 신호 찾기: 코드 위상 × 도플러","item":"https://yalex-kim.github.io/yalexBook/gnss/chapters/acquisition.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+</head>
+<body data-chapter="acquisition">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 05</div>
+    <h1>신호 찾기: 코드 위상 × 도플러</h1>
+    <p class="lead">비행기에서 내려 휴대폰을 켜면 위치가 잡히기까지 한참 걸리기도 하고, 매일 쓰는 동네에서는 1초 만에 잡힌다. 차이는 “어디를 찾아야 하는지”를 아느냐다. 수신기는 처음에 각 위성 신호가 <b>코드의 몇 번째 칩에서</b>, <b>얼마나 주파수가 밀려서</b> 오는지 모른다. 이 장에서는 그 두 축의 숨바꼭질, <span class="term">신호 획득</span><span class="en">(acquisition)</span>을 본다.</p>
+    <ul class="objectives">
+      <li>위성 운동과 수신기 시계가 만드는 도플러가 L1에서 몇 kHz인지 계산한다.</li>
+      <li>코드 위상 × 도플러 탐색 격자에서 봉우리를 찾는 과정을 시뮬레이터로 본다.</li>
+      <li>적분 시간을 늘리면 감도는 오르지만 격자가 촘촘해지고, 20 ms 항법 비트가 한계가 되는 이유를 안다.</li>
+      <li>냉·온·열 시동과 A-GNSS의 첫 위치 시간(TTFF)이 왜 다른지 계산한다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="doppler">
+    <h2>도플러: 위성이 다가오고 멀어진다</h2>
+    <p>위성은 초속 3.9 km로 돈다. 지평선 위로 막 떠오르는 위성은 나에게 다가오고, 지는 위성은 멀어진다. 그 시선 방향 속도만큼 받는 주파수가 밀린다. 지구 표면에서 본 GPS 위성의 시선 속도는 최대 약 930 m/s, L1 파장(19 cm)으로 나누면 <b>최대 약 ±4.9 kHz</b>다. 여기에 수신기 수정 진동자의 오차가 더해진다. 1 ppm이면 L1에서 1.575 kHz다. 그래서 처음 찾을 때는 ±5~10 kHz를 뒤져야 한다.</p>
+    <p>도플러는 코드에도 영향을 준다. 반송파가 1,540배 빠르므로(1,575.42 ÷ 1.023), 반송파 도플러를 1,540으로 나눈 만큼 코드 속도도 밀린다. 오래 적분할수록 이 코드 밀림도 챙겨야 한다.</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="grid">
+    <h2>탐색 격자</h2>
+    <p>수신기는 위성 하나마다 두 축을 뒤진다. 코드 위상은 1,023칩을 반 칩 간격으로 2,046칸, 도플러는 칸 폭을 적분 시간에 맞춰(대략 1/(2T)) 나눈다. 1 ms 적분이면 500 Hz 칸, ±5 kHz면 20칸, 모두 약 4만 칸이다. 각 칸에서 복제 신호와 받은 신호를 상관시켜 크기를 보고, 문턱을 넘는 봉우리가 있으면 “찾았다”.</p>
+    <div class="sim" id="sim-grid">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>코드 위상 × 도플러 격자에서 봉우리 찾기</h3></div>
+      <div class="sim-view"><canvas id="cv-grid"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>C/N0 <output id="gd-c-out"></output></span><input type="range" id="gd-c" min="20" max="50" value="42"></label>
+        <label class="ctrl"><span>결맞음 적분 시간 <output id="gd-t-out"></output></span><input type="range" id="gd-t" min="0" max="3" value="0"></label>
+        <label class="ctrl"><span>비결맞음 합 횟수 <output id="gd-n-out"></output></span><input type="range" id="gd-n" min="1" max="50" value="1"></label>
+        <button class="btn" id="gd-re">다른 위성(잡음 다시)</button>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">격자 칸 수(±5 kHz)</span><span class="v" id="gd-cells">—</span></div>
+        <div class="stat"><span class="k">봉우리 / 잡음 최대</span><span class="v" id="gd-pk">—</span></div>
+        <div class="stat"><span class="k">판정</span><span class="v" id="gd-ok">—</span></div>
+      </div>
+      <div class="sim-note">그림: 진짜 위치 근처만 확대한 격자. 가로 = 코드 위상 120칩(반 칩 간격), 세로 = 도플러 칸 40개(칸 폭 = 1/(2T)), 밝을수록 상관이 크다. 실제 격자는 이보다 훨씬 크다(읽기 칸 수 참고). 해볼 것: ① C/N0 42 dB-Hz, 1 ms면 봉우리가 또렷하다. 38 dB-Hz만 되어도 1 ms로는 잡음 봉우리와 겨루기 시작한다. ② C/N0를 32 dB-Hz로 낮추면 잡음에 묻힌다. 적분을 10 ms로 늘리거나 비결맞음 합을 20번 하면 다시 보인다. ③ 적분을 늘리면 도플러 칸이 좁아져 칸 수가 늘어난다(같은 범위를 더 촘촘히). 20 ms를 넘는 결맞음 적분은 항법 비트가 뒤집히는 순간 신호가 상쇄되어 따로 처리가 필요하다(7장). 모델: 상관 크기 = √(2·C/N0·T)·삼각형 코드 상관·|sinc(πΔf·T)|, 칸 안의 잡음은 레일리 분포, 비결맞음 합은 크기를 더함(씨앗 고정).</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="ttff">
+    <h2>첫 위치까지의 시간</h2>
+    <p>신호를 찾았다고 위치가 나오지는 않는다. 위성 위치를 계산하려면 그 위성이 방송하는 정밀 궤도 정보(궤도력, 7·8장)가 필요하고, 50 bps로 오는 그 정보를 다 받는 데 최소 18초, 보통 30초 가까이 걸린다. 그래서 <span class="term">TTFF</span><span class="en">(Time To First Fix)</span>는 무엇을 미리 아느냐에 따라 크게 다르다.</p>
+    <div class="sim" id="sim-ttff">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>시동 방식별 첫 위치 시간</h3></div>
+      <div class="sim-view"><canvas id="cv-ttff"></canvas></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>시동</span><div class="seg" id="tt-m"><button data-value="cold">냉시동</button><button data-value="warm">온시동</button><button data-value="hot">열시동</button><button data-value="agnss" class="on">A-GNSS</button></div></div>
+        <label class="ctrl"><span>병렬 상관기 수(칸/ms) <output id="tt-k-out"></output></span><input type="range" id="tt-k" min="0" max="5" value="3"></label>
+        <label class="ctrl"><span>C/N0 <output id="tt-c-out"></output></span><input type="range" id="tt-c" min="25" max="45" value="40"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">탐색 시간</span><span class="v" id="tt-s">—</span></div>
+        <div class="stat"><span class="k">궤도 정보 받기</span><span class="v" id="tt-e">—</span></div>
+        <div class="stat"><span class="k">첫 위치까지</span><span class="v" id="tt-t">—</span></div>
+      </div>
+      <div class="sim-note">막대: 탐색(어떤 위성·어떤 칸) + 추적 안정화 + 궤도 정보 받기. 가정: 냉시동 = 위성 32기 × 도플러 ±10 kHz 모두 뒤짐, 온시동 = 알마낙·대략 위치·시각으로 보이는 위성 10기와 도플러 ±1 kHz만, 열시동 = 유효한 궤도력이 있어 메시지를 받지 않음, A-GNSS = 통신망에서 궤도력·시각·대략 위치를 받음. 위성 하나의 칸 수 = 2,046 × (도플러 범위 ÷ 칸 폭), 칸마다 적분 시간 × 필요한 합 횟수(C/N0가 낮을수록 늘어남). 궤도 정보는 서브프레임 1~3 = 18 s + 시작을 기다리는 평균 6 s(7장). 실제 칩은 수만~수십만 칸을 동시에 상관해 훨씬 빠르기도 하다.</div>
+    </div>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>위성 운동이 L1에서 최대 약 ±4.9 kHz의 도플러를 만들고, 수신기 시계 1 ppm마다 1.575 kHz가 더해진다.</li>
+      <li>획득 = 코드 위상(2,046칸) × 도플러(±5 kHz ÷ 칸 폭) 격자에서 상관 봉우리 찾기. 1 ms 적분이면 위성당 약 4만 칸.</li>
+      <li>적분을 늘리면 감도는 오르지만 칸이 촘촘해지고, 결맞음 적분은 20 ms 항법 비트가 막는다.</li>
+      <li>TTFF: 냉시동(수십 초~분) &gt; 온시동 &gt; 열시동(수 초). A-GNSS가 궤도력을 통신망으로 줘 휴대폰은 몇 초 만에 잡는다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>시선 속도 800 m/s인 GPS 위성의 L1 도플러는 대략?</p><div class="opts">
+        <button class="opt">420 Hz</button><button class="opt" data-correct>4.2 kHz</button><button class="opt">42 kHz</button><button class="opt">420 kHz</button>
+      </div><div class="quiz-exp">800 ÷ 0.19 m ≈ 4.2 kHz.</div></div>
+      <div class="quiz-q"><p>결맞음 적분을 20 ms보다 길게 하기 어려운 이유는?</p><div class="opts">
+        <button class="opt">C/A 코드가 20 ms라서</button><button class="opt" data-correct>50 bps 항법 비트가 20 ms마다 부호를 바꿀 수 있어서</button><button class="opt">도플러가 없어져서</button><button class="opt">규정 때문에</button>
+      </div><div class="quiz-exp">비트가 뒤집히면 앞뒤 적분이 서로 지운다.</div></div>
+      <div class="quiz-q"><p>휴대폰이 대개 몇 초 만에 위치를 잡는 이유는?</p><div class="opts">
+        <button class="opt">위성이 휴대폰을 찾아 줘서</button><button class="opt" data-correct>통신망에서 궤도력·시각·대략 위치를 받아(A-GNSS) 탐색과 메시지 받기를 줄여서</button><button class="opt">L5만 써서</button><button class="opt">와이파이로 위치를 대신해서</button>
+      </div><div class="quiz-exp">13장. 탐색 범위가 좁아지고 30초짜리 메시지를 기다리지 않는다.</div></div>
+      <div class="quiz-q"><p>적분 시간을 1 ms → 10 ms로 늘리면 도플러 칸 수는?</p><div class="opts">
+        <button class="opt">10분의 1</button><button class="opt">그대로</button><button class="opt" data-correct>약 10배</button><button class="opt">100배</button>
+      </div><div class="quiz-exp">칸 폭 ≈ 1/(2T)이 좁아진다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const C = 299792458, L1 = 1575.42e6, MU = 3.986005e14, RE = 6378137;
+  /** 지구 표면에서 본 원 궤도 위성의 최대 시선 속도(m/s, 지구 자전 무시) = v × R/a */
+  function maxRangeRate(aM) { return Math.sqrt(MU / aM) * (RE / aM); }
+  /** 도플러(Hz) = 시선 속도 ÷ 파장 */
+  function doppler(vMs, fHz) { return (vMs * fHz) / C; }
+  /** 도플러 칸 폭(Hz) ≈ 1/(2T) */
+  function binWidth(tSec) { return 1 / (2 * tSec); }
+  /** 위성 하나의 격자 칸 수: 2,046 × ⌈도플러 범위 ÷ 칸 폭⌉ */
+  function cells(rangeHz, tSec) { return 2046 * Math.ceil((2 * rangeHz) / binWidth(tSec)); }
+  /** 기대 상관 크기: √(2·C/N0·T)·코드 삼각형·|sinc(πΔfT)| */
+  function corrMag(cn0dB, tSec, dChips, dfHz) { const tri = Math.max(0, 1 - Math.abs(dChips)), x = Math.PI * dfHz * tSec, s = x === 0 ? 1 : Math.abs(Math.sin(x) / x); return Math.sqrt(2 * Math.pow(10, cn0dB / 10) * tSec) * tri * s; }
+  /** 탐지에 필요한 비결맞음 합 횟수(어림): 적분 후 SNR이 문턱 14 dB에 닿을 때까지 √N 이득 */
+  function needSums(cn0dB, tSec) { const snr = cn0dB + 10 * Math.log10(tSec); return snr >= 14 ? 1 : Math.ceil(Math.pow(10, (14 - snr) / 5)); }
+  const TS = [0.001, 0.002, 0.01, 0.02];
+
+  /* ================================================================ 1. 격자 */
+  (function () {
+    let seed = 3;
+    const c = GN.range("gd-c", (v) => v + " dB-Hz", draw), t = GN.range("gd-t", (v) => TS[v] * 1000 + " ms", draw), n = GN.range("gd-n", (v) => v + "번", draw);
+    $("gd-re").addEventListener("click", () => { seed++; draw(); });
+    function grid() {
+      const r = GN.rng(seed), T = TS[t()], bw = binWidth(T), nb = 40, trueCode = 40 + r() * 40, f0 = (r() - 0.5) * 8000, trueDop = f0 + (r() - 0.5) * bw, W = 120, g = [];
+      const gauss = () => Math.sqrt(-2 * Math.log(r() + 1e-12)) * Math.cos(2 * Math.PI * r()) / Math.SQRT2; // 실수·허수 성분, 분산 1/2
+      for (let j = 0; j < nb; j++) { const f = f0 + (j - nb / 2) * bw, row = []; for (let i = 0; i < W * 2; i++) { const sig = corrMag(c(), T, i / 2 - trueCode, f - trueDop); let s = 0; for (let k = 0; k < n(); k++) s += Math.hypot(sig + gauss(), gauss()); row.push(s / n()); } g.push(row); }
+      return { g, nb, trueCode, trueDop, f0, bw };
+    }
+    const cv = GN.canvas($("cv-grid"), (ctx, w, h) => {
+      const P = GN.palette(), { g, nb } = grid(), mx = Math.max(...g.flat()), cw = (w - 20) / g[0].length, ch = (h - 30) / nb;
+      g.forEach((row, j) => row.forEach((v, i) => { const t = v / mx; ctx.fillStyle = `hsl(${140 - 140 * t}, 70%, ${12 + 50 * t}%)`; ctx.fillRect(10 + i * cw, 6 + j * ch, cw + 0.5, ch + 0.5); }));
+      GN.text(ctx, "코드 위상 →", w - 10, h - 8, { size: 10.5, color: P.faint, align: "right" }); GN.text(ctx, "도플러 칸 40개 ↓", 10, h - 8, { size: 10.5, color: P.faint });
+    }, { aspect: 0.5, minHeight: 200, maxHeight: 300 });
+    function draw() {
+      const { g, trueCode, trueDop, nb, f0, bw } = grid(), T = TS[t()], flat = g.flat(), mx = Math.max(...flat), idx = flat.indexOf(mx), j = Math.floor(idx / g[0].length), i = idx % g[0].length;
+      const fOf = (jj) => f0 + (jj - nb / 2) * bw, hit = Math.abs(i / 2 - trueCode) < 1.5 && Math.abs(fOf(j) - trueDop) < bw * 1.5;
+      const noiseMax = Math.max(...g.flatMap((row, jj) => row.filter((_, ii) => Math.abs(ii / 2 - trueCode) > 2 || Math.abs(fOf(jj) - trueDop) > 2 * bw)));
+      GN.stat("gd-cells", cells(5000, T).toLocaleString() + "칸"); GN.stat("gd-pk", (mx / noiseMax).toFixed(2) + "배"); GN.stat("gd-ok", hit && mx / noiseMax > 1.5 ? "찾음 ✓" : "못 찾음"); cv.redraw();
+    }
+    draw();
+  })();
+
+  /* ================================================================ 2. TTFF */
+  (function () {
+    let mode = "agnss";
+    const PAR = [1, 16, 256, 4096, 16384, 65536];
+    const k = GN.range("tt-k", (v) => PAR[v].toLocaleString() + "칸", draw), c = GN.range("tt-c", (v) => v + " dB-Hz", draw);
+    GN.seg("tt-m", (v) => { mode = v; draw(); });
+    function parts() {
+      const T = 0.001, sums = needSums(c(), T), dwell = T * sums;
+      const cfg = { cold: [32, 10000, 24], warm: [10, 1000, 24], hot: [10, 1000, 0], agnss: [10, 500, 0] }[mode];
+      const search = (cfg[0] * cells(cfg[1], T) * dwell) / PAR[k()];
+      return [["탐색", search], ["추적 안정·비트 맞추기", 1], ["궤도 정보", cfg[2]]];
+    }
+    const cv = GN.canvas($("cv-ttff"), (ctx, w, h) => {
+      const P = GN.palette(), ps = parts(), tot = ps.reduce((a, p) => a + p[1], 0), L = 10, R = w - 10, sc = (R - L) / Math.max(tot, 30); let x = L;
+      ps.forEach(([n, d], i) => { const ww = d * sc; ctx.fillStyle = [P.accent, P.faint, P.accent2][i]; GN.rrect(ctx, x, 22, Math.max(ww - 1, 1), 30, 4); ctx.fill(); if (ww > 46) GN.text(ctx, n, x + ww / 2, 42, { size: 11, color: "#fff", align: "center", bold: true }); x += ww; });
+      GN.text(ctx, "0", L, 16, { size: 10, color: P.faint }); GN.text(ctx, Math.max(tot, 30).toFixed(0) + " s", R, 16, { size: 10, color: P.faint, align: "right" });
+    }, { aspect: 0.16, minHeight: 66, maxHeight: 76 });
+    function draw() { const ps = parts(), tot = ps.reduce((a, p) => a + p[1], 0); GN.stat("tt-s", ps[0][1] < 1 ? (ps[0][1] * 1000).toFixed(0) + " ms" : ps[0][1].toFixed(1) + " s"); GN.stat("tt-e", ps[2][1] ? ps[2][1] + " s" : "필요 없음"); GN.stat("tt-t", tot.toFixed(1) + " s"); cv.redraw(); }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

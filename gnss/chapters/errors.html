@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>오차의 지도: 전리층에서 다중 경로까지 · GNSSBook</title>
+<meta name="description" content="GNSS 의사거리를 늘리는 것들. 클로부차 전리층 모델(IS-GPS-200 그림 20-4), 사스타모이넨 대류층 모델, 두 주파수로 전리층을 지우는 조합과 그 대가, 위성 시계·궤도·다중 경로·잡음을 합친 오차 예산 UERE를 RTKLIB과 같은 식으로 계산한다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/gnss/chapters/errors.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="GNSSBook">
+<meta property="og:title" content="오차의 지도: 전리층에서 다중 경로까지 · GNSSBook">
+<meta property="og:description" content="GNSS 의사거리를 늘리는 것들. 클로부차 전리층 모델(IS-GPS-200 그림 20-4), 사스타모이넨 대류층 모델, 두 주파수로 전리층을 지우는 조합과 그 대가, 위성 시계·궤도·다중 경로·잡음을 합친 오차 예산 UERE를 RTKLIB과 같은 식으로 계산한다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/gnss/chapters/errors.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/gnss/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"오차의 지도: 전리층에서 다중 경로까지","name":"오차의 지도: 전리층에서 다중 경로까지 · GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/errors.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/gnss/chapters/errors.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":10,"image":"https://yalex-kim.github.io/yalexBook/gnss/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/gnss/#book","name":"GNSSBook — 누구나 읽는 인터랙티브 GNSS 교과서","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"publisher":{"@type":"Organization","name":"GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"description":"GNSS 의사거리를 늘리는 것들. 클로부차 전리층 모델(IS-GPS-200 그림 20-4), 사스타모이넨 대류층 모델, 두 주파수로 전리층을 지우는 조합과 그 대가, 위성 시계·궤도·다중 경로·잡음을 합친 오차 예산 UERE를 RTKLIB과 같은 식으로 계산한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"GNSSBook","item":"https://yalex-kim.github.io/yalexBook/gnss/"},{"@type":"ListItem","position":2,"name":"10 오차의 지도: 전리층에서 다중 경로까지","item":"https://yalex-kim.github.io/yalexBook/gnss/chapters/errors.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+</head>
+<body data-chapter="errors">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 10</div>
+    <h1>오차의 지도: 전리층에서 다중 경로까지</h1>
+    <p class="lead">9장의 계산은 의사거리가 “거리 + 시계 오차”뿐이라고 가정했다. 실제 신호는 고도 50~1,000 km의 전리층에서 수 m~수십 m, 그 아래 대류층에서 2~25 m 늦어진다. 위성 궤도·시계 정보도 조금 틀리고, 건물에 튕긴 반사파와 수신기 잡음도 섞인다. 이 장은 그 오차들을 하나씩 계산하고, 무엇이 어떻게 지워지는지 정리한다.</p>
+    <ul class="objectives">
+      <li>클로부차 전리층 모델을 규격(그림 20-4) 그대로 계산해 시간·앙각에 따른 지연을 본다.</li>
+      <li>사스타모이넨 대류층 모델로 높이·습도·앙각에 따른 지연을 계산한다.</li>
+      <li>전리층 지연이 주파수 제곱에 반비례하는 성질로 두 주파수 측정을 섞어 지우는 원리와 대가(잡음 증폭)를 안다.</li>
+      <li>오차 예산(UERE)과 DOP로 위치 오차를 어림한다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="iono">
+    <h2>전리층: 낮에 두껍고 낮은 위성에 길다</h2>
+    <p>전리층은 태양 빛이 대기를 이온화해 자유 전자가 떠 있는 층이다. 전자가 많을수록 신호의 코드(의사거리)는 늦어지고 반송파 위상은 반대로 앞당겨진다. 지연은 빛이 지나가는 길의 전자 총량(TEC)에 비례하고 <b>주파수 제곱에 반비례</b>한다: 40.3·TEC/f² m. 전자는 낮에 많고(지방시 오후 2시에 가장 많음) 밤에 적으며, 낮은 위성은 전리층을 비스듬히 길게 지나므로 지연이 크다.</p>
+    <p>한 주파수만 받는 수신기는 GPS가 방송하는 계수 8개(α₀~α₃, β₀~β₃)로 <span class="term">클로부차 모델</span>을 계산한다. 낮의 전자량을 코사인 모양으로, 밤을 5 ns로 둔 단순한 모델이다. 규격은 이 모델이 단일 주파수 사용자의 전리층 오차(RMS)를 <b>최소 50%</b> 줄인다고 적는다.</p>
+    <div class="sim" id="sim-iono">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>클로부차 전리층 지연</h3></div>
+      <div class="sim-view"><canvas id="cv-iono"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>위성 앙각 <output id="io-e-out"></output></span><input type="range" id="io-e" min="5" max="90" value="30"></label>
+        <label class="ctrl"><span>위성 방위 <output id="io-a-out"></output></span><input type="range" id="io-a" min="0" max="359" value="180"></label>
+        <label class="ctrl"><span>지방시(서울) <output id="io-t-out"></output></span><input type="range" id="io-t" min="0" max="24" step="0.25" value="14"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">L1 지연</span><span class="v" id="io-l1">—</span></div>
+        <div class="stat"><span class="k">L5 지연(× 1.793)</span><span class="v" id="io-l5">—</span></div>
+        <div class="stat"><span class="k">기울기 계수 F</span><span class="v" id="io-f">—</span></div>
+      </div>
+      <div class="sim-note">그래프: 하루(가로) 동안의 L1 지연(세로), 앙각별 선. 해볼 것: ① 오후 2시에 가장 크고 밤에는 5 ns(1.5 m) × 기울기 계수로 바닥이다. ② 앙각 5°면 머리 위보다 약 3배 길다(기울기 계수 F = 1 + 16(0.53 − E)³). ③ L5는 주파수가 낮아 (1,575.42/1,176.45)² ≈ 1.793배 더 늦다. 계수는 RTKLIB의 기본값(2004년 1월 1일 방송값: α = 1.118E-8, −7.451E-9, −5.961E-8, 1.192E-7, β = 1.167E5, −2.294E5, −1.311E5, 1.049E6)이다. 실제 방송 계수는 날마다 다르다.</div>
+    </div>
+    <p class="spec-ref">클로부차 모델: IS-GPS-200N 20.3.3.5.2.5, 그림 20-4(p.130~132) — 지구 중심각 ψ = 0.0137/(E + 0.11) − 0.022, 위도 한계 ±0.416, 지자기 위도 φ<sub>m</sub> = φ<sub>i</sub> + 0.064 cos(λ<sub>i</sub> − 1.617), 지방시 t = 4.32 × 10⁴ λ<sub>i</sub> + GPS 시간, PER ≥ 72,000 s, x = 2π(t − 50,400)/PER · “at least a 50 percent reduction”: 같은 절 · 같은 계산의 구현: RTKLIB <code>rtkcmn.c</code> <code>ionmodel()</code>(기본 계수 <code>ion_default</code>)</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="tropo">
+    <h2>대류층: 공기와 수증기</h2>
+    <p>지상 10 km 남짓의 대류층은 전리층과 달리 주파수와 상관없이 신호를 늦춘다. 대부분(약 90%)은 건조 공기에서 나오고 기압으로 잘 예측된다. 나머지 수증기 몫은 날씨에 따라 들쭉날쭉하다. 머리 위 방향으로 해수면에서 약 2.4 m, 낮은 위성은 그 몇 배다. 높은 산에 오르면 공기가 줄어 지연도 준다.</p>
+    <div class="sim" id="sim-tropo">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>사스타모이넨 대류층 지연</h3></div>
+      <div class="sim-view"><canvas id="cv-tropo"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>높이 <output id="tr-h-out"></output></span><input type="range" id="tr-h" min="0" max="5000" step="100" value="0"></label>
+        <label class="ctrl"><span>상대 습도 <output id="tr-u-out"></output></span><input type="range" id="tr-u" min="0" max="100" value="70"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">머리 위(앙각 90°)</span><span class="v" id="tr-z">—</span></div>
+        <div class="stat"><span class="k">앙각 15°</span><span class="v" id="tr-15">—</span></div>
+        <div class="stat"><span class="k">앙각 5°</span><span class="v" id="tr-5">—</span></div>
+      </div>
+      <div class="sim-note">그래프: 앙각(가로)에 따른 지연(세로, 위도 37.5°). 해볼 것: ① 해수면 머리 위 약 2.4 m, 앙각 5°면 20 m가 넘는다. 그래서 낮은 위성을 마스크로 버린다(2장). ② 높이 3,000 m면 공기가 줄어 머리 위 지연이 30% 남짓 준다. 계산은 RTKLIB <code>tropmodel()</code>과 같다: 표준 대기(기압 1013.25·(1 − 2.2557×10⁻⁵·h)^5.2568 hPa, 기온 15 − 6.5×10⁻³·h °C)와 사스타모이넨 식, 사상 함수 1/cos z.</div>
+    </div>
+    <p class="spec-ref">대류층 모델: RTKLIB <code>rtkcmn.c</code> <code>tropmodel()</code>(표준 대기 + 사스타모이넨) · GPS 규격은 대류층 모델을 정하지 않는다(사용자 몫).</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="dual">
+    <h2>두 주파수로 전리층 지우기</h2>
+    <p>전리층 지연은 1/f²에 비례하므로, 같은 위성을 두 주파수로 재면 지연의 차이로 지연 자체를 알 수 있다. 두 의사거리를 적당히 섞으면 1차 전리층 지연이 정확히 0이 되는 <b>전리층 제거 조합</b>이 나온다.</p>
+    <div class="formula">P<sub>IF</sub> = (f₁²·P₁ − f₂²·P₂) / (f₁² − f₂²)
+      <div class="where">L1·L5: P<sub>IF</sub> ≈ 2.261·P₁ − 1.261·P₅. 계수 합은 1이라 기하 거리와 시계는 그대로, 전리층만 사라진다. 대가는 잡음: 두 측정의 잡음이 독립이면 √(2.261² + 1.261²) ≈ 2.59배로 커진다(L1·L2는 약 2.98배).</div>
+    </div>
+    <div class="sim" id="sim-if">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>전리층 제거 조합</h3></div>
+      <div class="sim-view"><canvas id="cv-if"></canvas></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>두 번째 주파수</span><div class="seg" id="if-f"><button data-value="1176.45" class="on">L5 / E5a</button><button data-value="1227.6">L2</button><button data-value="1207.14">E5b</button></div></div>
+        <label class="ctrl"><span>시선 방향 전자량(TEC) <output id="if-t-out"></output></span><input type="range" id="if-t" min="0" max="150" value="40"></label>
+        <label class="ctrl"><span>주파수별 측정 잡음 <output id="if-n-out"></output></span><input type="range" id="if-n" min="0.05" max="2" step="0.05" value="0.5"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">L1 지연 / 두 번째 지연</span><span class="v" id="if-d">—</span></div>
+        <div class="stat"><span class="k">조합 계수</span><span class="v" id="if-c">—</span></div>
+        <div class="stat"><span class="k">조합 후 전리층 / 잡음</span><span class="v" id="if-r">—</span></div>
+      </div>
+      <div class="sim-note">막대: L1·두 번째 주파수·조합의 전리층 지연(색)과 잡음(회색 띠). 해볼 것: ① TEC 40(낮 평균 정도)이면 L1 지연 약 6.5 m, 조합은 0. ② 잡음 0.5 m가 조합 뒤 약 1.3 m가 된다. 전리층이 작은 밤이나, 다중 경로가 큰 도시에서는 조합이 오히려 손해일 수 있다. 1 TECU = 10¹⁶ 전자/m².</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="budget">
+    <h2>오차 예산</h2>
+    <p>각 오차를 독립이라고 보고 제곱합의 제곱근(RSS)으로 묶은 것이 <span class="term">UERE</span><span class="en">(User Equivalent Range Error)</span>다. 위치 오차 ≈ DOP × UERE(9장).</p>
+    <div class="sim" id="sim-bud">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>내 수신기의 오차 예산</h3></div>
+      <div class="sim-view"><canvas id="cv-bud"></canvas></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>주파수</span><div class="seg" id="bd-f"><button data-value="1" class="on">L1만(클로부차)</button><button data-value="2">L1 + L5</button></div></div>
+        <div class="ctrl"><span>환경</span><div class="seg" id="bd-e"><button data-value="open" class="on">트인 하늘</button><button data-value="urban">도시</button></div></div>
+        <label class="ctrl"><span>HDOP <output id="bd-h-out"></output></span><input type="range" id="bd-h" min="0.6" max="5" step="0.1" value="1"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">UERE</span><span class="v" id="bd-u">—</span></div>
+        <div class="stat"><span class="k">수평 오차(1σ)</span><span class="v" id="bd-p">—</span></div>
+        <div class="stat"><span class="k">가장 큰 몫</span><span class="v" id="bd-m">—</span></div>
+      </div>
+      <div class="sim-note">막대: 오차 항목별 크기(1σ, m). 대표적 크기를 고른 예시 값이다: 위성 궤도·시계(방송) 0.6 m, 전리층 잔차(클로부차 뒤 3 m · 이중 주파수 뒤 0.1 m), 대류층 잔차 0.2 m, 다중 경로(트인 0.5 m · 도시 3 m), 수신기 잡음(0.5 m, 이중 주파수 조합 뒤 × 2.59). 해볼 것: 트인 하늘의 L1만 수신기는 전리층이 가장 크고, 도시에서는 다중 경로가 가장 크다. 이중 주파수는 트인 하늘에서 크게 이득이지만 도시에서는 이득이 줄어든다(11장).</div>
+    </div>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>전리층 지연 = 40.3·TEC/f². 낮(오후 2시)에 크고 낮은 위성에 길다. 단일 주파수는 클로부차 모델(그림 20-4)로 RMS 오차를 최소 50% 줄인다.</li>
+      <li>대류층: 주파수와 무관, 머리 위 해수면 약 2.4 m(대부분 건조 공기). 사스타모이넨 모델 + 사상 함수.</li>
+      <li>두 주파수 조합 P<sub>IF</sub> = (f₁²P₁ − f₂²P₂)/(f₁² − f₂²)로 1차 전리층이 사라진다. 대가는 잡음 증폭(L1·L5 2.59배).</li>
+      <li>UERE = 오차 항목의 RSS. 위치 오차 ≈ DOP × UERE. 트인 하늘의 단일 주파수는 전리층, 도시는 다중 경로가 지배한다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>같은 전자량에서 L5의 전리층 지연은 L1의 몇 배인가?</p><div class="opts">
+        <button class="opt">0.56배</button><button class="opt">같다</button><button class="opt" data-correct>약 1.79배</button><button class="opt">약 3.2배</button>
+      </div><div class="quiz-exp">(1,575.42/1,176.45)² ≈ 1.793.</div></div>
+      <div class="quiz-q"><p>클로부차 모델에서 전리층 지연이 가장 큰 지방시는?</p><div class="opts">
+        <button class="opt">자정</button><button class="opt">오전 6시</button><button class="opt" data-correct>오후 2시(50,400초)</button><button class="opt">오후 6시</button>
+      </div><div class="quiz-exp">x = 2π(t − 50,400)/PER.</div></div>
+      <div class="quiz-q"><p>전리층 제거 조합의 대가는?</p><div class="opts">
+        <button class="opt">대류층이 커진다</button><button class="opt" data-correct>측정 잡음이 2.6~3배 커진다</button><button class="opt">시계 오차를 못 푼다</button><button class="opt">위성이 줄어든다</button>
+      </div><div class="quiz-exp">계수 2.26, −1.26의 제곱합 제곱근.</div></div>
+      <div class="quiz-q"><p>대류층 지연이 전리층과 다른 점은?</p><div class="opts">
+        <button class="opt">밤에 커진다</button><button class="opt" data-correct>주파수와 상관없어 두 주파수로 지울 수 없다</button><button class="opt">위성 시계에서 생긴다</button><button class="opt">항상 0이다</button>
+      </div><div class="quiz-exp">모델(사스타모이넨 등)로 보정하거나, 정밀 측위에서는 추정한다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const PI = Math.PI, C = 299792458, D = PI / 180;
+  const ION = [0.1118e-07, -0.7451e-08, -0.5961e-07, 0.1192e-06, 0.1167e06, -0.2294e06, -0.1311e06, 0.1049e07]; // RTKLIB ion_default (2004/1/1)
+  /** IS-GPS-200N 그림 20-4 클로부차: pos = [위도, 경도](라디안), azel = [방위, 앙각](라디안), tow(s) → L1 지연(m) */
+  function klobuchar(ion, pos, azel, tow) {
+    const E = azel[1] / PI, psi = 0.0137 / (E + 0.11) - 0.022;
+    let phi = pos[0] / PI + psi * Math.cos(azel[0]); phi = Math.max(-0.416, Math.min(0.416, phi));
+    const lam = pos[1] / PI + (psi * Math.sin(azel[0])) / Math.cos(phi * PI), phim = phi + 0.064 * Math.cos((lam - 1.617) * PI);
+    let t = 43200 * lam + tow; t -= Math.floor(t / 86400) * 86400;
+    const F = 1 + 16 * Math.pow(0.53 - E, 3), amp = Math.max(0, ion[0] + phim * (ion[1] + phim * (ion[2] + phim * ion[3]))), per = Math.max(72000, ion[4] + phim * (ion[5] + phim * (ion[6] + phim * ion[7])));
+    const x = (2 * PI * (t - 50400)) / per;
+    return C * F * (Math.abs(x) < 1.57 ? 5e-9 + amp * (1 + x * x * (-0.5 + (x * x) / 24)) : 5e-9);
+  }
+  /** RTKLIB tropmodel(): 표준 대기 + 사스타모이넨, pos = [위도, 경도, 높이] */
+  function saastamoinen(pos, el, humi) {
+    if (pos[2] < -100 || pos[2] > 1e4 || el <= 0) return 0;
+    const hgt = Math.max(0, pos[2]), pres = 1013.25 * Math.pow(1 - 2.2557e-5 * hgt, 5.2568), temp = 15 - 6.5e-3 * hgt + 273.16, e = 6.108 * humi * Math.exp((17.15 * temp - 4684) / (temp - 38.45)), z = PI / 2 - el;
+    const trph = (0.0022768 * pres) / (1 - 0.00266 * Math.cos(2 * pos[0]) - (0.00028 * hgt) / 1e3) / Math.cos(z), trpw = (0.002277 * (1255 / temp + 0.05) * e) / Math.cos(z);
+    return trph + trpw;
+  }
+  /** 전리층 지연(m) = 40.3·TEC/f², TEC 단위 TECU(10¹⁶) */
+  function ionoDelay(tecu, fHz) { return (40.3 * tecu * 1e16) / (fHz * fHz); }
+  /** 전리층 제거 조합 계수 [a1, a2]와 잡음 증폭 */
+  function ifCoef(f1, f2) { const a = (f1 * f1) / (f1 * f1 - f2 * f2), b = -(f2 * f2) / (f1 * f1 - f2 * f2); return { a, b, amp: Math.hypot(a, b) }; }
+  /** 오차 예산(1σ, m) */
+  function budget(dual, urban) { const ifa = ifCoef(1575.42e6, 1176.45e6).amp; return [["궤도·시계", 0.6], ["전리층", dual ? 0.1 : 3], ["대류층", 0.2], ["다중 경로", (urban ? 3 : 0.5) * (dual ? ifa / 1.5 : 1)], ["수신기 잡음", 0.5 * (dual ? ifa : 1)]]; }
+  const POS = [37.5 * D, 127 * D, 0];
+
+  /* ================================================================ 1. 전리층 */
+  (function () {
+    const e = GN.range("io-e", (v) => v + "°", draw), a = GN.range("io-a", (v) => v + "°", draw), t = GN.range("io-t", (v) => v.toFixed(2) + "시", draw);
+    const towOf = (lt) => ((lt - (127 / 15)) * 3600 + 86400 * 3) % 86400; // 지방시 → GPS 주내 초(일요일 아닌 아무 날, 하루 안)
+    const cv = GN.canvas($("cv-iono"), (ctx, w, h) => {
+      const P = GN.palette(), S = (el, col) => { const d = []; for (let lt = 0; lt <= 24; lt += 0.25) d.push([lt, klobuchar(ION, POS, [a() * D, el * D], towOf(lt))]); return { data: d, color: col, width: el === e() ? 2.6 : 1.3 }; };
+      const ch = GN.chart(ctx, null, { x: [0, 24], y: [0, 30], xLabel: "지방시 (시)", yLabel: "L1 지연 (m)", xTicks: [0, 6, 12, 18, 24], series: [S(90, P.faint), S(30, P.faint), S(5, P.faint), S(e(), P.accent)] });
+      ctx.fillStyle = P.accent2; ctx.beginPath(); ctx.arc(ch.X(t()), ch.Y(klobuchar(ION, POS, [a() * D, e() * D], towOf(t()))), 6, 0, 7); ctx.fill();
+    }, { aspect: 0.48, minHeight: 220, maxHeight: 320 });
+    function draw() { const d = klobuchar(ION, POS, [a() * D, e() * D], towOf(t())), E = e() / 180; GN.stat("io-l1", d.toFixed(2) + " m"); GN.stat("io-l5", (d * (1575.42 / 1176.45) ** 2).toFixed(2) + " m"); GN.stat("io-f", (1 + 16 * Math.pow(0.53 - E, 3)).toFixed(2)); cv.redraw(); }
+    draw();
+  })();
+
+  /* ================================================================ 2. 대류층 */
+  (function () {
+    const hh = GN.range("tr-h", (v) => v + " m", draw), u = GN.range("tr-u", (v) => v + "%", draw);
+    const cv = GN.canvas($("cv-tropo"), (ctx, w, h) => {
+      const P = GN.palette(), d = []; for (let el = 3; el <= 90; el += 0.5) d.push([el, saastamoinen([POS[0], POS[1], hh()], el * D, u() / 100)]);
+      GN.chart(ctx, null, { x: [0, 90], y: [0, 50], xLabel: "앙각 (°)", yLabel: "지연 (m)", series: [{ data: d, color: P.accent, width: 2.4 }] });
+    }, { aspect: 0.45, minHeight: 210, maxHeight: 300 });
+    function draw() { const f = (el) => saastamoinen([POS[0], POS[1], hh()], el * D, u() / 100).toFixed(2) + " m"; GN.stat("tr-z", f(90)); GN.stat("tr-15", f(15)); GN.stat("tr-5", f(5)); cv.redraw(); }
+    draw();
+  })();
+
+  /* ================================================================ 3. 이중 주파수 */
+  (function () {
+    let f2 = 1176.45e6;
+    const t = GN.range("if-t", (v) => v + " TECU", draw), n = GN.range("if-n", (v) => v.toFixed(2) + " m", draw);
+    GN.seg("if-f", (v) => { f2 = +v * 1e6; draw(); });
+    const cv = GN.canvas($("cv-if"), (ctx, w, h) => {
+      const P = GN.palette(), c = ifCoef(1575.42e6, f2), d1 = ionoDelay(t(), 1575.42e6), d2 = ionoDelay(t(), f2), rows = [["L1", d1, n()], [f2 === 1227.6e6 ? "L2" : f2 === 1207.14e6 ? "E5b" : "L5", d2, n()], ["조합", c.a * d1 + c.b * d2, n() * c.amp]], mx = Math.max(30, d2 * 1.1), L = 60, W = w - L - 20;
+      rows.forEach(([nm, d, nz], i) => { const y = 14 + i * 32; ctx.fillStyle = P.grid; ctx.fillRect(L, y, ((W * nz) / mx) * 2, 22); ctx.fillStyle = i === 2 ? P.ok : P.accent; GN.rrect(ctx, L, y + 4, Math.max(2, (W * Math.abs(d)) / mx), 14, 3); ctx.fill(); GN.text(ctx, nm, 8, y + 16, { size: 11.5, color: P.text }); GN.text(ctx, Math.abs(d).toFixed(2) + " m", L + Math.max(2, (W * Math.abs(d)) / mx) + 6, y + 16, { size: 11, color: P.dim }); });
+    }, { aspect: 0.26, minHeight: 110, maxHeight: 120 });
+    function draw() { const c = ifCoef(1575.42e6, f2), d1 = ionoDelay(t(), 1575.42e6), d2 = ionoDelay(t(), f2); GN.stat("if-d", d1.toFixed(2) + " / " + d2.toFixed(2) + " m"); GN.stat("if-c", c.a.toFixed(3) + ", " + c.b.toFixed(3)); GN.stat("if-r", Math.abs(c.a * d1 + c.b * d2).toFixed(3) + " m / " + (n() * c.amp).toFixed(2) + " m"); cv.redraw(); }
+    draw();
+  })();
+
+  /* ================================================================ 4. 예산 */
+  (function () {
+    let dual = false, urban = false;
+    const hd = GN.range("bd-h", (v) => v.toFixed(1), draw);
+    GN.seg("bd-f", (v) => { dual = v === "2"; draw(); }); GN.seg("bd-e", (v) => { urban = v === "urban"; draw(); });
+    const cv = GN.canvas($("cv-bud"), (ctx, w, h) => {
+      const P = GN.palette(), b = budget(dual, urban), L = 90, W = w - L - 60, mx = 4;
+      b.forEach(([n, v], i) => { const y = 10 + i * 26; ctx.fillStyle = P.accent; GN.rrect(ctx, L, y, Math.max(2, (W * Math.min(v, mx)) / mx), 18, 3); ctx.fill(); GN.text(ctx, n, 8, y + 13, { size: 11.5, color: P.text }); GN.text(ctx, v.toFixed(2) + " m", L + (W * Math.min(v, mx)) / mx + 6, y + 13, { size: 11, color: P.dim }); });
+    }, { aspect: 0.34, minHeight: 140, maxHeight: 150 });
+    function draw() { const b = budget(dual, urban), u = Math.sqrt(b.reduce((s, [, v]) => s + v * v, 0)), m = b.reduce((x, y) => (y[1] > x[1] ? y : x)); GN.stat("bd-u", u.toFixed(2) + " m"); GN.stat("bd-p", (u * hd()).toFixed(1) + " m"); GN.stat("bd-m", m[0]); cv.redraw(); }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

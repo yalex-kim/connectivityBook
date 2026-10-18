@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>신호와 주파수: 잡음 아래의 목소리 · GNSSBook</title>
+<meta name="description" content="모든 GPS 주파수는 10.23 MHz 한 시계에서 나온다. L1·L2·L5와 Galileo E1·E5·E6의 배수 관계, 상대론 때문에 일부러 늦춘 위성 시계, 잡음보다 약한 −158.5 dBW 신호를 받아 내는 확산 스펙트럼과 C/N0, BPSK와 BOC 스펙트럼을 공개 규격의 값으로 계산한다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/gnss/chapters/signals.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="GNSSBook">
+<meta property="og:title" content="신호와 주파수: 잡음 아래의 목소리 · GNSSBook">
+<meta property="og:description" content="모든 GPS 주파수는 10.23 MHz 한 시계에서 나온다. L1·L2·L5와 Galileo E1·E5·E6의 배수 관계, 상대론 때문에 일부러 늦춘 위성 시계, 잡음보다 약한 −158.5 dBW 신호를 받아 내는 확산 스펙트럼과 C/N0, BPSK와 BOC 스펙트럼을 공개 규격의 값으로 계산한다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/gnss/chapters/signals.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/gnss/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"신호와 주파수: 잡음 아래의 목소리","name":"신호와 주파수: 잡음 아래의 목소리 · GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/signals.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/gnss/chapters/signals.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":3,"image":"https://yalex-kim.github.io/yalexBook/gnss/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/gnss/#book","name":"GNSSBook — 누구나 읽는 인터랙티브 GNSS 교과서","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"publisher":{"@type":"Organization","name":"GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"description":"모든 GPS 주파수는 10.23 MHz 한 시계에서 나온다. L1·L2·L5와 Galileo E1·E5·E6의 배수 관계, 상대론 때문에 일부러 늦춘 위성 시계, 잡음보다 약한 −158.5 dBW 신호를 받아 내는 확산 스펙트럼과 C/N0, BPSK와 BOC 스펙트럼을 공개 규격의 값으로 계산한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"GNSSBook","item":"https://yalex-kim.github.io/yalexBook/gnss/"},{"@type":"ListItem","position":2,"name":"03 신호와 주파수: 잡음 아래의 목소리","item":"https://yalex-kim.github.io/yalexBook/gnss/chapters/signals.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+</head>
+<body data-chapter="signals">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 03</div>
+    <h1>신호와 주파수: 잡음 아래의 목소리</h1>
+    <p class="lead">GPS 위성의 송신기는 수십 와트, 형광등 몇 개 정도다. 그 신호가 2만 km를 날아오면 지상에서는 <b>잡음보다 약하다</b>. 스펙트럼 분석기로 보면 아무것도 보이지 않는다. 그런데도 휴대폰은 이 신호를 받아 낸다. 이 장에서는 GNSS 신호가 어떤 주파수에 어떤 모양으로 실리는지, 그리고 잡음 아래의 신호를 어떻게 건져 올리는지를 숫자로 본다.</p>
+    <ul class="objectives">
+      <li>GPS·Galileo의 반송파가 모두 10.23 MHz의 정수배라는 것을 규격 값으로 확인한다.</li>
+      <li>상대론 때문에 위성 시계를 일부러 −4.4647 × 10⁻¹⁰만큼 늦춰 두는 이유를 직접 계산한다.</li>
+      <li>최소 수신 전력 −158.5 dBW에서 C/N0와 적분 이득을 계산해, 잡음 아래 신호를 받는 원리를 안다.</li>
+      <li>BPSK와 BOC 신호의 스펙트럼 모양 차이를 그래프로 비교한다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="freq">
+    <h2>모든 것은 10.23 MHz에서</h2>
+    <p>GPS 위성 안에는 원자시계에서 나온 10.23 MHz 기준 신호가 하나 있고, 모든 반송파와 코드 속도가 그 정수배나 약수다. L1 = 154 × 10.23 = 1,575.42 MHz, L2 = 120 ×, L5 = 115 ×. C/A 코드는 그 10분의 1인 1.023 Mchip/s, P 코드는 10.23 Mchip/s다. Galileo도 GPS와 함께 쓰이도록 같은 눈금을 따른다. E1은 L1과 같은 주파수다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>신호</th><th class="num">× 10.23 MHz</th><th class="num">반송파</th><th>쓰임</th></tr></thead>
+      <tbody id="fq-tb"></tbody>
+    </table></div>
+    <p class="spec-ref">L1 1,575.42 MHz·L2 1,227.6 MHz: IS-GPS-200N 3.3.1.1(p.14) · L5 1,176.45 MHz: IS-GPS-200N 6.2.5(L5 상세는 별도 규격 IS-GPS-705) · Galileo E1 1,575.420, E6 1,278.750, E5a 1,176.450, E5b 1,207.140 MHz: Galileo OS SIS ICD 2.2 2.2절 표 · 칩 속도 C/A 1.023, P 10.23 Mbps: IS-GPS-200N 3.2.1</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="rel">
+    <h2>늦게 맞춰 둔 시계: 상대론</h2>
+    <p>위성 시계는 지상에서 볼 때 두 가지 이유로 다르게 간다. 위성이 빠르게 움직여서(특수 상대론) <b>느리게</b> 가고, 지구 중력에서 멀리 있어서(일반 상대론) <b>빠르게</b> 간다. 둘을 합치면 위성 시계가 하루에 약 38 µs 빨리 간다. 거리로 치면 하루에 11 km씩 어긋나는 셈이다. 그래서 GPS는 위성 안의 기준 주파수를 <b>일부러 조금 낮게</b> 맞춰, 지상에서 보면 정확히 10.23 MHz가 되게 한다. 규격은 그 비율을 Δf/f = −4.4647 × 10⁻¹⁰, 즉 10.2299999954326 MHz라고 적는다.</p>
+    <div class="sim" id="sim-rel">
+      <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>상대론 보정을 직접 계산하기</h3></div>
+      <div class="sim-view"><canvas id="cv-rel"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>궤도 반지름 <output id="rl-a-out"></output></span><input type="range" id="rl-a" min="6800" max="42200" step="10" value="26560"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">일반 상대론(중력)</span><span class="v" id="rl-g">—</span></div>
+        <div class="stat"><span class="k">특수 상대론(속도)</span><span class="v" id="rl-s">—</span></div>
+        <div class="stat"><span class="k">합(하루 / 비율)</span><span class="v" id="rl-n">—</span></div>
+      </div>
+      <div class="sim-note">그래프: 궤도 반지름(가로)에 따른 하루당 시계 차이(µs). 위로 = 위성 시계가 빠름. 해볼 것: ① GPS 반지름(26,560 km)에서 합이 약 +38.6 µs/일, 비율 +4.4645 × 10⁻¹⁰으로 규격의 −4.4647 × 10⁻¹⁰과 크기가 같다(부호는 보정 방향). ② 반지름을 줄이면 약 9,550 km에서 두 효과가 상쇄되고, 더 낮은 궤도(우주정거장)에서는 오히려 느려진다. 계산: 일반 상대론 = L<sub>G</sub> − μ/(a·c²), 특수 상대론 = −v²/(2c²), v = √(μ/a). L<sub>G</sub> = 6.969290134 × 10⁻¹⁰은 지상 시계가 놓인 지오이드의 퍼텐셜(지구 자전 효과 포함)을 c²로 나눈 값(IERS Conventions 2010). 이 값을 쓰면 GPS 반지름에서 합이 4.4645 × 10⁻¹⁰으로 규격과 소수 셋째 자리까지 맞는다.</div>
+    </div>
+    <p class="spec-ref">Δf/f = −4.4647E-10, 10.2299999954326 MHz: IS-GPS-200N 3.3.1.1(p.13~14) · 이심률에 따른 나머지 상대론 항(Δt<sub>r</sub> = F·e·√A·sin E<sub>k</sub>)은 사용자가 보정: 같은 규격 20.3.3.3.3.1(8장)</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="power">
+    <h2>잡음 아래에서 건져 올리기</h2>
+    <p>GPS 규격은 지상의 0 dBi 안테나에서 L1 C/A 신호를 <b>최소 −158.5 dBW</b>(−128.5 dBm)로 보장한다. 신호가 차지하는 약 2 MHz 폭의 열잡음은 −174 dBm/Hz + 63 dB ≈ −111 dBm이다. 신호가 잡음보다 17 dB 넘게 약하다.</p>
+    <p>비밀은 4장의 PRN 코드다. 수신기는 받은 신호에 같은 코드를 곱해 더한다(상관). 코드와 맞는 신호는 계속 쌓이고, 잡음은 들쭉날쭉해 덜 쌓인다. 1 ms(코드 한 주기) 동안 더하면 1/(1 kHz)의 좁은 폭으로 줄인 셈이 되어, 2 MHz 대비 약 30 dB를 얻는다. 그래서 GNSS 신호의 세기는 대역 안의 SNR이 아니라 <span class="term">C/N0</span><span class="en">(carrier-to-noise density)</span>, 1 Hz당 잡음에 대한 신호 세기(dB-Hz)로 말한다. 맑은 하늘에서 휴대폰은 보통 35~45 dB-Hz를 본다.</p>
+    <div class="sim" id="sim-cn0">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>수신 전력에서 C/N0와 적분 이득까지</h3></div>
+      <div class="sim-view"><canvas id="cv-cn0"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>받는 신호 세기 <output id="cn-p-out"></output></span><input type="range" id="cn-p" min="-190" max="-150" step="0.5" value="-158.5"></label>
+        <label class="ctrl"><span>수신기 잡음 지수 <output id="cn-f-out"></output></span><input type="range" id="cn-f" min="0" max="10" step="0.5" value="2"></label>
+        <label class="ctrl"><span>적분 시간 <output id="cn-t-out"></output></span><input type="range" id="cn-t" min="0" max="4" value="0"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">2 MHz 안의 SNR</span><span class="v" id="cn-s">—</span></div>
+        <div class="stat"><span class="k">C/N0</span><span class="v" id="cn-c">—</span></div>
+        <div class="stat"><span class="k">적분 후 SNR</span><span class="v" id="cn-a">—</span></div>
+      </div>
+      <div class="sim-note">막대: 세기 비교(dBm). 해볼 것: ① 규격 최소값 −158.5 dBW에서 2 MHz 안의 SNR은 약 −19 dB, C/N0는 약 43.5 dB-Hz다. ② 적분 1 ms면 SNR이 +13 dB 남짓, 찾기 쉽다. ③ 건물 안(−20~−30 dB, 11장)을 흉내 내 −185 dBW로 낮추면 C/N0가 17 dB-Hz로 떨어진다. 이때는 수백 ms를 적분해야 해 4장의 항법 비트와 5장의 도플러가 걸림돌이 된다. 계산: C/N0 = P − (−174 dBm/Hz + 잡음 지수), SNR(B) = C/N0 − 10·log₁₀B, 적분 후 SNR = C/N0 + 10·log₁₀T.</div>
+    </div>
+    <p class="spec-ref">최소 수신 전력 L1 C/A −158.5 dBW(0 dBi 우선회 원편파 안테나, 20.46 MHz 대역): IS-GPS-200N 3.3.1.6 표 3-Va(p.15)</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="spectrum">
+    <h2>BPSK와 BOC</h2>
+    <p>GPS L1 C/A는 코드 칩마다 반송파의 위상을 0°·180°로 뒤집는 <b>BPSK</b>다. 스펙트럼은 반송파를 중심으로 ±1.023 MHz에 첫 영점이 있는 sinc² 모양이다. Galileo E1과 새 GPS L1C는 같은 주파수에 같은 칩 속도를 쓰면서도 서로 덜 겹치도록 <b>BOC</b>(Binary Offset Carrier)를 쓴다. 칩 안에서 부반송파로 한 번 더 뒤집어, 에너지를 중심이 아니라 양옆(±1.023 MHz 근처)으로 밀어낸다. 신호 모양이 뾰족해 다중 경로(11장)에도 조금 더 강하다. Galileo E1은 BOC(1,1)에 BOC(6,1)을 조금 섞은 CBOC다.</p>
+    <div class="sim" id="sim-psd">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>스펙트럼 모양 비교</h3></div>
+      <div class="sim-view"><canvas id="cv-psd"></canvas></div>
+      <div class="sim-controls">
+        <label class="check"><input type="checkbox" id="ps-b1" checked> BPSK(1) — GPS L1 C/A</label>
+        <label class="check"><input type="checkbox" id="ps-boc" checked> BOC(1,1) — Galileo E1·GPS L1C의 주성분</label>
+        <label class="check"><input type="checkbox" id="ps-b10"> BPSK(10) — GPS L5·P 코드</label>
+      </div>
+      <div class="sim-note">세로: 전력 스펙트럼 밀도(dB, 같은 총전력). 해볼 것: BPSK(1)은 가운데가 가장 높고, BOC(1,1)은 가운데가 0이고 ±1 MHz에 봉우리가 둘이다. 같은 주파수의 두 신호가 서로를 덜 방해하는 이유다. BPSK(10)은 10배 넓어(±10 MHz) 같은 전력이 얇게 펴진다. 계산: BPSK(n): T<sub>c</sub>·sinc²(f·T<sub>c</sub>), BOC(1,1)(사인 위상): T<sub>c</sub>·sinc²(f·T<sub>c</sub>)·tan²(πf·T<sub>c</sub>/2).</div>
+    </div>
+    <p class="spec-ref">E1 CBOC 칩·부반송파 속도(1.023 / 6.138 MHz)와 BOC(1,1)·BOC(6,1) 전력 배분(1/11): Galileo OS SIS ICD 2.2 2.3절, Table 10</p>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>GPS의 모든 주파수는 10.23 MHz의 배수: L1 ×154, L2 ×120, L5 ×115. Galileo E1 = L1, E5a = L5.</li>
+      <li>상대론으로 위성 시계는 하루 약 38 µs 빨리 간다. 그래서 기준을 −4.4647 × 10⁻¹⁰ 늦춰 둔다(IS-GPS-200N 3.3.1.1).</li>
+      <li>L1 C/A 최소 −158.5 dBW는 2 MHz 잡음보다 약 19 dB 약하다. 코드 상관·적분으로 건져 올린다. 세기는 C/N0(dB-Hz)로 말한다.</li>
+      <li>BPSK는 가운데에, BOC는 양옆에 에너지가 몰린다. 같은 주파수의 신호들이 서로 덜 겹친다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>L1 1,575.42 MHz는 10.23 MHz의 몇 배인가?</p><div class="opts">
+        <button class="opt">115</button><button class="opt">120</button><button class="opt" data-correct>154</button><button class="opt">160</button>
+      </div><div class="quiz-exp">154 × 10.23 = 1,575.42.</div></div>
+      <div class="quiz-q"><p>GPS 위성 시계를 지상 기준보다 조금 느리게 맞춰 두는 이유는?</p><div class="opts">
+        <button class="opt">전력을 아끼려고</button><button class="opt" data-correct>상대론 때문에 궤도에서 시계가 빨리 가서(하루 약 38 µs)</button><button class="opt">도플러를 줄이려고</button><button class="opt">윤초 때문에</button>
+      </div><div class="quiz-exp">중력 효과(+45.7 µs)가 속도 효과(−7.2 µs)보다 크다.</div></div>
+      <div class="quiz-q"><p>GNSS 신호 세기를 보통 어떤 단위로 말하나?</p><div class="opts">
+        <button class="opt">dBm</button><button class="opt" data-correct>C/N0 (dB-Hz)</button><button class="opt">SNR (dB, 대역 안)</button><button class="opt">RSSI</button>
+      </div><div class="quiz-exp">대역 안 SNR은 음수라 쓸모가 적다. 1 Hz당 잡음 대비 신호.</div></div>
+      <div class="quiz-q"><p>BOC 변조의 스펙트럼 특징은?</p><div class="opts">
+        <button class="opt">가운데에 몰린다</button><button class="opt" data-correct>가운데가 비고 양옆에 봉우리가 생긴다</button><button class="opt">평평하다</button><button class="opt">한쪽에만 있다</button>
+      </div><div class="quiz-exp">같은 주파수의 BPSK 신호와 덜 겹친다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const F0 = 10.23, MU = 3.986005e14, C = 299792458, RE = 6378137, LG = 6.969290134e-10; // LG: IERS 규약의 지오이드 퍼텐셜 ÷ c²
+  /** 반송파(MHz) = 배수 × 10.23 MHz */
+  function carrier(mult) { return Math.round(mult * F0 * 1000) / 1000; }
+  /** 궤도 시계의 상대론 비율(Δf/f): 일반(중력) + 특수(속도) */
+  function relGeneral(aM) { return LG - MU / (aM * C * C); } // 지오이드(지구 자전 포함) 대비 위성의 중력 퍼텐셜 차
+  function relSpecial(aM) { return -(MU / aM) / (2 * C * C); }
+  /** C/N0(dB-Hz): 수신 전력(dBW)과 잡음 지수(dB) */
+  function cn0(pDbw, nfDb) { return pDbw + 30 - (-174 + nfDb); }
+  /** BPSK(n) 전력 스펙트럼(정규화, n = 칩 속도 ÷ 1.023 MHz), f(MHz) */
+  function psdBpsk(fMHz, n) { const tc = 1 / (1.023 * n), x = Math.PI * fMHz * tc; return tc * (x === 0 ? 1 : (Math.sin(x) / x) ** 2); }
+  /** BOC(1,1) 사인 위상 전력 스펙트럼 */
+  function psdBoc11(fMHz) { const tc = 1 / 1.023, x = Math.PI * fMHz * tc; if (x === 0) return 0; return tc * (Math.sin(x) / x) ** 2 * Math.tan(x / 2) ** 2; }
+
+  /* ================================================================ 주파수 표 */
+  (function () {
+    const R = [["GPS L1 (C/A, L1C) · Galileo E1", 154, "모든 수신기"], ["GPS L2 (P(Y), L2C)", 120, "측량·이중 주파수"], ["Galileo E6", 125, "고정밀 서비스(HAS)"], ["Galileo E5b", 118, "E5 넓은 대역의 위쪽"], ["GPS L5 · Galileo E5a", 115, "항공·이중 주파수 휴대폰"]];
+    $("fq-tb").innerHTML = R.map(([n, m, u]) => `<tr><td>${n}</td><td class="num">${m}</td><td class="num">${carrier(m).toFixed(2)} MHz</td><td>${u}</td></tr>`).join("");
+  })();
+
+  /* ================================================================ 1. 상대론 */
+  (function () {
+    const a = GN.range("rl-a", (v) => v.toLocaleString() + " km", draw), DAY = 86400e6;
+    const cv = GN.canvas($("cv-rel"), (ctx, w, h) => {
+      const P = GN.palette(), g = [], s = [], n = []; for (let r = 6800; r <= 42200; r += 100) { const m = r * 1000; g.push([r, relGeneral(m) * DAY]); s.push([r, relSpecial(m) * DAY]); n.push([r, (relGeneral(m) + relSpecial(m)) * DAY]); }
+      const ch = GN.chart(ctx, null, { x: [6800, 42200], y: [-40, 60], xLabel: "궤도 반지름 (km)", yLabel: "µs / 일", series: [{ data: g, color: P.accent2, width: 1.4, dash: [4, 3] }, { data: s, color: P.warn, width: 1.4, dash: [4, 3] }, { data: n, color: P.accent, width: 2.6 }], hlines: [{ y: 0, color: P.faint }], vlines: [{ x: 26560, label: "GPS", color: P.faint }] });
+      ctx.fillStyle = P.bad; ctx.beginPath(); ctx.arc(ch.X(a()), ch.Y((relGeneral(a() * 1000) + relSpecial(a() * 1000)) * DAY), 6, 0, 7); ctx.fill();
+      GN.text(ctx, "중력(+)", ch.box.x + ch.box.w - 4, ch.Y(relGeneral(42200e3) * DAY) - 6, { size: 10.5, color: P.accent2, align: "right" }); GN.text(ctx, "속도(−)", ch.box.x + ch.box.w - 4, ch.Y(relSpecial(42200e3) * DAY) + 14, { size: 10.5, color: P.warn, align: "right" });
+    }, { aspect: 0.5, minHeight: 230, maxHeight: 320 });
+    function draw() { const m = a() * 1000, gg = relGeneral(m), ss = relSpecial(m); GN.stat("rl-g", "+" + (gg * DAY).toFixed(1) + " µs/일"); GN.stat("rl-s", (ss * DAY).toFixed(1) + " µs/일"); GN.stat("rl-n", ((gg + ss) * DAY).toFixed(1) + " µs/일 · " + ((gg + ss) * 1e10).toFixed(3) + "×10⁻¹⁰"); cv.redraw(); }
+    draw();
+  })();
+
+  /* ================================================================ 2. C/N0 */
+  (function () {
+    const TS = [1, 10, 20, 100, 500];
+    const p = GN.range("cn-p", (v) => v + " dBW", draw), nf = GN.range("cn-f", (v) => v + " dB", draw), t = GN.range("cn-t", (v) => TS[v] + " ms", draw);
+    const cv = GN.canvas($("cv-cn0"), (ctx, w, h) => {
+      const P = GN.palette(), sig = p() + 30, noise = -174 + nf() + 10 * Math.log10(2e6), after = cn0(p(), nf()) + 10 * Math.log10(TS[t()] / 1000), L = 120, W = w - L - 20, X = (v) => L + ((v + 160) / 60) * W;
+      [["신호 (dBm)", sig, P.accent], ["2 MHz 잡음", noise, P.faint]].forEach(([n, v, c], i) => { ctx.fillStyle = c; GN.rrect(ctx, L, 16 + i * 30, Math.max(2, X(v) - L), 20, 4); ctx.fill(); GN.text(ctx, n, 8, 30 + i * 30, { size: 11.5, color: P.text }); GN.text(ctx, v.toFixed(1), X(v) + 6, 30 + i * 30, { size: 11, color: P.dim }); });
+      GN.text(ctx, `적분 ${TS[t()]} ms 뒤 SNR ${after.toFixed(1)} dB`, 8, 92, { size: 12, color: after > 10 ? P.ok : after > 0 ? P.warn : P.bad, bold: true });
+    }, { aspect: 0.22, minHeight: 100, maxHeight: 110 });
+    function draw() { const c = cn0(p(), nf()); GN.stat("cn-s", (c - 10 * Math.log10(2e6)).toFixed(1) + " dB"); GN.stat("cn-c", c.toFixed(1) + " dB-Hz"); GN.stat("cn-a", (c + 10 * Math.log10(TS[t()] / 1000)).toFixed(1) + " dB"); cv.redraw(); }
+    draw();
+  })();
+
+  /* ================================================================ 3. 스펙트럼 */
+  (function () {
+    ["ps-b1", "ps-boc", "ps-b10"].forEach((id) => $(id).addEventListener("change", () => cv.redraw()));
+    const cv = GN.canvas($("cv-psd"), (ctx, w, h) => {
+      const P = GN.palette(), S = (fn, col) => { const d = []; for (let f = -12; f <= 12; f += 0.02) d.push([f, Math.max(-50, 10 * Math.log10(fn(f) + 1e-12) - 10 * Math.log10(1 / 1.023))]); return { data: d, color: col, width: 2 }; }, ser = [];
+      if ($("ps-b1").checked) ser.push(S((f) => psdBpsk(f, 1), P.accent)); if ($("ps-boc").checked) ser.push(S(psdBoc11, P.accent2)); if ($("ps-b10").checked) ser.push(S((f) => psdBpsk(f, 10), P.warn));
+      GN.chart(ctx, null, { x: [-12, 12], y: [-40, 2], xLabel: "반송파에서 떨어진 주파수 (MHz)", yLabel: "dB", series: ser });
+    }, { aspect: 0.48, minHeight: 230, maxHeight: 320 });
+  })();
+})();
+</script>
+</body>
+</html>

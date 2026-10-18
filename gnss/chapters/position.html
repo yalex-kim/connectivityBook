@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>위치 계산: 넷의 미지수와 DOP · GNSSBook</title>
+<meta name="description" content="의사거리 여러 개에서 위치와 수신기 시계를 함께 푸는 최소 제곱 반복을 지구 중심에서 출발해 따라가고, 위성 배치가 오차를 키우는 GDOP·PDOP·HDOP·VDOP를 스카이 플롯에서 위성을 켜고 끄며 계산한다. RTKLIB의 dops()와 같은 식이다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/gnss/chapters/position.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="GNSSBook">
+<meta property="og:title" content="위치 계산: 넷의 미지수와 DOP · GNSSBook">
+<meta property="og:description" content="의사거리 여러 개에서 위치와 수신기 시계를 함께 푸는 최소 제곱 반복을 지구 중심에서 출발해 따라가고, 위성 배치가 오차를 키우는 GDOP·PDOP·HDOP·VDOP를 스카이 플롯에서 위성을 켜고 끄며 계산한다. RTKLIB의 dops()와 같은 식이다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/gnss/chapters/position.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/gnss/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"위치 계산: 넷의 미지수와 DOP","name":"위치 계산: 넷의 미지수와 DOP · GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/position.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/gnss/chapters/position.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":9,"image":"https://yalex-kim.github.io/yalexBook/gnss/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/gnss/#book","name":"GNSSBook — 누구나 읽는 인터랙티브 GNSS 교과서","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"publisher":{"@type":"Organization","name":"GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"description":"의사거리 여러 개에서 위치와 수신기 시계를 함께 푸는 최소 제곱 반복을 지구 중심에서 출발해 따라가고, 위성 배치가 오차를 키우는 GDOP·PDOP·HDOP·VDOP를 스카이 플롯에서 위성을 켜고 끄며 계산한다. RTKLIB의 dops()와 같은 식이다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"GNSSBook","item":"https://yalex-kim.github.io/yalexBook/gnss/"},{"@type":"ListItem","position":2,"name":"09 위치 계산: 넷의 미지수와 DOP","item":"https://yalex-kim.github.io/yalexBook/gnss/chapters/position.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+</head>
+<body data-chapter="position">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 09</div>
+    <h1>위치 계산: 넷의 미지수와 DOP</h1>
+    <p class="lead">위성 좌표(8장)와 의사거리(6장)가 모였다. 이제 1장의 약속대로 위치 x, y, z와 수신기 시계 오차 b를 푼다. 방정식이 비선형이라 한 번에 풀리지 않고, “대충 여기”에서 출발해 조금씩 고쳐 간다. 이 장에서는 그 반복이 지구 중심에서 출발해도 몇 번 만에 m 단위로 수렴하는 것을 보고, 같은 측정 오차라도 위성 배치에 따라 위치 오차가 몇 배로 커지는 <span class="term">DOP</span>를 계산한다.</p>
+    <ul class="objectives">
+      <li>의사거리 방정식을 선형화해 최소 제곱으로 고쳐 가는 반복 풀이를 따라간다.</li>
+      <li>위성이 넷이면 딱 맞게, 다섯 이상이면 남는 측정으로 오차를 평균함을 안다.</li>
+      <li>GDOP·PDOP·HDOP·VDOP·TDOP가 무엇을 뜻하는지, 위성 배치와 어떻게 연결되는지 계산한다.</li>
+      <li>높이(수직) 오차가 수평 오차보다 큰 이유를 안다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="lsq">
+    <h2>고쳐 가며 풀기</h2>
+    <p>위성 i에 대한 의사거리는 ρ<sub>i</sub> = ‖s<sub>i</sub> − r‖ + b + 오차다. ‖·‖(거리) 때문에 r에 대해 직선이 아니다. 그래서 현재 추정 r<sub>0</sub>, b<sub>0</sub>에서 “조금 움직이면 거리가 얼마나 바뀌는지”(위성 쪽 단위 벡터)를 계산해 직선으로 근사하고, 측정과 예측의 차이를 가장 잘 설명하는 수정량을 최소 제곱으로 구한다. 이것을 수정량이 충분히 작아질 때까지 반복한다(가우스-뉴턴). RTKLIB은 지구 중심(0, 0, 0)에서 출발해 최대 10번 반복한다.</p>
+    <div class="formula">Δx = (HᵀH)⁻¹ Hᵀ Δρ, &nbsp; H의 행 = [−(s<sub>i</sub> − r)/‖s<sub>i</sub> − r‖, 1]
+      <div class="where">Δρ = 측정 의사거리 − 예측 의사거리. 위성이 넷이면 H가 정사각 행렬이라 딱 맞는 해, 다섯 이상이면 남는 측정을 평균한다.</div>
+    </div>
+    <div class="sim" id="sim-it">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>지구 중심에서 출발하는 반복</h3></div>
+      <div class="sim-view"><canvas id="cv-it"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>쓰는 위성 수 <output id="it-n-out"></output></span><input type="range" id="it-n" min="4" max="12" value="8"></label>
+        <label class="ctrl"><span>의사거리 잡음(표준편차) <output id="it-s-out"></output></span><input type="range" id="it-s" min="0" max="10" step="0.5" value="3"></label>
+        <label class="ctrl"><span>수신기 시계 오차 <output id="it-b-out"></output></span><input type="range" id="it-b" min="-1000" max="1000" value="250"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">수렴까지 반복</span><span class="v" id="it-k">—</span></div>
+        <div class="stat"><span class="k">최종 위치 오차</span><span class="v" id="it-e">—</span></div>
+        <div class="stat"><span class="k">찾은 시계 오차</span><span class="v" id="it-c">—</span></div>
+      </div>
+      <div class="sim-note">그래프: 반복 횟수(가로)에 따른 위치 오차(세로, 로그). 해볼 것: ① 지구 중심(오차 6,400 km)에서 출발해도 4~5번이면 m 단위로 수렴한다. ② 시계 오차를 바꿔도 결과 위치는 같다. 잡음을 0으로 두면 위치와 시계 오차가 mm 아래까지 정확히 나온다(b는 거리로 표시, 1 µs ≈ 300 m). 잡음이 있으면 시계 오차 추정도 흔들리는데, 높이 오차와 함께 움직인다. ③ 위성을 4기로 줄이면 잡음이 그대로 위치로 들어가 오차가 커진다. 모델: 서울(37.5°N, 127°E) 수신기, 하늘에 고루 퍼진 위성 12기 중 앞에서부터 N기(반지름 26,560 km), 정규 분포 잡음(고정 씨앗), 전리층 등 다른 오차 없음.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="dop">
+    <h2>DOP: 배치가 오차를 몇 배로 키우나</h2>
+    <p>최소 제곱의 공분산은 (HᵀH)⁻¹에 측정 오차의 분산을 곱한 것이다. 측정 오차를 1로 두면 (HᵀH)⁻¹의 대각 성분이 순수하게 <b>기하 배치</b>가 오차를 몇 배로 만드는지 알려 준다. 이것을 지역 좌표(동·북·위)로 보고 묶어 부른다.</p>
+    <ul>
+      <li><b>HDOP</b>: 수평(동·북) · <b>VDOP</b>: 수직 · <b>PDOP</b>: 3차원 위치 · <b>TDOP</b>: 시계 · <b>GDOP</b>: 전체</li>
+    </ul>
+    <p>위성이 하늘 곳곳(높은 위성 하나 + 지평선 근처 사방)에 퍼져 있을수록 DOP가 작다. 위성이 한쪽에 몰리거나 모두 높이 떠 있으면(빌딩 숲) DOP가 커진다. 위성은 모두 지평선 위에만 있으므로 위아래 방향은 늘 한쪽에서만 재는 셈이고, 그래서 VDOP가 HDOP보다 크다. GNSS 높이 오차가 수평 오차의 1.5~2배인 이유다.</p>
+    <div class="sim" id="sim-dop">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>위성을 켜고 끄며 보는 DOP</h3></div>
+      <div class="sim-body side">
+        <div class="sim-view"><canvas id="cv-dop"></canvas></div>
+        <div class="sim-controls">
+          <div class="ctrl"><span>배치 예시</span><div class="seg" id="dp-p"><button data-value="good" class="on">고루 퍼짐</button><button data-value="urban">빌딩 숲(높은 위성만)</button><button data-value="side">한쪽에 몰림</button></div></div>
+          <label class="ctrl"><span>앙각 마스크 <output id="dp-m-out"></output></span><input type="range" id="dp-m" min="0" max="45" value="5"></label>
+        </div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">HDOP / VDOP</span><span class="v" id="dp-hv">—</span></div>
+        <div class="stat"><span class="k">PDOP / GDOP</span><span class="v" id="dp-pg">—</span></div>
+        <div class="stat"><span class="k">측정 오차 3 m일 때 수평 오차(1σ)</span><span class="v" id="dp-e">—</span></div>
+      </div>
+      <div class="sim-note">스카이 플롯의 위성을 눌러 켜고 끌 수 있다(회색 = 꺼짐 또는 마스크 아래). 해볼 것: ① “고루 퍼짐”에서 HDOP ≈ 1 안팎. ② 지평선 근처 위성을 하나씩 끄면 DOP가 빠르게 커진다. ③ “빌딩 숲”은 위성이 6기나 있는데도 VDOP가 크다. ④ 위성이 넷 미만이 되면 계산할 수 없다. 계산은 RTKLIB <code>dops()</code>와 같다: H의 행 = [cos el·sin az, cos el·cos az, sin el, 1], Q = (HᵀH)⁻¹, GDOP = √(Q₁₁+Q₂₂+Q₃₃+Q₄₄), PDOP = √(Q₁₁+Q₂₂+Q₃₃), HDOP = √(Q₁₁+Q₂₂), VDOP = √Q₃₃.</div>
+    </div>
+    <p class="spec-ref">DOP 계산: RTKLIB <code>rtkcmn.c</code> <code>dops()</code> · 단독 측위 반복(지구 중심 출발, 최대 10회): <code>pntpos.c</code> <code>estpos()</code>(MAXITR 10)</p>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>의사거리 식을 현재 추정점에서 직선으로 근사하고 최소 제곱으로 고쳐 가기를 반복한다. 지구 중심에서 출발해도 몇 번이면 수렴한다.</li>
+      <li>위성 넷이면 딱 맞는 해, 다섯 이상이면 남는 측정이 잡음을 줄인다. 시계 오차 b도 함께 정확히 나온다.</li>
+      <li>위치 오차 ≈ DOP × 측정 오차. HDOP·VDOP·PDOP·TDOP·GDOP = (HᵀH)⁻¹의 대각합.</li>
+      <li>위성이 고루 퍼질수록 DOP가 작다. 위성이 모두 머리 위쪽에만 있어 VDOP &gt; HDOP, 높이 오차가 더 크다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>의사거리 방정식을 반복으로 푸는 이유는?</p><div class="opts">
+        <button class="opt">위성이 움직여서</button><button class="opt" data-correct>거리가 위치에 대해 비선형이라 직선 근사를 반복해 고쳐 가야 해서</button><button class="opt">시계 오차가 커서</button><button class="opt">DOP를 줄이려고</button>
+      </div><div class="quiz-exp">가우스-뉴턴 최소 제곱.</div></div>
+      <div class="quiz-q"><p>HDOP 1.2, 측정 오차 5 m면 수평 오차는 대략?</p><div class="opts">
+        <button class="opt">1.2 m</button><button class="opt">4.2 m</button><button class="opt" data-correct>6 m</button><button class="opt">12 m</button>
+      </div><div class="quiz-exp">1.2 × 5 = 6 m.</div></div>
+      <div class="quiz-q"><p>GNSS 높이 오차가 수평보다 큰 이유는?</p><div class="opts">
+        <button class="opt">중력 때문에</button><button class="opt" data-correct>위성이 모두 지평선 위에 있어 수직 방향을 한쪽에서만 재기 때문에</button><button class="opt">대기가 두꺼워서</button><button class="opt">지구가 둥글어서</button>
+      </div><div class="quiz-exp">VDOP &gt; HDOP.</div></div>
+      <div class="quiz-q"><p>DOP를 가장 크게 나쁘게 하는 배치는?</p><div class="opts">
+        <button class="opt">높은 위성 하나와 사방의 낮은 위성들</button><button class="opt" data-correct>모든 위성이 하늘 한쪽에 몰린 배치</button><button class="opt">위성 12기가 고루 퍼진 배치</button><button class="opt">위성이 많을수록 나쁘다</button>
+      </div><div class="quiz-exp">방향이 비슷한 측정은 서로를 보완하지 못한다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const D = Math.PI / 180;
+  /** n×n 역행렬(가우스-조르단) */
+  function inv(M) {
+    const n = M.length, A = M.map((r, i) => [...r, ...Array.from({ length: n }, (_, j) => (i === j ? 1 : 0))]);
+    for (let c = 0; c < n; c++) { let p = c; for (let r = c + 1; r < n; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r; if (Math.abs(A[p][c]) < 1e-14) return null; [A[c], A[p]] = [A[p], A[c]]; const v = A[c][c]; for (let j = 0; j < 2 * n; j++) A[c][j] /= v; for (let r = 0; r < n; r++) if (r !== c) { const k = A[r][c]; for (let j = 0; j < 2 * n; j++) A[r][j] -= k * A[c][j]; } }
+    return A.map((r) => r.slice(n));
+  }
+  /** RTKLIB dops(): azel = [[az, el], ...](라디안) → [GDOP, PDOP, HDOP, VDOP] */
+  function dops(azel, elmin) {
+    const H = azel.filter(([, el]) => el >= elmin && el > 0).map(([az, el]) => [Math.cos(el) * Math.sin(az), Math.cos(el) * Math.cos(az), Math.sin(el), 1]);
+    if (H.length < 4) return null;
+    const N = [0, 1, 2, 3].map((i) => [0, 1, 2, 3].map((j) => H.reduce((s, h) => s + h[i] * h[j], 0))), Q = inv(N);
+    if (!Q) return null;
+    return [Math.sqrt(Q[0][0] + Q[1][1] + Q[2][2] + Q[3][3]), Math.sqrt(Q[0][0] + Q[1][1] + Q[2][2]), Math.sqrt(Q[0][0] + Q[1][1]), Math.sqrt(Q[2][2])];
+  }
+  /** 단독 측위: 위성 ECEF와 의사거리 → [x, y, z, b], 반복마다 기록 */
+  function solvePos(sats, pr, maxIt = 10) {
+    let x = [0, 0, 0, 0]; const hist = [];
+    for (let it = 0; it < maxIt; it++) {
+      const H = [], v = [];
+      sats.forEach((s, i) => { const d = [s[0] - x[0], s[1] - x[1], s[2] - x[2]], r = Math.hypot(...d); H.push([-d[0] / r, -d[1] / r, -d[2] / r, 1]); v.push(pr[i] - (r + x[3])); });
+      const N = [0, 1, 2, 3].map((i) => [0, 1, 2, 3].map((j) => H.reduce((s, h) => s + h[i] * h[j], 0))), g = [0, 1, 2, 3].map((i) => H.reduce((s, h, k) => s + h[i] * v[k], 0)), Q = inv(N);
+      const dx = [0, 1, 2, 3].map((i) => Q[i].reduce((s, q, j) => s + q * g[j], 0)); x = x.map((xi, i) => xi + dx[i]); hist.push(x.slice());
+      if (Math.hypot(dx[0], dx[1], dx[2], dx[3]) < 1e-4) break;
+    }
+    return { x, hist };
+  }
+  /** 수신기 위치와 방위·앙각 → 위성 ECEF(반지름 R) */
+  function satFromAzEl(rr, lat, lon, az, el, R) {
+    const e = [Math.cos(el) * Math.sin(az), Math.cos(el) * Math.cos(az), Math.sin(el)], sl = Math.sin(lat), cl = Math.cos(lat), so = Math.sin(lon), co = Math.cos(lon);
+    const u = [-so * e[0] - sl * co * e[1] + cl * co * e[2], co * e[0] - sl * so * e[1] + cl * so * e[2], cl * e[1] + sl * e[2]]; // 시선 방향(ECEF 단위 벡터)
+    const rd = rr[0] * u[0] + rr[1] * u[1] + rr[2] * u[2], rho = -rd + Math.sqrt(rd * rd + R * R - (rr[0] ** 2 + rr[1] ** 2 + rr[2] ** 2));
+    return [rr[0] + rho * u[0], rr[1] + rho * u[1], rr[2] + rho * u[2]];
+  }
+  const LAT = 37.5 * D, LON = 127 * D, RR = (() => { const a = 6378137, f = 1 / 298.257223563, e2 = f * (2 - f), N = a / Math.sqrt(1 - e2 * Math.sin(LAT) ** 2); return [N * Math.cos(LAT) * Math.cos(LON), N * Math.cos(LAT) * Math.sin(LON), N * (1 - e2) * Math.sin(LAT)]; })();
+  const SKY = [[0, 75], [45, 30], [135, 25], [225, 35], [315, 20], [90, 55], [270, 50], [180, 10], [10, 12], [200, 65], [300, 40], [110, 15]].map(([a, e]) => [a * D, e * D]);
+
+  /* ================================================================ 1. 반복 */
+  (function () {
+    const n = GN.range("it-n", (v) => v + "기", draw), s = GN.range("it-s", (v) => v + " m", draw), b = GN.range("it-b", (v) => v + " m (" + (v / 299.792458).toFixed(2) + " µs)", draw);
+    const run = () => { const r = GN.rng(9), g = () => Math.sqrt(-2 * Math.log(r() + 1e-12)) * Math.cos(2 * Math.PI * r()), sats = SKY.slice(0, n()).map(([az, el]) => satFromAzEl(RR, LAT, LON, az, el, 26559710)); const pr = sats.map((p) => Math.hypot(p[0] - RR[0], p[1] - RR[1], p[2] - RR[2]) + b() + s() * g()); return solvePos(sats, pr); };
+    const cv = GN.canvas($("cv-it"), (ctx, w, h) => {
+      const P = GN.palette(), { hist } = run(), d = [[0, Math.hypot(...RR)]].concat(hist.map((x, i) => [i + 1, Math.max(1e-3, Math.hypot(x[0] - RR[0], x[1] - RR[1], x[2] - RR[2]))]));
+      GN.chart(ctx, null, { x: [0, 10], y: [1e-3, 1e7], logY: true, xLabel: "반복 횟수", yLabel: "위치 오차 (m)", yFmt: (v) => "1e" + Math.round(Math.log10(v)), series: [{ data: d, color: P.accent, width: 2.4 }], points: d.map(([x, y]) => ({ x, y, color: P.accent2 })) });
+    }, { aspect: 0.45, minHeight: 210, maxHeight: 300 });
+    function draw() { const { x, hist } = run(), e = Math.hypot(x[0] - RR[0], x[1] - RR[1], x[2] - RR[2]); let k = hist.findIndex((h) => Math.hypot(h[0] - x[0], h[1] - x[1], h[2] - x[2]) < 0.01) + 1; GN.stat("it-k", k + "번"); GN.stat("it-e", e < 0.01 ? (e * 1000).toFixed(1) + " mm" : e.toFixed(2) + " m"); GN.stat("it-c", x[3].toFixed(2) + " m"); cv.redraw(); }
+    draw();
+  })();
+
+  /* ================================================================ 2. DOP */
+  (function () {
+    const PRE = { good: SKY.slice(0, 8), urban: [[0, 75], [90, 62], [200, 65], [300, 58], [45, 70], [150, 80]].map(([a, e]) => [a * D, e * D]), side: [[30, 20], [60, 35], [90, 15], [120, 40], [75, 60], [45, 50]].map(([a, e]) => [a * D, e * D]) };
+    let sats = PRE.good.slice(), on = sats.map(() => true), geo = null;
+    const m = GN.range("dp-m", (v) => v + "°", draw);
+    GN.seg("dp-p", (v) => { sats = PRE[v].slice(); on = sats.map(() => true); draw(); });
+    const active = () => sats.filter((_, i) => on[i]);
+    const cv = GN.canvas($("cv-dop"), (ctx, w, h) => {
+      const P = GN.palette(), cx = w / 2, cy = h / 2, R = Math.min(w, h) / 2 - 16; geo = { cx, cy, R };
+      ctx.strokeStyle = P.grid; [0, 30, 60].forEach((e) => { ctx.beginPath(); ctx.arc(cx, cy, (R * (90 - e)) / 90, 0, 7); ctx.stroke(); });
+      ctx.strokeStyle = P.warn; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.arc(cx, cy, (R * (90 - m())) / 90, 0, 7); ctx.stroke(); ctx.setLineDash([]);
+      sats.forEach(([az, el], i) => { const r = (R * (90 - el / D)) / 90, live = on[i] && el / D >= m(); ctx.fillStyle = live ? P.accent : P.faint; ctx.beginPath(); ctx.arc(cx + Math.sin(az) * r, cy - Math.cos(az) * r, 9, 0, 7); ctx.fill(); });
+      GN.text(ctx, "북", cx, cy - R - 4, { size: 11, color: P.faint, align: "center" });
+    }, { aspect: 1, minHeight: 240, maxHeight: 330 });
+    cv.canvas.addEventListener("click", (e) => { if (!geo) return; const r = cv.canvas.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top; sats.forEach(([az, el], i) => { const rr = (geo.R * (90 - el / D)) / 90; if (Math.hypot(geo.cx + Math.sin(az) * rr - x, geo.cy - Math.cos(az) * rr - y) < 14) on[i] = !on[i]; }); draw(); });
+    function draw() { const d = dops(active(), m() * D); GN.stat("dp-hv", d ? d[2].toFixed(2) + " / " + d[3].toFixed(2) : "위성 4기 미만"); GN.stat("dp-pg", d ? d[1].toFixed(2) + " / " + d[0].toFixed(2) : "—"); GN.stat("dp-e", d ? (3 * d[2]).toFixed(1) + " m" : "—"); cv.redraw(); }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

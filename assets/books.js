@@ -52,4 +52,21 @@ window.YB_BOOKS = [
     icon: "M6 17h4l2-8 3 14 3-11 2 5h6", // 표지 아이콘(32×32 SVG path, 흰 선)
     topics: ["펄스·대역폭", "499.2 MHz 채널", "HRP 프레임·STS", "타임스탬프", "SS·DS-TWR", "첫 경로·NLOS", "AoA", "삼변 측량·TDoA", "FiRa 세션", "BLE·전력", "디지털 키", "실내 측위"],
   },
+  {
+    id: "gnssbook",
+    path: "gnss/",
+    title: "GNSSBook",
+    subtitle: "누구나 읽는 GNSS 교과서",
+    headline: "하늘의 시계로 아는 위치의 모든 것",
+    description: "궤도와 신호, C/A 코드, 신호 획득과 추적, 항법 메시지와 GPS 시간, 위성 위치 계산, 의사거리와 DOP, 전리층·대류층, 도시와 실내, DGNSS·RTK·PPP, 휴대폰 GNSS까지. 공개 규격 IS-GPS-200N·Galileo OS SIS ICD와 RTKLIB으로 값을 확인하고 계산을 돌려 보며 배운다.",
+    status: "published",
+    chapters: 15,
+    simulators: 32,
+    level: "입문 ~ 엔지니어",
+    reference: "IS-GPS-200N·Galileo OS SIS ICD (공개 규격)",
+    color: "#15803d",
+    colorDark: "#4ade80",
+    icon: "M16 12.5a4.5 4.5 0 1 1 0 9a4.5 4.5 0 1 1 0-9M7 9l4 3M25 9l-4 3M16 6v4", // 표지 아이콘(32×32 SVG path, 흰 선)
+    topics: ["궤도·스카이 플롯", "L1·L2·L5", "C/A 코드", "신호 획득", "DLL·PLL", "항법 메시지·GPS 시간", "위성 위치 계산", "의사거리·DOP", "전리층·대류층", "도시·NLOS", "RTK·PPP", "휴대폰 GNSS"],
+  },
 ];

@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>GNSS란 무엇인가 · GNSSBook</title>
+<meta name="description" content="하늘의 시계로 위치를 잰다. 위성까지의 거리를 신호의 도착 시간으로 재는 원리, 미지수가 셋이 아니라 넷인 이유, GPS·GLONASS·Galileo·BeiDou와 지역 시스템, 우주·관제·사용자 부문, 그리고 이 책이 근거로 삼는 공개 규격을 다룬다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/gnss/chapters/intro.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="GNSSBook">
+<meta property="og:title" content="GNSS란 무엇인가 · GNSSBook">
+<meta property="og:description" content="하늘의 시계로 위치를 잰다. 위성까지의 거리를 신호의 도착 시간으로 재는 원리, 미지수가 셋이 아니라 넷인 이유, GPS·GLONASS·Galileo·BeiDou와 지역 시스템, 우주·관제·사용자 부문, 그리고 이 책이 근거로 삼는 공개 규격을 다룬다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/gnss/chapters/intro.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/gnss/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"GNSS란 무엇인가","name":"GNSS란 무엇인가 · GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/intro.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/gnss/chapters/intro.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":1,"image":"https://yalex-kim.github.io/yalexBook/gnss/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/gnss/#book","name":"GNSSBook — 누구나 읽는 인터랙티브 GNSS 교과서","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"publisher":{"@type":"Organization","name":"GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"description":"하늘의 시계로 위치를 잰다. 위성까지의 거리를 신호의 도착 시간으로 재는 원리, 미지수가 셋이 아니라 넷인 이유, GPS·GLONASS·Galileo·BeiDou와 지역 시스템, 우주·관제·사용자 부문, 그리고 이 책이 근거로 삼는 공개 규격을 다룬다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"GNSSBook","item":"https://yalex-kim.github.io/yalexBook/gnss/"},{"@type":"ListItem","position":2,"name":"01 GNSS란 무엇인가","item":"https://yalex-kim.github.io/yalexBook/gnss/chapters/intro.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<style>
+  .tl { display: flex; gap: 6px; overflow-x: auto; padding: 4px 2px 10px; }
+  .tl button { flex: none; font: inherit; font-family: var(--mono); font-size: 12.5px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-elev); color: var(--text); cursor: pointer; text-align: center; min-width: 64px; }
+  .tl button small { display: block; font-size: 11px; color: var(--text-faint); }
+  .tl button.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+  .info { margin-top: 8px; padding: 14px 16px; border-radius: 12px; background: var(--surface); font-size: 14.5px; line-height: 1.65; }
+  .info h4 { margin: 0 0 6px; font-size: 15.5px; }
+</style>
+</head>
+<body data-chapter="intro">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 01</div>
+    <h1>GNSS란 무엇인가</h1>
+    <p class="lead">지도 앱의 파란 점은 2만 km 위를 초속 4 km로 도는 위성들이 보낸, 잡음보다 약한 신호에서 나온다. 휴대폰은 위성과 한마디도 주고받지 않는다. 듣기만 한다. 그런데도 몇 m 안으로 자기 위치를 안다. 어떻게? 이 장에서는 위성 항법의 원리를 한 문장으로 줄이고, 그 문장에 숨은 네 번째 미지수를 찾고, 하늘에 떠 있는 여러 나라의 시스템을 정리한다.</p>
+    <ul class="objectives">
+      <li>“위성까지 거리 = 빛의 속도 × 신호가 날아온 시간”으로 위치를 구하는 원리를 안다.</li>
+      <li>수신기 시계 오차 때문에 미지수가 넷이 되고, 위성이 최소 넷 필요한 이유를 시뮬레이터로 확인한다.</li>
+      <li>GPS·GLONASS·Galileo·BeiDou와 지역 시스템(QZSS, NavIC, KPS)을 구분한다.</li>
+      <li>이 책이 근거로 삼는 공개 규격과 공개 구현을 안다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="idea">
+    <h2>하늘의 시계</h2>
+    <p>GNSS(Global Navigation Satellite System, 위성 항법 시스템)의 위성은 아주 정확한 원자시계를 싣고, “나는 지금 몇 시 몇 분 몇 초에, 여기에 있다”는 신호를 쉬지 않고 방송한다. 지상에서 그 신호를 받은 수신기는, 신호가 떠난 시각과 도착한 시각의 차이에 빛의 속도를 곱해 위성까지의 거리를 안다. 위성이 2만 km 위에 있으면 신호는 약 0.067초(67 ms)를 날아온다.</p>
+    <p>위성 하나까지의 거리를 알면 나는 그 위성을 중심으로 한 구 위 어딘가에 있다. 위성 셋이면 구 셋이 만나는 점, 즉 내 위치가 나온다. 여기까지는 간단하다. 문제는 <b>내 시계</b>다.</p>
+    <div class="callout analogy"><strong>천둥과 번개</strong><p>번개가 보인 뒤 천둥이 3초 뒤에 들리면 번개는 약 1 km 떨어져 있다. 소리의 속도와 시간 차이로 거리를 재는 것이다. GNSS는 같은 일을 빛의 속도로 한다. 다만 번개와 달리 “번쩍”을 따로 볼 수 없으니, 위성이 “지금 보낸다”는 시각을 신호 안에 적어 보낸다. 그 시각을 내 시계로 받아 적는데, 내 시계가 1 ms만 틀려도 거리는 300 km가 틀린다.</p></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="four">
+    <h2>미지수가 넷인 이유</h2>
+    <p>위성의 원자시계는 서로 나노초 단위로 맞춰져 있지만, 휴대폰 시계는 값싼 수정 진동자다. 1 µs만 틀려도 300 m다. 그래서 수신기는 위성 시계와 내 시계의 차이(수신기 시계 오차, bias)를 <b>모르는 값으로 두고</b> 위치와 함께 푼다. 수신기가 재는 것은 진짜 거리가 아니라 “시계 오차 × 빛의 속도”가 모든 위성에 똑같이 더해진 거리, <span class="term">의사거리</span><span class="en">(pseudorange)</span>다.</p>
+    <p>미지수는 위치 x, y, z와 시계 오차 b, 넷이다. 그래서 위성이 <b>최소 넷</b> 필요하다. 아래 시뮬레이터는 평면(미지수 x, y, b)에서 이를 보여 준다. 의사거리로 그린 원 셋은 한 점에서 만나지 않는다. 시계 오차를 바르게 고르면, 그때서야 한 점에서 만난다.</p>
+    <div class="sim" id="sim-bias">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>시계 오차를 맞혀 원을 한 점에 모으기</h3></div>
+      <div class="sim-view"><canvas id="cv-bias"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>수신기 시계의 실제 오차 <output id="bi-t-out"></output></span><input type="range" id="bi-t" min="-30" max="30" value="12"></label>
+        <label class="ctrl"><span>내가 추정한 시계 오차 <output id="bi-g-out"></output></span><input type="range" id="bi-g" min="-30" max="30" value="0"></label>
+        <button class="btn" id="bi-solve">최소 제곱으로 풀기</button>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">원들이 어긋난 정도</span><span class="v" id="bi-r">—</span></div>
+        <div class="stat"><span class="k">추정과 실제 시계 오차의 차이</span><span class="v" id="bi-e">—</span></div>
+        <div class="stat"><span class="k">시계 오차 1 ns =</span><span class="v" id="bi-n">—</span></div>
+      </div>
+      <div class="sim-note">평면 위 “위성” 셋(초록)과 수신기(주황). 원 = 의사거리 − (추정 시계 오차 × c). 해볼 것: ① 추정을 0으로 두면 원들이 한 점에서 만나지 않는다. ② 추정 슬라이더를 실제 오차에 맞추면 원들이 수신기 자리에서 정확히 만난다. ③ “최소 제곱으로 풀기”를 누르면 수신기가 하는 일, 즉 위치와 시계 오차를 함께 맞추는 계산이 한 번에 답을 찾는다(9장). 축척을 줄인 모형이라 시계 오차 단위는 “m에 해당하는 값”이다.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="systems">
+    <h2>하늘의 별자리들</h2>
+    <p>위성 항법 시스템은 여럿이다. 요즘 휴대폰은 거의 모두를 동시에 듣는다. 위성이 많을수록 빌딩 사이에서도 넷 이상이 보이고, 배치가 좋아져 정확해진다(9·11장).</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>시스템</th><th>운영</th><th>범위</th><th>대표 신호</th><th>이 책에서</th></tr></thead>
+      <tbody>
+        <tr><td><b>GPS</b></td><td>미국</td><td>전 세계</td><td>L1 C/A 1,575.42 MHz, L2, L5</td><td>대부분의 계산 예(규격 IS-GPS-200)</td></tr>
+        <tr><td><b>GLONASS</b></td><td>러시아</td><td>전 세계</td><td>L1·L2(위성마다 주파수가 조금씩 다른 FDMA)</td><td>3장</td></tr>
+        <tr><td><b>Galileo</b></td><td>유럽 연합</td><td>전 세계</td><td>E1 1,575.42 MHz, E5a·E5b, E6</td><td>3·4장(규격 Galileo OS SIS ICD)</td></tr>
+        <tr><td><b>BeiDou</b></td><td>중국</td><td>전 세계(3세대)</td><td>B1I·B1C, B2a 등</td><td>2장(정지·경사 궤도 위성)</td></tr>
+        <tr><td><b>QZSS</b> · <b>NavIC</b></td><td>일본 · 인도</td><td>지역</td><td>GPS와 호환되는 L1·L5 등</td><td>2장</td></tr>
+        <tr><td><b>KPS</b></td><td>한국(개발 중)</td><td>지역</td><td>—</td><td>정지·경사 궤도 위성 8기로 2035년 서비스를 목표로 개발 중이다</td></tr>
+      </tbody>
+    </table></div>
+    <p>각 시스템은 세 부문으로 이루어진다. <b>우주 부문</b>(위성), 위성을 추적해 궤도와 시계를 계산하고 위성에 올려 주는 <b>관제 부문</b>(지상국), 그리고 신호를 받기만 하는 <b>사용자 부문</b>(수신기). 사용자는 아무것도 보내지 않으므로 수십억 명이 동시에 써도 시스템이 붐비지 않는다.</p>
+    <div class="sim" id="sim-hist">
+      <div class="sim-head"><span class="sim-tag">INTERACTIVE</span><h3>GNSS 연표</h3></div>
+      <div class="sim-view" style="padding:10px"><div class="tl" id="hs-tl"></div><div class="info" id="hs-info"></div></div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="sources">
+    <h2>이 책이 근거로 삼는 것</h2>
+    <div class="callout spec"><strong>공개 규격과 공개 구현</strong><p>GNSS는 이 서재의 다른 무선 기술과 달리 신호 규격이 무료로 공개되어 있다. 이 책은 미국의 <b>IS-GPS-200N</b>(2022-08-01, “Approved for public release”)과 유럽 연합의 <b>Galileo OS SIS ICD Issue 2.2</b>(2025년 11월)를 1차 근거로 삼고, 본문에 표·절 번호와 쪽수를 밝힌다. 여기에 공개 측위 라이브러리 <b>RTKLIB</b>(BSD-2)의 전리층·대류층 모델과 궤도 계산 코드를 구현의 근거로 쓴다. 책의 계산 함수는 규격의 표(예: PRN 코드의 처음 10칩)와 식, RTKLIB의 코드로 자동 검증한다(<code>scripts/verify-factcheck.cjs</code>). GLONASS·BeiDou 규격은 이 책에서 직접 인용하지 않았다.</p></div>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>위성은 시각과 궤도를 방송하고, 수신기는 듣기만 한다. 거리 = 빛의 속도 × 날아온 시간(약 67 ms).</li>
+      <li>수신기 시계가 맞지 않아(1 µs = 300 m) 의사거리를 재고, 시계 오차를 네 번째 미지수로 푼다. 위성이 최소 넷 필요하다.</li>
+      <li>GPS·GLONASS·Galileo·BeiDou(전 세계)와 QZSS·NavIC(지역), 한국은 KPS를 개발 중이다.</li>
+      <li>우주·관제·사용자 부문. 사용자가 아무리 많아도 시스템이 붐비지 않는다.</li>
+      <li>이 책은 IS-GPS-200N, Galileo OS SIS ICD 2.2, RTKLIB으로 값을 확인한다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>위치를 구하는 데 위성이 최소 넷 필요한 이유는?</p><div class="opts">
+        <button class="opt">위성 시계가 부정확해서</button><button class="opt" data-correct>위치 셋에 수신기 시계 오차까지 미지수가 넷이라서</button><button class="opt">지구가 둥글어서</button><button class="opt">전리층 때문에</button>
+      </div><div class="quiz-exp">x, y, z, 그리고 수신기 시계 오차 b.</div></div>
+      <div class="quiz-q"><p>수신기 시계가 1 µs 틀리면 거리 오차는?</p><div class="opts">
+        <button class="opt">30 cm</button><button class="opt">3 m</button><button class="opt" data-correct>300 m</button><button class="opt">300 km</button>
+      </div><div class="quiz-exp">3×10⁸ m/s × 10⁻⁶ s.</div></div>
+      <div class="quiz-q"><p>수십억 명이 동시에 GPS를 써도 붐비지 않는 이유는?</p><div class="opts">
+        <button class="opt">위성이 아주 많아서</button><button class="opt" data-correct>수신기는 듣기만 하고 아무것도 보내지 않아서</button><button class="opt">5G가 대신 보내서</button><button class="opt">시간을 나눠 써서</button>
+      </div><div class="quiz-exp">방송형 시스템이다.</div></div>
+      <div class="quiz-q"><p>의사거리에 모든 위성에 똑같이 더해져 있는 것은?</p><div class="opts">
+        <button class="opt">위성 시계 오차</button><button class="opt" data-correct>수신기 시계 오차 × 빛의 속도</button><button class="opt">전리층 지연</button><button class="opt">다중 경로</button>
+      </div><div class="quiz-exp">그래서 한 번에 함께 풀 수 있다. 전리층·다중 경로는 위성마다 다르다(10장).</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const C = 299792458;
+  /** 평면 의사거리 풀이: 미지수 x, y, b(시계 오차를 거리로). 가우스-뉴턴 */
+  function solve2d(sats, pr, p0) {
+    let x = p0.x, y = p0.y, b = p0.b || 0;
+    for (let it = 0; it < 30; it++) {
+      const H = [], r = [];
+      sats.forEach((s, i) => { const d = Math.hypot(x - s.x, y - s.y) || 1e-9; H.push([(x - s.x) / d, (y - s.y) / d, 1]); r.push(pr[i] - (d + b)); });
+      const N = [[0, 0, 0], [0, 0, 0], [0, 0, 0]], g = [0, 0, 0];
+      H.forEach((h, k) => { for (let i = 0; i < 3; i++) { g[i] += h[i] * r[k]; for (let j = 0; j < 3; j++) N[i][j] += h[i] * h[j]; } });
+      const dx = solve3(N, g); x += dx[0]; y += dx[1]; b += dx[2]; if (Math.hypot(...dx) < 1e-10) break;
+    }
+    return { x, y, b };
+  }
+  /** 3×3 연립방정식(크라메르) */
+  function solve3(A, v) {
+    const det = (m) => m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) + m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
+    const D = det(A); return [0, 1, 2].map((c) => det(A.map((row, i) => row.map((val, j) => (j === c ? v[i] : val)))) / D);
+  }
+
+  /* ================================================================ 1. 시계 오차 */
+  (function () {
+    const sats = [{ x: 15, y: 90 }, { x: 85, y: 85 }, { x: 55, y: 15 }], rx = { x: 48, y: 52 };
+    const t = GN.range("bi-t", (v) => v + " m", draw), g = GN.range("bi-g", (v) => v + " m", draw);
+    $("bi-solve").addEventListener("click", () => { const pr = sats.map((s) => Math.hypot(rx.x - s.x, rx.y - s.y) + t()); const sol = solve2d(sats, pr, { x: 50, y: 50, b: 0 }); g.set(Math.round(sol.b)); });
+    const cv = GN.canvas($("cv-bias"), (ctx, w, h) => {
+      const P = GN.palette(), sc = Math.min(w, h) / 105, ox = (w - 100 * sc) / 2, oy = 4, X = (x) => ox + x * sc, Y = (y) => oy + y * sc;
+      sats.forEach((s) => { const r = Math.hypot(rx.x - s.x, rx.y - s.y) + t() - g(); ctx.strokeStyle = P.accent; ctx.globalAlpha = 0.75; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(X(s.x), Y(s.y), Math.max(0, r) * sc, 0, 7); ctx.stroke(); ctx.globalAlpha = 1; ctx.fillStyle = P.ok; ctx.fillRect(X(s.x) - 5, Y(s.y) - 5, 10, 10); });
+      ctx.fillStyle = P.accent2; ctx.beginPath(); ctx.arc(X(rx.x), Y(rx.y), 6, 0, 7); ctx.fill();
+    }, { aspect: 0.8, minHeight: 260, maxHeight: 400 });
+    function draw() {
+      const pr = sats.map((s) => Math.hypot(rx.x - s.x, rx.y - s.y) + t()), corr = pr.map((p) => p - g());
+      const res = sats.map((s, i) => Math.abs(Math.hypot(rx.x - s.x, rx.y - s.y) - corr[i])).reduce((a, b) => Math.max(a, b), 0);
+      GN.stat("bi-r", res.toFixed(1) + " m"); GN.stat("bi-e", Math.abs(t() - g()) < 0.5 ? "0 m → 한 점에서 만남" : Math.abs(t() - g()) + " m"); GN.stat("bi-n", (C * 1e-9 * 100).toFixed(0) + " cm"); cv.redraw();
+    }
+    draw();
+  })();
+
+  /* ================================================================ 2. 연표 */
+  (function () {
+    const H = [
+      [1973, "GPS 계획", "미국 국방부가 여러 항법 위성 계획을 하나로 묶어 GPS(NAVSTAR) 개발을 시작했다."],
+      [1978, "첫 위성", "GPS 블록 I 첫 위성이 발사됐다. 1980년대 동안 시험 위성이 늘었다."],
+      [1983, "민간 개방", "대한항공 007편 격추 사건 뒤, 미국이 GPS를 민간 항공에도 쓰게 하겠다고 발표했다."],
+      [1995, "완전 운용", "GPS가 완전 운용 능력(FOC)을 선언했다. GLONASS도 같은 무렵 24기를 채웠다."],
+      [2000, "SA 해제", "5월 2일, 민간 신호를 일부러 흐리게 하던 선택적 이용성(SA)이 꺼져 민간 정확도가 100 m에서 10 m대로 좋아졌다."],
+      [2016, "Galileo 서비스", "유럽의 Galileo가 초기 서비스를 시작했다. 같은 무렵 휴대폰이 여러 위성군을 함께 듣기 시작했다."],
+      [2018, "이중 주파수 휴대폰", "L1과 L5를 함께 받는 첫 휴대폰이 나와, 전리층 오차를 휴대폰에서도 지울 수 있게 됐다(10·13장)."],
+      [2020, "BeiDou-3 완성", "중국의 BeiDou 3세대가 전 세계 서비스를 갖췄다. 하늘에 보이는 위성이 크게 늘었다."],
+      [2035, "KPS (목표)", "한국형 위성 항법 시스템 KPS가 한반도 주변 서비스를 목표로 개발 중이다."],
+    ];
+    const tl = $("hs-tl"), info = $("hs-info");
+    tl.innerHTML = H.map((g, i) => `<button type="button" data-i="${i}">${g[0]}<small>${g[1].split(" ")[0]}</small></button>`).join("");
+    function show(i) { tl.querySelectorAll("button").forEach((b) => b.classList.toggle("on", +b.dataset.i === i)); const g = H[i]; info.innerHTML = `<h4>${g[0]} · ${g[1]}</h4>${g[2]}`; }
+    tl.addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) show(+b.dataset.i); });
+    show(4);
+  })();
+})();
+</script>
+</body>
+</html>

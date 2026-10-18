@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>도시와 실내: 막히고 튕기는 신호 · GNSSBook</title>
+<meta name="description" content="빌딩 숲에서 지도 앱의 파란 점이 길 건너편으로 튀는 이유. 거리 폭과 건물 높이가 가리는 하늘, 가려진 위성의 반사 신호(NLOS)가 만드는 수십 m 오차, 실내에서 C/N0가 떨어져 신호를 못 잡는 과정, 여러 위성군·이중 주파수·지도·센서로 버티는 방법을 시뮬레이터로 본다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/gnss/chapters/urban.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="GNSSBook">
+<meta property="og:title" content="도시와 실내: 막히고 튕기는 신호 · GNSSBook">
+<meta property="og:description" content="빌딩 숲에서 지도 앱의 파란 점이 길 건너편으로 튀는 이유. 거리 폭과 건물 높이가 가리는 하늘, 가려진 위성의 반사 신호(NLOS)가 만드는 수십 m 오차, 실내에서 C/N0가 떨어져 신호를 못 잡는 과정, 여러 위성군·이중 주파수·지도·센서로 버티는 방법을 시뮬레이터로 본다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/gnss/chapters/urban.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/gnss/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"도시와 실내: 막히고 튕기는 신호","name":"도시와 실내: 막히고 튕기는 신호 · GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/urban.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/gnss/chapters/urban.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":11,"image":"https://yalex-kim.github.io/yalexBook/gnss/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/gnss/#book","name":"GNSSBook — 누구나 읽는 인터랙티브 GNSS 교과서","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"publisher":{"@type":"Organization","name":"GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"description":"빌딩 숲에서 지도 앱의 파란 점이 길 건너편으로 튀는 이유. 거리 폭과 건물 높이가 가리는 하늘, 가려진 위성의 반사 신호(NLOS)가 만드는 수십 m 오차, 실내에서 C/N0가 떨어져 신호를 못 잡는 과정, 여러 위성군·이중 주파수·지도·센서로 버티는 방법을 시뮬레이터로 본다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"GNSSBook","item":"https://yalex-kim.github.io/yalexBook/gnss/"},{"@type":"ListItem","position":2,"name":"11 도시와 실내: 막히고 튕기는 신호","item":"https://yalex-kim.github.io/yalexBook/gnss/chapters/urban.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+</head>
+<body data-chapter="urban">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 11</div>
+    <h1>도시와 실내: 막히고 튕기는 신호</h1>
+    <p class="lead">강남대로나 여의도 빌딩 사이에서 지도 앱을 켜면 파란 점이 길 건너편이나 건물 안으로 튀곤 한다. 트인 하늘에서 3 m였던 정확도가 30 m가 된다. 건물 안에 들어가면 아예 위치를 못 잡는다. 이 장에서는 도시의 두 문제, <b>하늘이 가려지는 것</b>과 <b>가려진 위성의 신호가 건물에 튕겨 들어오는 것</b>, 그리고 실내에서 신호가 사라지는 과정을 계산한다.</p>
+    <ul class="objectives">
+      <li>거리 폭·건물 높이가 방향별로 하늘을 얼마나 가리는지 계산하고, 보이는 위성 수와 DOP 변화를 본다.</li>
+      <li>가려진 위성의 반사 신호(NLOS)가 의사거리를 얼마나 늘리는지, 왜 7장의 다중 경로보다 위험한지 안다.</li>
+      <li>벽·유리·콘크리트가 C/N0를 얼마나 깎아 획득·추적을 불가능하게 하는지 계산한다.</li>
+      <li>여러 위성군, 이중 주파수, 3D 지도, 센서 융합이 각각 무엇을 돕는지 구분한다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="canyon">
+    <h2>도시 협곡</h2>
+    <p>빌딩 사이의 길을 <b>도시 협곡</b>(urban canyon)이라 부른다. 길과 나란한 방향으로는 하늘이 트여 있고, 길을 가로지르는 방향으로는 건물이 높게 가린다. 높이 h인 건물이 d만큼 떨어져 있으면 그 방향은 앙각 arctan(h/d) 아래가 가려진다. 폭 20 m 길 한가운데서 높이 60 m 빌딩이면 길을 가로지르는 방향은 앙각 80°까지 가려진다.</p>
+    <p>가려진 위성 중 일부는 맞은편 건물 유리에 반사된 신호로 들어온다. 이 <span class="term">NLOS</span><span class="en">(Non-Line-Of-Sight)</span> 신호는 직접파가 없으므로 6장의 다중 경로처럼 “직접파 + 반사파”가 아니라 <b>반사파만</b> 있다. 수신기는 이를 정상 신호로 받아들이고, 더 돌아온 거리만큼 의사거리가 길어진다. 수 m에서 수십 m, 여러 번 튕기면 더 길다. 직접파가 있으면 상관기 간격으로 줄일 수 있었지만(6장), NLOS는 그럴 수 없다.</p>
+    <div class="sim" id="sim-cny">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>빌딩 사이의 하늘</h3></div>
+      <div class="sim-body side">
+        <div class="sim-view"><canvas id="cv-cny"></canvas></div>
+        <div class="sim-controls">
+          <label class="ctrl"><span>건물 높이 <output id="cn-h-out"></output></span><input type="range" id="cn-h" min="0" max="150" step="5" value="30"></label>
+          <label class="ctrl"><span>길 폭 <output id="cn-w-out"></output></span><input type="range" id="cn-w" min="10" max="80" value="25"></label>
+          <label class="ctrl"><span>길 방향(북에서) <output id="cn-a-out"></output></span><input type="range" id="cn-a" min="0" max="179" value="20"></label>
+          <div class="ctrl"><span>위성군</span><div class="seg" id="cn-c"><button data-value="gps">GPS형</button><button data-value="both" class="on">GPS + Galileo형</button></div></div>
+        </div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">직접 보이는 위성</span><span class="v" id="cn-v">—</span></div>
+        <div class="stat"><span class="k">NLOS(반사로만 옴)</span><span class="v" id="cn-n">—</span></div>
+        <div class="stat"><span class="k">직접 위성만의 HDOP / VDOP</span><span class="v" id="cn-d">—</span></div>
+      </div>
+      <div class="sim-note">스카이 플롯: 회색 영역 = 건물이 가린 하늘, 초록·파랑 = 직접 보이는 위성, 주황 = 맞은편 건물에 반사돼 들어오는 NLOS 위성(점 옆 숫자 = 더 돈 거리, m), 회색 점 = 완전히 가려짐. 해볼 것: ① 건물을 높이면 직접 위성이 길 방향 띠에만 남아 DOP가 커진다(특히 길을 가로지르는 방향). ② 기본값(건물 30 m, 길 25 m)에서 GPS형만이면 직접 보이는 위성이 2기, Galileo형을 더하면 5기다. 이 모델의 위성군은 각 24기뿐이고, 실제 휴대폰은 BeiDou·GLONASS·QZSS까지 100기 넘게 들어 더 많이 보인다. 건물을 60 m로 올리면 그래도 넷이 안 된다. ③ NLOS 위성을 그대로 쓰면 더 돈 거리(이 모델에서 수~수십 m, 길이 넓을수록 큼)가 의사거리에 그대로 더해진다. 모델: 무한히 긴 길 양쪽의 같은 높이 건물, 사용자는 길 가운데, 반사는 맞은편 건물 벽 한 번(거울 반사), 9시 서울, 2장의 이상적 위성군.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="indoor">
+    <h2>실내: 신호가 너무 약해진다</h2>
+    <p>3장에서 맑은 하늘의 C/N0는 40 dB-Hz대였다. 창문 유리는 몇 dB, 나무 지붕은 몇~10 dB, 콘크리트 벽과 바닥은 20~30 dB를 깎는다. 획득(5장)에는 대략 30 dB-Hz 이상, 추적(6장)에는 20 dB-Hz대 이상이 필요하다. 실내 깊숙이 들어가면 C/N0가 10~20 dB-Hz로 떨어져, 이미 잡은 신호를 유지하는 것도 어렵다.</p>
+    <div class="sim" id="sim-in">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>어디까지 받을 수 있나</h3></div>
+      <div class="sim-view"><canvas id="cv-in"></canvas></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>장소</span><div class="seg" id="in-p"><button data-value="0">트인 하늘</button><button data-value="1">창가</button><button data-value="2" class="on">아파트 거실</button><button data-value="3">사무실 가운데</button><button data-value="4">지하 주차장</button></div></div>
+        <label class="check"><input type="checkbox" id="in-a" checked> A-GNSS(위성·도플러·시각을 통신망에서 받음, 긴 적분 가능)</label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">예상 C/N0</span><span class="v" id="in-c">—</span></div>
+        <div class="stat"><span class="k">찾기(획득)</span><span class="v" id="in-q">—</span></div>
+        <div class="stat"><span class="k">따라가기(추적)</span><span class="v" id="in-t">—</span></div>
+      </div>
+      <div class="sim-note">막대: 트인 하늘의 C/N0에서 장소별 손실을 뺀 값과 문턱. 가정(대표적 크기): 트인 하늘 42 dB-Hz(휴대폰 안테나), 손실 창가 6, 거실 15, 사무실 가운데 22, 지하 35 dB. 획득 문턱: 단독 32 dB-Hz, A-GNSS 22 dB-Hz(탐색 범위가 좁아 긴 적분 가능, 5장). 추적 문턱 22 dB-Hz(6장의 PLL 한계 근처). 실내에서는 와이파이·셀 기지국 위치, 관성 센서가 대신 위치를 이어 간다(13장).</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="cope">
+    <h2>버티는 방법</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>방법</th><th>무엇을 돕나</th></tr></thead>
+      <tbody>
+        <tr><td><b>여러 위성군</b>(GPS + Galileo + BeiDou + GLONASS + QZSS)</td><td>보이는 위성 수가 늘어 협곡에서도 넷 이상, DOP 개선(2·9장)</td></tr>
+        <tr><td><b>이중 주파수 L1 + L5</b></td><td>L5는 칩이 10배 짧아(BPSK(10), 3장) 다중 경로 오차가 작고, 반사 신호를 구별하기 쉽다. 전리층도 지운다(10장)</td></tr>
+        <tr><td><b>NLOS 걸러내기</b></td><td>C/N0가 낮거나, 다른 위성들과 맞지 않는 의사거리(잔차가 큰 것)를 버린다</td></tr>
+        <tr><td><b>3D 건물 지도</b>(그림자 맞추기)</td><td>건물 지도로 “이 자리라면 이 위성은 가려져야 한다”를 계산해, 실제로 보이는 위성 무늬와 맞는 길 쪽을 고른다. 길 건너편 오류를 줄인다</td></tr>
+        <tr><td><b>센서 융합</b></td><td>가속도·자이로·지도·와이파이로 GNSS가 흔들리는 동안 위치를 이어 간다(13장)</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>도시 협곡은 길을 가로지르는 방향의 하늘을 arctan(h/d)까지 가린다. 보이는 위성이 길 방향 띠에 몰려 DOP가 커진다.</li>
+      <li>NLOS(반사파만 들어오는 신호)는 의사거리를 수~수십 m 늘리고, 상관기 기법으로 줄일 수 없다. 걸러내야 한다.</li>
+      <li>실내는 C/N0가 15~35 dB 떨어져 획득·추적이 어렵다. A-GNSS가 문턱을 낮춰 주지만 한계가 있다.</li>
+      <li>여러 위성군, L5, NLOS 걸러내기, 3D 지도, 센서 융합으로 버틴다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>폭 20 m 길 가운데에서 높이 40 m 건물이 가리는 앙각(길을 가로지르는 방향)은?</p><div class="opts">
+        <button class="opt">약 27°</button><button class="opt">약 45°</button><button class="opt" data-correct>약 76°</button><button class="opt">90°</button>
+      </div><div class="quiz-exp">arctan(40/10) ≈ 76°.</div></div>
+      <div class="quiz-q"><p>NLOS 신호가 다중 경로보다 다루기 어려운 이유는?</p><div class="opts">
+        <button class="opt">더 세서</button><button class="opt" data-correct>직접파가 없어 상관기 기법으로 오차를 줄일 수 없고 의사거리가 통째로 길어져서</button><button class="opt">주파수가 달라서</button><button class="opt">PRN이 바뀌어서</button>
+      </div><div class="quiz-exp">찾아서 버리거나 비중을 줄여야 한다.</div></div>
+      <div class="quiz-q"><p>A-GNSS가 실내 획득을 돕는 이유는?</p><div class="opts">
+        <button class="opt">신호를 증폭해서</button><button class="opt" data-correct>찾을 범위를 좁혀 줘 긴 적분으로 약한 신호를 찾을 수 있어서</button><button class="opt">위성을 바꿔서</button><button class="opt">와이파이로 대신 받아서</button>
+      </div><div class="quiz-exp">탐색 칸이 줄면 같은 시간에 칸마다 더 오래 적분할 수 있다(5장).</div></div>
+      <div class="quiz-q"><p>도시에서 L5가 L1 C/A보다 유리한 점은?</p><div class="opts">
+        <button class="opt">신호가 훨씬 세다</button><button class="opt" data-correct>칩이 10배 짧아 다중 경로 오차가 작고 반사를 구별하기 쉽다</button><button class="opt">건물을 통과한다</button><button class="opt">위성이 더 많다</button>
+      </div><div class="quiz-exp">상관 삼각형이 좁아 반사 지연이 짧아도 겹치지 않는다(6장).</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const D = Math.PI / 180, RE = 6378137, MU = 3.986005e14, OMGE = 7.2921151467e-5;
+  /** 길 가운데에서 방위 az로 본 건물 가림 앙각(라디안): 길 방향 streetAz, 폭 w, 높이 h */
+  function maskEl(az, streetAz, w, h) { const s = Math.abs(Math.sin(az - streetAz)); if (s < 1e-6 || h <= 0) return 0; return Math.atan(h / (w / 2 / s)); }
+  /** 맞은편 건물 벽에 한 번 반사돼 들어오는 NLOS의 더 돈 거리(m), 불가능하면 NaN.
+   *  사용자는 길 가운데, 벽은 ±w/2. 반사벽 너머의 거울상 수신기(벽까지 w/2 더)에서 위성 쪽으로 직선을 그어
+   *  ① 반사점(맞은편 벽)이 건물 높이 아래이고 ② 위성 쪽 건물 지붕을 넘어가야 한다. 더 돈 거리 = 2·(w/2)·cos el·|sin(az − 길)| */
+  function nlosExcess(az, el, streetAz, w, h) {
+    const s = Math.abs(Math.sin(az - streetAz)); if (s < 1e-6) return NaN;
+    const atWall = Math.tan(el) * (w / 2 / s), atRoof = Math.tan(el) * ((1.5 * w) / s);
+    if (atWall > h || atRoof < h) return NaN;
+    return w * Math.cos(el) * s;
+  }
+  /** 이상적 위성군(2장) */
+  function satsAt(kind, tt) {
+    const out = [], P = (a) => 2 * Math.PI * Math.sqrt(a ** 3 / MU), add = (a, inc, raan, u0, sys) => { const u = u0 + (2 * Math.PI * tt) / P(a), x = a * Math.cos(u), y = a * Math.sin(u), O = raan - OMGE * tt; out.push({ p: [x * Math.cos(O) - y * Math.cos(inc) * Math.sin(O), x * Math.sin(O) + y * Math.cos(inc) * Math.cos(O), y * Math.sin(inc)], sys }); };
+    for (let p = 0; p < 6; p++) for (let k = 0; k < 4; k++) add(26559710, 55 * D, p * 60 * D, (k * 90 + p * 15) * D, "gps");
+    if (kind === "both") for (let p = 0; p < 3; p++) for (let k = 0; k < 8; k++) add(29600000, 56 * D, p * 120 * D, (k * 45 + p * 15) * D, "gal");
+    return out;
+  }
+  function azEl(lat, lon, s) { const p = [RE * Math.cos(lat) * Math.cos(lon), RE * Math.cos(lat) * Math.sin(lon), RE * Math.sin(lat)], d = s.map((v, i) => v - p[i]); const e = -Math.sin(lon) * d[0] + Math.cos(lon) * d[1], n = -Math.sin(lat) * Math.cos(lon) * d[0] - Math.sin(lat) * Math.sin(lon) * d[1] + Math.cos(lat) * d[2], u = Math.cos(lat) * Math.cos(lon) * d[0] + Math.cos(lat) * Math.sin(lon) * d[1] + Math.sin(lat) * d[2]; return [Math.atan2(e, n), Math.atan2(u, Math.hypot(e, n))]; }
+  /** HDOP·VDOP(9장과 같은 식) */
+  function hvdop(azel) {
+    if (azel.length < 4) return null; const H = azel.map(([a, e]) => [Math.cos(e) * Math.sin(a), Math.cos(e) * Math.cos(a), Math.sin(e), 1]), N = [0, 1, 2, 3].map((i) => [0, 1, 2, 3].map((j) => H.reduce((s, h) => s + h[i] * h[j], 0)));
+    const A = N.map((r, i) => [...r, ...[0, 1, 2, 3].map((j) => (i === j ? 1 : 0))]); for (let c = 0; c < 4; c++) { let p = c; for (let r = c + 1; r < 4; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r; if (Math.abs(A[p][c]) < 1e-12) return null; [A[c], A[p]] = [A[p], A[c]]; const v = A[c][c]; for (let j = 0; j < 8; j++) A[c][j] /= v; for (let r = 0; r < 4; r++) if (r !== c) { const k = A[r][c]; for (let j = 0; j < 8; j++) A[r][j] -= k * A[c][j]; } }
+    const Q = A.map((r) => r.slice(4)); return [Math.sqrt(Q[0][0] + Q[1][1]), Math.sqrt(Q[2][2])];
+  }
+  const PLACES = [0, 6, 15, 22, 35];
+
+  /* ================================================================ 1. 협곡 */
+  (function () {
+    let kind = "both";
+    const hh = GN.range("cn-h", (v) => v + " m", draw), w = GN.range("cn-w", (v) => v + " m", draw), a = GN.range("cn-a", (v) => v + "°", draw);
+    GN.seg("cn-c", (v) => { kind = v; draw(); });
+    const classify = () => satsAt(kind, 0).map((s) => { const [az, el] = azEl(37.5 * D, 127 * D, s.p); if (el <= 5 * D) return null; const m = maskEl(az, a() * D, w(), hh()); if (el > m) return { az, el, sys: s.sys, st: "los" }; const ex = nlosExcess(az, el, a() * D, w(), hh()); return { az, el, sys: s.sys, st: isFinite(ex) ? "nlos" : "blocked", ex }; }).filter(Boolean);
+    const cv = GN.canvas($("cv-cny"), (ctx, W, H) => {
+      const P = GN.palette(), cx = W / 2, cy = H / 2, R = Math.min(W, H) / 2 - 16, rOf = (el) => (R * (90 - el / D)) / 90;
+      ctx.fillStyle = P.grid; ctx.beginPath(); for (let k = 0; k <= 360; k++) { const az = k * D, m = maskEl(az, a() * D, w(), hh()), r = rOf(m); const x = cx + Math.sin(az) * r, y = cy - Math.cos(az) * r; k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.arc(cx, cy, R, 0, 2 * Math.PI, true); ctx.fill("evenodd");
+      ctx.strokeStyle = P.border; ctx.beginPath(); ctx.arc(cx, cy, R, 0, 7); ctx.stroke();
+      classify().forEach((s) => { const r = rOf(s.el), x = cx + Math.sin(s.az) * r, y = cy - Math.cos(s.az) * r; ctx.fillStyle = s.st === "los" ? (s.sys === "gps" ? P.accent : P.accent2) : s.st === "nlos" ? P.warn : P.faint; ctx.beginPath(); ctx.arc(x, y, 6, 0, 7); ctx.fill(); if (s.st === "nlos") GN.text(ctx, "+" + s.ex.toFixed(0), x + 8, y + 4, { size: 10, color: P.warn }); });
+      GN.text(ctx, "북", cx, cy - R - 4, { size: 11, color: P.faint, align: "center" });
+    }, { aspect: 1, minHeight: 240, maxHeight: 330 });
+    function draw() { const c = classify(), los = c.filter((s) => s.st === "los"), d = hvdop(los.map((s) => [s.az, s.el])); GN.stat("cn-v", los.length + "기"); GN.stat("cn-n", c.filter((s) => s.st === "nlos").length + "기"); GN.stat("cn-d", d ? d[0].toFixed(1) + " / " + d[1].toFixed(1) : "계산 불가(4기 미만)"); cv.redraw(); }
+    draw();
+  })();
+
+  /* ================================================================ 2. 실내 */
+  (function () {
+    let pl = 2;
+    GN.seg("in-p", (v) => { pl = +v; draw(); }); $("in-a").addEventListener("change", draw);
+    const cv = GN.canvas($("cv-in"), (ctx, w, h) => {
+      const P = GN.palette(), cn = 42 - PLACES[pl], acq = $("in-a").checked ? 22 : 32, X = (v) => 20 + ((w - 40) * v) / 50;
+      ctx.fillStyle = P.accent; GN.rrect(ctx, X(0), 26, X(Math.max(0, cn)) - X(0), 22, 4); ctx.fill();
+      [[acq, "획득 문턱", P.warn], [22, "추적 문턱", P.bad]].forEach(([v, t, c], i) => { ctx.strokeStyle = c; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(X(v), 16); ctx.lineTo(X(v), 58); ctx.stroke(); GN.text(ctx, t, X(v), i ? 72 : 12, { size: 10.5, color: c, align: "center" }); });
+      for (let v = 0; v <= 50; v += 10) GN.text(ctx, v + "", X(v), 88, { size: 10, color: P.faint, align: "center" });
+    }, { aspect: 0.22, minHeight: 96, maxHeight: 104 });
+    function draw() { const cn = 42 - PLACES[pl], acq = $("in-a").checked ? 22 : 32; GN.stat("in-c", cn + " dB-Hz"); GN.stat("in-q", cn >= acq ? "가능 ✓" : "어려움 ✗"); GN.stat("in-t", cn >= 22 ? "가능 ✓" : "어려움 ✗"); cv.redraw(); }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>
