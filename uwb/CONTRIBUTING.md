@@ -76,6 +76,7 @@
 - `UW.canvas(el, (ctx,w,h)=>{}, {aspect, height, minHeight, maxHeight})` → `{redraw()}` HiDPI, 리사이즈·테마 변경 시 자동 redraw.
 - `UW.chart(ctx, box|null, {x, y, logX, logY, xLabel, yLabel, series, vlines, hlines, points, bands, xFmt, yFmt, xTicks, yTicks})`
 - `UW.loop(el, (dt,t)=>{})` 화면에 보일 때만 도는 애니메이션 루프.
+- `UW.keys(canvas, { move(dx, dy, big), activate(), next(), say(), hint })` 캔버스를 눌러 조작하는 시뮬레이터의 키보드 대안(화살표·Enter·N)과 화면 낭독 문구. 마우스로만 되는 조작은 만들지 않는다.
 - `UW.range(id, fmt, onInput)`, `UW.seg(id, onChange)`, `UW.stat(id, html)`
 - 그리기: `UW.rrect`, `UW.box`, `UW.arrow`, `UW.text`
 - 숫자: `UW.bin`, `UW.hex`, `UW.bytes`, `UW.time`, `UW.kn`, `UW.fmt`, `UW.si`, `UW.rng(seed)`

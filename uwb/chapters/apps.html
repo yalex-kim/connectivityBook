@@ -185,6 +185,7 @@
       ctx.strokeStyle = P.bad; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(X(e.x) - 6, Y(e.y) - 6); ctx.lineTo(X(e.x) + 6, Y(e.y) + 6); ctx.moveTo(X(e.x) + 6, Y(e.y) - 6); ctx.lineTo(X(e.x) - 6, Y(e.y) + 6); ctx.stroke();
       UW.text(ctx, "1 m", X(CAR.w / 2 + 1) + 4, Y(CAR.h / 2 + 1) + 12, { size: 10, color: P.accent2 }); UW.text(ctx, "5 m", X(CAR.w / 2 + 5) - 26, Y(CAR.h / 2 + 5) + 12, { size: 10, color: P.faint });
     }, { aspect: 0.66, minHeight: 240, maxHeight: 420 });
+    UW.keys(cv.canvas, { hint: "키보드: 화살표로 휴대폰 옮기기(Shift = 1 m)", move: (dx, dy, big) => { const k = big ? 1 : 0.25; phone = { x: Math.max(-6, Math.min(6, phone.x + dx * k)), y: Math.max(-4, Math.min(4, phone.y - dy * k)) }; draw(); }, say: () => `휴대폰 (${phone.x.toFixed(2)}, ${phone.y.toFixed(2)}) m. 실제 ${zone(phone)}, 판정 ${zone(est())}` });
     cv.canvas.addEventListener("click", (e) => { if (!geo) return; const r = cv.canvas.getBoundingClientRect(); phone = { x: (e.clientX - r.left - geo.cx) / geo.sc, y: -(e.clientY - r.top - geo.cy) / geo.sc }; draw(); });
     function draw() { const e = est(); UW.stat("cr-t", zone(phone)); UW.stat("cr-e", zone(e) + (zone(e) === zone(phone) ? " ✓" : " ✗")); UW.stat("cr-x", (Math.hypot(e.x - phone.x, e.y - phone.y) * 100).toFixed(0) + " cm"); cv.redraw(); }
     draw();

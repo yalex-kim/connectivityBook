@@ -76,6 +76,7 @@
 - `GN.canvas(el, (ctx,w,h)=>{}, {aspect, height, minHeight, maxHeight})` → `{redraw()}` HiDPI, 리사이즈·테마 변경 시 자동 redraw.
 - `GN.chart(ctx, box|null, {x, y, logX, logY, xLabel, yLabel, series, vlines, hlines, points, bands, xFmt, yFmt, xTicks, yTicks})`
 - `GN.loop(el, (dt,t)=>{})` 화면에 보일 때만 도는 애니메이션 루프.
+- `GN.keys(canvas, { move(dx, dy, big), activate(), next(), say(), hint })` 캔버스를 눌러 조작하는 시뮬레이터의 키보드 대안(화살표·Enter·N)과 화면 낭독 문구. 마우스로만 되는 조작은 만들지 않는다.
 - `GN.range(id, fmt, onInput)`, `GN.seg(id, onChange)`, `GN.stat(id, html)`
 - 그리기: `GN.rrect`, `GN.box`, `GN.arrow`, `GN.text`
 - 숫자: `GN.bin`, `GN.hex`, `GN.bytes`, `GN.time`, `GN.kn`, `GN.fmt`, `GN.si`, `GN.rng(seed)`

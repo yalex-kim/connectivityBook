@@ -190,6 +190,7 @@
       const fp = firstPath(P2, SIGMA, NOISE, th(), t0, t1);
       UW.chart(ctx, box, { x: [t0, t1], y: [NOISE - 5, -5], xLabel: "도착 시각 (ns)", yLabel: "dB", series: [{ data, color: P.accent, width: 1.8 }], hlines: [{ y: NOISE + th(), label: "문턱", color: P.warn }], vlines: [{ x: (d0 / C) * 1e9, label: isFinite(fp) && Math.abs(fp - (d0 / C) * 1e9) < 2.5 ? "실제≈첫 경로" : "실제", color: P.ok }].concat(isFinite(fp) && Math.abs(fp - (d0 / C) * 1e9) >= 2.5 ? [{ x: fp, label: "첫 경로", color: P.bad }] : []) });
     }, { aspect: 1, minHeight: 380, maxHeight: 560 });
+    UW.keys(cv.canvas, { hint: "키보드: 화살표로 태그 옮기기(Shift = 1 m)", move: (dx, dy, big) => { const k = big ? 1 : 0.2; tag.x = Math.max(0.2, Math.min(W - 0.2, tag.x + dx * k)); tag.y = Math.max(0.2, Math.min(H - 0.2, tag.y + dy * k)); draw(); }, say: () => `태그 (${tag.x.toFixed(1)}, ${tag.y.toFixed(1)}) m. ` + [...document.querySelectorAll("#sim-room .stat")].map((e) => e.querySelector(".k").textContent.trim() + ": " + e.querySelector(".v").textContent.trim()).join(". ") });
     cv.canvas.addEventListener("click", (e) => { if (!geo) return; const r = cv.canvas.getBoundingClientRect(), x = (e.clientX - r.left - geo.ox) / geo.s, y = (e.clientY - r.top - geo.oy) / geo.s; if (x < 0.2 || y < 0.2 || x > W - 0.2 || y > H - 0.2) return; tag.x = x; tag.y = y; draw(); });
     function draw() {
       const P2 = ps(), d0 = Math.hypot(tag.x - anc.x, tag.y - anc.y), t0 = (d0 / C) * 1e9 - 6, fp = firstPath(P2, SIGMA, NOISE, th(), t0, t0 + 40), strongest = P2.reduce((a, b) => (b.db > a.db ? b : a));

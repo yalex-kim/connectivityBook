@@ -75,6 +75,7 @@
 - `BT.canvas(el, (ctx,w,h)=>{}, {aspect, height, minHeight, maxHeight})` → `{redraw()}` HiDPI, 리사이즈·테마 변경 시 자동 redraw.
 - `BT.chart(ctx, box|null, {x, y, logX, logY, xLabel, yLabel, series, vlines, hlines, points, bands, xFmt, yFmt, xTicks, yTicks})`
 - `BT.loop(el, (dt,t)=>{})` 화면에 보일 때만 도는 애니메이션 루프.
+- `BT.keys(canvas, { move(dx, dy, big), activate(), next(), say(), hint })` 캔버스를 눌러 조작하는 시뮬레이터의 키보드 대안(화살표·Enter·N)과 화면 낭독 문구. 마우스로만 되는 조작은 만들지 않는다.
 - `BT.range(id, fmt, onInput)`, `BT.seg(id, onChange)`, `BT.stat(id, html)`
 - 그리기: `BT.rrect`, `BT.box`, `BT.arrow`, `BT.text`
 - 숫자: `BT.bin`, `BT.hex`, `BT.bytes`, `BT.time`, `BT.kn`, `BT.fmt`, `BT.si`, `BT.rng(seed)`

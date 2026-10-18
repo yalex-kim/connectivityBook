@@ -220,6 +220,14 @@
   cvEl.addEventListener("pointermove", (e) => { const p = hit(e); hover = p ? p.k : null; cvEl.style.cursor = p ? "pointer" : "default"; });
   cvEl.addEventListener("pointerleave", () => (hover = null));
   cvEl.addEventListener("click", (e) => { const p = hit(e); if (p) location.href = "chapters/" + p.slug + ".html"; });
+  let kbI = -1;
+  GN.keys(cvEl, {
+    hint: "키보드: 화살표로 고르고 Enter로 그 장 열기",
+    move: (dx, dy) => { kbI = (kbI + (dx || dy) + PLACES.length) % PLACES.length; hover = PLACES[kbI].k; },
+    activate: () => { if (kbI >= 0) location.href = "chapters/" + PLACES[kbI].slug + ".html"; },
+    onFocus: (f) => { if (!f) { hover = null; kbI = -1; } },
+    say: () => (kbI >= 0 ? PLACES[kbI].label + (PLACES[kbI].sub ? " — " + PLACES[kbI].sub : "") : ""),
+  });
 })();
 </script>
 </body>

@@ -186,6 +186,7 @@
       const x0 = L + ((R - L) * t()) / 30; ctx.strokeStyle = P.bad; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x0, 14); ctx.lineTo(x0, 60); ctx.stroke(); GN.text(ctx, "듣기 시작", x0, 74, { size: 10.5, color: P.bad, align: "center" });
       for (let s = 0; s <= 30; s += 6) GN.text(ctx, s + "s", L + ((R - L) * s) / 30, 12, { size: 10, color: P.faint, align: "center" });
     }, { aspect: 0.2, minHeight: 84, maxHeight: 90 });
+    GN.keys(cv.canvas, { hint: "키보드: 화살표로 서브프레임 고르기", move: (dx, dy) => { sel = Math.max(0, Math.min(4, sel + (dx || dy))); draw(); }, say: () => SF[sel].replace(/<[^>]+>/g, "") });
     cv.canvas.addEventListener("click", (e) => { const r = cv.canvas.getBoundingClientRect(), x = e.clientX - r.left; sel = Math.max(0, Math.min(4, Math.floor(((x - 12) / (r.width - 24)) * 5))); draw(); });
     function draw() { $("fr-info").innerHTML = `<h4>${SF[sel].split(":")[0]}</h4>${SF[sel].split(":")[1]}`; GN.stat("fr-w", waitFor(t()).toFixed(1) + " s"); let s = 0, mx = 0; for (let x = 0; x < 30; x += 0.1) { const v = waitFor(x); s += v; mx = Math.max(mx, v); } GN.stat("fr-a", (s / 300).toFixed(1) + " s / " + mx.toFixed(1) + " s"); GN.stat("fr-al", "25 × 30 s = 12.5분"); cv.redraw(); }
     draw();
