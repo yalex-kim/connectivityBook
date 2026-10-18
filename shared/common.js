@@ -683,8 +683,31 @@
         opts.forEach((o) => { o.disabled = true; if (o.hasAttribute("data-correct")) o.classList.add("right"); });
         if (!b.hasAttribute("data-correct")) b.classList.add("wrong");
         q.classList.add("done");
+        const exp = q.querySelector(".quiz-exp");
+        if (exp) { exp.setAttribute("aria-live", "polite"); exp.querySelector(".sr-only")?.remove(); exp.insertAdjacentHTML("afterbegin", `<span class="sr-only">${b.hasAttribute("data-correct") ? "정답입니다." : "아쉽지만 틀렸습니다. 정답은 " + (opts.find((o) => o.hasAttribute("data-correct"))?.textContent.trim() || "") + "."} </span>`); }
         q.dispatchEvent(new CustomEvent("answered", { bubbles: true, detail: { correct: b.hasAttribute("data-correct") } }));
       }));
+    });
+
+    // 접근성: 그림을 그리는 캔버스에 이름을 붙이고, 버튼 묶음은 그룹으로, 결과 수치는 조작한 뒤부터 화면 낭독기가 읽게 한다
+    document.querySelectorAll("canvas").forEach((cv) => {
+      if (cv.hasAttribute("aria-label") || cv.getAttribute("aria-hidden") === "true") return;
+      const box = cv.closest(".sim, figure, .hero-3d"), title = box && box.querySelector("h3, figcaption, .hint");
+      const ro = box && box.classList.contains("sim") && box.querySelector(".sim-readout");
+      cv.setAttribute("role", "img");
+      cv.setAttribute("aria-label", (title ? title.textContent.trim() : "그림") + (ro ? " — 주요 결과는 아래 수치로 읽을 수 있다" : ""));
+    });
+    document.querySelectorAll(".seg").forEach((g) => {
+      if (g.hasAttribute("role")) return;
+      g.setAttribute("role", "group");
+      const lab = g.previousElementSibling;
+      if (lab && lab.tagName === "SPAN") g.setAttribute("aria-label", lab.textContent.trim());
+    });
+    document.querySelectorAll(".sim").forEach((sim) => {
+      const ro = sim.querySelector(".sim-readout"); if (!ro) return;
+      ro.setAttribute("role", "group"); ro.setAttribute("aria-label", "결과");
+      const live = () => ro.setAttribute("aria-live", "polite");
+      sim.addEventListener("input", live, { once: true }); sim.addEventListener("click", live, { once: true });
     });
 
 
