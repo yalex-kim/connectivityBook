@@ -4,6 +4,7 @@ window.YB_BOOKS = [
   {
     id: "bluetoothbook",
     path: "bluetooth/",
+    progressKey: "bt-progress-v1", // 책이 읽기 진도를 저장하는 localStorage 키
     title: "BluetoothBook",
     subtitle: "누구나 읽는 블루투스 교과서",
     headline: "보이지 않는 선 한 가닥의 원리",
@@ -21,6 +22,7 @@ window.YB_BOOKS = [
   {
     id: "wifibook",
     path: "wifi/",
+    progressKey: "wf-progress-v1", // 책이 읽기 진도를 저장하는 localStorage 키
     title: "WiFiBook",
     subtitle: "누구나 읽는 와이파이 교과서",
     headline: "공기를 나눠 쓰는 기술의 모든 것",
@@ -38,6 +40,7 @@ window.YB_BOOKS = [
   {
     id: "uwbbook",
     path: "uwb/",
+    progressKey: "uw-progress-v1", // 책이 읽기 진도를 저장하는 localStorage 키
     title: "UWBBook",
     subtitle: "누구나 읽는 UWB 교과서",
     headline: "빛의 시간으로 재는 거리의 모든 것",
@@ -55,6 +58,7 @@ window.YB_BOOKS = [
   {
     id: "gnssbook",
     path: "gnss/",
+    progressKey: "gn-progress-v1", // 책이 읽기 진도를 저장하는 localStorage 키
     title: "GNSSBook",
     subtitle: "누구나 읽는 GNSS 교과서",
     headline: "하늘의 시계로 아는 위치의 모든 것",

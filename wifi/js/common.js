@@ -166,6 +166,10 @@
     else document.documentElement.removeAttribute("data-theme");
     themeCbs.forEach((cb) => { try { cb(); } catch (e) { console.error(e); } });
   }
+  // 인쇄: 어두운 테마면 밝게 다시 그리고(캔버스 포함), 끝나면 원래대로
+  let printTheme;
+  addEventListener("beforeprint", () => { if (printTheme !== undefined) return; printTheme = document.documentElement.getAttribute("data-theme"); if (WF.isDark()) applyTheme("light"); });
+  addEventListener("afterprint", () => { if (printTheme !== undefined) { applyTheme(printTheme); printTheme = undefined; } });
   try { const saved = localStorage.getItem("wf-theme"); if (saved) document.documentElement.setAttribute("data-theme", saved); } catch (e) {}
   if (window.matchMedia) {
     window.matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => {
@@ -223,8 +227,10 @@
    * 화면에 보일 때만 도는 애니메이션 루프. fn(dt초, t초)
    *   const loop = WF.loop(el, (dt,t)=>{...}); loop.stop(); loop.start();
    */
+  /** 운영체제의 “동작 줄이기”가 켜져 있으면 저절로 움직이는 그림을 멈춰 두고, 누르면 움직이게 한다 */
+  WF.reducedMotion = () => !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
   WF.loop = function (el, fn) {
-    let raf = 0, last = 0, t = 0, visible = true, running = true;
+    let raf = 0, last = 0, t = 0, visible = true, running = !WF.reducedMotion();
     function frame(ts) {
       raf = 0;
       if (!running || !visible) return;
@@ -238,6 +244,15 @@
       new IntersectionObserver((es) => { visible = es[0].isIntersecting; kick(); }).observe(el);
     }
     kick();
+    if (!running) {
+      requestAnimationFrame(() => fn(0, 0)); // 멈춘 첫 장면
+      if (el && el.parentNode && !el.parentNode.querySelector(".rm-play")) {
+        const b = document.createElement("button");
+        b.type = "button"; b.className = "rm-play"; b.textContent = "▶ 움직임 보기";
+        b.addEventListener("click", (e) => { e.stopPropagation(); running = !running; b.textContent = running ? "❚❚ 멈추기" : "▶ 움직임 보기"; kick(); });
+        el.after(b);
+      }
+    }
     return {
       start() { running = true; kick(); },
       stop() { running = false; },
@@ -341,7 +356,7 @@
     canvas.addEventListener("pointerup", end);
     canvas.addEventListener("pointercancel", () => { drag = null; });
     canvas.addEventListener("pointerleave", () => { if (!drag && st.hover) { st.hover = null; view.redraw(); } });
-    if (opts.autoRotate !== false) WF.loop(canvas, (dt) => { if (st.touched || drag) return; st.yaw += dt * 0.18; view.redraw(); });
+    if (opts.autoRotate !== false && !WF.reducedMotion()) WF.loop(canvas, (dt) => { if (st.touched || drag) return; st.yaw += dt * 0.18; view.redraw(); });
     return {
       redraw: () => view.redraw(),
       setView(yaw, pitch) { if (yaw != null) st.yaw = yaw; if (pitch != null) st.pitch = pitch; view.redraw(); },
@@ -707,6 +722,15 @@
         (prev ? `<a class="prev" href="${href(prev.slug)}"><small>← 이전 · ${prev.num}</small>${prev.title}</a>` : `<a class="prev" href="${href("")}"><small>← 처음으로</small>홈 · 로드맵</a>`) +
         (next ? `<a class="next" href="${href(next.slug)}"><small>다음 · ${next.num} →</small>${next.title}</a>` : "");
       layout.after(pager);
+      // 오류 제보: 장 주소와 제목을 채운 GitHub 이슈를 연다(사실 정확성이 이 책의 1순위다)
+      const ch = CHAPTERS[idx];
+      if (ch && main) {
+        const title = `[WiFiBook ${ch.num}장] `, bodyTxt = `페이지: ${location.href.split("#")[0]}\n위치(절 제목이나 문장):\n\n무엇이 틀렸나요:\n\n근거(사양서 절, 링크 등, 있으면):\n`;
+        const rep = document.createElement("aside");
+        rep.className = "sb-report";
+        rep.innerHTML = `틀린 곳이나 헷갈리는 설명을 찾았나요? <a href="https://github.com/yalex-kim/yalexBook/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(bodyTxt)}&labels=${encodeURIComponent("오류 제보")}" target="_blank" rel="noopener">이 장의 오류 제보하기</a> (GitHub 이슈)`;
+        main.appendChild(rep);
+      }
     }
     const foot = document.createElement("footer");
     foot.className = "sb-foot";
@@ -831,7 +855,7 @@
           const toast = document.createElement("div"); toast.className = "sb-resume";
           toast.innerHTML = `<span>지난번에 <b>${(h ? h.textContent.replace(/^\d\d/, "") : "").trim()}</b>까지 읽었어요.</span><button class="btn primary" type="button">이어 읽기</button><button class="x" type="button" aria-label="닫기">×</button>`;
           const close = () => { toast.classList.remove("show"); setTimeout(() => toast.remove(), 300); };
-          toast.querySelector(".primary").onclick = () => { target.scrollIntoView({ behavior: "smooth" }); close(); };
+          toast.querySelector(".primary").onclick = () => { target.scrollIntoView({ behavior: WF.reducedMotion() ? "auto" : "smooth" }); close(); };
           toast.querySelector(".x").onclick = close;
           body.appendChild(toast); requestAnimationFrame(() => toast.classList.add("show"));
           setTimeout(close, 12000);

@@ -18,6 +18,9 @@
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"Wi-Fi 6: OFDMA와 다중 사용자","name":"Wi-Fi 6: OFDMA와 다중 사용자 · WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/chapters/wifi6.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/wifi/chapters/wifi6.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":12,"image":"https://yalex-kim.github.io/yalexBook/wifi/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/wifi/#book","name":"WiFiBook — 누구나 읽는 인터랙티브 와이파이 교과서","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"publisher":{"@type":"Organization","name":"WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"description":"Wi-Fi 6(802.11ax)는 최고 속도보다 붐비는 곳의 효율을 겨냥했다. 채널을 자원 단위(RU)로 쪼개 여러 단말에 동시에 주는 OFDMA, AP가 지휘하는 트리거 프레임과 상향 다중 사용자 전송, 이웃 망과 채널을 함께 쓰는 BSS 컬러링을 시뮬레이터로 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"WiFiBook","item":"https://yalex-kim.github.io/yalexBook/wifi/"},{"@type":"ListItem","position":2,"name":"12 Wi-Fi 6: OFDMA와 다중 사용자","item":"https://yalex-kim.github.io/yalexBook/wifi/chapters/wifi6.html"}]}]}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="../css/style.css">
 <script src="../js/common.js"></script>
 </head>
@@ -93,7 +96,7 @@
   <!-- ============================================================ -->
   <section id="trigger">
     <h2>트리거 프레임: AP가 지휘하는 상향 전송</h2>
-    <p>하향(AP → 단말)은 AP가 모든 데이터를 갖고 있으니 RU를 나누기 쉽다. 상향(단말 → AP)은 다르다. 여러 단말이 <b>같은 순간에</b>, <b>각자 다른 RU로</b>, <b>AP에 비슷한 세기로 도착하도록</b> 보내야 한다. 그래서 AP가 <b>트리거 프레임</b><span class="en">(Trigger, 제어 프레임 하위 종류 2)</span>을 보내 지휘한다. 트리거에는 단말마다 쓸 RU, MCS, 송신 세기 목표, 보낼 길이가 적혀 있고, 단말들은 트리거가 끝나고 정확히 SIFS 뒤에 동시에 보낸다.</p>
+    <p>하향(AP → 단말)은 AP가 모든 데이터를 갖고 있으니 RU를 나누기 쉽다. 상향(단말 → AP)은 다르다. 여러 단말이 <b>같은 순간에</b>, <b>각자 다른 RU로</b>, <b>AP에 비슷한 세기로 도착하도록</b> 보내야 한다. 그래서 AP가 <b><span class="term">트리거 프레임</span></b><span class="en">(Trigger, 제어 프레임 하위 종류 2)</span>을 보내 지휘한다. 트리거에는 단말마다 쓸 RU, MCS, 송신 세기 목표, 보낼 길이가 적혀 있고, 단말들은 트리거가 끝나고 정확히 SIFS 뒤에 동시에 보낸다.</p>
     <p>AP는 단말에게 무엇을 보낼 게 있는지 물어보는 트리거(버퍼 상태 보고, BSR 폴)도 보낸다. 이렇게 AP가 공중 시간을 계획하는 비중이 커지면서, Wi-Fi 6는 6장의 “모두가 경쟁” 방식에서 셀룰러의 “기지국 스케줄링” 쪽으로 한 걸음 다가갔다. 단말이 경쟁으로 보낼 때의 EDCA 매개변수를 따로 더 보수적으로 주는 <b>MU EDCA</b>도 있다(트리거로 보낼 기회를 받았으니 경쟁은 덜 하라는 뜻).</p>
     <p class="spec-ref">트리거 하위 종류 <code>IEEE80211_STYPE_TRIGGER = 0x0020</code>: Linux <code>include/linux/ieee80211.h</code> · MU EDCA 매개변수: hostapd <code>hostapd.conf</code>의 <code>he_mu_edca_ac_*</code></p>
   </section>

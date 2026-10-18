@@ -18,6 +18,9 @@
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"펄스와 대역폭: 짧을수록 넓다","name":"펄스와 대역폭: 짧을수록 넓다 · UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/pulse.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/uwb/chapters/pulse.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":2,"image":"https://yalex-kim.github.io/yalexBook/uwb/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/uwb/#book","name":"UWBBook — 누구나 읽는 인터랙티브 UWB 교과서","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"publisher":{"@type":"Organization","name":"UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"description":"2 ns 펄스가 500 MHz를 차지하는 이유. 시간과 주파수의 맞바꿈, 거리 분해능 c/B, 가까이 겹친 반사를 갈라내는 힘, 그리고 UWB의 법적 정의(500 MHz 또는 비대역폭 20%)를 시뮬레이터로 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"UWBBook","item":"https://yalex-kim.github.io/yalexBook/uwb/"},{"@type":"ListItem","position":2,"name":"02 펄스와 대역폭: 짧을수록 넓다","item":"https://yalex-kim.github.io/yalexBook/uwb/chapters/pulse.html"}]}]}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="../css/style.css">
 <script src="../js/common.js"></script>
 </head>
@@ -39,7 +42,7 @@
   <section id="tradeoff">
     <h2>짧은 소리는 넓은 소리</h2>
     <p>피아노 건반 하나를 오래 누르면 음 높이가 또렷하다. 주파수가 한 점에 모여 있다. 반대로 책상을 “톡” 치는 짧은 소리는 음 높이가 없다. 아주 짧은 소리는 낮은 음부터 높은 음까지 여러 주파수가 섞여 있어서다. 신호도 같다. <b>시간으로 짧을수록 주파수로는 넓다</b>. 수학으로는 푸리에 변환의 성질로, 펄스 길이와 대역폭의 곱이 대략 일정하다.</p>
-    <p>UWB 칩은 이 성질을 그대로 쓴다. 폭 몇 나노초(−10 dB로 약 3 ns)의 펄스를 6.5 GHz나 8 GHz 반송파에 실어 보내면, 그 에너지가 반송파 주위 약 500 MHz에 펼쳐진다. 802.15.4의 UWB 채널 폭 499.2 MHz가 이 펄스의 크기에서 나온다(3장).</p>
+    <p>UWB 칩은 이 성질을 그대로 쓴다. 폭 몇 나노초(−10 dB로 약 3 ns)의 펄스를 6.5 GHz나 8 GHz 반송파에 실어 보내면, 그 에너지가 반송파 주위 약 500 MHz에 펼쳐진다. 802.15.4의 UWB 채널 폭 <span class="term">499.2 MHz</span>가 이 펄스의 크기에서 나온다(3장).</p>
     <div class="callout analogy"><strong>탁 소리와 종소리</strong><p>책상을 손가락으로 “탁” 치면 짧은 소리 안에 낮은 음부터 높은 음까지 여러 높이가 섞여 있다. 종을 치면 한 음이 길게 울린다. 짧은 소리일수록 많은 높이(넓은 대역)가 필요하다. 대신 짧은 소리는 언제 났는지가 또렷하다. UWB가 몇 나노초짜리 펄스에 500 MHz 넘는 대역을 쓰는 이유다.</p></div>
     <div class="sim" id="sim-tf">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>펄스 길이와 스펙트럼</h3></div>
@@ -98,7 +101,7 @@
   <!-- ============================================================ -->
   <section id="define">
     <h2>무엇이 UWB인가</h2>
-    <p>1장의 정의를 다시 보자. UWB 대역폭은 가장 센 방사보다 10 dB 낮은 두 점 f<sub>L</sub>, f<sub>H</sub> 사이의 폭이고, 비대역폭은 2(f<sub>H</sub> − f<sub>L</sub>)/(f<sub>H</sub> + f<sub>L</sub>)다. 둘 중 하나만 넘으면 된다. 낮은 주파수에서는 폭이 좁아도 비율이 크고(예: 1~1.5 GHz는 비대역폭 0.4), 높은 주파수에서는 비율이 작아도 폭이 넓다(예: 6.5 GHz 중심의 500 MHz는 비대역폭 0.077이지만 500 MHz 기준을 만족한다).</p>
+    <p>1장의 정의를 다시 보자. UWB 대역폭은 가장 센 방사보다 10 dB 낮은 두 점 f<sub>L</sub>, f<sub>H</sub> 사이의 폭이고, <span class="term">비대역폭</span>은 2(f<sub>H</sub> − f<sub>L</sub>)/(f<sub>H</sub> + f<sub>L</sub>)다. 둘 중 하나만 넘으면 된다. 낮은 주파수에서는 폭이 좁아도 비율이 크고(예: 1~1.5 GHz는 비대역폭 0.4), 높은 주파수에서는 비율이 작아도 폭이 넓다(예: 6.5 GHz 중심의 500 MHz는 비대역폭 0.077이지만 500 MHz 기준을 만족한다).</p>
     <div class="sim" id="sim-def">
       <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>이 신호는 UWB일까</h3></div>
       <div class="sim-controls" style="border-top:0">

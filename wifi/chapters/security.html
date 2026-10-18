@@ -18,6 +18,9 @@
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"보안: WEP에서 WPA3까지","name":"보안: WEP에서 WPA3까지 · WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/chapters/security.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/wifi/chapters/security.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":10,"image":"https://yalex-kim.github.io/yalexBook/wifi/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/wifi/#book","name":"WiFiBook — 누구나 읽는 인터랙티브 와이파이 교과서","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"publisher":{"@type":"Organization","name":"WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"description":"와이파이 비밀번호가 암호 키가 되는 과정. PBKDF2로 만드는 PMK, 4-way 핸드셰이크로 만드는 PTK, CCMP 암호화, WPA3-SAE, 관리 프레임 보호(PMF), Enhanced Open, 그리고 우리 집·회사·공개 망의 권장 설정을 hostapd 시험 벡터로 검증한 계산기로 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"WiFiBook","item":"https://yalex-kim.github.io/yalexBook/wifi/"},{"@type":"ListItem","position":2,"name":"10 보안: WEP에서 WPA3까지","item":"https://yalex-kim.github.io/yalexBook/wifi/chapters/security.html"}]}]}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="../css/style.css">
 <script src="../js/common.js"></script>
 <style>
@@ -60,7 +63,7 @@
         <tr><td>Enhanced Open</td><td>CCMP</td><td>OWE: 비밀번호 없이 키 합의</td><td>공개 와이파이의 엿듣기 방지</td></tr>
       </tbody>
     </table></div>
-    <p>WEP의 교훈은 두 가지였다. 모두가 같은 키를 오래 쓰면 안 되고, 암호화와 별개로 <b>변조를 확인하는 장치</b>가 필요하다는 것. WPA2는 연결마다 새 키를 만들고(4-way 핸드셰이크), 프레임마다 무결성 검사값(MIC)과 되풀이 방지 번호(PN)를 붙인다.</p>
+    <p>WEP의 교훈은 두 가지였다. 모두가 같은 키를 오래 쓰면 안 되고, 암호화와 별개로 <b>변조를 확인하는 장치</b>가 필요하다는 것. WPA2는 연결마다 새 키를 만들고(<span class="term">4-way 핸드셰이크</span>), 프레임마다 무결성 검사값(MIC)과 되풀이 방지 번호(PN)를 붙인다.</p>
   </section>
 
   <!-- ============================================================ -->
@@ -70,7 +73,7 @@
     <ol>
       <li><span class="term">PMK</span><span class="en">(Pairwise Master Key, 32바이트)</span> = PBKDF2-HMAC-SHA1(비밀번호, SSID, 4096회). SSID를 소금(salt)으로 섞어 같은 비밀번호라도 네트워크마다 다른 PMK가 나오고, 4096번 되풀이해 계산을 일부러 무겁게 했다. 같은 비밀번호를 아는 기기는 모두 같은 PMK를 갖는다.</li>
       <li><span class="term">PTK</span><span class="en">(Pairwise Transient Key)</span> = PRF(PMK, “Pairwise key expansion”, 두 MAC 주소 + 두 난수). 연결할 때마다 AP와 단말이 새 난수(ANonce, SNonce)를 내므로 PTK는 <b>연결마다, 단말마다 다르다</b>. PTK는 셋으로 나뉜다: 메시지 무결성을 확인하는 KCK, 그룹 키를 감싸 보내는 KEK, 실제 데이터를 암호화하는 TK.</li>
-      <li><b>GTK</b><span class="en">(Group Temporal Key)</span>: 방송·멀티캐스트 프레임용 키. AP가 정해 KEK로 감싸 각 단말에 나눠 준다.</li>
+      <li><b><span class="term">GTK</span></b><span class="en">(Group Temporal Key)</span>: 방송·멀티캐스트 프레임용 키. AP가 정해 KEK로 감싸 각 단말에 나눠 준다.</li>
     </ol>
     <div class="sim" id="sim-key">
       <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>비밀번호에서 PTK까지 직접 계산하기</h3></div>

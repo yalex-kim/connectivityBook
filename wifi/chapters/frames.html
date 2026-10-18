@@ -18,6 +18,9 @@
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"프레임 해부","name":"프레임 해부 · WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/chapters/frames.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/wifi/chapters/frames.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":7,"image":"https://yalex-kim.github.io/yalexBook/wifi/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/wifi/#book","name":"WiFiBook — 누구나 읽는 인터랙티브 와이파이 교과서","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"publisher":{"@type":"Organization","name":"WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"description":"와이파이 프레임을 바이트 단위로 뜯어본다. 관리·제어·데이터 세 종류, Frame Control 비트, 주소 칸 네 개의 의미, 시퀀스 번호와 재전송, 비컨과 정보 요소, FCS(CRC-32)를 직접 만지는 해부 도구로 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"WiFiBook","item":"https://yalex-kim.github.io/yalexBook/wifi/"},{"@type":"ListItem","position":2,"name":"07 프레임 해부","item":"https://yalex-kim.github.io/yalexBook/wifi/chapters/frames.html"}]}]}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="../css/style.css">
 <script src="../js/common.js"></script>
 <style>
@@ -38,7 +41,7 @@
   <header class="chapter-hero">
     <div class="eyebrow">Chapter 07</div>
     <h1>프레임 해부</h1>
-    <p class="lead">와이어샤크로 와이파이를 잡아 보면 데이터보다 “데이터가 아닌 것”이 훨씬 많이 보인다. 비컨, 프로브, ACK, RTS, 블록 ACK… 이 장에서는 와이파이 프레임을 바이트 단위로 뜯어보며, 이더넷 프레임에는 없는 칸들이 왜 필요한지 하나씩 확인한다.</p>
+    <p class="lead">와이어샤크로 와이파이를 잡아 보면 데이터보다 “데이터가 아닌 것”이 훨씬 많이 보인다. <span class="term">비컨</span>, <span class="term">프로브</span>, ACK, RTS, <span class="term">블록 ACK</span>… 이 장에서는 와이파이 프레임을 바이트 단위로 뜯어보며, 이더넷 프레임에는 없는 칸들이 왜 필요한지 하나씩 확인한다.</p>
     <ul class="objectives">
       <li>관리·제어·데이터 세 종류의 프레임과 대표 하위 종류를 구별한다.</li>
       <li>Frame Control 2바이트의 비트를 읽고, 그 비트가 머리말 길이를 어떻게 바꾸는지 안다.</li>
@@ -66,7 +69,7 @@
   <!-- ============================================================ -->
   <section id="header">
     <h2>머리말: 가변 길이의 이유</h2>
-    <p>802.11 프레임은 <b>Frame Control(2)</b> · <b>Duration(2)</b> · <b>주소 1~3(각 6)</b> · <b>Sequence Control(2)</b>로 시작하고, 상황에 따라 <b>주소 4(6)</b>, <b>QoS Control(2)</b>, <b>HT Control(4)</b>가 붙은 뒤 몸통과 <b>FCS(4)</b>가 온다. 기본 24바이트에서 최대 36바이트까지 바뀌고, ACK·CTS는 10바이트뿐이다. 어떤 칸이 있는지는 맨 앞 Frame Control이 알려 준다.</p>
+    <p>802.11 프레임은 <b><span class="term">Frame Control</span>(2)</b> · <b>Duration(2)</b> · <b>주소 1~3(각 6)</b> · <b>Sequence Control(2)</b>로 시작하고, 상황에 따라 <b>주소 4(6)</b>, <b>QoS Control(2)</b>, <b>HT Control(4)</b>가 붙은 뒤 몸통과 <b><span class="term">FCS</span>(4)</b>가 온다. 기본 24바이트에서 최대 36바이트까지 바뀌고, ACK·CTS는 10바이트뿐이다. 어떤 칸이 있는지는 맨 앞 Frame Control이 알려 준다.</p>
     <ul>
       <li><b>Frame Control</b>: 버전(2비트), 종류(2), 하위 종류(4), 그리고 플래그 8개: ToDS, FromDS, More Fragments, <b>Retry</b>(재전송), <b>Power Management</b>(이 프레임 뒤 절전에 들어감, 11장), More Data(AP에 아직 쌓인 데이터가 있음), <b>Protected</b>(몸통이 암호화됨, 10장), +HTC/Order(HT Control 칸이 있음).</li>
       <li><b>Duration</b>: 이 프레임 뒤 교환이 끝날 때까지 남은 µs. 들은 기기는 NAV를 설정한다(6장).</li>
@@ -124,7 +127,7 @@
   <!-- ============================================================ -->
   <section id="beacon">
     <h2>비컨과 정보 요소</h2>
-    <p>AP는 보통 100 TU마다 <b>비컨</b>을 보낸다. TU(Time Unit)는 1,024 µs여서 100 TU = 102.4 ms, 1초에 약 10번이다. 비컨의 몸통은 타임스탬프(8바이트, 단말이 시계를 맞춤), 비컨 간격(2), 능력 정보(2) 뒤에 <span class="term">정보 요소</span><span class="en">(Information Element, IE)</span>가 줄줄이 붙는다. 정보 요소는 모두 <b>ID(1) · 길이(1) · 내용</b>의 TLV 형식이라, 모르는 ID는 길이만큼 건너뛰면 된다. 덕분에 새 세대가 나와도 옛 기기가 비컨을 읽다 멈추지 않는다.</p>
+    <p>AP는 보통 100 <span class="term">TU</span>마다 <b>비컨</b>을 보낸다. TU(Time Unit)는 1,024 µs여서 100 TU = 102.4 ms, 1초에 약 10번이다. 비컨의 몸통은 타임스탬프(8바이트, 단말이 시계를 맞춤), 비컨 간격(2), 능력 정보(2) 뒤에 <span class="term">정보 요소</span><span class="en">(Information Element, IE)</span>가 줄줄이 붙는다. 정보 요소는 모두 <b>ID(1) · 길이(1) · 내용</b>의 TLV 형식이라, 모르는 ID는 길이만큼 건너뛰면 된다. 덕분에 새 세대가 나와도 옛 기기가 비컨을 읽다 멈추지 않는다.</p>
     <div class="table-wrap"><table>
       <thead><tr><th>ID</th><th>정보 요소</th><th>내용</th></tr></thead>
       <tbody>

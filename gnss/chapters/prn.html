@@ -18,6 +18,9 @@
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"PRN 코드: 위성마다 다른 무늬","name":"PRN 코드: 위성마다 다른 무늬 · GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/prn.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/gnss/chapters/prn.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":4,"image":"https://yalex-kim.github.io/yalexBook/gnss/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/gnss/#book","name":"GNSSBook — 누구나 읽는 인터랙티브 GNSS 교과서","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"publisher":{"@type":"Organization","name":"GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"description":"모든 GPS 위성이 같은 주파수로 동시에 말해도 섞이지 않는 비결. 시프트 레지스터 두 개로 만드는 C/A 골드 코드를 직접 만들어 규격 표의 처음 10칩과 맞춰 보고, 자기 상관과 상호 상관, 코드 위상이 거리가 되는 원리를 시뮬레이터로 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"GNSSBook","item":"https://yalex-kim.github.io/yalexBook/gnss/"},{"@type":"ListItem","position":2,"name":"04 PRN 코드: 위성마다 다른 무늬","item":"https://yalex-kim.github.io/yalexBook/gnss/chapters/prn.html"}]}]}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="../css/style.css">
 <script src="../js/common.js"></script>
 <style>
@@ -34,7 +37,7 @@
   <header class="chapter-hero">
     <div class="eyebrow">Chapter 04</div>
     <h1>PRN 코드: 위성마다 다른 무늬</h1>
-    <p class="lead">하늘의 GPS 위성 열 몇 기가 모두 1,575.42 MHz라는 같은 주파수로, 같은 순간에 방송한다. 라디오라면 섞여서 아무것도 못 알아들을 것이다. 그런데 수신기는 위성 하나하나를 골라 듣는다. 위성마다 다른 “무늬”를 신호에 곱해 보내기 때문이다. 이 무늬가 <span class="term">PRN 코드</span><span class="en">(Pseudo-Random Noise code)</span>다. 이 장에서는 그 무늬를 규격대로 직접 만들어 보고, 규격 표와 칩 하나까지 맞춰 본다.</p>
+    <p class="lead">하늘의 GPS 위성 열 몇 기가 모두 1,575.42 MHz라는 같은 주파수로, 같은 순간에 방송한다. 라디오라면 섞여서 아무것도 못 알아들을 것이다. 그런데 수신기는 위성 하나하나를 골라 듣는다. 위성마다 다른 “무늬”를 신호에 곱해 보내기 때문이다. 이 무늬가 <span class="term">PRN 코드</span><span class="en">(Pseudo-Random Noise code)</span>다. 이 장에서는 그 무늬를 규격대로 직접 만들어 보고, 규격 표와 <span class="term">칩</span> 하나까지 맞춰 본다.</p>
     <ul class="objectives">
       <li>G1·G2 두 시프트 레지스터로 C/A 코드(1,023칩)를 만드는 과정을 단계별로 따라간다.</li>
       <li>만든 코드의 처음 10칩을 IS-GPS-200 표 3-Ia의 8진수 값과 맞춰 본다.</li>
@@ -47,7 +50,7 @@
   <section id="gen">
     <h2>시프트 레지스터 두 개</h2>
     <p>C/A 코드는 10칸짜리 시프트 레지스터 두 개, G1과 G2로 만든다. 둘 다 처음에 모든 칸을 1로 채우고, 1.023 MHz 박자마다 한 칸씩 민다. 새로 들어오는 값은 정해진 칸들을 XOR한 값이다(G1은 3·10번 칸, G2는 2·3·6·8·9·10번 칸). 이런 레지스터는 1,023(= 2¹⁰ − 1)칩마다 같은 무늬가 돌아오는 가장 긴 수열(m-수열)을 만든다.</p>
-    <p>위성마다 다른 코드는 G2를 <b>위성마다 정해진 칩 수만큼 늦춘 것</b>과 G1을 XOR해서 얻는다. 이렇게 두 m-수열을 엇갈려 섞은 것을 <b>골드 코드</b>라 한다. 규격 표는 늦출 칩 수와 함께, 늦추는 대신 G2의 두 칸을 XOR해 같은 결과를 내는 “두 탭” 방식(예: PRN 1은 2·6번 칸)도 적어 둔다.</p>
+    <p>위성마다 다른 코드는 G2를 <b>위성마다 정해진 칩 수만큼 늦춘 것</b>과 G1을 XOR해서 얻는다. 이렇게 두 m-수열을 엇갈려 섞은 것을 <b><span class="term">골드 코드</span></b>라 한다. 규격 표는 늦출 칩 수와 함께, 늦추는 대신 G2의 두 칸을 XOR해 같은 결과를 내는 “두 탭” 방식(예: PRN 1은 2·6번 칸)도 적어 둔다.</p>
     <div class="callout analogy"><strong>방송국마다 다른 시그널 음악</strong><p>여러 방송국이 같은 주파수로 동시에 정시를 알린다고 해 보자. 방송국마다 고유한 음악을 틀면, 그 음악을 아는 사람은 섞인 소리 속에서도 원하는 방송을 골라 듣는다. 음악이 어디까지 흘렀는지를 맞추면 언제 보낸 소리인지도 안다. PRN 코드가 그 음악이다.</p></div>
     <div class="sim" id="sim-gen">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>C/A 코드 발생기 한 칩씩</h3></div>
@@ -99,7 +102,7 @@
       </div>
       <div class="sim-note">그래프: 복제 코드를 0~1,022칩 밀었을 때의 주기 상관값. 해볼 것: ① 같은 위성이면 늦게 온 칩 수 위치에 1,023의 봉우리가 선다. ② 다른 위성으로 바꾸면 봉우리가 사라지고 값이 −65, −1, 63 셋으로만 나온다(골드 코드의 3값 상관). ③ 늦게 온 칩 수를 바꾸면 봉우리가 따라 움직인다. 칩 하나 = 1/1.023 MHz ≈ 977.5 ns ≈ 293 m.</div>
     </div>
-    <p>C/A 코드는 1 ms마다 반복하므로, 코드 위상만으로는 0~300 km 안의 거리만 안다. 실제 거리(약 2만 km)의 나머지 “1 ms의 몇 배”는 항법 메시지의 시각(7장)으로 채운다. 대신 1 ms마다 다시 맞춰 볼 수 있어 찾기가 빠르다. Galileo E1 코드는 4,092칩(4 ms)이고, 수학식이 아니라 규격 부록에 실린 무작위 수열을 그대로 쓴다(메모리 코드).</p>
+    <p>C/A 코드는 1 ms마다 반복하므로, 코드 위상만으로는 0~300 km 안의 거리만 안다. 실제 거리(약 2만 km)의 나머지 “1 ms의 몇 배”는 <span class="term">항법 메시지</span>의 시각(7장)으로 채운다. 대신 1 ms마다 다시 맞춰 볼 수 있어 찾기가 빠르다. Galileo E1 코드는 4,092칩(4 ms)이고, 수학식이 아니라 규격 부록에 실린 무작위 수열을 그대로 쓴다(메모리 코드).</p>
   </section>
 
   <section class="keypoints" id="summary">

@@ -18,6 +18,9 @@
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"시계와 타임스탬프: 15.65 피코초","name":"시계와 타임스탬프: 15.65 피코초 · UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/timestamp.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/uwb/chapters/timestamp.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":5,"image":"https://yalex-kim.github.io/yalexBook/uwb/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/uwb/#book","name":"UWBBook — 누구나 읽는 인터랙티브 UWB 교과서","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"publisher":{"@type":"Organization","name":"UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"description":"UWB 칩은 63.8976 GHz 눈금의 40비트 시계로 도착 시각을 찍는다. 1 눈금 = 15.65 ps = 4.7 mm, 17초마다 한 바퀴 도는 시계와 빼기, 안테나 지연 보정, 수정 진동자의 ppm 오차가 거리를 흔드는 방식을 공개 드라이버의 상수로 확인한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"UWBBook","item":"https://yalex-kim.github.io/yalexBook/uwb/"},{"@type":"ListItem","position":2,"name":"05 시계와 타임스탬프: 15.65 피코초","item":"https://yalex-kim.github.io/yalexBook/uwb/chapters/timestamp.html"}]}]}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="../css/style.css">
 <script src="../js/common.js"></script>
 </head>
@@ -40,7 +43,7 @@
     <h2>63.8976 GHz로 세는 시계</h2>
     <p>UWB 칩의 타임스탬프 단위는 499.2 MHz의 128배, 63.8976 GHz의 한 주기다. 1/(128 × 499.2 MHz) = <b>15.65 ps</b>. 빛은 이 사이에 4.69 mm를 간다. 실제로 칩이 이렇게 빠른 계수기를 돌리는 것은 아니고, 더 느린 시계로 세면서 프리앰블로 잰 신호의 앞쪽 가장자리를 보간해 이 단위까지 쪼갠다(7장).</p>
     <p>시각은 40비트 레지스터에 담긴다. 2⁴⁰ × 15.65 ps ≈ <b>17.2초</b>마다 0으로 돌아간다. 그래서 두 시각의 차이는 언제나 2⁴⁰을 법으로 빼야 한다. 거리 측정 공식은 이 빼기를 마스크로 처리한다(6장).</p>
-    <div class="callout analogy"><strong>mm 눈금 자</strong><p>cm 눈금밖에 없는 자로는 머리카락 굵기를 잴 수 없다. 눈금이 촘촘해야 작은 차이를 잰다. UWB 칩의 시계는 한 눈금이 15.65 ps, 빛으로 4.7 mm다. 다만 자가 정확해도 자의 0점(안테나 지연)이 어긋나거나 자가 늘어나 있으면(ppm 오차) 결과가 틀린다. 이 장이 다루는 세 가지다.</p></div>
+    <div class="callout analogy"><strong>mm 눈금 자</strong><p>cm 눈금밖에 없는 자로는 머리카락 굵기를 잴 수 없다. 눈금이 촘촘해야 작은 차이를 잰다. UWB 칩의 시계는 한 눈금이 15.65 ps, 빛으로 4.7 mm다. 다만 자가 정확해도 자의 0점(안테나 지연)이 어긋나거나 자가 늘어나 있으면(<span class="term">ppm</span> 오차) 결과가 틀린다. 이 장이 다루는 세 가지다.</p></div>
     <div class="sim" id="sim-tick">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>시간 눈금 확대경</h3></div>
       <div class="sim-view"><canvas id="cv-tick"></canvas></div>
@@ -84,7 +87,7 @@
   <section id="ppm">
     <h2>두 시계는 같은 속도로 가지 않는다</h2>
     <p>UWB 칩의 시계는 수정 진동자에서 나오고, 수정 진동자는 보통 ±10~20 <b>ppm</b>(100만분의 1) 오차가 있다. 1초에 20 µs씩 빠르거나 느리다는 뜻이다. 한 기기 안에서 시각의 차이를 재는 데에는 거의 문제가 없지만, <b>다른 기기의 시계로 잰 시간을 내 시계로 잰 시간과 섞으면</b> 문제가 된다.</p>
-    <p>양방향 거리 측정(6장)에서 상대는 내 신호를 받고 정해진 시간(응답 시간, 수백 µs~수 ms) 뒤에 답한다. 상대가 “500 µs 기다렸다”고 알려 와도, 상대 시계가 20 ppm 빠르면 실제로는 499.99 µs다. 그 10 ns 차이가 그대로 왕복 시간 오차가 되고, 거리로는 1.5 m다. 응답 시간 × ppm 차이가 거리 오차를 정한다. 6장의 양방향 측정(DS-TWR)과 반송파 주파수 오차 보정이 이 문제를 푼다.</p>
+    <p>양방향 거리 측정(6장)에서 상대는 내 신호를 받고 정해진 시간(응답 시간, 수백 µs~수 ms) 뒤에 답한다. 상대가 “500 µs 기다렸다”고 알려 와도, 상대 시계가 20 ppm 빠르면 실제로는 499.99 µs다. 그 10 ns 차이가 그대로 왕복 시간 오차가 되고, 거리로는 1.5 m다. 응답 시간 × ppm 차이가 거리 오차를 정한다. 6장의 양방향 측정(<span class="term">DS-TWR</span>)과 반송파 주파수 오차 보정이 이 문제를 푼다.</p>
     <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">시계 오차 20 ppm, 응답 시간 500 µs면 단방향 TWR 오차가 약 1.5 m다. 응답 시간을 2 ms로 늘리면?</p><p class="wi-hint">오차는 ppm × 응답 시간에 비례한다.</p><div class="opts">
       <button class="opt">그대로 1.5 m</button>
       <button class="opt">약 3 m</button>

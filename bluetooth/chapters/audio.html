@@ -18,6 +18,9 @@
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"블루투스 오디오","name":"블루투스 오디오 · BluetoothBook","url":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/audio.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/audio.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":10,"image":"https://yalex-kim.github.io/yalexBook/bluetooth/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/bluetooth/#book","name":"BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth/"},"publisher":{"@type":"Organization","name":"BluetoothBook","url":"https://yalex-kim.github.io/yalexBook/bluetooth/"},"description":"무선 이어폰 속의 블루투스. 클래식의 A2DP·HFP와 SCO/eSCO, 코덱과 비트레이트, 소리가 늦게 들리는 이유(지연 예산), LE 오디오의 등시성 채널 CIS·BIS와 LC3, 브로드캐스트 오디오 Auracast를 Core 6.2와 관련 프로파일 사양을 바탕으로 계산한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook","item":"https://yalex-kim.github.io/yalexBook/bluetooth/"},{"@type":"ListItem","position":2,"name":"10 블루투스 오디오","item":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/audio.html"}]}]}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="../css/style.css">
 <script src="../js/common.js"></script>
 </head>
@@ -41,9 +44,9 @@
     <h2>클래식 오디오: 음악은 ACL로, 통화는 SCO로</h2>
     <p>무선 이어폰은 사실 여러 프로파일의 묶음이다. 프로파일은 1장에서 본 대로 Core 밖의 사양이다.</p>
     <ul>
-      <li><b>A2DP</b>(Advanced Audio Distribution Profile): 음악. 압축된 오디오를 클래식 ACL 링크 위의 L2CAP 채널로 보낸다. 일반 데이터처럼 확인 응답과 재전송이 있어 소리가 정확히 도착하지만, 늦게 도착할 수 있다. 그래서 받는 쪽은 수백 ms의 <b>버퍼</b>를 두고 재생한다.</li>
+      <li><b><span class="term">A2DP</span></b>(Advanced Audio Distribution Profile): 음악. 압축된 오디오를 클래식 ACL 링크 위의 L2CAP 채널로 보낸다. 일반 데이터처럼 확인 응답과 재전송이 있어 소리가 정확히 도착하지만, 늦게 도착할 수 있다. 그래서 받는 쪽은 수백 ms의 <b>버퍼</b>를 두고 재생한다.</li>
       <li><b>AVRCP</b>: 재생·정지·다음 곡, 볼륨 같은 리모컨 명령.</li>
-      <li><b>HFP</b>(Hands-Free Profile): 통화. 양방향 음성을 <span class="term">SCO</span><span class="en">(Synchronous Connection-Oriented)</span> 또는 1.2에서 추가된 <span class="term">eSCO</span> 링크로 보낸다. 정해진 슬롯을 미리 예약해 두고 늦지 않게 보낸다.</li>
+      <li><b><span class="term">HFP</span></b>(Hands-Free Profile): 통화. 양방향 음성을 <span class="term">SCO</span><span class="en">(Synchronous Connection-Oriented)</span> 또는 1.2에서 추가된 <span class="term">eSCO</span> 링크로 보낸다. 정해진 슬롯을 미리 예약해 두고 늦지 않게 보낸다.</li>
     </ul>
     <p>SCO는 실시간성의 극단이다. 예를 들어 HV3 패킷은 30바이트를 6슬롯(3.75 ms)마다 보내 64 kb/s를 만든다. 재전송도 CRC도 없다. 깨지면 그 조각만 잡음으로 들리고 지나간다. 음성은 늦게 오는 것보다 조금 깨지는 편이 낫기 때문이다. eSCO는 예약 슬롯 뒤에 재전송 창을 두어 한두 번은 다시 보낼 수 있게 했다. 코덱은 처음에는 8 kHz 표본화의 CVSD(협대역, 유선 전화 음질), 이후 HFP가 16 kHz의 mSBC(광대역), 최근에는 LC3를 쓰는 초광대역으로 발전했다. 음악을 듣다 전화가 오면 소리가 먹먹해지는 것은 A2DP의 수백 kb/s에서 이 좁은 음성 링크로 바뀌기 때문이다.</p>
     <p class="spec-ref">SCO/eSCO 논리 전송과 HV·EV 패킷(HV3 30바이트, 재전송 없음): <b>[Vol 2] Part B §6.5.2·§6.5.3</b> · CVSD 코덱: <b>[Vol 2] Part B §9</b> · 1.2의 새 기능 eSCO: <b>[Vol 1] Part C §2.1</b> · A2DP·AVRCP·HFP: Core 밖의 프로파일 사양</p>

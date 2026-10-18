@@ -18,6 +18,9 @@
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"연결과 로밍","name":"연결과 로밍 · WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/chapters/connect.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/wifi/chapters/connect.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":9,"image":"https://yalex-kim.github.io/yalexBook/wifi/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/wifi/#book","name":"WiFiBook — 누구나 읽는 인터랙티브 와이파이 교과서","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"publisher":{"@type":"Organization","name":"WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"description":"와이파이 목록을 띄우는 스캔, 연결 버튼을 누른 뒤 오가는 인증·연결·키 교환·DHCP, 그리고 집 안을 걸어 다닐 때 공유기를 갈아타는 로밍. wpa_supplicant의 실제 로밍 판단 규칙으로 “왜 먼 공유기를 붙잡고 있는지”를 시뮬레이션한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"WiFiBook","item":"https://yalex-kim.github.io/yalexBook/wifi/"},{"@type":"ListItem","position":2,"name":"09 연결과 로밍","item":"https://yalex-kim.github.io/yalexBook/wifi/chapters/connect.html"}]}]}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="../css/style.css">
 <script src="../js/common.js"></script>
 <style>
@@ -50,10 +53,10 @@
     <p>단말이 주변 네트워크를 찾는 방법은 둘이다.</p>
     <ul>
       <li><b>수동 스캔</b>: 채널마다 머물며 비컨(102.4 ms마다)을 기다린다. 한 채널에 최소 100 ms 남짓 머물러야 한다.</li>
-      <li><b>능동 스캔</b>: 채널에 가자마자 <b>프로브 요청</b>을 보내고 AP들의 <b>프로브 응답</b>을 기다린다. 훨씬 빠르지만, 먼저 전파를 내도 되는 채널에서만 쓸 수 있다. 레이더 보호가 필요한 DFS 채널(2장)에서는 비컨을 듣기 전까지 보낼 수 없어 수동 스캔을 한다.</li>
+      <li><b>능동 스캔</b>: 채널에 가자마자 <b><span class="term">프로브</span> 요청</b>을 보내고 AP들의 <b>프로브 응답</b>을 기다린다. 훨씬 빠르지만, 먼저 전파를 내도 되는 채널에서만 쓸 수 있다. 레이더 보호가 필요한 DFS 채널(2장)에서는 비컨을 듣기 전까지 보낼 수 없어 수동 스캔을 한다.</li>
     </ul>
-    <p>6 GHz는 채널이 너무 많아 다른 길을 쓴다. AP가 2.4·5 GHz 비컨 안에 “나는 6 GHz 몇 번 채널에도 있다”는 <b>RNR</b><span class="en">(Reduced Neighbor Report)</span>을 넣어 알려 주고, 단말은 스캔할 때 PSC 15개 채널(2장)만 직접 살핀다.</p>
-    <div class="callout analogy"><strong>회의실 건물 둘러보기</strong><p>처음 온 건물에서 회의에 들어가려면 층마다 다니며 문 앞 안내판(비컨)을 보거나, 복도에서 “여기 ○○ 회의 있어요?”라고 묻는다(프로브). 회의를 고르면 사회자에게 이름을 대고(인증·연결), 출입증을 받는다(4방향 핸드셰이크). 걸어 다니다 더 가까운 회의실로 옮기는 것이 로밍이다.</p></div>
+    <p>6 GHz는 채널이 너무 많아 다른 길을 쓴다. AP가 2.4·5 GHz 비컨 안에 “나는 6 GHz 몇 번 채널에도 있다”는 <b><span class="term">RNR</span></b><span class="en">(Reduced Neighbor Report)</span>을 넣어 알려 주고, 단말은 스캔할 때 PSC 15개 채널(2장)만 직접 살핀다.</p>
+    <div class="callout analogy"><strong>회의실 건물 둘러보기</strong><p>처음 온 건물에서 회의에 들어가려면 층마다 다니며 문 앞 안내판(비컨)을 보거나, 복도에서 “여기 ○○ 회의 있어요?”라고 묻는다(프로브). 회의를 고르면 사회자에게 이름을 대고(인증·연결), 출입증을 받는다(4방향 핸드셰이크). 걸어 다니다 더 가까운 회의실로 옮기는 것이 <span class="term">로밍</span>이다.</p></div>
     <div class="sim" id="sim-scan">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>전체 스캔에 걸리는 시간</h3></div>
       <div class="sim-view"><canvas id="cv-scan"></canvas></div>
@@ -78,9 +81,9 @@
     <h2>연결 버튼을 누른 뒤</h2>
     <p>연결은 네 단계다. 이름은 헷갈리지만 각각 하는 일이 다르다.</p>
     <ol>
-      <li><b>인증</b><span class="en">(Authentication)</span>: 이름과 달리 WPA2에서는 형식뿐인 “열린 인증” 두 프레임이다. 진짜 비밀번호 확인은 뒤의 4단계 핸드셰이크에서 한다. WPA3-Personal은 여기서 <b>SAE</b>로 비밀번호를 직접 증명한다(10장).</li>
-      <li><b>연결</b><span class="en">(Association)</span>: 단말이 자기 능력(지원 속도, HT/VHT/HE, 보안 방식)을 알리고 AP가 연결 번호(AID)를 준다.</li>
-      <li><b>4단계 핸드셰이크</b>: EAPOL-Key 프레임 네 개로 이번 연결에 쓸 암호 키를 만든다(10장). 회사 망(802.1X)은 그 전에 EAP로 사용자 인증을 한다.</li>
+      <li><b>인증</b><span class="en">(Authentication)</span>: 이름과 달리 WPA2에서는 형식뿐인 “열린 인증” 두 프레임이다. 진짜 비밀번호 확인은 뒤의 4단계 핸드셰이크에서 한다. WPA3-Personal은 여기서 <b><span class="term">SAE</span></b>로 비밀번호를 직접 증명한다(10장).</li>
+      <li><b>연결</b><span class="en">(Association)</span>: 단말이 자기 능력(지원 속도, HT/VHT/HE, 보안 방식)을 알리고 AP가 연결 번호(<span class="term">AID</span>)를 준다.</li>
+      <li><b>4단계 핸드셰이크</b>: EAPOL-Key 프레임 네 개로 이번 연결에 쓸 암호 키를 만든다(10장). 회사 망(<span class="term">802.1X</span>)은 그 전에 EAP로 사용자 인증을 한다.</li>
       <li><b>DHCP</b>: 이제 데이터 프레임이 오갈 수 있으니 IP 주소를 받는다. 이것은 와이파이가 아니라 IP 계층의 일이다.</li>
     </ol>
     <div class="sim" id="sim-join">

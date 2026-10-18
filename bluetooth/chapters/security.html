@@ -18,6 +18,9 @@
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"페어링과 보안","name":"페어링과 보안 · BluetoothBook","url":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/security.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/security.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":8,"image":"https://yalex-kim.github.io/yalexBook/bluetooth/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/bluetooth/#book","name":"BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth/"},"publisher":{"@type":"Organization","name":"BluetoothBook","url":"https://yalex-kim.github.io/yalexBook/bluetooth/"},"description":"LE 페어링의 세 단계, 입출력 능력으로 정해지는 Just Works·숫자 비교·패스키·OOB, 레거시 페어링의 약점과 LE Secure Connections의 P-256 타원곡선 키 교환, 본딩과 키 배포, 추적을 막는 RPA를 AES-128·AES-CMAC 실제 계산과 Core 6.2 샘플 데이터로 다룬다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook","item":"https://yalex-kim.github.io/yalexBook/bluetooth/"},{"@type":"ListItem","position":2,"name":"08 페어링과 보안","item":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/security.html"}]}]}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="../css/style.css">
 <script src="../js/common.js"></script>
 <style>
@@ -39,7 +42,7 @@
   <header class="chapter-hero">
     <div class="eyebrow">Chapter 08</div>
     <h1>페어링과 보안</h1>
-    <p class="lead">새 키보드를 노트북에 연결하면 “화면의 6자리 숫자를 키보드로 입력하세요”라는 창이 뜬다. 휴대폰 두 대를 연결하면 “두 화면의 숫자가 같습니까?”라고 묻는다. 무선 이어폰은 아무것도 묻지 않고 그냥 연결된다. 같은 블루투스인데 왜 이렇게 다를까? 그리고 이 숫자들은 정말로 무엇을 막아 주는 걸까? 이 장에서는 두 기기가 처음 만나 <b>둘만 아는 키</b>를 만드는 과정(페어링)을 따라가면서, 엿듣는 사람과 중간에 끼어드는 사람을 각각 어떻게 막는지 실제 암호 계산으로 확인한다. 그리고 광고 주소를 바꿔 가며 추적을 피하는 방법도 본다.</p>
+    <p class="lead">새 키보드를 노트북에 연결하면 “화면의 6자리 숫자를 키보드로 입력하세요”라는 창이 뜬다. 휴대폰 두 대를 연결하면 “두 화면의 숫자가 같습니까?”라고 묻는다. 무선 이어폰은 아무것도 묻지 않고 그냥 연결된다. 같은 블루투스인데 왜 이렇게 다를까? 그리고 이 숫자들은 정말로 무엇을 막아 주는 걸까? 이 장에서는 두 기기가 처음 만나 <b>둘만 아는 키</b>를 만드는 과정(<span class="term">페어링</span>)을 따라가면서, 엿듣는 사람과 중간에 끼어드는 사람을 각각 어떻게 막는지 실제 암호 계산으로 확인한다. 그리고 광고 주소를 바꿔 가며 추적을 피하는 방법도 본다.</p>
     <ul class="objectives">
       <li>페어링의 세 단계(기능 교환 → 키 생성 → 키 배포)와 본딩의 뜻을 안다.</li>
       <li>입출력 능력(IO capability)의 조합으로 Just Works·숫자 비교·패스키 입력·OOB가 정해지는 사양 표를 직접 돌려 본다.</li>
@@ -70,7 +73,7 @@
       <div><b>② 키 생성</b>①의 정보로 방식(Just Works, 숫자 비교, 패스키, OOB)을 정하고 키를 만든다. 레거시는 TK → STK, Secure Connections는 ECDH → LTK.</div>
       <div><b>③ 키 배포</b>링크를 암호화한 뒤 오래 쓸 키를 나눈다. 주소 해석용 IRK와 신원 주소, 서명용 CSRK, (레거시면) LTK.</div>
     </div>
-    <p>③에서 받은 키를 저장해 두는 것이 <span class="term">본딩</span><span class="en">(bonding)</span>이다. 본딩한 두 기기는 다음 연결 때 페어링 없이 저장된 LTK로 바로 암호화를 시작한다(링크 계층의 Encryption Start, 6장). 휴대폰 블루투스 설정의 “등록된 기기” 목록이 본딩 목록이다. 암호화는 컨트롤러가 AES-CCM으로 하며, 패킷마다 4바이트 MIC(메시지 무결성 코드)를 붙여 위조를 막는다.</p>
+    <p>③에서 받은 키를 저장해 두는 것이 <span class="term">본딩</span><span class="en">(bonding)</span>이다. 본딩한 두 기기는 다음 연결 때 페어링 없이 저장된 <span class="term">LTK</span>로 바로 암호화를 시작한다(링크 계층의 Encryption Start, 6장). 휴대폰 블루투스 설정의 “등록된 기기” 목록이 본딩 목록이다. 암호화는 컨트롤러가 <span class="term">AES-CCM</span>으로 하며, 패킷마다 4바이트 <span class="term">MIC</span>(메시지 무결성 코드)를 붙여 위조를 막는다.</p>
     <p class="spec-ref">페어링 방식·키 생성·배포: <b>[Vol 3] Part H §2.3·§2.4</b> · 키 길이 7~16바이트: <b>§2.3.4</b> · AES-CCM 링크 암호화와 MIC: <b>[Vol 6] Part E §1</b> · LE 보안 모드 1의 네 단계(보안 없음 / 미인증 암호화 / 인증 암호화 / 128비트 LE Secure Connections 인증): <b>[Vol 3] Part C §10.2.1</b></p>
   </section>
 

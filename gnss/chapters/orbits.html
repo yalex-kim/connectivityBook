@@ -18,6 +18,9 @@
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"궤도: 2만 km 위의 별자리","name":"궤도: 2만 km 위의 별자리 · GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/orbits.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/gnss/chapters/orbits.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":2,"image":"https://yalex-kim.github.io/yalexBook/gnss/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/gnss/#book","name":"GNSSBook — 누구나 읽는 인터랙티브 GNSS 교과서","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"publisher":{"@type":"Organization","name":"GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"description":"GNSS 위성은 왜 2만 km 높이를 도는가. 케플러 법칙으로 고도와 주기, 속도를 계산하고, GPS(반지름 26,560 km, 55°)와 Galileo(29,600 km, 56°) 위성군의 하늘 배치를 스카이 플롯으로 그린다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"GNSSBook","item":"https://yalex-kim.github.io/yalexBook/gnss/"},{"@type":"ListItem","position":2,"name":"02 궤도: 2만 km 위의 별자리","item":"https://yalex-kim.github.io/yalexBook/gnss/chapters/orbits.html"}]}]}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="../css/style.css">
 <script src="../js/common.js"></script>
 </head>
@@ -67,7 +70,7 @@
   <section id="planes">
     <h2>궤도면에 나눠 놓기</h2>
     <p>GPS는 기울기 55°인 궤도면 6개에 위성을 나눠 놓았고, Galileo는 56° 궤도면 3개에 8기씩 놓았다. 궤도면을 기울이면 위성이 남북으로도 오가므로 극지방 가까이까지 덮는다. 궤도면과 위성 자리를 고르게 흩어 놓으면, 지구 어디서든 언제나 하늘에 위성 여럿이 고루 퍼져 보인다.</p>
-    <p>하늘의 위성 배치는 <span class="term">스카이 플롯</span><span class="en">(sky plot)</span>으로 그린다. 가운데가 머리 위(앙각 90°), 바깥 원이 지평선(0°), 위쪽이 북쪽이다. 수신기는 보통 앙각 5~15° 아래의 위성을 버린다(<b>앙각 마스크</b>). 지평선 가까운 신호는 대기를 길게 지나고 건물·지형에 가리기 쉬워서다(10·11장).</p>
+    <p>하늘의 위성 배치는 <span class="term">스카이 플롯</span><span class="en">(sky plot)</span>으로 그린다. 가운데가 머리 위(앙각 90°), 바깥 원이 지평선(0°), 위쪽이 북쪽이다. 수신기는 보통 앙각 5~15° 아래의 위성을 버린다(<b><span class="term">앙각 마스크</span></b>). 지평선 가까운 신호는 대기를 길게 지나고 건물·지형에 가리기 쉬워서다(10·11장).</p>
     <div class="sim" id="sim-sky">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>스카이 플롯</h3></div>
       <div class="sim-body side">

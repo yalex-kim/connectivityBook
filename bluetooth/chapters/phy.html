@@ -18,6 +18,9 @@
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"비트를 전파에 싣기: GFSK와 PHY","name":"비트를 전파에 싣기: GFSK와 PHY · BluetoothBook","url":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/phy.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/phy.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":3,"image":"https://yalex-kim.github.io/yalexBook/bluetooth/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/bluetooth/#book","name":"BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth/"},"publisher":{"@type":"Organization","name":"BluetoothBook","url":"https://yalex-kim.github.io/yalexBook/bluetooth/"},"description":"블루투스가 0과 1을 전파에 싣는 방법. 가우시안 필터를 거친 주파수 편이 변조(GFSK)와 변조 지수, 잡음 속 비트 판정과 수신 감도, EDR의 위상 변조, LE 1M·2M·Coded PHY의 속도와 거리 교환을 Core 6.2 기준으로 다룬다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook","item":"https://yalex-kim.github.io/yalexBook/bluetooth/"},{"@type":"ListItem","position":2,"name":"03 비트를 전파에 싣기: GFSK와 PHY","item":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/phy.html"}]}]}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="../css/style.css">
 <script src="../js/common.js"></script>
 <style>
@@ -33,7 +36,7 @@
   <header class="chapter-hero">
     <div class="eyebrow">Chapter 03</div>
     <h1>비트를 전파에 싣기: GFSK와 PHY</h1>
-    <p class="lead">무선 이어폰 광고에는 “블루투스 5.3”이, 분실물 태그 광고에는 “최대 4배 먼 거리”가 적혀 있다. 그런데 2장에서 본 것처럼 송신 전력은 법과 배터리가 정하는 한계가 있다. 같은 전력으로 더 멀리 가려면 무엇을 바꿔야 할까? 답은 <b>비트를 전파에 싣는 방식</b>, 즉 물리 계층(PHY)에 있다. 이 장에서는 블루투스가 주파수를 아주 조금 올리고 내리는 것만으로 0과 1을 보내는 방법(GFSK)부터, 같은 방식을 느리고 꼼꼼하게 바꿔 거리를 늘리는 LE Coded PHY까지 따라간다.</p>
+    <p class="lead">무선 이어폰 광고에는 “블루투스 5.3”이, 분실물 태그 광고에는 “최대 4배 먼 거리”가 적혀 있다. 그런데 2장에서 본 것처럼 송신 전력은 법과 배터리가 정하는 한계가 있다. 같은 전력으로 더 멀리 가려면 무엇을 바꿔야 할까? 답은 <b>비트를 전파에 싣는 방식</b>, 즉 물리 계층(PHY)에 있다. 이 장에서는 블루투스가 주파수를 아주 조금 올리고 내리는 것만으로 0과 1을 보내는 방법(GFSK)부터, 같은 방식을 느리고 꼼꼼하게 바꿔 거리를 늘리는 <span class="term">LE Coded</span> PHY까지 따라간다.</p>
     <ul class="objectives">
       <li>주파수 편이 변조(FSK)에 가우시안 필터를 더한 GFSK가 왜 쓰이는지, BT와 변조 지수 h가 무엇을 뜻하는지 안다.</li>
       <li>잡음 때문에 비트가 뒤집히는 과정과, 사양이 수신 감도를 “비트 오류율 0.1%가 되는 세기”로 정의하는 방식을 이해한다.</li>
@@ -52,7 +55,7 @@
     <p>GFSK를 정하는 숫자는 두 개다.</p>
     <ul>
       <li><b>BT</b>(대역폭·비트 시간 곱): 가우시안 필터가 얼마나 부드러운지. BT가 작을수록 더 부드럽고(옆 채널에 덜 새고) 대신 앞뒤 비트가 서로 번져 섞인다(<span class="term">심볼 간 간섭</span><span class="en">(ISI)</span>). 블루투스는 클래식·LE 모두 <b>BT = 0.5</b>다.</li>
-      <li><b>변조 지수 h</b>: 주파수를 얼마나 크게 흔드는지. 최대 편이 Δf = h × 심볼 속도 ÷ 2다. 클래식은 h = 0.28~0.35(1 Msym/s에서 약 ±140~175 kHz), LE는 h = 0.45~0.55(1 Msym/s에서 약 ±250 kHz)다. h가 크면 0과 1의 차이가 커서 잡음에 강하지만 신호가 차지하는 폭이 넓어진다.</li>
+      <li><b><span class="term">변조 지수</span> h</b>: 주파수를 얼마나 크게 흔드는지. 최대 편이 Δf = h × 심볼 속도 ÷ 2다. 클래식은 h = 0.28~0.35(1 Msym/s에서 약 ±140~175 kHz), LE는 h = 0.45~0.55(1 Msym/s에서 약 ±250 kHz)다. h가 크면 0과 1의 차이가 커서 잡음에 강하지만 신호가 차지하는 폭이 넓어진다.</li>
     </ul>
     <p class="spec-ref">LE GFSK BT = 0.5, h = 0.45~0.55, 1은 양의 편이: <b>[Vol 6] Part A §3.1</b> · BR GFSK BT = 0.5, h = 0.28~0.35, 최소 편이 115 kHz: <b>[Vol 2] Part A §3.1.1</b></p>
 
@@ -78,7 +81,7 @@
   <section id="noise">
     <h2>잡음 속에서 0과 1 판정하기</h2>
     <p>수신기는 들어온 신호의 주파수를 재서(주파수 판별기) 중심보다 높으면 1, 낮으면 0으로 판정한다. 신호가 강하면 쉽다. 하지만 2장의 링크 버짓에서 마진이 줄어들수록 신호는 잡음에 묻히고, 잡음이 판정선을 넘기는 순간 비트가 뒤집힌다. 신호 대 잡음비(SNR)가 몇 dB 떨어지면 <span class="term">비트 오류율</span><span class="en">(BER, Bit Error Rate)</span>은 몇 배가 아니라 몇 자릿수씩 뛴다.</p>
-    <p>블루투스 패킷에는 오류를 찾는 24비트 CRC가 붙어 있다(6장). 비트가 하나라도 틀리면 CRC 검사에 걸려 패킷 전체를 버리고 다시 보낸다. 그래서 중요한 것은 BER 자체보다 <b>패킷 오류율</b>이다. 패킷이 길수록 그 안에 틀린 비트가 하나라도 있을 확률이 커진다.</p>
+    <p>블루투스 패킷에는 오류를 찾는 24비트 <span class="term">CRC</span>가 붙어 있다(6장). 비트가 하나라도 틀리면 CRC 검사에 걸려 패킷 전체를 버리고 다시 보낸다. 그래서 중요한 것은 BER 자체보다 <b>패킷 오류율</b>이다. 패킷이 길수록 그 안에 틀린 비트가 하나라도 있을 확률이 커진다.</p>
     <div class="formula">패킷 오류율 ≈ 1 − (1 − BER)<sup>비트 수</sup>
       <div class="where">예: BER 0.1%, 47바이트 패킷(376비트)이면 1 − 0.999<sup>376</sup> ≈ 31%. 사양은 수신 감도를 “BER이 0.1%가 되는 세기”로 정의하되, 긴 패킷을 지원하는 기기는 같은 패킷 오류율이 되도록 더 엄격한 BER(최대 255바이트 지원 시 0.017%)을 적용한다.</div>
     </div>
@@ -104,7 +107,7 @@
   <!-- ============================================================ -->
   <section id="edr">
     <h2>클래식의 가속 장치: EDR과 위상 변조</h2>
-    <p>클래식 블루투스의 기본(Basic Rate)은 1 Msym/s의 GFSK로, 심볼 하나에 1비트, 공중 속도 1 Mb/s다. 2004년의 2.0+EDR은 심볼 속도는 그대로 두고 <b>심볼 하나에 더 많은 비트</b>를 싣는 방법으로 속도를 올렸다. 주파수 대신 반송파의 <b>위상</b>(파동이 어느 각도에 있는가)을 바꾸고, 그 변화량에 비트를 대응시킨다.</p>
+    <p>클래식 블루투스의 기본(Basic Rate)은 1 Msym/s의 GFSK로, 심볼 하나에 1비트, 공중 속도 1 Mb/s다. 2004년의 2.0+<span class="term">EDR</span>은 심볼 속도는 그대로 두고 <b>심볼 하나에 더 많은 비트</b>를 싣는 방법으로 속도를 올렸다. 주파수 대신 반송파의 <b>위상</b>(파동이 어느 각도에 있는가)을 바꾸고, 그 변화량에 비트를 대응시킨다.</p>
     <ul>
       <li><b>π/4-DQPSK</b>: 위상을 ±45°, ±135° 중 하나만큼 돌린다. 네 가지이므로 심볼당 2비트, <b>2 Mb/s</b>.</li>
       <li><b>8DPSK</b>: 위상 변화가 여덟 가지(45° 간격). 심볼당 3비트, <b>3 Mb/s</b>.</li>
@@ -141,12 +144,12 @@
   <!-- ============================================================ -->
   <section id="lephy">
     <h2>LE의 PHY 넷: 1M, 2M, Coded S=2, Coded S=8</h2>
-    <p>LE는 4.0에서 <b>LE 1M</b> 하나로 시작했다. 1 Msym/s GFSK, 1 Mb/s. 모든 LE 기기가 반드시 지원해야 하는 기본이다. 5.0에서 두 가지 선택 PHY가 더해졌다.</p>
+    <p>LE는 4.0에서 <b><span class="term">LE 1M</span></b> 하나로 시작했다. 1 Msym/s GFSK, 1 Mb/s. 모든 LE 기기가 반드시 지원해야 하는 기본이다. 5.0에서 두 가지 선택 PHY가 더해졌다.</p>
     <ul>
-      <li><b>LE 2M</b>: 심볼 속도를 2 Msym/s로 두 배. 같은 데이터를 절반의 시간에 보낸다. 무선부가 켜져 있는 시간이 줄어 전력이 줄고, 다른 신호와 부딪힐 확률도 준다. 대신 신호가 차지하는 폭이 넓어지고 비트 하나에 쓰는 에너지가 절반이라 감도가 몇 dB 나빠진다.</li>
-      <li><b>LE Coded</b>: 심볼 속도는 1 Msym/s 그대로 두고, 비트 하나를 여러 심볼에 <b>나눠 싣는다</b>. 먼저 <span class="term">컨볼루션 부호</span><span class="en">(convolutional code)</span>로 비트를 두 배로 늘리고(부호율 ½), 이어서 패턴 매퍼가 S=8이면 각 부호 비트를 4개의 심볼로 펼친다. 결과적으로 비트 하나에 심볼 2개(S=2, <b>500 kb/s</b>) 또는 8개(S=8, <b>125 kb/s</b>)를 쓴다. 수신기는 일부 심볼이 틀려도 부호의 규칙을 이용해 원래 비트를 되살린다.</li>
+      <li><b><span class="term">LE 2M</span></b>: 심볼 속도를 2 Msym/s로 두 배. 같은 데이터를 절반의 시간에 보낸다. 무선부가 켜져 있는 시간이 줄어 전력이 줄고, 다른 신호와 부딪힐 확률도 준다. 대신 신호가 차지하는 폭이 넓어지고 비트 하나에 쓰는 에너지가 절반이라 감도가 몇 dB 나빠진다.</li>
+      <li><b>LE Coded</b>: 심볼 속도는 1 Msym/s 그대로 두고, 비트 하나를 여러 심볼에 <b>나눠 싣는다</b>. 먼저 <span class="term">컨볼루션 부호</span><span class="en">(convolutional code)</span>로 비트를 두 배로 늘리고(부호율 ½), 이어서 <span class="term">패턴 매퍼</span>가 S=8이면 각 부호 비트를 4개의 심볼로 펼친다. 결과적으로 비트 하나에 심볼 2개(S=2, <b>500 kb/s</b>) 또는 8개(S=8, <b>125 kb/s</b>)를 쓴다. 수신기는 일부 심볼이 틀려도 부호의 규칙을 이용해 원래 비트를 되살린다.</li>
     </ul>
-    <p>사양이 요구하는 감도도 PHY마다 다르다. LE 1M·2M은 −70 dBm 이하, Coded S=2는 −75 dBm 이하, S=8은 −82 dBm 이하다. 실제 칩에서 S=8은 1M보다 대략 8~12 dB 좋은 감도를 낸다. 트인 곳(거리 2배당 6 dB)이라면 12 dB는 <b>거리 4배</b>다. “블루투스 5는 4배 멀리”라는 문구의 근거다. 실내에서는 경로 손실 지수가 커서 2~3배 정도로 줄어든다.</p>
+    <p>사양이 요구하는 감도도 PHY마다 다르다. LE 1M·2M은 −70 dBm 이하, Coded S=2는 −75 dBm 이하, S=8은 −82 dBm 이하다. 실제 칩에서 S=8은 1M보다 대략 8~12 dB 좋은 감도를 낸다. 트인 곳(거리 2배당 6 dB)이라면 12 dB는 <b>거리 4배</b>다. “블루투스 5는 4배 멀리”라는 문구의 근거다. 실내에서는 <span class="term">경로 손실 지수</span>가 커서 2~3배 정도로 줄어든다.</p>
     <p class="spec-ref">PHY 정의(LE 1M 필수, LE Coded 선택, LE 2M·LE 2M 2BT): <b>[Vol 6] Part A §1</b> · 감도 Table 4.2: <b>[Vol 6] Part A §4.1</b> · FEC 부호기(부호율 ½, K=4, G0 = 1+x+x²+x³, G1 = 1+x²+x³)와 패턴 매퍼(S=8: 0 → 0011, 1 → 1100): <b>[Vol 6] Part B §3.3</b></p>
 
     <div class="sim" id="sim-fec">
@@ -202,7 +205,7 @@
       <li><b>모든 속도에 오류 정정</b>: 성좌점이 촘촘할수록 잡음에 약하다. 그래서 LE Coded처럼 컨볼루션 부호 기반의 FEC를 <b>모든 HDT 속도</b>에 쓴다. 속도는 2, 3, 4, 6, 7.5 Mb/s 다섯 단계이고, 변조와 부호율의 조합으로 정해진다.</li>
       <li><b>패킷마다 속도 바꾸기</b>: 패킷 머리에 그 패킷의 속도가 적혀 있어, 링크가 나빠지면 다음 패킷부터 바로 낮은 속도로 내려간다. PHY를 한번 정하면 오래 유지하고 바꿀 때마다 갱신 절차(6장)를 거치는 지금 방식과 달리, 패킷 단위로 속도를 고르는 것이다(HDT를 쓰기로 처음 합의하는 방법은 정식 사양에서 확인할 부분이다). EDR이 3 → 2 → 1 Mb/s로 내려가던 것을 더 잘게 나눈 셈이다.</li>
       <li><b>긴 패킷, 블록 단위 확인</b>: 패킷 하나에 약 8,000바이트까지 싣고, 블록마다 오류 검사를 따로 붙여 깨진 블록만 다시 보낸다. 251바이트 페이로드마다 150 µs 틈과 응답이 붙던 오버헤드(6장)를 크게 줄이려는 설계다.</li>
-      <li><b>더 긴 MIC</b>: 암호화된 패킷의 무결성 코드를 지금의 32비트에서 64비트·128비트로 키울 수 있다(8장).</li>
+      <li><b>더 긴 <span class="term">MIC</span></b>: 암호화된 패킷의 무결성 코드를 지금의 32비트에서 64비트·128비트로 키울 수 있다(8장).</li>
     </ul>
     <div class="sim" id="sim-hdt">
       <div class="sim-head"><span class="sim-tag">PREVIEW</span><h3>HDT 미리 보기: 같은 파일을 보내는 공중 시간</h3></div>
@@ -239,7 +242,7 @@
       </tbody>
     </table></div>
     <div class="callout analogy"><strong>카페에서 또박또박 말하기</strong><p>시끄러운 카페에서 멀리 앉은 친구에게 말을 전하는 방법은 세 가지다. 더 크게 외치거나(송신 전력), 더 가까이 가거나(거리), <b>한 글자씩 천천히 여러 번 반복해서</b> 말하는 것이다(Coded PHY). 마지막 방법은 목소리를 키우지 않아도 되지만 한 문장에 시간이 오래 걸리고, 그동안 다른 손님의 말과 겹칠 가능성도 커진다. 바로 옆자리 친구에게는 빠르게 말하는 편이 낫다(2M).</p></div>
-    <p>한 가지 더. LE 2M과 Coded는 <b>선택 기능</b>이고 상대도 지원해야 쓸 수 있다. 그래서 처음 만날 때는 모든 기기가 아는 LE 1M을 쓰고(광고 채널의 레거시 광고는 1M만 쓴다), 연결된 뒤 서로의 기능을 확인하고 바꾸는 것이 일반적이다. 처음부터 장거리로 찾게 하려면 5.0의 <b>확장 광고</b>로 광고 채널에서도 Coded PHY를 쓴다(5장).</p>
+    <p>한 가지 더. LE 2M과 Coded는 <b>선택 기능</b>이고 상대도 지원해야 쓸 수 있다. 그래서 처음 만날 때는 모든 기기가 아는 LE 1M을 쓰고(광고 채널의 레거시 광고는 1M만 쓴다), 연결된 뒤 서로의 기능을 확인하고 바꾸는 것이 일반적이다. 처음부터 장거리로 찾게 하려면 5.0의 <b><span class="term">확장 광고</span></b>로 광고 채널에서도 Coded PHY를 쓴다(5장).</p>
   </section>
 
   <section class="keypoints" id="summary">

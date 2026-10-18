@@ -18,6 +18,9 @@
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"채널과 전파 규칙","name":"채널과 전파 규칙 · UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/channels.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/uwb/chapters/channels.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":3,"image":"https://yalex-kim.github.io/yalexBook/uwb/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/uwb/#book","name":"UWBBook — 누구나 읽는 인터랙티브 UWB 교과서","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"publisher":{"@type":"Organization","name":"UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"description":"499.2 MHz의 배수로 놓인 UWB 채널, 휴대폰이 쓰는 5번·9번 채널, 1 MHz당 −41.3 dBm 규제가 정하는 총출력과 거리, 1 ms 평균 규칙과 짧은 패킷, Wi-Fi 6E·5G와의 이웃 관계를 공개 코드와 공개 법령으로 확인한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"UWBBook","item":"https://yalex-kim.github.io/yalexBook/uwb/"},{"@type":"ListItem","position":2,"name":"03 채널과 전파 규칙","item":"https://yalex-kim.github.io/yalexBook/uwb/chapters/channels.html"}]}]}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="../css/style.css">
 <script src="../js/common.js"></script>
 </head>
@@ -26,7 +29,7 @@
   <header class="chapter-hero">
     <div class="eyebrow">Chapter 03</div>
     <h1>채널과 전파 규칙</h1>
-    <p class="lead">휴대폰 설정에는 UWB를 끄고 켜는 스위치만 있지만, 칩 안에서는 “9번 채널, 프리앰블 코드 10” 같은 값이 정해져 있다. 어떤 나라에서는 같은 휴대폰이 UWB를 아예 끄기도 한다. UWB 채널은 어디에 놓여 있고, 왜 이렇게 약하게만 보낼 수 있으며, 그 약한 출력으로 몇 미터까지 닿을까?</p>
+    <p class="lead">휴대폰 설정에는 UWB를 끄고 켜는 스위치만 있지만, 칩 안에서는 “9번 채널, <span class="term">프리앰블 코드</span> 10” 같은 값이 정해져 있다. 어떤 나라에서는 같은 휴대폰이 UWB를 아예 끄기도 한다. UWB 채널은 어디에 놓여 있고, 왜 이렇게 약하게만 보낼 수 있으며, 그 약한 출력으로 몇 미터까지 닿을까?</p>
     <ul class="objectives">
       <li>UWB 채널 중심 주파수가 499.2 MHz의 배수라는 규칙을 공개 코드로 확인한다.</li>
       <li>휴대폰이 5번·9번 채널을 쓰는 이유와 나라별 사정을 안다.</li>
@@ -38,14 +41,14 @@
   <!-- ============================================================ -->
   <section id="grid">
     <h2>499.2 MHz의 눈금</h2>
-    <p>802.15.4 UWB(HRP)의 모든 시간과 주파수는 하나의 기준 주파수 <b>499.2 MHz</b>에서 나온다. 칩 하나의 길이(칩 시간)가 1/499.2 MHz ≈ 2.003 ns이고, 채널 중심 주파수는 그 정수배다. 펄스 폭도, 시계 눈금(5장)도, 거리 측정 시간 단위 RSTU(11장)도 이 수의 배수나 약수다.</p>
+    <p>802.15.4 UWB(HRP)의 모든 시간과 주파수는 하나의 기준 주파수 <b><span class="term">499.2 MHz</span></b>에서 나온다. 칩 하나의 길이(칩 시간)가 1/499.2 MHz ≈ 2.003 ns이고, 채널 중심 주파수는 그 정수배다. 펄스 폭도, 시계 눈금(5장)도, 거리 측정 시간 단위 <span class="term">RSTU</span>(11장)도 이 수의 배수나 약수다.</p>
     <div class="table-wrap"><table>
       <thead><tr><th>대역</th><th>채널</th><th class="num">중심 주파수</th><th class="num">= 499.2 MHz ×</th><th>쓰임</th></tr></thead>
       <tbody id="ch-tb"></tbody>
     </table></div>
     <p class="spec-ref">1·2·3·5·7·9번 중심 주파수: Decawave <code>uwb-core</code>의 <code>uwb_mac.h</code> <code>UWB_CH_FREQ_CHAN_*</code> · 4번 = 2번, 7번 = 5번(같은 중심의 넓은 채널): Zephyr <code>ieee802154_dw1000_regs.h</code>의 <code>DWT_FS_PLLCFG_CH4 = DWT_FS_PLLCFG_CH2</code>, <code>DWT_FS_PLLCFG_CH7 = DWT_FS_PLLCFG_CH5</code> · 휴대폰 지원 채널 5·6·8·9·10·12·13·14: Android <code>FiraParams.java</code>의 <code>UWB_CHANNEL_*</code>, CCC 디지털 키는 5·9번만(<code>CccParams.java</code>) · 나머지 채널 값은 같은 499.2 MHz 배수 규칙으로 채운 것</p>
     <div class="callout spec"><strong>공개 구현끼리 다를 때</strong><p><code>uwb-core</code>의 <code>uwb_mac.h</code>는 4번 채널을 4,492.8 MHz(3번과 같은 값)로 적고 있다. 그러나 같은 칩용 Zephyr 드라이버는 4번 채널의 PLL 설정을 2번과 똑같이 쓰고(<code>DWT_FS_PLLCFG_CH4 = DWT_FS_PLLCFG_CH2</code>), 7번도 5번과 같다. 4·7번은 2·5번과 같은 중심에 폭만 넓힌 채널이라는 뜻이다. 이 책은 PLL 설정을 근거로 4번 = 3,993.6 MHz로 적었다. <code>uwb_calc_aoa()</code>가 4번 채널의 파장을 구할 때 쓰는 값이 이 상수라, 그 라이브러리로 4번 채널 각도를 계산하면 약 11% 어긋날 수 있다(8장).</p></div>
-    <div class="callout analogy"><strong>강당 전체에 속삭이기</strong><p>강당에서 한 사람이 크게 외치면 모든 대화가 끊긴다. 대신 아주 작게, 하지만 강당 전체에 고루 퍼지게 속삭이면 옆 사람 대화에는 거의 들리지 않는다. 속삭임을 아는 사람만 귀를 기울여 모아 듣는다. UWB가 넓은 대역에 아주 낮은 세기(−41.3 dBm/MHz)로 퍼뜨리는 방식이 이렇다.</p></div>
+    <div class="callout analogy"><strong>강당 전체에 속삭이기</strong><p>강당에서 한 사람이 크게 외치면 모든 대화가 끊긴다. 대신 아주 작게, 하지만 강당 전체에 고루 퍼지게 속삭이면 옆 사람 대화에는 거의 들리지 않는다. 속삭임을 아는 사람만 귀를 기울여 모아 듣는다. UWB가 넓은 대역에 아주 낮은 세기(<span class="term">−41.3 dBm/MHz</span>)로 퍼뜨리는 방식이 이렇다.</p></div>
     <div class="sim" id="sim-map">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>3~10 GHz 이웃 지도</h3></div>
       <div class="sim-view"><canvas id="cv-map"></canvas></div>

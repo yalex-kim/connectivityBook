@@ -18,6 +18,9 @@
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"우리 집 와이파이 설계 플레이그라운드","name":"우리 집 와이파이 설계 플레이그라운드 · WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/chapters/design.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/wifi/chapters/design.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":14,"image":"https://yalex-kim.github.io/yalexBook/wifi/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/wifi/#book","name":"WiFiBook — 누구나 읽는 인터랙티브 와이파이 교과서","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"publisher":{"@type":"Organization","name":"WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"description":"평면도에 공유기와 메시 노드를 놓고 대역·벽 재질·백홀을 고르면 방마다 신호와 예상 속도가 따라온다. 책 전체의 계산(경로 손실, SNR → MCS, 실제 처리량, 메시 백홀)을 한 화면에 모은 설계 도구와 점검표."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"WiFiBook","item":"https://yalex-kim.github.io/yalexBook/wifi/"},{"@type":"ListItem","position":2,"name":"14 우리 집 와이파이 설계 플레이그라운드","item":"https://yalex-kim.github.io/yalexBook/wifi/chapters/design.html"}]}]}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="../css/style.css">
 <script src="../js/common.js"></script>
 </head>
@@ -26,7 +29,7 @@
   <header class="chapter-hero">
     <div class="eyebrow">Chapter 14</div>
     <h1>우리 집 와이파이 설계 플레이그라운드</h1>
-    <p class="lead">공유기를 거실 TV장 뒤에 둘까, 복도 천장 가까이에 둘까? 6 GHz를 켜면 안방까지 닿을까? 메시 노드는 어디에, 무선으로 이을까 랜선으로 이을까? 지금까지 배운 것을 한 화면에 모았다. 평면도에 공유기를 놓고 대역과 벽 재질을 고르면, 방마다 신호 세기와 예상 속도가 계산된다.</p>
+    <p class="lead">공유기를 거실 TV장 뒤에 둘까, 복도 천장 가까이에 둘까? 6 GHz를 켜면 안방까지 닿을까? <span class="term">메시</span> 노드는 어디에, 무선으로 이을까 랜선으로 이을까? 지금까지 배운 것을 한 화면에 모았다. 평면도에 공유기를 놓고 대역과 벽 재질을 고르면, 방마다 신호 세기와 예상 속도가 계산된다.</p>
     <ul class="objectives">
       <li>거리와 벽이 대역별 신호를 얼마나 깎는지 평면도 위에서 확인한다.</li>
       <li>공유기 위치와 메시 노드 배치를 바꿔 방마다 예상 속도를 비교한다.</li>
@@ -65,7 +68,7 @@
     <ul>
       <li><b>위치가 대역보다 먼저다.</b> 공유기 한 대의 자리를 집 가운데로 옮기는 것만으로 가장 먼 방의 벽 수가 하나 줄어든다. 콘크리트 벽 하나는 5·6 GHz에서 15 dB 넘게, 즉 MCS 다섯 계단쯤을 깎는다(4장).</li>
       <li><b>높은 대역은 넓고 빠르지만 짧다.</b> 2장에서 본 대로 6 GHz는 채널이 넓고 깨끗하지만, 주파수가 높을수록 같은 거리·같은 벽에서 손실이 크다. 공유기와 같은 방이나 한 벽 너머에서 가장 큰 이득을 본다. 단말은 MLO(13장)나 대역 조종으로 상황에 맞게 대역을 골라 쓴다.</li>
-      <li><b>메시는 백홀이 성능을 정한다.</b> 노드가 같은 무선으로 공유기와도, 단말과도 이야기하면 공중 시간을 둘로 나눈다(6장의 공유 매체). 전용 백홀 대역이 있는 트라이밴드 메시나, 가능하면 랜선(유선 백홀)이 가장 좋다. 노드는 공유기 신호가 아직 충분히 좋은 “중간”에 둔다. 신호가 이미 약한 곳에 두면 백홀부터 느리다.</li>
+      <li><b>메시는 <span class="term">백홀</span>이 성능을 정한다.</b> 노드가 같은 무선으로 공유기와도, 단말과도 이야기하면 공중 시간을 둘로 나눈다(6장의 공유 매체). 전용 백홀 대역이 있는 트라이밴드 메시나, 가능하면 랜선(유선 백홀)이 가장 좋다. 노드는 공유기 신호가 아직 충분히 좋은 “중간”에 둔다. 신호가 이미 약한 곳에 두면 백홀부터 느리다.</li>
       <li><b>노드를 늘린다고 다 좋지 않다.</b> 같은 채널의 노드가 많아지면 서로 양보하고(6장), 단말은 먼 노드를 붙잡는다(9장). 꼭 필요한 곳에만 두고, 노드끼리 다른 채널을 쓰게 하는 것이 좋다.</li>
     </ul>
   </section>

@@ -18,6 +18,9 @@
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"양방향 거리 측정: SS-TWR와 DS-TWR","name":"양방향 거리 측정: SS-TWR와 DS-TWR · UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/twr.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/uwb/chapters/twr.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":6,"image":"https://yalex-kim.github.io/yalexBook/uwb/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/uwb/#book","name":"UWBBook — 누구나 읽는 인터랙티브 UWB 교과서","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"publisher":{"@type":"Organization","name":"UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"description":"시계가 맞지 않는 두 기기가 어떻게 거리를 재는가. 단방향(SS-TWR)과 양방향(DS-TWR) 측정의 공식, 응답 시간과 시계 오차가 만드는 오류, 반송파로 잰 시계 차이 보정을 시뮬레이터로 익히고, Decawave uwb-core의 시험 값으로 공식을 검증한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"UWBBook","item":"https://yalex-kim.github.io/yalexBook/uwb/"},{"@type":"ListItem","position":2,"name":"06 양방향 거리 측정: SS-TWR와 DS-TWR","item":"https://yalex-kim.github.io/yalexBook/uwb/chapters/twr.html"}]}]}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="../css/style.css">
 <script src="../js/common.js"></script>
 <style>
@@ -81,7 +84,7 @@
   <!-- ============================================================ -->
   <section id="ds">
     <h2>양방향 TWR: 핑퐁 두 번</h2>
-    <p>DS-TWR<span class="en">(Double-Sided TWR)</span>는 핑퐁을 한 번 더 한다. A Poll → B Response → A Final. 이제 A와 B 모두 왕복 하나와 응답 하나씩을 갖는다(T<sub>round1</sub>, T<sub>reply1</sub>은 첫 번째 핑퐁, T<sub>reply2</sub>, T<sub>round2</sub>는 두 번째). 두 응답 시간이 같지 않아도 되는 <b>비대칭</b> 공식은 다음과 같다.</p>
+    <p><span class="term">DS-TWR</span><span class="en">(Double-Sided TWR)</span>는 핑퐁을 한 번 더 한다. A Poll → B Response → A Final. 이제 A와 B 모두 왕복 하나와 응답 하나씩을 갖는다(T<sub>round1</sub>, T<sub>reply1</sub>은 첫 번째 핑퐁, T<sub>reply2</sub>, T<sub>round2</sub>는 두 번째). 두 응답 시간이 같지 않아도 되는 <b>비대칭</b> 공식은 다음과 같다.</p>
     <div class="formula">ToF = (T<sub>round1</sub> × T<sub>round2</sub> − T<sub>reply1</sub> × T<sub>reply2</sub>) ÷ (T<sub>round1</sub> + T<sub>round2</sub> + T<sub>reply1</sub> + T<sub>reply2</sub>)
       <div class="where">오차는 대략 ToF × (e<sub>A</sub> + e<sub>B</sub>) ÷ 2. 비행시간(나노초) 자체에 ppm이 곱해지니 사실상 0이다. 응답 시간에 곱해지던 SS-TWR와 대조된다. 대가는 프레임 하나와 그만큼의 시간·전력, 그리고 마지막 타임스탬프를 누군가에게 알려 줄 프레임이 더 필요할 수 있다는 것(FiRa의 “deferred” 방식, 11장).</div>
     </div>
