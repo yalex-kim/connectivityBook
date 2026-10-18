@@ -98,6 +98,13 @@
   <section id="fusion">
     <h2>터널 속 위치: 관성 센서의 한계</h2>
     <p>터널에 들어가면 GNSS가 끊긴다. 휴대폰은 마지막 속도와 가속도·자이로로 위치를 이어 간다(추측 항법). 문제는 센서의 작은 치우침이 시간의 제곱으로 위치 오차가 된다는 것이다. 가속도계가 0.05 m/s²만 치우쳐도 30초 뒤 위치는 ½·0.05·30² ≈ 22 m 벗어난다. 그래서 차량 내비게이션은 바퀴 속도나 지도의 도로(지도 맞추기)로 함께 묶어, 터널을 나오면 다시 GNSS로 바로잡는다.</p>
+    <div class="callout analogy"><strong>눈 감고 걷기</strong><p>눈을 감고 걸음 수와 방향만으로 걸어 보면 처음 몇 걸음은 정확하지만 조금씩 틀어진 것이 쌓여 금세 엉뚱한 곳에 서 있게 된다. 관성 센서도 같다. 가속도를 두 번 적분해 위치를 구하므로 작은 치우침이 시간의 제곱으로 커진다. 그래서 GNSS가 돌아오면 곧바로 다시 맞춰야 한다.</p></div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">가속도계에 0.1 m/s² 치우침이 남아 있다. GNSS 없이 60초를 가면 위치 오차는?</p><p class="wi-hint">거리 오차 = ½ × 치우침 × 시간².</p><div class="opts">
+      <button class="opt">6 m</button>
+      <button class="opt">18 m</button>
+      <button class="opt" data-correct>180 m</button>
+      <button class="opt">3.6 km</button>
+    </div><div class="quiz-exp">½ × 0.1 × 60² = 180 m. 20초면 20 m로, 시간이 3배면 오차는 9배다. 그래서 차량은 바퀴 속도(속도 오차가 시간에 비례해 쌓임)나 지도 맞추기를 함께 쓴다. 아래 시뮬레이터에서 비교해 보자.</div></div>
     <div class="sim" id="sim-tun">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>GNSS 없이 버티는 시간</h3></div>
       <div class="sim-view"><canvas id="cv-tun"></canvas></div>
@@ -114,6 +121,8 @@
       <div class="sim-note">그래프: 터널 안 시간(가로)에 따른 위치 오차(세로, 로그). 모델: 관성 센서만 = ½·치우침·t², 속도·지도 = 진행 방향 1% 오차(시속 60 km) + 지도가 옆 방향을 잡아 줌. 출구 재획득은 열시동(5장의 A-GNSS 열시동, 약 1~2 s).</div>
     </div>
   </section>
+
+  <div class="callout related"><strong>다른 책에서</strong><ul><li><a href="../../uwb/chapters/apps.html">UWBBook 13장 · 디지털 키와 정밀 찾기</a> — 휴대폰의 UWB 정밀 찾기</li><li><a href="../../bluetooth/chapters/location.html">BluetoothBook 11장 · 위치 찾기: RSSI에서 채널 사운딩까지</a> — 휴대폰의 BLE 위치 기능</li></ul></div>
 
   <section class="keypoints" id="summary">
     <h2>핵심 정리</h2>

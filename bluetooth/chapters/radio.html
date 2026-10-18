@@ -17,7 +17,7 @@
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"2.4 GHz 전파와 데시벨","name":"2.4 GHz 전파와 데시벨 · BluetoothBook","url":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/radio.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/radio.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":2,"image":"https://yalex-kim.github.io/yalexBook/bluetooth/og.png","dateModified":"2026-10-17","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/bluetooth/#book","name":"BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth/"},"publisher":{"@type":"Organization","name":"BluetoothBook","url":"https://yalex-kim.github.io/yalexBook/bluetooth/"},"description":"블루투스가 쓰는 2.4 GHz ISM 대역과 채널 배치, 파장 12 cm의 의미, dB와 dBm 계산, 거리·벽·사람 몸이 신호를 깎는 정도, 링크 버짓과 수신 감도, 다중 경로 페이딩과 RSSI를 시뮬레이터로 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook","item":"https://yalex-kim.github.io/yalexBook/bluetooth/"},{"@type":"ListItem","position":2,"name":"02 2.4 GHz 전파와 데시벨","item":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/radio.html"}]}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"2.4 GHz 전파와 데시벨","name":"2.4 GHz 전파와 데시벨 · BluetoothBook","url":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/radio.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/radio.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":2,"image":"https://yalex-kim.github.io/yalexBook/bluetooth/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/bluetooth/#book","name":"BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth/"},"publisher":{"@type":"Organization","name":"BluetoothBook","url":"https://yalex-kim.github.io/yalexBook/bluetooth/"},"description":"블루투스가 쓰는 2.4 GHz ISM 대역과 채널 배치, 파장 12 cm의 의미, dB와 dBm 계산, 거리·벽·사람 몸이 신호를 깎는 정도, 링크 버짓과 수신 감도, 다중 경로 페이딩과 RSSI를 시뮬레이터로 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook","item":"https://yalex-kim.github.io/yalexBook/bluetooth/"},{"@type":"ListItem","position":2,"name":"02 2.4 GHz 전파와 데시벨","item":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/radio.html"}]}]}</script>
 <link rel="stylesheet" href="../css/style.css">
 <script src="../js/common.js"></script>
 </head>
@@ -46,6 +46,7 @@
     </div>
     <p class="spec-ref">LE 40채널과 2 MHz 간격: <b>[Vol 6] Part A §2</b> · 채널 번호 대응표(Table 1.3): <b>[Vol 6] Part B §1.4.1</b> · BR/EDR f = 2402 + k MHz, k = 0~78: <b>[Vol 2] Part A §2</b></p>
 
+    <div class="callout analogy"><strong>카페의 테이블 배치</strong><p>2.4 GHz 대역은 모두가 쓰는 카페다. 블루투스는 2 MHz짜리 작은 테이블 40개를 옮겨 다니며 앉고, 와이파이는 20 MHz짜리 단체석(작은 테이블 약 10개 폭)을 차지한다. 전자레인지는 가끔 카페 한쪽을 통째로 시끄럽게 만든다. 누가 어디서 겹치는지 아래 지도에서 보자.</p></div>
     <div class="sim" id="sim-band">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>2.4 GHz 대역 지도: 블루투스와 Wi-Fi는 어디서 겹치나</h3></div>
       <div class="sim-view"><canvas id="cv-band"></canvas></div>
@@ -172,6 +173,8 @@
     <p class="spec-ref">RSSI 정확도 ±6 dB(should): <b>[Vol 6] Part A §4.8</b> · BR/EDR(shall): <b>[Vol 2] Part A §4</b></p>
     <div class="callout tip"><strong>끊김을 줄이는 현실적인 순서</strong><p>① 휴대폰과 이어폰 사이에 몸이 끼지 않게 한다(같은 쪽 주머니, 가방 바깥쪽). ② 전자레인지, 2.4 GHz Wi-Fi 공유기 바로 옆을 피한다. 공유기를 5·6 GHz로 쓰면 블루투스가 쉴 자리가 생긴다(4장). ③ 이어폰이 지원하면 “연결 우선” 모드로 코덱 비트레이트를 낮춘다(10장). 같은 마진에서 더 느린 데이터는 더 강하다(3장).</p></div>
   </section>
+
+  <div class="callout related"><strong>다른 책에서</strong><ul><li><a href="../../wifi/chapters/bands.html">WiFiBook 02장 · 대역과 채널: 2.4·5·6 GHz</a> — 같은 2.4 GHz를 와이파이 쪽에서 본 채널 배치</li></ul></div>
 
   <section class="keypoints" id="summary">
     <h2>핵심 정리</h2>

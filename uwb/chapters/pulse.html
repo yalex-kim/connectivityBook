@@ -40,6 +40,7 @@
     <h2>짧은 소리는 넓은 소리</h2>
     <p>피아노 건반 하나를 오래 누르면 음 높이가 또렷하다. 주파수가 한 점에 모여 있다. 반대로 책상을 “톡” 치는 짧은 소리는 음 높이가 없다. 아주 짧은 소리는 낮은 음부터 높은 음까지 여러 주파수가 섞여 있어서다. 신호도 같다. <b>시간으로 짧을수록 주파수로는 넓다</b>. 수학으로는 푸리에 변환의 성질로, 펄스 길이와 대역폭의 곱이 대략 일정하다.</p>
     <p>UWB 칩은 이 성질을 그대로 쓴다. 폭 몇 나노초(−10 dB로 약 3 ns)의 펄스를 6.5 GHz나 8 GHz 반송파에 실어 보내면, 그 에너지가 반송파 주위 약 500 MHz에 펼쳐진다. 802.15.4의 UWB 채널 폭 499.2 MHz가 이 펄스의 크기에서 나온다(3장).</p>
+    <div class="callout analogy"><strong>탁 소리와 종소리</strong><p>책상을 손가락으로 “탁” 치면 짧은 소리 안에 낮은 음부터 높은 음까지 여러 높이가 섞여 있다. 종을 치면 한 음이 길게 울린다. 짧은 소리일수록 많은 높이(넓은 대역)가 필요하다. 대신 짧은 소리는 언제 났는지가 또렷하다. UWB가 몇 나노초짜리 펄스에 500 MHz 넘는 대역을 쓰는 이유다.</p></div>
     <div class="sim" id="sim-tf">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>펄스 길이와 스펙트럼</h3></div>
       <div class="sim-view"><canvas id="cv-tf"></canvas></div>
@@ -71,6 +72,12 @@
   <section id="multipath">
     <h2>겹친 반사 갈라내기</h2>
     <p>실내에서 받는 신호는 곧장 온 것(직접파) 하나가 아니라, 벽·바닥·가구에서 튕겨 조금씩 늦게 온 반사파들의 합이다. 반사파가 직접파보다 1 m 더 돌아왔다면 3.3 ns 늦다. 펄스가 이보다 길면 둘이 겹쳐 하나의 뭉툭한 봉우리가 되고, 수신기는 진짜 첫 도착 시각을 놓친다. 펄스가 짧으면(대역이 넓으면) 둘이 갈라져 보인다.</p>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">직접파와 반사파의 경로 차이가 30 cm다. 두 펄스를 갈라 보려면 대역폭이 대략 얼마 이상 필요할까?</p><p class="wi-hint">거리 분해능 ≈ c/B.</p><div class="opts">
+      <button class="opt">2 MHz</button>
+      <button class="opt">160 MHz</button>
+      <button class="opt" data-correct>약 1 GHz</button>
+      <button class="opt">10 GHz</button>
+    </div><div class="quiz-exp">c/B = 30 cm이면 B = 3 × 10<sup>8</sup> ÷ 0.3 = 1 GHz. 500 MHz면 60 cm 간격부터 갈라 보인다. 그보다 가까운 반사는 펄스가 겹쳐 첫 경로를 짚기 어려워진다(7장). 아래에서 대역폭과 경로 차를 바꿔 보자.</div></div>
     <div class="sim" id="sim-mp">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>직접파와 반사파: 갈라 보이는가</h3></div>
       <div class="sim-view"><canvas id="cv-mp"></canvas></div>

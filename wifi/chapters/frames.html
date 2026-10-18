@@ -17,7 +17,7 @@
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"프레임 해부","name":"프레임 해부 · WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/chapters/frames.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/wifi/chapters/frames.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":7,"image":"https://yalex-kim.github.io/yalexBook/wifi/og.png","dateModified":"2026-10-17","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/wifi/#book","name":"WiFiBook — 누구나 읽는 인터랙티브 와이파이 교과서","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"publisher":{"@type":"Organization","name":"WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"description":"와이파이 프레임을 바이트 단위로 뜯어본다. 관리·제어·데이터 세 종류, Frame Control 비트, 주소 칸 네 개의 의미, 시퀀스 번호와 재전송, 비컨과 정보 요소, FCS(CRC-32)를 직접 만지는 해부 도구로 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"WiFiBook","item":"https://yalex-kim.github.io/yalexBook/wifi/"},{"@type":"ListItem","position":2,"name":"07 프레임 해부","item":"https://yalex-kim.github.io/yalexBook/wifi/chapters/frames.html"}]}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"프레임 해부","name":"프레임 해부 · WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/chapters/frames.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/wifi/chapters/frames.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":7,"image":"https://yalex-kim.github.io/yalexBook/wifi/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/wifi/#book","name":"WiFiBook — 누구나 읽는 인터랙티브 와이파이 교과서","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"publisher":{"@type":"Organization","name":"WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"description":"와이파이 프레임을 바이트 단위로 뜯어본다. 관리·제어·데이터 세 종류, Frame Control 비트, 주소 칸 네 개의 의미, 시퀀스 번호와 재전송, 비컨과 정보 요소, FCS(CRC-32)를 직접 만지는 해부 도구로 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"WiFiBook","item":"https://yalex-kim.github.io/yalexBook/wifi/"},{"@type":"ListItem","position":2,"name":"07 프레임 해부","item":"https://yalex-kim.github.io/yalexBook/wifi/chapters/frames.html"}]}]}</script>
 <link rel="stylesheet" href="../css/style.css">
 <script src="../js/common.js"></script>
 <style>
@@ -74,6 +74,7 @@
       <li><b>QoS Control</b>: 트래픽 종류(TID 0~7 → 6장의 네 범주)와 ACK 방식(즉시 ACK, 블록 ACK).</li>
       <li><b>FCS</b>: 프레임 전체에 대한 CRC-32. 하나라도 틀리면 받는 쪽은 조용히 버리고 ACK를 보내지 않는다. 보낸 쪽은 ACK가 없으니 다시 보낸다.</li>
     </ul>
+    <div class="callout analogy"><strong>회의실의 쪽지 양식</strong><p>회의실에서 오가는 쪽지에는 정해진 양식이 있다. 맨 위에 쪽지 종류(관리·제어·데이터), 보내는 사람과 받는 사람, 거쳐 가는 사회자가 적히고, 끝에 틀린 글자를 찾는 검산 칸(FCS)이 붙는다. 짧은 확인 쪽지(ACK)는 받는 사람만 적어 짧게 만든다. 머리말이 가변 길이인 이유다.</p></div>
     <div class="sim" id="sim-dis">
       <div class="sim-head"><span class="sim-tag">INTERACTIVE</span><h3>프레임 해부 도구</h3></div>
       <div class="sim-controls" style="border-top:0">

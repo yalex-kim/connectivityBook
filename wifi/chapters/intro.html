@@ -17,7 +17,7 @@
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"와이파이란 무엇인가","name":"와이파이란 무엇인가 · WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/chapters/intro.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/wifi/chapters/intro.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":1,"image":"https://yalex-kim.github.io/yalexBook/wifi/og.png","dateModified":"2026-10-17","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/wifi/#book","name":"WiFiBook — 누구나 읽는 인터랙티브 와이파이 교과서","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"publisher":{"@type":"Organization","name":"WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"description":"선 없는 이더넷의 탄생. IEEE 802.11 표준과 Wi-Fi Alliance의 관계, 802.11b부터 Wi-Fi 7까지의 세대 이름, AP·STA·BSS·BSSID·SSID·ESS로 그리는 무선 랜의 구조와 이 책이 근거로 삼는 자료를 다룬다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"WiFiBook","item":"https://yalex-kim.github.io/yalexBook/wifi/"},{"@type":"ListItem","position":2,"name":"01 와이파이란 무엇인가","item":"https://yalex-kim.github.io/yalexBook/wifi/chapters/intro.html"}]}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"와이파이란 무엇인가","name":"와이파이란 무엇인가 · WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/chapters/intro.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/wifi/chapters/intro.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":1,"image":"https://yalex-kim.github.io/yalexBook/wifi/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/wifi/#book","name":"WiFiBook — 누구나 읽는 인터랙티브 와이파이 교과서","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"publisher":{"@type":"Organization","name":"WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"description":"선 없는 이더넷의 탄생. IEEE 802.11 표준과 Wi-Fi Alliance의 관계, 802.11b부터 Wi-Fi 7까지의 세대 이름, AP·STA·BSS·BSSID·SSID·ESS로 그리는 무선 랜의 구조와 이 책이 근거로 삼는 자료를 다룬다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"WiFiBook","item":"https://yalex-kim.github.io/yalexBook/wifi/"},{"@type":"ListItem","position":2,"name":"01 와이파이란 무엇인가","item":"https://yalex-kim.github.io/yalexBook/wifi/chapters/intro.html"}]}]}</script>
 <link rel="stylesheet" href="../css/style.css">
 <script src="../js/common.js"></script>
 <style>
@@ -104,6 +104,12 @@
       </div>
       <figcaption><b>그림 1-1.</b> AP 하나와 그 STA들이 BSS, 같은 SSID로 이어진 여러 BSS가 ESS다. 휴대폰이 거실의 AP1에서 방의 AP2로 옮겨 가도 SSID는 그대로이고 BSSID만 바뀐다.</figcaption>
     </figure>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">집 공유기 하나가 2.4 GHz와 5 GHz에서 같은 이름 “MyHome”을 내보낸다. 이 공유기가 만드는 BSS는 몇 개일까?</p><p class="wi-hint">BSS는 무선(라디오) 하나와 그 위의 접속 기기들이다.</p><div class="opts">
+      <button class="opt">1개</button>
+      <button class="opt" data-correct>2개</button>
+      <button class="opt">이름 수만큼 1개</button>
+      <button class="opt">연결된 기기 수만큼</button>
+    </div><div class="quiz-exp">대역마다 따로 BSS를 만들고, 각자 다른 BSSID(MAC 주소)를 갖는다. 목록에는 이름 하나로 묶여 보일 뿐이다. 이름(SSID)이 같은 BSS들의 묶음이 ESS다. 아래 목록 해부에서 확인해 보자.</div></div>
     <div class="sim" id="sim-scan">
       <div class="sim-head"><span class="sim-tag">INTERACTIVE</span><h3>Wi-Fi 목록 해부: 이름 하나, BSS 여럿</h3></div>
       <div class="sim-view" style="padding:10px">

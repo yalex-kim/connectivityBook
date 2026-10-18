@@ -1,5 +1,6 @@
 /* ==========================================================================
    BluetoothBook 공통 스크립트 — 전역 객체 BT
+   이 파일은 shared/common.js에서 tools/sync_shared.py로 만든다. 장 목록 밖을 고치려면 shared/common.js를 고친 뒤 동기화한다.
    - 레이아웃(상단바, 목차, 이전/다음, 테마) 자동 생성
    - 시뮬레이터 헬퍼: canvas, chart, range, seg, 그리기·포맷 유틸
    이 파일은 <head>에서 defer 없이 로드된다. 페이지 스크립트는 </body> 직전에 둔다.
@@ -7,6 +8,7 @@
 (function () {
   "use strict";
 
+  // @book-chapters-begin — 이 사이(장 목록)는 책마다 다르다. tools/sync_shared.py가 책의 것을 그대로 둔다.
   const CHAPTERS = [
     { slug: "intro",       num: "01", part: "시작하기",     title: "블루투스란 무엇인가",               desc: "선을 없애려던 작은 무전기. 이름의 유래, 클래식과 저전력(LE), 호스트와 컨트롤러로 나뉜 프로토콜 스택을 한눈에.", tags: ["기초", "sim"] },
     { slug: "radio",       num: "02", part: "시작하기",     title: "2.4 GHz 전파와 데시벨",             desc: "전자레인지와 같은 대역을 쓰는 이유. 파장 12 cm, dBm 계산, 거리·벽·몸이 깎는 신호, 링크 버짓과 RSSI.", tags: ["무선", "sim"] },
@@ -24,7 +26,7 @@
     { slug: "design",      num: "14", part: "종합",         title: "블루투스 제품 설계 플레이그라운드",  desc: "이어폰, 심박계, 분실물 태그, 가격표. 파라미터를 고르면 배터리 수명·지연·거리·처리량이 따라온다.", tags: ["종합", "sim"] },
     { slug: "glossary",    num: "15", part: "종합",         title: "용어집 & 종합 퀴즈",               desc: "블루투스 핵심 용어를 검색하고, 종합 퀴즈로 배운 내용을 점검하자. 용어마다 Core 6.2의 근거 위치를 함께 적었다.", tags: ["정리"] },
   ];
-
+  // @book-chapters-end
   const BT = (window.BT = {});
   BT.CHAPTERS = CHAPTERS;
 
@@ -698,8 +700,31 @@
         opts.forEach((o) => { o.disabled = true; if (o.hasAttribute("data-correct")) o.classList.add("right"); });
         if (!b.hasAttribute("data-correct")) b.classList.add("wrong");
         q.classList.add("done");
+        const exp = q.querySelector(".quiz-exp");
+        if (exp) { exp.setAttribute("aria-live", "polite"); exp.querySelector(".sr-only")?.remove(); exp.insertAdjacentHTML("afterbegin", `<span class="sr-only">${b.hasAttribute("data-correct") ? "정답입니다." : "아쉽지만 틀렸습니다. 정답은 " + (opts.find((o) => o.hasAttribute("data-correct"))?.textContent.trim() || "") + "."} </span>`); }
         q.dispatchEvent(new CustomEvent("answered", { bubbles: true, detail: { correct: b.hasAttribute("data-correct") } }));
       }));
+    });
+
+    // 접근성: 그림을 그리는 캔버스에 이름을 붙이고, 버튼 묶음은 그룹으로, 결과 수치는 조작한 뒤부터 화면 낭독기가 읽게 한다
+    document.querySelectorAll("canvas").forEach((cv) => {
+      if (cv.hasAttribute("aria-label") || cv.getAttribute("aria-hidden") === "true") return;
+      const box = cv.closest(".sim, figure, .hero-3d"), title = box && box.querySelector("h3, figcaption, .hint");
+      const ro = box && box.classList.contains("sim") && box.querySelector(".sim-readout");
+      cv.setAttribute("role", "img");
+      cv.setAttribute("aria-label", (title ? title.textContent.trim() : "그림") + (ro ? " — 주요 결과는 아래 수치로 읽을 수 있다" : ""));
+    });
+    document.querySelectorAll(".seg").forEach((g) => {
+      if (g.hasAttribute("role")) return;
+      g.setAttribute("role", "group");
+      const lab = g.previousElementSibling;
+      if (lab && lab.tagName === "SPAN") g.setAttribute("aria-label", lab.textContent.trim());
+    });
+    document.querySelectorAll(".sim").forEach((sim) => {
+      const ro = sim.querySelector(".sim-readout"); if (!ro) return;
+      ro.setAttribute("role", "group"); ro.setAttribute("aria-label", "결과");
+      const live = () => ro.setAttribute("aria-live", "polite");
+      sim.addEventListener("input", live, { once: true }); sim.addEventListener("click", live, { once: true });
     });
 
 

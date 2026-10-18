@@ -6,5 +6,27 @@
   "repo": "https://github.com/yalex-kim/yalexBook/tree/main/uwb",
   "field": "electronics",
   "status": "published",
-  "path": "uwb/"
+  "path": "uwb/",
+  "ui": {
+    "ns": "UW",
+    "prefix": "uw",
+    "short": "UWB 교과서",
+    "footer": "UWBBook — 누구나 읽는 인터랙티브 UWB 교과서 · IEEE 802.15.4z·FiRa 원문 대신 공개 구현(Android·Zephyr·Decawave)과 공개 법령으로 확인한 값을 씁니다",
+    "specLabel": "출처 들여다보기",
+    "colors": {
+      "light": {
+        "accent": "#0f766e",
+        "accent-soft": "rgba(15, 118, 110, 0.11)",
+        "accent-2": "#b45309",
+        "accent-2-soft": "rgba(180, 83, 9, 0.12)"
+      },
+      "dark": {
+        "accent": "#2dd4bf",
+        "accent-soft": "rgba(45, 212, 191, 0.16)",
+        "accent-2": "#fbbf24",
+        "accent-2-soft": "rgba(251, 191, 36, 0.15)"
+      }
+    },
+    "logo": "<g fill=\"none\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M6 17h4l2-8 3 14 3-11 2 5h6\"/></g>"
+  }
 }

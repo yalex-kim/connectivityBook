@@ -17,7 +17,7 @@
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"블루투스 제품 설계 플레이그라운드","name":"블루투스 제품 설계 플레이그라운드 · BluetoothBook","url":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/design.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/design.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":14,"image":"https://yalex-kim.github.io/yalexBook/bluetooth/og.png","dateModified":"2026-10-17","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/bluetooth/#book","name":"BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth/"},"publisher":{"@type":"Organization","name":"BluetoothBook","url":"https://yalex-kim.github.io/yalexBook/bluetooth/"},"description":"지금까지의 모든 계산을 한 화면에. 이어폰, 심박계, 분실물 태그, 게임 컨트롤러를 골라 PHY, 송신 전력, 간격, 지연, 데이터 양을 정하면 배터리 수명, 반응 지연, 도달 거리, 처리량 여유와 Core 6.2 규칙 위반 여부가 따라온다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook","item":"https://yalex-kim.github.io/yalexBook/bluetooth/"},{"@type":"ListItem","position":2,"name":"14 블루투스 제품 설계 플레이그라운드","item":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/design.html"}]}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"블루투스 제품 설계 플레이그라운드","name":"블루투스 제품 설계 플레이그라운드 · BluetoothBook","url":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/design.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/design.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":14,"image":"https://yalex-kim.github.io/yalexBook/bluetooth/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/bluetooth/#book","name":"BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth/"},"publisher":{"@type":"Organization","name":"BluetoothBook","url":"https://yalex-kim.github.io/yalexBook/bluetooth/"},"description":"지금까지의 모든 계산을 한 화면에. 이어폰, 심박계, 분실물 태그, 게임 컨트롤러를 골라 PHY, 송신 전력, 간격, 지연, 데이터 양을 정하면 배터리 수명, 반응 지연, 도달 거리, 처리량 여유와 Core 6.2 규칙 위반 여부가 따라온다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook","item":"https://yalex-kim.github.io/yalexBook/bluetooth/"},{"@type":"ListItem","position":2,"name":"14 블루투스 제품 설계 플레이그라운드","item":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/design.html"}]}]}</script>
 <link rel="stylesheet" href="../css/style.css">
 <script src="../js/common.js"></script>
 <style>
@@ -45,6 +45,13 @@
   <section id="play">
     <h2>설계해 보기</h2>
     <p>제품을 고르면 그 제품의 요구 사항(가로 점선)과 흔한 출발점 설정이 채워진다. 슬라이더를 움직여 네 막대가 모두 점선을 넘게 만들어 보자. 아래 목록은 Core 6.2 규칙과 호환성 점검이다.</p>
+    <div class="callout analogy"><strong>카페에서 쓸 약속 정하기</strong><p>자주 만나면 이야기는 빨리 전하지만 피곤하고, 크게 말하면 멀리까지 들리지만 목이 쉰다. 블루투스 제품의 배터리 수명, 반응 속도, 거리, 처리량도 서로 맞바꾸는 관계다. 이 장의 설계기는 앞 장들의 계산을 한데 모아, 한쪽을 당기면 다른 쪽이 얼마나 줄어드는지 보여 준다.</p></div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">손목 밴드처럼 몸에 붙이면 신호가 12 dB 더 약해진다고 하자. 경로 손실 지수 2.7인 실내에서 도달 거리는?</p><p class="wi-hint">거리 배수 = 10<sup>(−12 / (10 × 2.7))</sup>.</p><div class="opts">
+      <button class="opt">거의 그대로</button>
+      <button class="opt" data-correct>약 3분의 1</button>
+      <button class="opt">약 10분의 1</button>
+      <button class="opt">0</button>
+    </div><div class="quiz-exp">10<sup>−12/27</sup> ≈ 0.36, 약 3분의 1이다. 몸은 물이 많아 2.4 GHz를 잘 흡수한다(2장). 설계기에서 ‘사람 몸이 가리는 손실 포함’을 끄고 켜 보면 거리 막대가 그만큼 바뀐다. 출력을 올리거나 Coded PHY로 감도를 얻어 메운다.</div></div>
     <div class="sim" id="sim-design">
       <div class="sim-head"><span class="sim-tag">PLAYGROUND</span><h3>제품 설계: 수명 · 반응 · 거리 · 처리량</h3></div>
       <div class="sim-view"><canvas id="cv-design"></canvas><ul class="chk" id="dz-chk"></ul></div>

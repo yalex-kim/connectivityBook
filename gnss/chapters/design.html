@@ -37,6 +37,13 @@
   <!-- ============================================================ -->
   <section id="play">
     <h2>수신기 고르기</h2>
+    <div class="callout analogy"><strong>여행 가방 싸기</strong><p>출장 가방과 등산 배낭은 들어갈 것이 다르다. 모든 것을 다 넣으면 무겁고, 빠뜨리면 현장에서 곤란하다. GNSS도 위성군, 주파수, 보강 방법, 센서를 다 넣으면 전력과 값이 오르니, 쓰는 곳(도심, 들판, 실내 입구)과 필요한 정확도에 맞춰 고른다.</p></div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">빌딩이 높은 도심에서 위치가 자주 끊긴다. 가장 먼저 효과가 큰 선택은?</p><p class="wi-hint">위치를 풀려면 보이는 위성이 최소 4개 필요하다.</p><div class="opts">
+      <button class="opt">클로부차 계수를 더 자주 받는다</button>
+      <button class="opt" data-correct>위성군을 늘린다 (GPS + Galileo + BeiDou)</button>
+      <button class="opt">앙각 마스크를 30°로 올린다</button>
+      <button class="opt">적분 시간을 줄인다</button>
+    </div><div class="quiz-exp">가려진 하늘에서는 위성 수 자체가 부족하다. 위성군을 늘리면 같은 하늘 띠에 보이는 위성이 2~3배가 되어 4개 미만인 순간이 거의 사라지고 DOP도 준다. 마스크를 올리면 오히려 위성이 줄어든다. 아래 계산기에서 환경을 ‘도심’으로 두고 위성군을 바꿔 보자.</div></div>
     <div class="sim" id="sim-pg">
       <div class="sim-head"><span class="sim-tag">PLAYGROUND</span><h3>GNSS 설계 계산기</h3></div>
       <div class="sim-body side">
@@ -98,6 +105,20 @@
       <li>정확도 ≈ DOP × UERE. L5는 전리층·다중 경로를, SBAS는 궤도·시계·전리층을, RTK는 거의 모든 공통 오차를 줄인다.</li>
       <li>요구 사항(정확도·가용성·첫 위치 시간·무결성·전력)에서 출발해 위성군·주파수·보강·안테나를 고른다.</li>
     </ol>
+  </section>
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>도심에서 GNSS 가용성을 가장 크게 올리는 선택은?</p><div class="opts">
+        <button class="opt">앙각 마스크를 높인다</button><button class="opt" data-correct>위성군을 더한다</button><button class="opt">클로부차 모델을 끈다</button><button class="opt">적분 시간을 줄인다</button>
+      </div><div class="quiz-exp">보이는 위성 수가 늘어 4개 미만인 순간이 줄고 DOP도 작아진다(11장).</div></div>
+      <div class="quiz-q"><p>측량처럼 cm 정확도가 필요하다. 꼭 필요한 것은?</p><div class="opts">
+        <button class="opt">L1만 쓰는 수신기</button><button class="opt">SBAS</button><button class="opt" data-correct>반송파 위상과 기준국 보정(RTK)</button><button class="opt">A-GNSS</button>
+      </div><div class="quiz-exp">cm는 반송파 위상의 정수 모호성을 풀어야 얻는다. SBAS는 1 m대다(12장).</div></div>
+      <div class="quiz-q"><p>정확도를 어림하는 식은?</p><div class="opts">
+        <button class="opt">DOP + UERE</button><button class="opt" data-correct>DOP × UERE</button><button class="opt">UERE ÷ DOP</button><button class="opt">위성 수 × UERE</button>
+      </div><div class="quiz-exp">배치(DOP)가 거리 오차(UERE)를 몇 배로 키우는지로 위치 오차를 어림한다(9·10장).</div></div>
+    </div>
   </section>
 </main>
 

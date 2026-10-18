@@ -17,7 +17,7 @@
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"Wi-Fi 7과 그다음","name":"Wi-Fi 7과 그다음 · WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/chapters/wifi7.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/wifi/chapters/wifi7.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":13,"image":"https://yalex-kim.github.io/yalexBook/wifi/og.png","dateModified":"2026-10-17","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/wifi/#book","name":"WiFiBook — 누구나 읽는 인터랙티브 와이파이 교과서","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"publisher":{"@type":"Organization","name":"WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"description":"Wi-Fi 7(802.11be)의 320 MHz 채널, 4096-QAM, 여러 대역을 동시에 쓰는 멀티 링크(MLO), 막힌 20 MHz만 비우고 넓은 채널을 지키는 프리앰블 펑처링을 시뮬레이터로 익히고, 신뢰성을 겨냥한 Wi-Fi 8(802.11bn) 초안의 방향을 살펴본다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"WiFiBook","item":"https://yalex-kim.github.io/yalexBook/wifi/"},{"@type":"ListItem","position":2,"name":"13 Wi-Fi 7과 그다음","item":"https://yalex-kim.github.io/yalexBook/wifi/chapters/wifi7.html"}]}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"Wi-Fi 7과 그다음","name":"Wi-Fi 7과 그다음 · WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/chapters/wifi7.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/wifi/chapters/wifi7.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":13,"image":"https://yalex-kim.github.io/yalexBook/wifi/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/wifi/#book","name":"WiFiBook — 누구나 읽는 인터랙티브 와이파이 교과서","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"publisher":{"@type":"Organization","name":"WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"description":"Wi-Fi 7(802.11be)의 320 MHz 채널, 4096-QAM, 여러 대역을 동시에 쓰는 멀티 링크(MLO), 막힌 20 MHz만 비우고 넓은 채널을 지키는 프리앰블 펑처링을 시뮬레이터로 익히고, 신뢰성을 겨냥한 Wi-Fi 8(802.11bn) 초안의 방향을 살펴본다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"WiFiBook","item":"https://yalex-kim.github.io/yalexBook/wifi/"},{"@type":"ListItem","position":2,"name":"13 Wi-Fi 7과 그다음","item":"https://yalex-kim.github.io/yalexBook/wifi/chapters/wifi7.html"}]}]}</script>
 <link rel="stylesheet" href="../css/style.css">
 <script src="../js/common.js"></script>
 <style>
@@ -70,6 +70,7 @@
       <li><b>EMLSR</b><span class="en">(Enhanced Multi-Link Single Radio)</span>: 무선부 하나로 여러 링크를 <b>듣다가</b>, 먼저 기회가 온 링크로 모든 안테나를 옮겨 보낸다. 휴대폰처럼 무선부를 여럿 두기 어려운 기기의 주력 방식이다. 속도를 합치진 않지만 “먼저 빈 링크”를 쓰므로 지연이 준다.</li>
     </ul>
     <p>MLO의 가장 큰 쓸모는 최고 속도보다 <b>꼬리 지연</b>(가끔 생기는 긴 대기)을 줄이는 것이다. 한 채널이 옆집 다운로드로 바쁠 때, 다른 대역이 비어 있으면 그쪽으로 보낸다. 두 채널이 동시에 바쁠 확률은 각각이 바쁠 확률보다 훨씬 작다.</p>
+    <div class="callout analogy"><strong>여러 층의 회의실을 함께 예약</strong><p>한 층 회의실만 예약하면 그 방이 붐빌 때 기다릴 수밖에 없다. 여러 층(2.4·5·6 GHz)의 회의실을 함께 예약해 두면 먼저 빈 방에서 바로 말할 수 있다. Wi-Fi 7의 MLO가 이것이다. 평균 속도보다 “가끔 오래 기다리는 일”이 크게 준다.</p></div>
     <div class="sim" id="sim-mlo">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>링크 여럿이면 기다림이 얼마나 줄까</h3></div>
       <div class="sim-view"><canvas id="cv-mlo"></canvas></div>
@@ -92,6 +93,12 @@
     <h2>프리앰블 펑처링: 구멍 난 넓은 채널</h2>
     <p>160 MHz 채널 안의 20 MHz 하나를 이웃이나 레이더가 쓰고 있다면, Wi-Fi 6 이전 규칙에서는 그 20 MHz를 피할 수 있는 가장 넓은 연속 채널(80 MHz나 그 이하)로 줄여야 했다. Wi-Fi 7은 그 20 MHz만 <b>구멍을 뚫고</b>(펑처링) 나머지를 모두 쓴다. 프리앰블에 어느 20 MHz가 빠졌는지 적어 보내고, 그 부분의 부반송파는 비운다.</p>
     <p>아무 모양의 구멍이나 되는 것은 아니다. 표준이 허용한 패턴만 쓸 수 있고, 주 채널(primary 20 MHz)은 뚫을 수 없다. 320 MHz에서는 40 MHz 단위로 뚫는다.</p>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">320 MHz 채널에서 주 채널과 먼 20 MHz 한 칸에 레이더가 있다. 펑처링 없이, 그리고 펑처링으로 쓸 수 있는 폭은?</p><p class="wi-hint">펑처링 없이는 막힌 칸이 없는 정렬된 채널로 줄여야 한다. 320 MHz 펑처링은 40 MHz 단위다.</p><div class="opts">
+      <button class="opt">320 / 320 MHz</button>
+      <button class="opt" data-correct>160 / 280 MHz</button>
+      <button class="opt">80 / 300 MHz</button>
+      <button class="opt">20 / 160 MHz</button>
+    </div><div class="quiz-exp">펑처링 없이는 막힌 칸을 피해 주 채널 쪽 160 MHz로 줄어든다. 펑처링하면 막힌 칸을 포함한 40 MHz만 빼고 280 MHz를 쓴다(Linux <code>valid_puncturing_bitmap()</code>의 320 MHz 패턴). 아래에서 칸을 눌러 막아 보자.</div></div>
     <div class="sim" id="sim-punct">
       <div class="sim-head"><span class="sim-tag">INTERACTIVE</span><h3>막힌 20 MHz 고르고 쓸 수 있는 폭 보기</h3></div>
       <div class="sim-controls" style="border-top:0">

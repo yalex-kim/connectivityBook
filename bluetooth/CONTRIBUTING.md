@@ -57,6 +57,7 @@
 </html>
 ```
 상단바, 챕터 서랍, 목차, 이전/다음, 푸터, 테마 토글, 퀴즈 동작, 학습 진도, 용어 툴팁은 `common.js`가 자동 처리한다.
+`js/common.js`와 `css/style.css`는 서재의 네 책이 함께 쓰는 원본(저장소 루트 `shared/`)에서 `python3 tools/sync_shared.py`로 만든다. 장 목록(`CHAPTERS`)만 이 책의 `common.js`에서 직접 고치고, 그 밖의 공통 동작·스타일은 `shared/`를 고친 뒤 동기화한다. 책 이름·색·푸터 문구는 `book.json`의 `ui`에 있다. CI가 `--check`로 어긋남을 잡는다.
 새 챕터는 `common.js`의 `CHAPTERS`에 `{ slug, num, part, title, desc, tags }`로 등록한 뒤 `python3 tools/seo.py`를 실행한다.
 
 ## 컴포넌트

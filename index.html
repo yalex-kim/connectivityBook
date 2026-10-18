@@ -53,6 +53,20 @@
   .how { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
   .how div { padding: 16px 18px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-elev); color: var(--dim); font-size: 14.5px; }
   .how b { display: block; color: var(--text); margin-bottom: 4px; }
+  .search { position: relative; margin: 8px 0 0; }
+  .search input { width: 100%; font: inherit; font-size: 16px; padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-elev); color: var(--text); box-shadow: var(--shadow); }
+  .search input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .sr-hint { color: var(--faint); font-size: 13px; margin: 6px 2px 0; }
+  .results { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 8px; }
+  .results li a { display: block; padding: 10px 14px; border: 1px solid var(--border); border-left: 4px solid var(--bk); border-radius: 10px; background: var(--bg-elev); color: var(--text); }
+  .results li a:hover, .results li a:focus { border-color: var(--bk); }
+  .results .r-top { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; }
+  .results .r-t { font-weight: 700; }
+  .results .r-e { color: var(--dim); font-size: 13px; }
+  .results .r-b { font-size: 11.5px; padding: 1px 8px; border-radius: 999px; color: var(--bk); background: color-mix(in srgb, var(--bk) 12%, transparent); }
+  .results .r-k { font-size: 11.5px; color: var(--faint); }
+  .results .r-d { display: block; color: var(--dim); font-size: 13.5px; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .results mark { background: color-mix(in srgb, var(--accent) 22%, transparent); color: inherit; border-radius: 3px; padding: 0 1px; }
   footer { margin: 48px 0 32px; padding-top: 18px; border-top: 1px solid var(--border); color: var(--faint); font-size: 13px; }
 </style>
 </head>
@@ -68,6 +82,13 @@
     <h1>읽기만 하지 말고,<br><em>만지면서 배우는 책장</em></h1>
     <p>모든 책은 같은 방식으로 씁니다. 일상의 장면에서 질문을 꺼내고, 비유로 감을 잡고, 먼저 예측해 본 뒤, 시뮬레이터로 직접 확인합니다. 숫자는 원전(사양서·표준)이나 그것을 그대로 구현한 공개 코드에서 확인한 값만 쓰고 근거 위치를 밝힙니다.</p>
   </section>
+
+  <h2 id="search-h">서재 전체에서 찾기</h2>
+  <div class="search" role="search">
+    <input id="q" type="search" placeholder="용어, 장, 절 제목으로 찾기 (예: 다중 경로, AoA, DOP, 6 GHz)" aria-labelledby="search-h" aria-describedby="sr-hint" autocomplete="off">
+    <p class="sr-hint" id="sr-hint">네 권의 용어집, 장 제목과 소개, 절 제목을 함께 찾습니다.</p>
+    <ul class="results" id="results" aria-live="polite"></ul>
+  </div>
 
   <h2>책장</h2>
   <div class="shelf" id="shelf"></div>
@@ -100,11 +121,41 @@
       </a>`).join("");
   }
   render();
+  // 서재 전체 검색: 처음 입력할 때 색인(assets/search-index.js)을 불러온다
+  const q = document.getElementById("q"), out = document.getElementById("results");
+  let loading = null;
+  const loadIndex = () => loading || (loading = new Promise((res) => { const sc = document.createElement("script"); sc.src = "assets/search-index.js"; sc.onload = res; sc.onerror = res; document.head.appendChild(sc); }));
+  const norm = (x) => String(x || "").toLowerCase().replace(/\s+/g, "");
+  const KIND = { term: "용어", ch: "장", sec: "절" };
+  const mark = (text, needle) => { const t = String(text), i = t.toLowerCase().indexOf(needle.toLowerCase()); return i < 0 || !needle ? esc(t) : esc(t.slice(0, i)) + "<mark>" + esc(t.slice(i, i + needle.length)) + "</mark>" + esc(t.slice(i + needle.length)); };
+  async function search() {
+    const raw = q.value.trim(), n = norm(raw);
+    if (!n) { out.innerHTML = ""; return; }
+    await loadIndex();
+    const books = Object.fromEntries((window.YB_BOOKS || []).map((b) => [b.path.replace(/\/$/, ""), b]));
+    const scored = [];
+    (window.YB_SEARCH || []).forEach((it) => {
+      const t = norm(it.t), e = norm(it.e), d = norm(it.d);
+      let s = t === n || e === n ? 100 : t.startsWith(n) || e.startsWith(n) ? 60 : t.includes(n) || e.includes(n) ? 40 : d.includes(n) ? 10 : 0;
+      if (!s) return;
+      s += it.k === "term" ? 3 : it.k === "ch" ? 2 : 1;
+      scored.push([s, it]);
+    });
+    scored.sort((a, b) => b[0] - a[0]);
+    const top = scored.slice(0, 30);
+    out.innerHTML = top.length ? top.map(([, it]) => { const b = books[it.b] || {}; return `<li><a href="${esc(it.u)}" style="--bk:${dark() ? b.colorDark : b.color}"><span class="r-top"><span class="r-t">${mark(it.t, raw)}</span>${it.e ? `<span class="r-e">${mark(it.e, raw)}</span>` : ""}<span class="r-b">${esc(b.title || it.b)}</span><span class="r-k">${KIND[it.k]}${it.cn ? " · " + esc(it.cn) : ""}</span></span><span class="r-d">${mark(it.d, raw)}</span></a></li>`; }).join("")
+      + (scored.length > top.length ? `<li class="sr-hint">외 ${scored.length - top.length}개 — 더 좁혀 보세요</li>` : "")
+      : `<li class="sr-hint">“${esc(raw)}”에 맞는 항목이 없습니다.</li>`;
+  }
+  let timer = 0;
+  q.addEventListener("focus", loadIndex, { once: true });
+  q.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(search, 120); });
+  try { const qq = new URLSearchParams(location.search).get("q"); if (qq) { q.value = qq; search(); } } catch (e) {}
   document.getElementById("theme").addEventListener("click", () => {
     const next = dark() ? "light" : "dark";
     document.documentElement.dataset.theme = next;
     try { localStorage.setItem("yb-theme", next); } catch (e) {}
-    render();
+    render(); search();
   });
 })();
 </script>

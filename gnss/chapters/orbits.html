@@ -40,6 +40,13 @@
     <h2>높이가 주기를 정한다</h2>
     <p>원 궤도를 도는 위성은 중력과 원운동이 균형을 이룬다. 여기서 케플러 제3법칙이 나온다. 주기 T = 2π·√(a³/μ), a는 궤도 반지름(지구 중심에서), μ는 지구 중력 상수다. GPS 규격은 μ = 3.986005 × 10¹⁴ m³/s²를 쓴다. 높이가 오를수록 주기가 길어지고 속도는 느려진다.</p>
     <p>GPS 위성의 주기는 정확히 <b>반 항성일</b>(11시간 58분)이 되도록 골랐다. 지구가 별을 기준으로 한 바퀴 도는 동안(23시간 56분) 위성은 두 바퀴를 돌아, 같은 위성이 <b>매일 약 4분씩 일찍</b> 같은 하늘 자리에 돌아온다. 이 주기에 해당하는 궤도 반지름이 약 26,560 km(고도 약 20,200 km)이고, GPS 규격도 기준 반지름 26,559,710 m를 쓴다.</p>
+    <div class="callout analogy"><strong>운동장 바깥 레인</strong><p>운동장 안쪽 레인을 도는 선수는 빨리 돌아오고, 바깥 레인은 한 바퀴가 길다. 궤도는 여기에 하나가 더 붙는다. 높이 올라갈수록 지구가 당기는 힘이 약해서 <b>속도도 느려진다</b>. 그래서 높은 궤도의 주기는 거리보다 더 빨리 길어진다.</p></div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">궤도 반지름을 4배로 늘리면 주기는 몇 배가 될까?</p><p class="wi-hint">케플러 제3법칙: 주기² ∝ 반지름³.</p><div class="opts">
+      <button class="opt">2배</button>
+      <button class="opt">4배</button>
+      <button class="opt" data-correct>8배</button>
+      <button class="opt">16배</button>
+    </div><div class="quiz-exp">T ∝ a<sup>3/2</sup>이므로 4<sup>1.5</sup> = 8배다. 반지름 약 6,650 km인 저궤도(약 90분)의 4배는 약 26,600 km, 주기는 약 12시간으로 GPS 궤도와 거의 같다. 아래 시뮬레이터에서 직접 확인해 보자.</div></div>
     <div class="sim" id="sim-kep">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>고도와 주기, 속도</h3></div>
       <div class="sim-view"><canvas id="cv-kep"></canvas></div>

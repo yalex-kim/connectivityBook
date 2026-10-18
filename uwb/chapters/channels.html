@@ -45,6 +45,7 @@
     </table></div>
     <p class="spec-ref">1·2·3·5·7·9번 중심 주파수: Decawave <code>uwb-core</code>의 <code>uwb_mac.h</code> <code>UWB_CH_FREQ_CHAN_*</code> · 4번 = 2번, 7번 = 5번(같은 중심의 넓은 채널): Zephyr <code>ieee802154_dw1000_regs.h</code>의 <code>DWT_FS_PLLCFG_CH4 = DWT_FS_PLLCFG_CH2</code>, <code>DWT_FS_PLLCFG_CH7 = DWT_FS_PLLCFG_CH5</code> · 휴대폰 지원 채널 5·6·8·9·10·12·13·14: Android <code>FiraParams.java</code>의 <code>UWB_CHANNEL_*</code>, CCC 디지털 키는 5·9번만(<code>CccParams.java</code>) · 나머지 채널 값은 같은 499.2 MHz 배수 규칙으로 채운 것</p>
     <div class="callout spec"><strong>공개 구현끼리 다를 때</strong><p><code>uwb-core</code>의 <code>uwb_mac.h</code>는 4번 채널을 4,492.8 MHz(3번과 같은 값)로 적고 있다. 그러나 같은 칩용 Zephyr 드라이버는 4번 채널의 PLL 설정을 2번과 똑같이 쓰고(<code>DWT_FS_PLLCFG_CH4 = DWT_FS_PLLCFG_CH2</code>), 7번도 5번과 같다. 4·7번은 2·5번과 같은 중심에 폭만 넓힌 채널이라는 뜻이다. 이 책은 PLL 설정을 근거로 4번 = 3,993.6 MHz로 적었다. <code>uwb_calc_aoa()</code>가 4번 채널의 파장을 구할 때 쓰는 값이 이 상수라, 그 라이브러리로 4번 채널 각도를 계산하면 약 11% 어긋날 수 있다(8장).</p></div>
+    <div class="callout analogy"><strong>강당 전체에 속삭이기</strong><p>강당에서 한 사람이 크게 외치면 모든 대화가 끊긴다. 대신 아주 작게, 하지만 강당 전체에 고루 퍼지게 속삭이면 옆 사람 대화에는 거의 들리지 않는다. 속삭임을 아는 사람만 귀를 기울여 모아 듣는다. UWB가 넓은 대역에 아주 낮은 세기(−41.3 dBm/MHz)로 퍼뜨리는 방식이 이렇다.</p></div>
     <div class="sim" id="sim-map">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>3~10 GHz 이웃 지도</h3></div>
       <div class="sim-view"><canvas id="cv-map"></canvas></div>
@@ -66,6 +67,12 @@
     <p>FCC는 3.1~10.6 GHz에서 UWB의 평균 방사를 <b>1 MHz당 −41.3 dBm EIRP</b>로 묶었다(실내용·휴대용 모두). 74 나노와트다. 이 값은 미국의 다른 전자 기기가 의도치 않게 내는 잡음 한도와 같은 수준으로, “잡음만큼만” 내라는 뜻이다. 채널 폭 전체로 더하면 −41.3 + 10·log₁₀(499.2) ≈ <b>−14.3 dBm</b>, 약 37 µW다. 블루투스(0~10 dBm)의 100분의 1, 와이파이(20 dBm)의 2,700분의 1 수준이다.</p>
     <p>측정 방법도 정해져 있다. 1 MHz 분해능 대역폭에서 <b>1 ms 이하로 평균한 RMS 값</b>이 한도를 넘지 않아야 한다. 따라서 1 ms 창 안의 평균만 맞으면 되므로, 패킷이 그보다 짧으면 패킷이 나가는 동안의 세기를 그만큼 올릴 수 있다. 다만 50 MHz 폭에서 최대 0 dBm이라는 <b>피크 한도</b>가 따로 있어 무한정 올릴 수는 없다.</p>
     <p class="spec-ref">평균 한도 3,100~10,600 MHz −41.3 dBm EIRP(1 MHz), 피크 한도 50 MHz당 0 dBm: 47 CFR §15.519(c)·(e)(휴대용), §15.517(실내용) · RMS 평균 1 ms 이하, 피크 측정 폭 변환 20·log(RBW/50): §15.521(d)·(g)</p>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">−41.3 dBm/MHz로 499.2 MHz 채널 전체를 채우면 전체 출력은 대략 얼마일까?</p><p class="wi-hint">dBm/MHz에 10·log₁₀(대역폭 MHz)를 더한다.</p><div class="opts">
+      <button class="opt">약 1 W</button>
+      <button class="opt">약 1 mW</button>
+      <button class="opt" data-correct>약 37 µW</button>
+      <button class="opt">약 1 nW</button>
+    </div><div class="quiz-exp">−41.3 + 10·log₁₀(499.2) ≈ −14.3 dBm ≈ 37 µW. 휴대폰 블루투스(수 mW)보다도 수십 배 작다. 그래서 UWB는 수십 m 이내에서 쓴다. 아래에서 거리와 감도를 바꿔 보자.</div></div>
     <div class="sim" id="sim-pw">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>규제가 정하는 거리</h3></div>
       <div class="sim-view"><canvas id="cv-pw"></canvas></div>
@@ -83,6 +90,8 @@
       <div class="sim-note">그래프: 거리에 따른 받는 세기(자유 공간)와 감도·여유. 해볼 것: ① 1 ms 내내 보내면 총출력 −14.3 dBm, 감도 −98 dBm, 여유 6 dB에서 9번 채널은 약 23 m. 여유를 사람 몸 하나(약 10 dB 더)만큼 늘리면 7 m 남짓으로 준다. ② 패킷을 200 µs로 줄이면 1 ms 평균 규칙 안에서 7 dB를 올릴 수 있어 거리가 두 배 넘게 는다. 실제로는 피크 한도·칩의 송신 한계 때문에 이만큼 다 올리지 못하는 경우가 많다. ③ 같은 조건에서 5번 채널이 9번보다 조금 멀리 간다(주파수가 낮을수록 같은 안테나 조건의 자유 공간 손실이 작다). 계산: 송신 = −41.3 + 10·log₁₀(499.2) + 10·log₁₀(1,000 µs ÷ 패킷 길이), 자유 공간 손실 = 20·log₁₀(4πdf/c), 안테나 이득 0 dBi. 손실 식은 <code>uwb-core</code>의 <code>uwb_rng_path_loss()</code>와 같다(검증 스크립트).</div>
     </div>
   </section>
+
+  <div class="callout related"><strong>다른 책에서</strong><ul><li><a href="../../wifi/chapters/bands.html">WiFiBook 02장 · 대역과 채널: 2.4·5·6 GHz</a> — 같은 6 GHz를 쓰는 와이파이</li></ul></div>
 
   <section class="keypoints" id="summary">
     <h2>핵심 정리</h2>

@@ -17,7 +17,7 @@
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"채널 차지하기: CSMA/CA와 EDCA","name":"채널 차지하기: CSMA/CA와 EDCA · WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/chapters/access.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/wifi/chapters/access.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":6,"image":"https://yalex-kim.github.io/yalexBook/wifi/og.png","dateModified":"2026-10-17","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/wifi/#book","name":"WiFiBook — 누구나 읽는 인터랙티브 와이파이 교과서","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"publisher":{"@type":"Organization","name":"WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"description":"한 채널을 여러 기기가 나눠 쓰는 규칙. 먼저 듣고 기다렸다 보내는 CSMA/CA, 무작위 백오프와 충돌, 숨은 단말과 RTS/CTS, 음성·영상에 먼저 기회를 주는 EDCA를 시뮬레이터로 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"WiFiBook","item":"https://yalex-kim.github.io/yalexBook/wifi/"},{"@type":"ListItem","position":2,"name":"06 채널 차지하기: CSMA/CA와 EDCA","item":"https://yalex-kim.github.io/yalexBook/wifi/chapters/access.html"}]}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"채널 차지하기: CSMA/CA와 EDCA","name":"채널 차지하기: CSMA/CA와 EDCA · WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/chapters/access.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/wifi/chapters/access.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":6,"image":"https://yalex-kim.github.io/yalexBook/wifi/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/wifi/#book","name":"WiFiBook — 누구나 읽는 인터랙티브 와이파이 교과서","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"publisher":{"@type":"Organization","name":"WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"description":"한 채널을 여러 기기가 나눠 쓰는 규칙. 먼저 듣고 기다렸다 보내는 CSMA/CA, 무작위 백오프와 충돌, 숨은 단말과 RTS/CTS, 음성·영상에 먼저 기회를 주는 EDCA를 시뮬레이터로 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"WiFiBook","item":"https://yalex-kim.github.io/yalexBook/wifi/"},{"@type":"ListItem","position":2,"name":"06 채널 차지하기: CSMA/CA와 EDCA","item":"https://yalex-kim.github.io/yalexBook/wifi/chapters/access.html"}]}]}</script>
 <link rel="stylesheet" href="../css/style.css">
 <script src="../js/common.js"></script>
 </head>
@@ -150,6 +150,8 @@
       <div class="sim-note">그래프: 채널이 빈 순간부터 각 범주가 보내기 시작할 수 있는 시각의 분포(AIFS + 백오프, 처음 CW 기준). 해볼 것: ① 음성 대 일반은 음성이 약 91% 먼저 가고 5%쯤은 겹친다. 배경 대 일반은 일반이 이긴다. ② 같은 범주끼리는 반반이고, 겹칠 확률이 CW가 작은 음성끼리에서 가장 크다(25%). 우선순위가 “보장”이 아니라 “확률”인 이유다. 계산: 처음 CW에서 백오프 숫자의 모든 조합을 정확히 셈(첫 시도, 다른 기기 없음).</div>
     </div>
   </section>
+
+  <div class="callout related"><strong>다른 책에서</strong><ul><li><a href="../../bluetooth/chapters/hopping.html">BluetoothBook 04장 · 주파수 도약과 공존</a> — 블루투스는 주파수 도약으로 간섭을 피한다</li></ul></div>
 
   <section class="keypoints" id="summary">
     <h2>핵심 정리</h2>

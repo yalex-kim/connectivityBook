@@ -40,6 +40,12 @@
     <h2>전리층: 낮에 두껍고 낮은 위성에 길다</h2>
     <p>전리층은 태양 빛이 대기를 이온화해 자유 전자가 떠 있는 층이다. 전자가 많을수록 신호의 코드(의사거리)는 늦어지고 반송파 위상은 반대로 앞당겨진다. 지연은 빛이 지나가는 길의 전자 총량(TEC)에 비례하고 <b>주파수 제곱에 반비례</b>한다: 40.3·TEC/f² m. 전자는 낮에 많고(지방시 오후 2시에 가장 많음) 밤에 적으며, 낮은 위성은 전리층을 비스듬히 길게 지나므로 지연이 크다.</p>
     <p>한 주파수만 받는 수신기는 GPS가 방송하는 계수 8개(α₀~α₃, β₀~β₃)로 <span class="term">클로부차 모델</span>을 계산한다. 낮의 전자량을 코사인 모양으로, 밤을 5 ns로 둔 단순한 모델이다. 규격은 이 모델이 단일 주파수 사용자의 전리층 오차(RMS)를 <b>최소 50%</b> 줄인다고 적는다.</p>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">같은 위성, 같은 앙각이라면 전리층 지연이 더 큰 때는?</p><p class="wi-hint">전리층의 전자는 햇빛이 만든다.</p><div class="opts">
+      <button class="opt">새벽 2시</button>
+      <button class="opt" data-correct>오후 2시</button>
+      <button class="opt">똑같다</button>
+      <button class="opt">자정</button>
+    </div><div class="quiz-exp">클로부차 모델(IS-GPS-200N 그림 20-4)은 지연이 현지 시각 14시(50,400초)에 가장 크고, 밤에는 5 ns(약 1.5 m) 바닥값으로 둔다. 아래 시뮬레이터에서 시각을 바꿔 보자.</div></div>
     <div class="sim" id="sim-iono">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>클로부차 전리층 지연</h3></div>
       <div class="sim-view"><canvas id="cv-iono"></canvas></div>
@@ -86,6 +92,7 @@
     <div class="formula">P<sub>IF</sub> = (f₁²·P₁ − f₂²·P₂) / (f₁² − f₂²)
       <div class="where">L1·L5: P<sub>IF</sub> ≈ 2.261·P₁ − 1.261·P₅. 계수 합은 1이라 기하 거리와 시계는 그대로, 전리층만 사라진다. 대가는 잡음: 두 측정의 잡음이 독립이면 √(2.261² + 1.261²) ≈ 2.59배로 커진다(L1·L2는 약 2.98배).</div>
     </div>
+    <div class="callout analogy"><strong>프리즘을 지난 두 색</strong><p>프리즘에 빛을 비추면 파랑이 빨강보다 많이 꺾인다. 꺾인 정도가 색마다 정해진 비율로 다르니, 두 색이 얼마나 다르게 꺾였는지 보면 프리즘이 얼마나 두꺼운지 거꾸로 알 수 있다. 전리층도 주파수의 제곱에 반비례해 신호를 늦춘다. 두 주파수가 늦은 정도의 차이로 전리층 지연을 거꾸로 계산해 지운다.</p></div>
     <div class="sim" id="sim-if">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>전리층 제거 조합</h3></div>
       <div class="sim-view"><canvas id="cv-if"></canvas></div>
