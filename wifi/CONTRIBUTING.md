@@ -76,6 +76,7 @@
 - `WF.canvas(el, (ctx,w,h)=>{}, {aspect, height, minHeight, maxHeight})` → `{redraw()}` HiDPI, 리사이즈·테마 변경 시 자동 redraw.
 - `WF.chart(ctx, box|null, {x, y, logX, logY, xLabel, yLabel, series, vlines, hlines, points, bands, xFmt, yFmt, xTicks, yTicks})`
 - `WF.loop(el, (dt,t)=>{})` 화면에 보일 때만 도는 애니메이션 루프.
+- `WF.keys(canvas, { move(dx, dy, big), activate(), next(), say(), hint })` 캔버스를 눌러 조작하는 시뮬레이터의 키보드 대안(화살표·Enter·N)과 화면 낭독 문구. 마우스로만 되는 조작은 만들지 않는다.
 - `WF.range(id, fmt, onInput)`, `WF.seg(id, onChange)`, `WF.stat(id, html)`
 - 그리기: `WF.rrect`, `WF.box`, `WF.arrow`, `WF.text`
 - 숫자: `WF.bin`, `WF.hex`, `WF.bytes`, `WF.time`, `WF.kn`, `WF.fmt`, `WF.si`, `WF.rng(seed)`

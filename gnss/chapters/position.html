@@ -184,14 +184,23 @@
     const m = GN.range("dp-m", (v) => v + "°", draw);
     GN.seg("dp-p", (v) => { sats = PRE[v].slice(); on = sats.map(() => true); draw(); });
     const active = () => sats.filter((_, i) => on[i]);
+    let kbSel = 0, kbOn = false;
     const cv = GN.canvas($("cv-dop"), (ctx, w, h) => {
       const P = GN.palette(), cx = w / 2, cy = h / 2, R = Math.min(w, h) / 2 - 16; geo = { cx, cy, R };
       ctx.strokeStyle = P.grid; [0, 30, 60].forEach((e) => { ctx.beginPath(); ctx.arc(cx, cy, (R * (90 - e)) / 90, 0, 7); ctx.stroke(); });
       ctx.strokeStyle = P.warn; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.arc(cx, cy, (R * (90 - m())) / 90, 0, 7); ctx.stroke(); ctx.setLineDash([]);
       sats.forEach(([az, el], i) => { const r = (R * (90 - el / D)) / 90, live = on[i] && el / D >= m(); ctx.fillStyle = live ? P.accent : P.faint; ctx.beginPath(); ctx.arc(cx + Math.sin(az) * r, cy - Math.cos(az) * r, 9, 0, 7); ctx.fill(); });
       GN.text(ctx, "북", cx, cy - R - 4, { size: 11, color: P.faint, align: "center" });
+      if (kbOn && sats[kbSel]) { const [az, el] = sats[kbSel], r = (R * (90 - el / D)) / 90; ctx.strokeStyle = P.text; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cx + Math.sin(az) * r, cy - Math.cos(az) * r, 14, 0, 7); ctx.stroke(); }
     }, { aspect: 1, minHeight: 240, maxHeight: 330 });
     cv.canvas.addEventListener("click", (e) => { if (!geo) return; const r = cv.canvas.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top; sats.forEach(([az, el], i) => { const rr = (geo.R * (90 - el / D)) / 90; if (Math.hypot(geo.cx + Math.sin(az) * rr - x, geo.cy - Math.cos(az) * rr - y) < 14) on[i] = !on[i]; }); draw(); });
+    GN.keys(cv.canvas, {
+      hint: "키보드: 화살표로 위성 고르기, Enter로 켜고 끄기",
+      move: (dx, dy) => { kbSel = (kbSel + (dx || dy) + sats.length) % sats.length; cv.redraw(); },
+      activate: () => { on[kbSel] = !on[kbSel]; draw(); },
+      onFocus: (f) => { kbOn = f; cv.redraw(); },
+      say: () => { const [az, el] = sats[kbSel], d = dops(active(), m() * D); return `위성 ${kbSel + 1}/${sats.length}, 방위 ${Math.round((az * 180) / Math.PI + 360) % 360}°, 앙각 ${Math.round(el / D)}°, ${on[kbSel] ? "켜짐" : "꺼짐"}. HDOP ${d ? d[2].toFixed(2) : "계산 불가"}`; },
+    });
     function draw() { const d = dops(active(), m() * D); GN.stat("dp-hv", d ? d[2].toFixed(2) + " / " + d[3].toFixed(2) : "위성 4기 미만"); GN.stat("dp-pg", d ? d[1].toFixed(2) + " / " + d[0].toFixed(2) : "—"); GN.stat("dp-e", d ? (3 * d[2]).toFixed(1) + " m" : "—"); cv.redraw(); }
     draw();
   })();

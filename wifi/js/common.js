@@ -464,6 +464,30 @@
     get.set = set;
     return get;
   };
+  /** 키보드로 캔버스 조작(마우스로 누르는 일과 같은 일). 캔버스에 초점을 주고
+   *  화살표 = move(dx, dy, 크게?) · Enter·Space = activate() · N = next() 를 부른다. say()가 돌려준 문구를 화면 낭독기가 읽는다.
+   *  WF.keys(cv.canvas, { move, activate, next, say, hint: "키보드: 화살표로 태그 옮기기" }) */
+  WF.keys = function (canvas, opts) {
+    canvas.tabIndex = 0;
+    const hint = opts.hint || "키보드: 화살표로 옮기기";
+    canvas.dataset.kbHint = hint;
+    if (canvas.getAttribute("aria-label")) canvas.setAttribute("aria-label", canvas.getAttribute("aria-label") + " · " + hint);
+    let live = null;
+    const say = () => {
+      if (!opts.say) return;
+      if (!live) { live = document.createElement("p"); live.className = "sr-only"; live.setAttribute("aria-live", "polite"); canvas.after(live); }
+      live.textContent = opts.say();
+    };
+    canvas.addEventListener("keydown", (e) => {
+      const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+      if (d && opts.move) opts.move(d[0], d[1], e.shiftKey);
+      else if ((e.key === "Enter" || e.key === " ") && opts.activate) opts.activate();
+      else if ((e.key === "n" || e.key === "N") && opts.next) opts.next();
+      else return;
+      e.preventDefault(); say();
+    });
+    ["focus", "blur"].forEach((ev) => canvas.addEventListener(ev, () => opts.onFocus && opts.onFocus(ev === "focus")));
+  };
   /** 통계 표시: WF.stat('snr', '32.1 dB') → id 요소의 textContent 설정(HTML 허용) */
   WF.stat = function (id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; };
 
@@ -712,13 +736,27 @@
       const box = cv.closest(".sim, figure, .hero-3d"), title = box && box.querySelector("h3, figcaption, .hint");
       const ro = box && box.classList.contains("sim") && box.querySelector(".sim-readout");
       cv.setAttribute("role", "img");
-      cv.setAttribute("aria-label", (title ? title.textContent.trim() : "그림") + (ro ? " — 주요 결과는 아래 수치로 읽을 수 있다" : ""));
+      cv.setAttribute("aria-label", (title ? title.textContent.trim() : "그림") + (ro ? " — 주요 결과는 아래 수치로 읽을 수 있다" : "") + (cv.dataset.kbHint ? " · " + cv.dataset.kbHint : ""));
     });
     document.querySelectorAll(".seg").forEach((g) => {
       if (g.hasAttribute("role")) return;
       g.setAttribute("role", "group");
       const lab = g.previousElementSibling;
       if (lab && lab.tagName === "SPAN") g.setAttribute("aria-label", lab.textContent.trim());
+    });
+    // 누르면 동작하는 표의 줄·그림 조각(tr[data-i], svg .ly, [data-kb])은 Tab으로 가서 Enter·Space로 누를 수 있게 한다(다시 그려져도)
+    const KB = "tr[data-i], svg .ly, [data-kb]";
+    const kbMark = (root) => root.querySelectorAll && root.querySelectorAll(KB).forEach((el) => { if (!el.hasAttribute("tabindex")) { el.setAttribute("tabindex", "0"); el.setAttribute("role", "button"); } });
+    kbMark(document);
+    new MutationObserver((ms) => ms.forEach((m) => m.addedNodes.forEach((n) => { if (n.nodeType === 1) { if (n.matches(KB)) kbMark(n.parentNode); kbMark(n); } }))).observe(document.body, { childList: true, subtree: true });
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      const el = e.target.closest && e.target.closest(KB); if (!el || el !== e.target) return;
+      e.preventDefault();
+      const host = el.parentNode && el.parentNode.closest("[id]"), i = el.dataset.i, k = el.dataset.k;
+      el.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      // 누른 뒤 표가 다시 그려지면 같은 줄로 초점을 돌려놓는다
+      if (!el.isConnected && host) { kbMark(host); const again = host.querySelector(i != null ? `tr[data-i="${i}"]` : k != null ? `[data-k="${k}"]` : KB); if (again) again.focus(); }
     });
     document.querySelectorAll(".sim").forEach((sim) => {
       const ro = sim.querySelector(".sim-readout"); if (!ro) return;

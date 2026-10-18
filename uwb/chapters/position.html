@@ -171,7 +171,7 @@
 
   /* ================================================================ 1. 삼변 측량 */
   (function () {
-    let tool = "tag", anchors = LAYOUT.corner.map(([x, y]) => ({ x, y })), tag = { x: 5.2, y: 3.6 }, geo = null;
+    let tool = "tag", anchors = LAYOUT.corner.map(([x, y]) => ({ x, y })), tag = { x: 5.2, y: 3.6 }, geo = null, kbA = 0;
     const s = UW.range("tr-s", (v) => (v * 100).toFixed(0) + " cm", draw);
     UW.seg("tr-tool", (v) => { tool = v; }); UW.seg("tr-lay", (v) => { anchors = LAYOUT[v].map(([x, y]) => ({ x, y })); draw(); });
     ["tr-nlos", "tr-map"].forEach((id) => $(id).addEventListener("change", draw));
@@ -185,6 +185,17 @@
       ctx.fillStyle = P.accent2; ctx.beginPath(); ctx.arc(X(tag.x), Y(tag.y), 7, 0, 7); ctx.fill();
       ctx.strokeStyle = P.bad; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(X(est.x) - 6, Y(est.y) - 6); ctx.lineTo(X(est.x) + 6, Y(est.y) + 6); ctx.moveTo(X(est.x) + 6, Y(est.y) - 6); ctx.lineTo(X(est.x) - 6, Y(est.y) + 6); ctx.stroke();
     }, { aspect: 0.75, minHeight: 260, maxHeight: 460 });
+    UW.keys(cv.canvas, {
+      hint: "키보드: 화살표로 옮기기(Shift = 1 m), ‘가까운 앵커 옮기기’에서는 N으로 앵커 바꾸기",
+      move: (dx, dy, big) => {
+        const k = big ? 1 : 0.2, cl = (v, M) => Math.max(0.1, Math.min(M - 0.1, v));
+        if (tool === "tag") tag = { x: cl(tag.x + dx * k, W), y: cl(tag.y + dy * k, H) };
+        else { kbA %= anchors.length; anchors[kbA] = { x: cl(anchors[kbA].x + dx * k, W), y: cl(anchors[kbA].y + dy * k, H) }; }
+        draw();
+      },
+      next: () => { kbA = (kbA + 1) % anchors.length; },
+      say: () => { const p = tool === "tag" ? tag : anchors[kbA % anchors.length]; return `${tool === "tag" ? "태그" : "앵커 " + ((kbA % anchors.length) + 1)} (${p.x.toFixed(1)}, ${p.y.toFixed(1)}) m. DOP ${$("tr-dop").textContent}, 위치 오차 ${$("tr-err").textContent}`; },
+    });
     cv.canvas.addEventListener("click", (e) => {
       if (!geo) return; const r = cv.canvas.getBoundingClientRect(), x = Math.max(0.1, Math.min(W - 0.1, (e.clientX - r.left - geo.ox) / geo.sc)), y = Math.max(0.1, Math.min(H - 0.1, (e.clientY - r.top - geo.oy) / geo.sc));
       if (tool === "tag") tag = { x, y }; else { let k = 0; anchors.forEach((A, i) => { if (Math.hypot(A.x - x, A.y - y) < Math.hypot(anchors[k].x - x, anchors[k].y - y)) k = i; }); anchors[k] = { x, y }; }
@@ -213,6 +224,7 @@
       ctx.fillStyle = P.accent2; ctx.beginPath(); ctx.arc(X(tag.x), Y(tag.y), 7, 0, 7); ctx.fill();
       ctx.strokeStyle = P.bad; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(X(est.x) - 6, Y(est.y) - 6); ctx.lineTo(X(est.x) + 6, Y(est.y) + 6); ctx.moveTo(X(est.x) + 6, Y(est.y) - 6); ctx.lineTo(X(est.x) - 6, Y(est.y) + 6); ctx.stroke();
     }, { aspect: 0.75, minHeight: 260, maxHeight: 460 });
+    UW.keys(cv.canvas, { hint: "키보드: 화살표로 태그 옮기기(Shift = 1 m)", move: (dx, dy, big) => { const k = big ? 1 : 0.2; tag = { x: Math.max(0.1, Math.min(W - 0.1, tag.x + dx * k)), y: Math.max(0.1, Math.min(H - 0.1, tag.y + dy * k)) }; draw(); }, say: () => `태그 (${tag.x.toFixed(1)}, ${tag.y.toFixed(1)}) m. 위치 오차 ${$("td-e").textContent}` });
     cv.canvas.addEventListener("click", (e) => { if (!geo) return; const r = cv.canvas.getBoundingClientRect(); tag = { x: Math.max(0.1, Math.min(W - 0.1, (e.clientX - r.left - geo.ox) / geo.sc)), y: Math.max(0.1, Math.min(H - 0.1, (e.clientY - r.top - geo.oy) / geo.sc)) }; draw(); });
     function draw() { const est = solveTdoa(anchors, diffs(), { x: W / 2, y: H / 2 }); UW.stat("td-n", "1개 (UL-TDoA)"); UW.stat("td-t", "8개 (SS-TWR × 4)"); UW.stat("td-e", (Math.hypot(est.x - tag.x, est.y - tag.y) * 100).toFixed(0) + " cm"); cv.redraw(); }
     draw();

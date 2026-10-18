@@ -31,6 +31,7 @@ CI(`.github/workflows/pages.yml`)가 PR과 `main` push마다 `sync_shared.py --c
 - 본문의 `.term`은 모두 `js/terms.js`의 표제어로 이어져야 한다. 상대 링크는 모두 실제 파일로 이어져야 한다(검증 스크립트가 확인).
 - 다른 책과 이어지는 주제가 있으면 핵심 정리 앞에 `.callout.related`(함께 읽기)로 링크한다.
 - 보안 장은 **원리·방어·설정**만 쓴다. 공격 절차, 공격 도구, 비밀번호 추측 비용 계산 같은 내용은 넣지 않는다.
+- 마우스로만 되는 조작을 만들지 않는다. 캔버스를 눌러 조작하는 시뮬레이터는 `<NS>.keys(canvas, { move, activate, next, say })`로 키보드 대안(화살표·Enter·N)과 낭독 문구를 함께 단다. 누르면 동작하는 표의 줄은 `tr[data-i]`, 그 밖의 요소는 `data-kb`를 붙이면 `common.js`가 Tab·Enter로 누를 수 있게 한다.
 - 외부 라이브러리 없음(글꼴 CSS만 CDN), classic script만(ES module 금지), 색은 CSS 변수로, 라이트·다크 모두, 폭 360px에서 가로 스크롤 없음.
 - 한국어로 쓴다. 대상은 그 분야를 배운 적 없는 일반인, 뒤쪽 장은 입문 엔지니어.
 
