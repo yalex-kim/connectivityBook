@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>변조와 MCS: 속도는 어디서 오나 · WiFiBook</title>
+<meta name="description" content="와이파이 링크 속도가 정해지는 공식. BPSK에서 4096-QAM까지의 성좌도와 잡음, 부호율과 오류 정정, MCS 표, 데이터 부반송파 × 심볼당 비트 × 부호율 × 스트림 ÷ 심볼 시간, 그리고 거리와 벽이 SNR을 거쳐 속도를 계단처럼 떨어뜨리는 과정을 계산한다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/wifi/chapters/mcs.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="WiFiBook">
+<meta property="og:title" content="변조와 MCS: 속도는 어디서 오나 · WiFiBook">
+<meta property="og:description" content="와이파이 링크 속도가 정해지는 공식. BPSK에서 4096-QAM까지의 성좌도와 잡음, 부호율과 오류 정정, MCS 표, 데이터 부반송파 × 심볼당 비트 × 부호율 × 스트림 ÷ 심볼 시간, 그리고 거리와 벽이 SNR을 거쳐 속도를 계단처럼 떨어뜨리는 과정을 계산한다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/wifi/chapters/mcs.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/wifi/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"변조와 MCS: 속도는 어디서 오나","name":"변조와 MCS: 속도는 어디서 오나 · WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/chapters/mcs.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/wifi/chapters/mcs.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":4,"image":"https://yalex-kim.github.io/yalexBook/wifi/og.png","dateModified":"2026-10-17","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/wifi/#book","name":"WiFiBook — 누구나 읽는 인터랙티브 와이파이 교과서","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"publisher":{"@type":"Organization","name":"WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"description":"와이파이 링크 속도가 정해지는 공식. BPSK에서 4096-QAM까지의 성좌도와 잡음, 부호율과 오류 정정, MCS 표, 데이터 부반송파 × 심볼당 비트 × 부호율 × 스트림 ÷ 심볼 시간, 그리고 거리와 벽이 SNR을 거쳐 속도를 계단처럼 떨어뜨리는 과정을 계산한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"WiFiBook","item":"https://yalex-kim.github.io/yalexBook/wifi/"},{"@type":"ListItem","position":2,"name":"04 변조와 MCS: 속도는 어디서 오나","item":"https://yalex-kim.github.io/yalexBook/wifi/chapters/mcs.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<style>
+  .mcs-tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .mcs-tbl th, .mcs-tbl td { padding: 4px 6px; border-bottom: 1px solid var(--border); text-align: right; }
+  .mcs-tbl th { font-size: 11.5px; color: var(--text-faint); }
+  .mcs-tbl td:nth-child(2) { text-align: left; }
+  .mcs-tbl tr.on td { background: var(--accent-soft); font-weight: 700; }
+</style>
+</head>
+<body data-chapter="mcs">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 04</div>
+    <h1>변조와 MCS: 속도는 어디서 오나</h1>
+    <p class="lead">휴대폰의 Wi-Fi 정보 화면에는 “링크 속도 1,201 Mbps”처럼 이상하게 딱 떨어지지 않는 숫자가 뜬다. 방을 옮기면 그 숫자가 864, 576, 288로 뚝뚝 떨어진다. 이 숫자는 아무렇게나 나오지 않는다. 몇 개의 정해진 값을 곱하고 나눈 결과다. 이 장에서는 그 공식을 하나씩 풀고, 와이파이가 거리에 따라 공식의 어느 부분을 바꾸는지 따라간다.</p>
+    <ul class="objectives">
+      <li>BPSK에서 4096-QAM까지, 한 번에 싣는 비트 수와 잡음에 대한 약함이 함께 늘어나는 관계를 성좌도로 이해한다.</li>
+      <li>부호율(1/2~5/6)과 오류 정정 부호(BCC, LDPC)가 무엇을 사고파는지 안다.</li>
+      <li>MCS 표와 링크 속도 공식으로 1,201 Mb/s 같은 숫자를 직접 계산한다.</li>
+      <li>거리·벽·채널 폭이 SNR을 거쳐 MCS와 속도를 계단처럼 바꾸는 과정을 시뮬레이터로 따라간다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="qam">
+    <h2>성좌도: 한 번에 몇 비트를 싣나</h2>
+    <p>3장의 부반송파 하나는 심볼마다 한 가지 “상태”를 보낸다. 상태는 반송파의 세기와 위상의 조합이고, 이를 평면 위의 점으로 그린 것이 <span class="term">성좌도</span><span class="en">(constellation)</span>다. 점이 2개면 1비트(BPSK), 4개면 2비트(QPSK), 16개면 4비트(16-QAM)… 4096개면 12비트(4096-QAM)다. 점을 촘촘히 놓을수록 한 번에 많이 싣지만, 점 사이 간격이 좁아져 잡음이 조금만 섞여도 옆 점으로 잘못 읽힌다.</p>
+    <div class="callout analogy"><strong>회의실의 손짓 신호</strong><p>시끄러운 회의실에서 멀리 앉은 사람에게 손짓으로 숫자를 알린다. 가까우면 손가락 열 개를 다 써서 빠르게 많은 숫자를 전할 수 있다(4096-QAM). 멀어지면 손가락이 흐릿해 “위냐 아래냐”만 구분된다(BPSK). 와이파이는 상대와의 거리(SNR)를 보고 손짓의 촘촘함을 계속 바꾼다.</p></div>
+    <div class="sim" id="sim-qam">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>성좌도와 잡음: 점이 촘촘할수록 약하다</h3></div>
+      <div class="sim-body side">
+        <div class="sim-view"><canvas id="cv-qam"></canvas></div>
+        <div class="sim-controls">
+          <div class="ctrl"><span>변조</span><div class="seg" id="qm-m"><button data-value="2">BPSK</button><button data-value="4">QPSK</button><button data-value="16">16</button><button data-value="64" class="on">64</button><button data-value="256">256</button><button data-value="1024">1024</button><button data-value="4096">4096</button></div></div>
+          <label class="ctrl"><span>SNR <output id="qm-snr-out"></output></span><input type="range" id="qm-snr" min="0" max="45" step="0.5" value="25"></label>
+        </div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">심볼당 비트</span><span class="v" id="qm-b">—</span></div>
+        <div class="stat"><span class="k">심볼 오류 (2,000개 중)</span><span class="v" id="qm-err">—</span></div>
+        <div class="stat"><span class="k">EVM (오차 크기)</span><span class="v" id="qm-evm">—</span></div>
+      </div>
+      <div class="sim-note">큰 점 = 이상적인 성좌점, 작은 점 = 잡음을 겪은 수신 심볼(빨강 = 가장 가까운 성좌점이 틀림). 해볼 것: SNR 25 dB에서 64-QAM은 깨끗하지만 1024-QAM은 많이 틀린다. 변조 차수가 4배가 될 때마다(비트 +2) 같은 오류율을 내려면 약 6 dB 더 필요하다. EVM은 이상적인 점에서 벗어난 평균 거리를 백분율로 나타낸 값으로, 송신기 품질을 재는 데에도 쓴다. 모델: 정사각 QAM(BPSK는 실수축 두 점), 가우시안 잡음, 오류 정정 전의 원시 심볼 오류.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="coding">
+    <h2>부호율: 일부러 덧붙이는 여분</h2>
+    <p>변조만으로는 잡음을 이길 수 없다. 와이파이는 보낼 비트에 여분의 비트를 섞어 수신기가 틀린 비트 몇 개를 스스로 고치게 한다. 원래 비트의 비율이 <span class="term">부호율</span><span class="en">(coding rate)</span>이다. 1/2이면 비트 하나에 여분 하나, 5/6이면 다섯 개에 여분 하나다. 802.11a부터 쓰인 컨볼루션 부호(BCC)에 이어, 802.11n부터는 더 강력한 <b>LDPC</b>를 쓸 수 있고, Wi-Fi 6부터 넓은 채널에서는 LDPC가 기본이다.</p>
+    <p>그래서 와이파이의 “전송 방식”은 변조와 부호율의 짝이고, 이 짝에 번호를 매긴 것이 <span class="term">MCS</span><span class="en">(Modulation and Coding Scheme)</span>다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>MCS</th><th>변조</th><th>부호율</th><th>세대</th></tr></thead>
+      <tbody>
+        <tr><td class="num">0</td><td>BPSK</td><td class="num">1/2</td><td rowspan="8">Wi-Fi 4~7 (Wi-Fi 4는 스트림마다 0~7)</td></tr>
+        <tr><td class="num">1</td><td>QPSK</td><td class="num">1/2</td></tr>
+        <tr><td class="num">2</td><td>QPSK</td><td class="num">3/4</td></tr>
+        <tr><td class="num">3</td><td>16-QAM</td><td class="num">1/2</td></tr>
+        <tr><td class="num">4</td><td>16-QAM</td><td class="num">3/4</td></tr>
+        <tr><td class="num">5</td><td>64-QAM</td><td class="num">2/3</td></tr>
+        <tr><td class="num">6</td><td>64-QAM</td><td class="num">3/4</td></tr>
+        <tr><td class="num">7</td><td>64-QAM</td><td class="num">5/6</td></tr>
+        <tr><td class="num">8 · 9</td><td>256-QAM</td><td class="num">3/4 · 5/6</td><td>Wi-Fi 5~</td></tr>
+        <tr><td class="num">10 · 11</td><td>1024-QAM</td><td class="num">3/4 · 5/6</td><td>Wi-Fi 6~</td></tr>
+        <tr><td class="num">12 · 13</td><td>4096-QAM</td><td class="num">3/4 · 5/6</td><td>Wi-Fi 7</td></tr>
+      </tbody>
+    </table></div>
+    <p class="spec-ref">MCS별 속도의 상대비(1/2 BPSK = 1 → 5/6 4096-QAM = 20): Linux <code>net/wireless/util.c</code> <code>cfg80211_calculate_bitrate_he/eht()</code>의 <code>mcs_divisors</code> · Wi-Fi 4의 MCS 번호(0~31)는 스트림 수까지 담는다(<code>mcs &amp; 7</code> = 변조, <code>(mcs &gt;&gt; 3) + 1</code> = 스트림): <code>cfg80211_calculate_bitrate_ht()</code></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="formula">
+    <h2>링크 속도 공식</h2>
+    <div class="formula">링크 속도 = N<sub>SD</sub> × 심볼당 비트 × 부호율 × 공간 스트림 ÷ (T<sub>DFT</sub> + GI)
+      <div class="where">N<sub>SD</sub> = 데이터 부반송파 수(3장, 폭에 따라 정해짐), 심볼당 비트 = log₂(성좌점 수), 공간 스트림 = 5장, 심볼 시간 = 3장. 예: Wi-Fi 6, 80 MHz(N<sub>SD</sub> 980), 1024-QAM 5/6(10비트 × 5/6), 2스트림, 13.6 µs → 980 × 10 × 5/6 × 2 ÷ 13.6 = <b>1,201 Mb/s</b>. 휴대폰 화면의 그 숫자다.</div>
+    </div>
+    <div class="sim" id="sim-rate">
+      <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>링크 속도 계산기 (Linux 커널 계산과 검증)</h3></div>
+      <div class="sim-view" style="padding:12px"><div class="table-wrap" style="margin:0"><table class="mcs-tbl" id="rt-tbl"></table></div></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>세대</span><div class="seg" id="rt-gen"><button data-value="ht">Wi-Fi 4</button><button data-value="vht">Wi-Fi 5</button><button data-value="he" class="on">Wi-Fi 6</button><button data-value="eht">Wi-Fi 7</button></div></div>
+        <div class="ctrl"><span>채널 폭</span><div class="seg" id="rt-w"><button data-value="20">20</button><button data-value="40">40</button><button data-value="80" class="on">80</button><button data-value="160">160</button><button data-value="320">320</button></div></div>
+        <label class="ctrl"><span>공간 스트림 <output id="rt-n-out"></output></span><input type="range" id="rt-n" min="1" max="8" value="2"></label>
+        <div class="ctrl"><span>보호 구간</span><div class="seg" id="rt-gi"><button data-value="0" class="on">긴 (0.8 µs)</button><button data-value="1">중간/짧은</button><button data-value="2">가장 긴 (3.2 µs)</button></div></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">최고 MCS 속도</span><span class="v" id="rt-max">—</span></div>
+        <div class="stat"><span class="k">심볼 시간</span><span class="v" id="rt-sym">—</span></div>
+        <div class="stat"><span class="k">데이터 부반송파</span><span class="v" id="rt-nsd">—</span></div>
+      </div>
+      <div class="sim-note">표는 고른 조건에서 MCS별 링크 속도다. 보호 구간 “중간/짧은”은 Wi-Fi 4·5에서 짧은 GI 0.4 µs, Wi-Fi 6·7에서 1.6 µs를 뜻하고, “가장 긴”은 Wi-Fi 6·7의 3.2 µs다(Wi-Fi 4·5에는 없음). 세대가 지원하지 않는 폭(예: Wi-Fi 4의 80 MHz, Wi-Fi 6의 320 MHz)은 “—”로 표시한다. 표는 공식의 값을 그대로 보여 주므로, 표준이 실제로는 쓰지 않는 조합도 몇 개 섞여 있다(예: Wi-Fi 5의 20 MHz MCS 9는 3·6스트림에서만 쓴다). 해볼 것: Wi-Fi 6, 80 MHz, 2스트림에서 MCS 11이 1,201 Mb/s인지 확인하자. 이 계산기의 모든 값은 Linux 커널의 <code>cfg80211_calculate_bitrate_ht/vht/he/eht()</code>가 내는 값과 0.1 Mb/s 이내로 같은지 자동 검증한다.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="snr">
+    <h2>거리와 벽이 MCS를 고른다</h2>
+    <p>어떤 MCS를 쓸지는 받는 쪽의 <span class="term">SNR</span><span class="en">(신호 대 잡음비)</span>이 정한다. 잡음의 바닥은 채널 폭에 비례한다. 상온의 열잡음은 1 Hz당 −174 dBm이고, 20 MHz면 여기에 10·log₁₀(20,000,000) ≈ 73 dB를 더해 약 −101 dBm, 수신기 자체의 잡음(잡음 지수)까지 더하면 −95 dBm 안팎이다. 폭을 두 배로 넓히면 잡음도 3 dB 오른다. 받은 세기에서 이 잡음 바닥을 빼면 SNR이다.</p>
+    <p>와이파이 칩은 프레임을 보낼 때마다 결과(ACK가 왔는가)를 보고 MCS를 올리거나 내린다. 이것이 <span class="term">속도 적응</span><span class="en">(rate adaptation)</span>이다. Linux에는 Minstrel이라는 알고리즘이 들어 있다. MCS는 정해진 몇 단계뿐이라 속도는 매끄럽게가 아니라 <b>계단처럼</b> 떨어진다.</p>
+    <div class="sim" id="sim-stair">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>거리 → 세기 → SNR → MCS → 속도</h3></div>
+      <div class="sim-view"><canvas id="cv-stair"></canvas></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>대역</span><div class="seg" id="st-band"><button data-value="2.44">2.4 GHz</button><button data-value="5.5" class="on">5 GHz</button><button data-value="6.5">6 GHz</button></div></div>
+        <div class="ctrl"><span>채널 폭</span><div class="seg" id="st-w"><button data-value="20">20</button><button data-value="80" class="on">80</button><button data-value="160">160 MHz</button></div></div>
+        <div class="ctrl"><span>약 6 m마다 있는 벽</span><div class="seg" id="st-wall"><button data-value="0">없음</button><button data-value="4">석고보드</button><button data-value="13" class="on">콘크리트</button></div></div>
+        <label class="ctrl"><span>휴대폰 위치 <output id="st-d-out"></output></span><input type="range" id="st-d" min="1" max="40" step="0.5" value="8"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">받은 세기</span><span class="v" id="st-rx">—</span></div>
+        <div class="stat"><span class="k">SNR</span><span class="v" id="st-snr">—</span></div>
+        <div class="stat"><span class="k">고른 MCS</span><span class="v" id="st-mcs">—</span></div>
+        <div class="stat"><span class="k">링크 속도 (Wi-Fi 6, 2스트림)</span><span class="v" id="st-rate">—</span></div>
+      </div>
+      <div class="sim-note">그래프: 거리(m)에 따른 링크 속도(굵은 선)와 벽이 없을 때(점선). 해볼 것: ① 콘크리트 벽을 지날 때마다 계단이 뚝 떨어진다. ② 6 GHz 160 MHz는 가까이서 압도적이지만 벽 두 개면 2.4 GHz 20 MHz보다 느려질 수 있다. 가정(어림 값): 송신 20 dBm, 양쪽 안테나 이득 합 4 dBi, 1 m 자유 공간 손실 후 경로 손실 지수 2.2, 잡음 지수 7 dB, 벽 손실은 대역이 높을수록 조금 크게(콘크리트 2.4/5/6 GHz = 13/16/18 dB). MCS별 필요 SNR은 흔히 쓰이는 어림 값(MCS 0 ≈ 5 dB … MCS 11 ≈ 37 dB)이며 칩과 환경에 따라 다르다.</div>
+    </div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">공유기 바로 옆에서는 1,201 Mb/s(Wi-Fi 6, 80 MHz, 2스트림, MCS 11)가 나온다. 콘크리트 벽 하나 너머 방에서 MCS 7이 되었다면 링크 속도는?</p><p class="wi-hint">위 계산기에서 같은 조건의 MCS 7을 찾아보자.</p><div class="opts">
+      <button class="opt">약 1,000 Mb/s — 조금만 준다</button><button class="opt" data-correct>약 721 Mb/s — 비트 10 × 5/6에서 6 × 5/6으로 줄어 60%</button><button class="opt">약 300 Mb/s</button>
+    </div><div class="quiz-exp">980 × 6 × 5/6 × 2 ÷ 13.6 ≈ 720.6 Mb/s. MCS 11 대비 6/10 = 60%다. 벽 한두 개로 MCS가 몇 칸씩 떨어지는 것이 실내 와이파이의 일상이다.</div></div>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>성좌점이 2<sup>b</sup>개면 심볼당 b비트: BPSK 1 … 1024-QAM 10, 4096-QAM 12. 촘촘할수록 잡음에 약하다(차수 4배마다 약 6 dB 더 필요).</li>
+      <li><b>부호율</b>(1/2~5/6)은 오류 정정용 여분의 비율이다. 변조와 부호율의 짝이 <b>MCS</b>다(Wi-Fi 5: 0~9, 6: 0~11, 7: 0~13).</li>
+      <li><b>링크 속도 = N<sub>SD</sub> × 비트 × 부호율 × 스트림 ÷ 심볼 시간.</b> Wi-Fi 6 80 MHz 2스트림 MCS 11 = 1,201 Mb/s.</li>
+      <li>잡음 바닥은 폭에 비례(20 MHz 열잡음 ≈ −101 dBm, 폭 2배 +3 dB). 받은 세기 − 잡음 = <b>SNR</b>이 MCS를 정하고, 속도는 거리와 벽에 따라 <b>계단식</b>으로 떨어진다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>1024-QAM의 성좌점 하나는 몇 비트를 나르나?</p><div class="opts">
+        <button class="opt">8비트</button><button class="opt" data-correct>10비트</button><button class="opt">12비트</button><button class="opt">1024비트</button>
+      </div><div class="quiz-exp">log₂(1024) = 10. 4096-QAM은 12비트다.</div></div>
+      <div class="quiz-q"><p>Wi-Fi 4의 MCS 15가 뜻하는 것은?</p><div class="opts">
+        <button class="opt">256-QAM 5/6</button><button class="opt" data-correct>64-QAM 5/6, 2스트림</button><button class="opt">BPSK 1/2, 16스트림</button><button class="opt">존재하지 않는다</button>
+      </div><div class="quiz-exp">Wi-Fi 4(HT)의 MCS 번호는 스트림까지 담는다. 15 & 7 = 7(64-QAM 5/6), (15 &gt;&gt; 3) + 1 = 2스트림.</div></div>
+      <div class="quiz-q"><p>Wi-Fi 6, 160 MHz(N<sub>SD</sub> 1,960), MCS 11, 2스트림, GI 0.8 µs의 링크 속도는?</p><div class="opts">
+        <button class="opt">약 1,201 Mb/s</button><button class="opt" data-correct>약 2,402 Mb/s</button><button class="opt">약 4,804 Mb/s</button><button class="opt">약 960 Mb/s</button>
+      </div><div class="quiz-exp">1,960 × 10 × 5/6 × 2 ÷ 13.6 ≈ 2,402 Mb/s. 80 MHz의 두 배다.</div></div>
+      <div class="quiz-q"><p>같은 거리에서 채널 폭을 80 MHz → 160 MHz로 넓히면 SNR은?</p><div class="opts">
+        <button class="opt">3 dB 오른다</button><button class="opt" data-correct>약 3 dB 떨어진다(잡음 바닥이 오르므로)</button><button class="opt">그대로다</button><button class="opt">두 배가 된다</button>
+      </div><div class="quiz-exp">같은 송신 전력이 두 배 넓게 퍼지고 잡음은 폭에 비례하므로 SNR이 약 3 dB 준다. 그래서 먼 거리에서는 넓은 채널의 이득이 줄어든다.</div></div>
+      <div class="quiz-q"><p>방을 옮기자 링크 속도가 매끄럽지 않고 몇 단계로 뚝뚝 떨어졌다. 이유는?</p><div class="opts">
+        <button class="opt">공유기가 일부러 제한해서</button><button class="opt" data-correct>SNR에 맞춰 정해진 몇 단계의 MCS 중 하나를 고르기 때문</button><button class="opt">DHCP가 다시 실행되어서</button><button class="opt">채널 번호가 바뀌어서</button>
+      </div><div class="quiz-exp">MCS는 이산적인 단계라 SNR이 문턱을 넘나들 때마다 속도가 계단처럼 바뀐다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  /** MCS 0~13의 [심볼당 비트, 부호율] */
+  const MCS = [[1, 1 / 2], [2, 1 / 2], [2, 3 / 4], [4, 1 / 2], [4, 3 / 4], [6, 2 / 3], [6, 3 / 4], [6, 5 / 6], [8, 3 / 4], [8, 5 / 6], [10, 3 / 4], [10, 5 / 6], [12, 3 / 4], [12, 5 / 6]];
+  const MOD = ["BPSK", "QPSK", "QPSK", "16-QAM", "16-QAM", "64-QAM", "64-QAM", "64-QAM", "256-QAM", "256-QAM", "1024-QAM", "1024-QAM", "4096-QAM", "4096-QAM"];
+  const NSD = { ht: { 20: 52, 40: 108 }, vht: { 20: 52, 40: 108, 80: 234, 160: 468 }, he: { 20: 234, 40: 468, 80: 980, 160: 1960 }, eht: { 20: 234, 40: 468, 80: 980, 160: 1960, 320: 3920 } };
+  const MAXMCS = { ht: 7, vht: 9, he: 11, eht: 13 };
+  /** 심볼 시간(µs). gi: 0 = 기본(0.8), 1 = HT/VHT 짧은 GI 0.4 · HE/EHT 1.6, 2 = HE/EHT 3.2 */
+  function symbolUs(gen, gi) {
+    if (gen === "ht" || gen === "vht") return gi === 1 ? 3.6 : gi === 0 ? 4.0 : NaN;
+    return [13.6, 14.4, 16.0][gi];
+  }
+  /** 링크 속도(Mb/s). 지원하지 않는 조합이면 NaN */
+  function linkRate(gen, bw, mcs, nss, gi) {
+    const nsd = (NSD[gen] || {})[bw], t = symbolUs(gen, gi);
+    if (!nsd || !isFinite(t) || mcs > MAXMCS[gen] || mcs < 0) return NaN;
+    const [b, r] = MCS[mcs]; return (nsd * b * r * nss) / t;
+  }
+  /** 정사각 QAM 성좌점 목록(평균 전력 1로 정규화) */
+  function constellation(M) {
+    if (M === 2) return [[-1, 0], [1, 0]];
+    const k = Math.round(Math.sqrt(M)), pts = [];
+    for (let i = 0; i < k; i++) for (let j = 0; j < k; j++) pts.push([2 * i - k + 1, 2 * j - k + 1]);
+    const p = Math.sqrt(pts.reduce((a, [x, y]) => a + x * x + y * y, 0) / pts.length);
+    return pts.map(([x, y]) => [x / p, y / p]);
+  }
+  /** 대역폭 B(Hz), 잡음 지수 NF(dB)의 잡음 바닥(dBm) */
+  function noiseFloorDbm(bwHz, nfDb) { return -174 + 10 * Math.log10(bwHz) + nfDb; }
+  const SNR_REQ = [5, 8, 11, 14, 17, 21, 23, 25, 29, 31, 34, 37]; // MCS 0~11 필요 SNR 어림(dB)
+
+  /* ================================================================ 1. 성좌도 */
+  (function () {
+    const m = WF.seg("qm-m", draw), snr = WF.range("qm-snr", (v) => v.toFixed(1) + " dB", draw);
+    let res = {};
+    const cv = WF.canvas($("cv-qam"), (ctx, w, h) => {
+      const P = WF.palette(), M = +m(), pts = constellation(M), cx = w / 2, cy = h / 2, R = Math.min(w, h) * 0.38, sg = Math.sqrt(1 / (2 * Math.pow(10, snr() / 10))), r = WF.rng(5);
+      const randn = () => { let u = 0, v = 0; while (!u) u = r(); while (!v) v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+      ctx.strokeStyle = P.grid; ctx.beginPath(); ctx.moveTo(cx - R * 1.3, cy); ctx.lineTo(cx + R * 1.3, cy); ctx.moveTo(cx, cy - R * 1.3); ctx.lineTo(cx, cy + R * 1.3); ctx.stroke();
+      const sc = R / 1.4; let err = 0, evm = 0;
+      for (let i = 0; i < 2000; i++) {
+        const s = pts[Math.floor(r() * pts.length)], x = s[0] + sg * randn(), y = (M === 2 ? 0 : s[1]) + sg * randn();
+        let best = 0, bd = 1e9; pts.forEach((p, k) => { const d = (p[0] - x) ** 2 + (p[1] - y) ** 2; if (d < bd) { bd = d; best = k; } });
+        const e = pts[best] !== s; if (e) err++; evm += (x - s[0]) ** 2 + (y - s[1]) ** 2;
+        if (i < 1500) { ctx.fillStyle = e ? P.bad : P.accent; ctx.globalAlpha = e ? 0.9 : 0.25; ctx.fillRect(cx + x * sc - 1, cy - y * sc - 1, 2, 2); }
+      }
+      ctx.globalAlpha = 1;
+      if (M <= 1024) pts.forEach(([x, y]) => { ctx.fillStyle = P.text; ctx.beginPath(); ctx.arc(cx + x * sc, cy - y * sc, M >= 256 ? 1.4 : 3.5, 0, 7); ctx.fill(); });
+      res = { err, evm: Math.sqrt(evm / 2000) };
+    }, { aspect: 0.85, minHeight: 260, maxHeight: 380 });
+    function draw() { cv.redraw(); WF.stat("qm-b", Math.log2(+m()) + "비트"); WF.stat("qm-err", `<span style="color:var(${res.err > 20 ? "--bad" : "--text"})">${res.err}개 (${((res.err / 2000) * 100).toFixed(1)}%)</span>`); WF.stat("qm-evm", (res.evm * 100).toFixed(1) + "% (" + (20 * Math.log10(res.evm)).toFixed(1) + " dB)"); }
+    draw();
+  })();
+
+  /* ================================================================ 2. 속도 계산기 */
+  (function () {
+    const gen = WF.seg("rt-gen", draw), w = WF.seg("rt-w", draw), gi = WF.seg("rt-gi", draw);
+    const n = WF.range("rt-n", (v) => v + "개", draw);
+    const fmt = (x) => (isFinite(x) ? (x >= 1000 ? x.toLocaleString("en-US", { maximumFractionDigits: 0 }) : x.toFixed(1)) + " Mb/s" : "—");
+    function draw() {
+      const g = gen(), bw = +w(), G = +gi(), N = g === "ht" ? Math.min(4, n()) : n();
+      let html = `<thead><tr><th>MCS</th><th>변조 · 부호율</th><th>1스트림</th><th>${N}스트림</th></tr></thead><tbody>`;
+      for (let k = 0; k <= MAXMCS[g]; k++) { const [b, r] = MCS[k]; html += `<tr class="${k === MAXMCS[g] ? "on" : ""}"><td>${g === "ht" ? k + 8 * (N - 1) : k}</td><td>${MOD[k]} ${r === 0.5 ? "1/2" : r === 2 / 3 ? "2/3" : r === 0.75 ? "3/4" : "5/6"}</td><td>${fmt(linkRate(g, bw, k, 1, G))}</td><td>${fmt(linkRate(g, bw, k, N, G))}</td></tr>`; }
+      $("rt-tbl").innerHTML = html + "</tbody>";
+      WF.stat("rt-max", fmt(linkRate(g, bw, MAXMCS[g], N, G)));
+      WF.stat("rt-sym", isFinite(symbolUs(g, G)) ? symbolUs(g, G) + " µs" : "이 세대에 없음");
+      WF.stat("rt-nsd", NSD[g][bw] ? NSD[g][bw] + "개" : "이 폭 없음");
+    }
+    draw();
+  })();
+
+  /* ================================================================ 3. 계단 */
+  (function () {
+    const band = WF.seg("st-band", draw), w = WF.seg("st-w", draw), wall = WF.seg("st-wall", draw), d = WF.range("st-d", (v) => v + " m", draw);
+    const WALL = { "0": [0, 0, 0], "4": [3, 4, 5], "13": [13, 16, 18] };
+    function at(dist, walls) {
+      const f = +band() * 1e9, fsplDb = 20 * Math.log10((4 * Math.PI * f) / 299792458), bi = { "2.44": 0, "5.5": 1, "6.5": 2 }[band()];
+      const nWalls = walls ? Math.floor(dist / 6) : 0, wl = WALL[wall()][bi] * nWalls;
+      const rx = 20 + 4 - fsplDb - 10 * 2.2 * Math.log10(Math.max(1, dist)) - wl, snr = rx - noiseFloorDbm(+w() * 1e6, 7);
+      let mcs = -1; SNR_REQ.forEach((t, i) => { if (snr >= t) mcs = i; });
+      return { rx, snr, mcs, rate: mcs < 0 ? 0 : linkRate("he", +w(), mcs, 2, 0) };
+    }
+    const cv = WF.canvas($("cv-stair"), (ctx, ww, h) => {
+      const P = WF.palette(), a = [], b = [];
+      for (let x = 1; x <= 40; x += 0.1) { a.push([x, at(x, true).rate]); b.push([x, at(x, false).rate]); }
+      const mx = linkRate("he", +w(), 11, 2, 0) * 1.05;
+      const ch = WF.chart(ctx, null, { x: [1, 40], y: [0, mx], xLabel: "거리 (m)", yLabel: "링크 속도 (Mb/s)", series: [{ data: b, color: P.faint, width: 1.5, dash: [4, 4] }, { data: a, color: P.accent, width: 2.5 }] });
+      const p = at(d(), true); ctx.fillStyle = P.accent2; ctx.beginPath(); ctx.arc(ch.X(d()), ch.Y(p.rate), 6, 0, 7); ctx.fill();
+      for (let x = 6; x < 40; x += 6) { ctx.strokeStyle = P.grid; ctx.setLineDash([2, 4]); ctx.beginPath(); ctx.moveTo(ch.X(x), ch.box.y); ctx.lineTo(ch.X(x), ch.box.y + ch.box.h); ctx.stroke(); ctx.setLineDash([]); }
+    }, { aspect: 0.5, minHeight: 250, maxHeight: 360 });
+    function draw() {
+      const p = at(d(), true);
+      WF.stat("st-rx", p.rx.toFixed(0) + " dBm"); WF.stat("st-snr", p.snr.toFixed(1) + " dB");
+      WF.stat("st-mcs", p.mcs < 0 ? "연결 불가" : "MCS " + p.mcs + " (" + MOD[p.mcs] + ")");
+      WF.stat("st-rate", p.mcs < 0 ? "—" : Math.round(p.rate) + " Mb/s");
+      cv.redraw();
+    }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>프레임 해부 · WiFiBook</title>
+<meta name="description" content="와이파이 프레임을 바이트 단위로 뜯어본다. 관리·제어·데이터 세 종류, Frame Control 비트, 주소 칸 네 개의 의미, 시퀀스 번호와 재전송, 비컨과 정보 요소, FCS(CRC-32)를 직접 만지는 해부 도구로 익힌다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/wifi/chapters/frames.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="WiFiBook">
+<meta property="og:title" content="프레임 해부 · WiFiBook">
+<meta property="og:description" content="와이파이 프레임을 바이트 단위로 뜯어본다. 관리·제어·데이터 세 종류, Frame Control 비트, 주소 칸 네 개의 의미, 시퀀스 번호와 재전송, 비컨과 정보 요소, FCS(CRC-32)를 직접 만지는 해부 도구로 익힌다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/wifi/chapters/frames.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/wifi/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"프레임 해부","name":"프레임 해부 · WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/chapters/frames.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/wifi/chapters/frames.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":7,"image":"https://yalex-kim.github.io/yalexBook/wifi/og.png","dateModified":"2026-10-17","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/wifi/#book","name":"WiFiBook — 누구나 읽는 인터랙티브 와이파이 교과서","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"publisher":{"@type":"Organization","name":"WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"description":"와이파이 프레임을 바이트 단위로 뜯어본다. 관리·제어·데이터 세 종류, Frame Control 비트, 주소 칸 네 개의 의미, 시퀀스 번호와 재전송, 비컨과 정보 요소, FCS(CRC-32)를 직접 만지는 해부 도구로 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"WiFiBook","item":"https://yalex-kim.github.io/yalexBook/wifi/"},{"@type":"ListItem","position":2,"name":"07 프레임 해부","item":"https://yalex-kim.github.io/yalexBook/wifi/chapters/frames.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<style>
+  .hex { font-family: var(--mono); font-size: 12.5px; line-height: 1.9; display: flex; flex-wrap: wrap; gap: 2px 3px; }
+  .hex span { padding: 0 3px; border-radius: 4px; cursor: pointer; }
+  .hex span.hl { outline: 2px solid var(--text); }
+  .ftab { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-top: 10px; }
+  .ftab td { padding: 6px 8px; border-top: 1px solid var(--border); vertical-align: top; }
+  .ftab tr { cursor: pointer; }
+  .ftab tr.hl td { background: var(--surface); }
+  .ftab .sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; }
+  .ftab td:nth-child(2) { font-family: var(--mono); white-space: nowrap; color: var(--text-dim); }
+  .fcs-ok { color: var(--ok); font-weight: 600; } .fcs-bad { color: var(--bad); font-weight: 600; }
+</style>
+</head>
+<body data-chapter="frames">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 07</div>
+    <h1>프레임 해부</h1>
+    <p class="lead">와이어샤크로 와이파이를 잡아 보면 데이터보다 “데이터가 아닌 것”이 훨씬 많이 보인다. 비컨, 프로브, ACK, RTS, 블록 ACK… 이 장에서는 와이파이 프레임을 바이트 단위로 뜯어보며, 이더넷 프레임에는 없는 칸들이 왜 필요한지 하나씩 확인한다.</p>
+    <ul class="objectives">
+      <li>관리·제어·데이터 세 종류의 프레임과 대표 하위 종류를 구별한다.</li>
+      <li>Frame Control 2바이트의 비트를 읽고, 그 비트가 머리말 길이를 어떻게 바꾸는지 안다.</li>
+      <li>ToDS·FromDS에 따라 주소 칸 네 개의 의미가 어떻게 바뀌는지 설명한다.</li>
+      <li>비컨 안의 정보 요소(TLV)를 읽고, 비컨이 채널 시간을 얼마나 쓰는지 계산한다.</li>
+      <li>시퀀스 번호·Retry 비트와 FCS가 오류와 중복을 어떻게 걸러내는지 안다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="types">
+    <h2>세 종류의 프레임</h2>
+    <p>이더넷 프레임은 사실상 한 종류(데이터)다. 와이파이는 공기라는 불안정한 매체 위에서 연결을 맺고, 차례를 정하고, 확인 응답까지 해야 해서 세 종류가 있다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>종류(type)</th><th>하는 일</th><th>대표 하위 종류(subtype)</th></tr></thead>
+      <tbody>
+        <tr><td><b>관리</b><span class="en">(management, 0)</span></td><td>네트워크를 알리고 찾고 연결을 맺고 끊는다</td><td>비컨, 프로브 요청/응답, 인증, 연결 요청/응답, 연결 해제(Deauth·Disassoc), 액션</td></tr>
+        <tr><td><b>제어</b><span class="en">(control, 1)</span></td><td>매체 사용을 돕는다. 몸통이 없거나 아주 짧다</td><td>ACK, RTS, CTS, 블록 ACK 요청/블록 ACK, PS-Poll, 트리거(Wi-Fi 6)</td></tr>
+        <tr><td><b>데이터</b><span class="en">(data, 2)</span></td><td>위 계층(IP) 패킷을 나른다</td><td>QoS 데이터(오늘날 거의 전부), Null·QoS Null(데이터 없이 절전 상태만 알림)</td></tr>
+      </tbody>
+    </table></div>
+    <p class="spec-ref">종류·하위 종류 값과 Frame Control 비트 위치: Linux <code>include/linux/ieee80211.h</code>의 <code>IEEE80211_FTYPE_*</code>, <code>IEEE80211_STYPE_*</code>, <code>IEEE80211_FCTL_*</code></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="header">
+    <h2>머리말: 가변 길이의 이유</h2>
+    <p>802.11 프레임은 <b>Frame Control(2)</b> · <b>Duration(2)</b> · <b>주소 1~3(각 6)</b> · <b>Sequence Control(2)</b>로 시작하고, 상황에 따라 <b>주소 4(6)</b>, <b>QoS Control(2)</b>, <b>HT Control(4)</b>가 붙은 뒤 몸통과 <b>FCS(4)</b>가 온다. 기본 24바이트에서 최대 36바이트까지 바뀌고, ACK·CTS는 10바이트뿐이다. 어떤 칸이 있는지는 맨 앞 Frame Control이 알려 준다.</p>
+    <ul>
+      <li><b>Frame Control</b>: 버전(2비트), 종류(2), 하위 종류(4), 그리고 플래그 8개: ToDS, FromDS, More Fragments, <b>Retry</b>(재전송), <b>Power Management</b>(이 프레임 뒤 절전에 들어감, 11장), More Data(AP에 아직 쌓인 데이터가 있음), <b>Protected</b>(몸통이 암호화됨, 10장), +HTC/Order(HT Control 칸이 있음).</li>
+      <li><b>Duration</b>: 이 프레임 뒤 교환이 끝날 때까지 남은 µs. 들은 기기는 NAV를 설정한다(6장).</li>
+      <li><b>Sequence Control</b>: 12비트 시퀀스 번호 + 4비트 조각 번호. 받는 쪽은 Retry가 켜진 프레임의 번호가 이미 받은 것이면 버린다. ACK가 사라져 보낸 쪽이 다시 보냈을 때 같은 패킷이 두 번 올라가지 않게 하는 장치다.</li>
+      <li><b>QoS Control</b>: 트래픽 종류(TID 0~7 → 6장의 네 범주)와 ACK 방식(즉시 ACK, 블록 ACK).</li>
+      <li><b>FCS</b>: 프레임 전체에 대한 CRC-32. 하나라도 틀리면 받는 쪽은 조용히 버리고 ACK를 보내지 않는다. 보낸 쪽은 ACK가 없으니 다시 보낸다.</li>
+    </ul>
+    <div class="sim" id="sim-dis">
+      <div class="sim-head"><span class="sim-tag">INTERACTIVE</span><h3>프레임 해부 도구</h3></div>
+      <div class="sim-controls" style="border-top:0">
+        <div class="ctrl"><span>예시 프레임</span><div class="seg" id="ds-kind"><button data-value="beacon" class="on">비컨</button><button data-value="probe">프로브 요청</button><button data-value="data">QoS 데이터</button><button data-value="rts">RTS</button><button data-value="ack">ACK</button><button data-value="deauth">연결 끊기</button></div></div>
+        <div class="ctrl"><span>Frame Control 비트 바꾸기</span><div style="display:flex;flex-wrap:wrap;gap:6px 16px">
+          <label class="check"><input type="checkbox" id="ds-tods"> ToDS</label>
+          <label class="check"><input type="checkbox" id="ds-fromds"> FromDS</label>
+          <label class="check"><input type="checkbox" id="ds-retry"> Retry</label>
+          <label class="check"><input type="checkbox" id="ds-prot"> Protected</label>
+          <label class="check"><input type="checkbox" id="ds-order"> +HTC</label>
+        </div></div>
+      </div>
+      <div class="sim-view" style="padding:12px 14px">
+        <div class="hex" id="ds-hex"></div>
+        <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center"><button class="btn" id="ds-flip">전송 중 1비트 뒤집기</button><span id="ds-fcs"></span></div>
+        <div class="table-wrap" style="margin:0"><table class="ftab" id="ds-tab"></table></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">종류</span><span class="v" id="ds-type">—</span></div>
+        <div class="stat"><span class="k">머리말</span><span class="v" id="ds-hl">—</span></div>
+        <div class="stat"><span class="k">전체(FCS 포함)</span><span class="v" id="ds-len">—</span></div>
+      </div>
+      <div class="sim-note">바이트나 표의 줄을 누르면 서로 짝이 강조된다. 해볼 것: ① QoS 데이터에서 ToDS와 FromDS를 함께 켜면 주소 4가 생겨 머리말이 6바이트 늘고, 주소 칸의 의미가 바뀐다(메인 공유기가 위성 공유기로 게이트웨이의 패킷을 휴대폰에 넘기는 백홀). FromDS만 켜면 방향이 반대(게이트웨이 → 휴대폰)가 된다. ② Protected를 켜면 몸통이 CCMP 머리말 + 암호문 + MIC로 바뀐다. ③ “1비트 뒤집기”를 누르면 받은 쪽이 계산한 FCS가 프레임 끝의 FCS와 달라진다. 예시 프레임은 이 책이 만든 것이고(주소·내용은 가상), 형식은 실제와 같다. 머리말 길이 계산은 Linux <code>ieee80211_hdrlen()</code>을 옮긴 것이다.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="addr">
+    <h2>주소가 네 개인 이유</h2>
+    <p>이더넷 프레임에는 주소가 둘(목적지, 출발지)이다. 와이파이 프레임은 공중에서 “지금 이 전파를 보내는 기기(TA)와 받는 기기(RA)”가 최종 출발지(SA)·목적지(DA)와 다를 수 있다. 휴대폰이 인터넷 공유기 너머의 서버로 보내는 프레임은 공중에서는 휴대폰 → AP지만, 최종 목적지는 유선 쪽 게이트웨이다. 그래서 ToDS·FromDS 두 비트로 주소 칸의 의미를 정한다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>ToDS</th><th>FromDS</th><th>상황</th><th>주소 1</th><th>주소 2</th><th>주소 3</th><th>주소 4</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>0</td><td>관리·제어 프레임, 단말끼리 직접</td><td>DA (= RA)</td><td>SA (= TA)</td><td>BSSID</td><td>—</td></tr>
+        <tr><td>1</td><td>0</td><td>단말 → AP → 유선</td><td>BSSID (= RA)</td><td>SA (= TA)</td><td>DA</td><td>—</td></tr>
+        <tr><td>0</td><td>1</td><td>유선 → AP → 단말</td><td>DA (= RA)</td><td>BSSID (= TA)</td><td>SA</td><td>—</td></tr>
+        <tr><td>1</td><td>1</td><td>AP ↔ AP 무선 중계(메시 백홀, WDS)</td><td>RA</td><td>TA</td><td>DA</td><td>SA</td></tr>
+      </tbody>
+    </table></div>
+    <p class="spec-ref">SA·DA를 고르는 규칙: Linux <code>ieee80211_get_SA()</code>(주소 4가 있으면 주소 4, FromDS면 주소 3, 아니면 주소 2) · <code>ieee80211_get_DA()</code>(ToDS면 주소 3, 아니면 주소 1)</p>
+    <p>주소 1은 언제나 “공중에서 이 프레임을 받을 기기”다. 그래서 기기는 주소 1만 보고 자기 것인지 판단하고, ACK도 주소 2(TA)로 보낸다. 받은 프레임을 이더넷 프레임으로 바꿀 때는 위 표로 SA·DA를 꺼내 쓴다. 이 변환이 AP가 하는 “브리지”의 핵심이다.</p>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">거실 메시 공유기(메인)가 안방 메시 공유기(위성)로 무선 백홀을 통해 노트북의 패킷을 넘긴다. 노트북은 안방 공유기에 연결되어 있다. 이 백홀 프레임에는 주소가 몇 개 필요할까?</p><p class="wi-hint">공중의 송신·수신 기기와, 최종 출발지·목적지가 모두 다르다.</p><div class="opts">
+      <button class="opt">2개</button><button class="opt">3개</button><button class="opt" data-correct>4개 (ToDS = FromDS = 1)</button>
+    </div><div class="quiz-exp">RA = 위성 공유기, TA = 메인 공유기, DA = 노트북, SA = 인터넷 쪽 게이트웨이. 넷이 모두 달라 주소 4가 필요하다. 많은 메시 제품은 이 4주소 방식을 쓴다.</div></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="beacon">
+    <h2>비컨과 정보 요소</h2>
+    <p>AP는 보통 100 TU마다 <b>비컨</b>을 보낸다. TU(Time Unit)는 1,024 µs여서 100 TU = 102.4 ms, 1초에 약 10번이다. 비컨의 몸통은 타임스탬프(8바이트, 단말이 시계를 맞춤), 비컨 간격(2), 능력 정보(2) 뒤에 <span class="term">정보 요소</span><span class="en">(Information Element, IE)</span>가 줄줄이 붙는다. 정보 요소는 모두 <b>ID(1) · 길이(1) · 내용</b>의 TLV 형식이라, 모르는 ID는 길이만큼 건너뛰면 된다. 덕분에 새 세대가 나와도 옛 기기가 비컨을 읽다 멈추지 않는다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>ID</th><th>정보 요소</th><th>내용</th></tr></thead>
+      <tbody>
+        <tr><td class="num">0</td><td>SSID</td><td>네트워크 이름(0~32바이트). 길이 0이면 “숨긴 SSID” 또는 프로브의 “아무나”</td></tr>
+        <tr><td class="num">1</td><td>Supported Rates</td><td>지원 속도. 맨 윗비트가 켜진 것은 모두가 지원해야 하는 기본 속도(0.5 Mb/s 단위)</td></tr>
+        <tr><td class="num">3</td><td>DS Parameter Set</td><td>현재 채널 번호</td></tr>
+        <tr><td class="num">5</td><td>TIM</td><td>AP에 데이터가 쌓인 절전 단말의 목록(11장)</td></tr>
+        <tr><td class="num">48</td><td>RSN</td><td>보안 방식: 암호(CCMP·GCMP), 인증(PSK·SAE·802.1X), 관리 프레임 보호(10장)</td></tr>
+        <tr><td class="num">45 / 61</td><td>HT Capabilities / Operation</td><td>Wi-Fi 4 능력과 현재 운영(40 MHz 등)</td></tr>
+        <tr><td class="num">191 / 192</td><td>VHT Capabilities / Operation</td><td>Wi-Fi 5</td></tr>
+        <tr><td class="num">255</td><td>Extension</td><td>확장 ID로 다시 나눔: 35/36 HE(Wi-Fi 6), 106/108 EHT(Wi-Fi 7)</td></tr>
+        <tr><td class="num">221</td><td>Vendor Specific</td><td>회사별(OUI) 정보. WMM 매개변수, WPS 등</td></tr>
+      </tbody>
+    </table></div>
+    <p class="spec-ref">정보 요소 ID: Linux <code>include/linux/ieee80211.h</code>의 <code>enum ieee80211_eid</code>, <code>enum ieee80211_eid_ext</code> · TU = 1,024 µs: 같은 파일의 <code>TU_TO_JIFFIES(x) = usecs_to_jiffies(x × 1024)</code></p>
+    <p>비컨은 <b>모든 단말이 알아듣도록 가장 느린 기본 속도</b>로 나간다. 2.4 GHz에서 옛 802.11b 호환을 켜 두면 1 Mb/s다. 그런데 공유기 한 대가 SSID를 여러 개(일반·게스트·IoT) 열면 SSID마다 비컨이 따로 나가고, 아파트에서는 같은 채널에 이웃 공유기 비컨까지 들린다. 이것이 붐비는 2.4 GHz가 느린 숨은 이유 중 하나다.</p>
+    <div class="sim" id="sim-bcn">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>비컨이 먹는 채널 시간</h3></div>
+      <div class="sim-view"><canvas id="cv-bcn"></canvas></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>비컨 속도</span><div class="seg" id="bc-rate"><button data-value="1" class="on">1 Mb/s (11b 호환)</button><button data-value="6">6 Mb/s</button><button data-value="24">24 Mb/s</button></div></div>
+        <label class="ctrl"><span>비컨 크기 <output id="bc-len-out"></output></span><input type="range" id="bc-len" min="150" max="800" step="10" value="400"></label>
+        <label class="ctrl"><span>공유기 하나의 SSID 수 <output id="bc-ssid-out"></output></span><input type="range" id="bc-ssid" min="1" max="8" value="3"></label>
+        <label class="ctrl"><span>같은 채널에서 들리는 공유기 <output id="bc-ap-out"></output></span><input type="range" id="bc-ap" min="1" max="12" value="4"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">비컨 하나</span><span class="v" id="bc-one">—</span></div>
+        <div class="stat"><span class="k">초당 비컨</span><span class="v" id="bc-n">—</span></div>
+        <div class="stat"><span class="k">채널 시간 중 비컨</span><span class="v" id="bc-pct">—</span></div>
+      </div>
+      <div class="sim-note">막대: 102.4 ms 한 주기 안에서 비컨이 차지하는 시간(빨강)과 나머지(회색). 해볼 것: ① 1 Mb/s, 400바이트, SSID 3개, 공유기 4대면 채널 시간의 약 40%가 비컨이다. ② 같은 조건에서 비컨 속도만 6 Mb/s로 올리면 약 7%로 준다. 그래서 2.4 GHz에서는 802.11b 호환(1·2·5.5·11 Mb/s 기본 속도)을 끄고, 쓰지 않는 SSID를 줄이라고 권한다. 계산: 비컨 앞의 대기·백오프는 뺌. 1 Mb/s는 긴 프리앰블 192 µs + 8 µs/바이트, 6·24 Mb/s는 OFDM(6장 식).</div>
+    </div>
+    <p class="spec-ref">DSSS 전송 시간 = 긴 프리앰블 144 µs + PLCP 머리말 48 µs + ⌈8 × 바이트 ÷ Mb/s⌉: Linux <code>ieee80211_frame_duration()</code>의 802.11b 분기 (주석: 802.11b 18.3.4) · 기본 속도·비컨 간격 설정: hostapd <code>hostapd.conf</code> (basic_rates, beacon_int)</p>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>프레임은 관리(연결)·제어(매체 사용)·데이터 세 종류. 오늘날 데이터는 거의 전부 QoS 데이터다.</li>
+      <li>머리말은 24바이트 기본에 주소 4(6)·QoS(2)·HT Control(4)이 붙어 최대 36바이트. ACK·CTS는 10바이트. 무엇이 붙는지는 Frame Control이 정한다.</li>
+      <li>ToDS·FromDS가 주소 칸의 의미를 정한다. 주소 1은 언제나 공중의 수신자(RA). 둘 다 1이면 주소가 넷(메시 백홀).</li>
+      <li>시퀀스 번호 + Retry로 중복을 버리고, FCS(CRC-32)가 틀리면 ACK 없이 버려 재전송을 부른다.</li>
+      <li>비컨은 100 TU(102.4 ms)마다 가장 느린 기본 속도로 나가며, 정보 요소는 ID·길이·내용 TLV라 새 기능을 덧붙이기 쉽다. SSID 수와 802.11b 호환이 채널 시간을 크게 먹을 수 있다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>Frame Control 값이 0x0080인 프레임은?</p><div class="opts">
+        <button class="opt">ACK</button><button class="opt" data-correct>비컨</button><button class="opt">QoS 데이터</button><button class="opt">RTS</button>
+      </div><div class="quiz-exp">종류 비트 0(관리), 하위 종류 8(비컨). QoS 데이터는 0x0088, ACK는 0x00D4, RTS는 0x00B4다.</div></div>
+      <div class="quiz-q"><p>휴대폰이 AP를 거쳐 유선의 서버로 보내는 데이터 프레임에서 주소 3은?</p><div class="opts">
+        <button class="opt">휴대폰</button><button class="opt">AP(BSSID)</button><button class="opt" data-correct>최종 목적지(DA, 게이트웨이)</button><button class="opt">브로드캐스트</button>
+      </div><div class="quiz-exp">ToDS = 1: 주소 1 = BSSID(RA), 주소 2 = SA(휴대폰), 주소 3 = DA.</div></div>
+      <div class="quiz-q"><p>ACK를 잃어 보낸 쪽이 같은 프레임을 다시 보냈다. 받는 쪽이 같은 패킷을 두 번 올려 보내지 않는 방법은?</p><div class="opts">
+        <button class="opt">FCS를 비교한다</button><button class="opt" data-correct>Retry 비트가 켜져 있고 시퀀스 번호가 이미 받은 것이면 버린다</button><button class="opt">Duration을 비교한다</button><button class="opt">BSSID를 비교한다</button>
+      </div><div class="quiz-exp">시퀀스 번호(12비트)와 Retry 비트로 중복을 걸러낸다. 그래도 ACK는 다시 보낸다.</div></div>
+      <div class="quiz-q"><p>비컨 간격 100 TU는 몇 ms인가?</p><div class="opts">
+        <button class="opt">100 ms</button><button class="opt" data-correct>102.4 ms</button><button class="opt">1,000 ms</button><button class="opt">10.24 ms</button>
+      </div><div class="quiz-exp">1 TU = 1,024 µs.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  /** CRC-32 (IEEE 802.3과 같은 다항식 0xEDB88320, 반사형) */
+  function crc32(bytes) {
+    let c = 0xffffffff;
+    for (const b of bytes) { c ^= b; for (let k = 0; k < 8; k++) c = c & 1 ? (c >>> 1) ^ 0xedb88320 : c >>> 1; }
+    return (c ^ 0xffffffff) >>> 0;
+  }
+  /** Frame Control(리틀 엔디언으로 읽은 16비트 값) 풀기 */
+  function parseFC(fc) {
+    return { ver: fc & 3, type: (fc >> 2) & 3, subtype: (fc >> 4) & 15, toDS: !!(fc & 0x100), fromDS: !!(fc & 0x200), moreFrag: !!(fc & 0x400), retry: !!(fc & 0x800), pm: !!(fc & 0x1000), moreData: !!(fc & 0x2000), prot: !!(fc & 0x4000), order: !!(fc & 0x8000) };
+  }
+  /** 머리말 길이: Linux net/wireless/util.c ieee80211_hdrlen()을 옮김 */
+  function hdrLen(fc) {
+    const f = parseFC(fc);
+    if (f.type === 3) return 4;
+    if (f.type === 2) { let h = f.toDS && f.fromDS ? 30 : 24; if (f.subtype & 8) { h += 2; if (f.order) h += 4; } return h; }
+    if (f.type === 0) return f.order ? 28 : 24;
+    if (f.type === 1) return (fc & 0x00e0) === 0x00c0 ? 10 : 16;
+    return 24;
+  }
+  /** ToDS·FromDS에 따른 주소 칸의 역할 */
+  function addrRoles(toDS, fromDS) {
+    if (!toDS && !fromDS) return ["DA (= RA)", "SA (= TA)", "BSSID"];
+    if (toDS && !fromDS) return ["BSSID (= RA)", "SA (= TA)", "DA"];
+    if (!toDS && fromDS) return ["DA (= RA)", "BSSID (= TA)", "SA"];
+    return ["RA", "TA", "DA", "SA"];
+  }
+  const MGMT = ["연결 요청", "연결 응답", "재연결 요청", "재연결 응답", "프로브 요청", "프로브 응답", "타이밍 광고", "(예약)", "비컨", "ATIM", "연결 해제(Disassoc)", "인증", "인증 해제(Deauth)", "액션", "액션(No Ack)", "(예약)"];
+  const CTRL = { 2: "트리거", 5: "VHT/HE NDPA", 6: "Control Wrapper", 8: "블록 ACK 요청", 9: "블록 ACK", 10: "PS-Poll", 11: "RTS", 12: "CTS", 13: "ACK", 14: "CF-End" };
+  function frameName(fc) {
+    const f = parseFC(fc);
+    if (f.type === 0) return MGMT[f.subtype];
+    if (f.type === 1) return CTRL[f.subtype] || "제어 " + f.subtype;
+    if (f.type === 2) return ["데이터", "", "", "", "Null", "", "", "", "QoS 데이터", "", "", "", "QoS Null"][f.subtype] || "데이터 " + f.subtype;
+    return "확장";
+  }
+  const EID = { 0: "SSID", 1: "Supported Rates", 3: "DS Parameter Set", 5: "TIM", 7: "Country", 42: "ERP", 45: "HT Capabilities", 48: "RSN", 50: "Extended Rates", 61: "HT Operation", 127: "Extended Capabilities", 191: "VHT Capabilities", 192: "VHT Operation", 221: "Vendor Specific", 244: "RSNX" };
+  const EIDX = { 35: "HE Capabilities", 36: "HE Operation", 106: "EHT Operation", 108: "EHT Capabilities" };
+  /** 정보 요소(TLV) 목록: [{id, ext, off, len}] (off는 ID 바이트 위치) */
+  function parseIEs(bytes, off, end) {
+    const out = [];
+    while (off + 2 <= end) { const id = bytes[off], len = bytes[off + 1]; if (off + 2 + len > end) break; out.push({ id, ext: id === 255 ? bytes[off + 2] : null, off, len }); off += 2 + len; }
+    return out;
+  }
+
+  /* ================================================================ 예시 프레임 만들기 */
+  const MAC = { bc: "ff:ff:ff:ff:ff:ff", ap: "02:11:22:33:44:a1", phone: "3a:5c:b4:1e:77:02", gw: "00:1b:21:aa:bb:cc", sat: "02:11:22:33:44:b1" };
+  const mac = (s) => s.split(":").map((x) => parseInt(x, 16));
+  const le16 = (v) => [v & 255, (v >> 8) & 255];
+  const utf8 = (s) => [...new TextEncoder().encode(s)];
+  const ie = (id, data) => [id, data.length, ...data];
+  const BEACON_BODY = [0x10, 0x32, 0x54, 0x76, 0x98, 0x00, 0x00, 0x00, ...le16(100), ...le16(0x0011),
+    ...ie(0, utf8("우리집")), ...ie(1, [0x8c, 0x12, 0x98, 0x24, 0xb0, 0x48, 0x60, 0x6c]), ...ie(3, [36]), ...ie(5, [0, 1, 0, 0]),
+    ...ie(48, [1, 0, 0x00, 0x0f, 0xac, 4, 1, 0, 0x00, 0x0f, 0xac, 4, 1, 0, 0x00, 0x0f, 0xac, 8, 0xc0, 0x00]), ...ie(255, [36, 0xf4, 0x3f, 0x00, 0x00, 0xfc, 0xff])];
+  const SAMPLE = {
+    beacon: { fc: 0x0080, dur: 0, a: [MAC.bc, MAC.ap, MAC.ap], seq: 1234, body: BEACON_BODY },
+    probe: { fc: 0x0040, dur: 0, a: [MAC.bc, MAC.phone, MAC.bc], seq: 77, body: [...ie(0, []), ...ie(1, [0x8c, 0x12, 0x98, 0x24, 0xb0, 0x48, 0x60, 0x6c])] },
+    data: { fc: 0x0188, dur: 44, seq: 2051, qos: 0x0000, body: [0xaa, 0xaa, 0x03, 0, 0, 0, 0x08, 0x00, 0x45, 0x00, 0x00, 0x1c, 0x1a, 0x2b, 0x00, 0x00, 0x40, 0x01, 0x00, 0x00, 192, 168, 0, 23, 8, 8, 8, 8] },
+    rts: { fc: 0x00b4, dur: 300, a: [MAC.ap, MAC.phone] },
+    ack: { fc: 0x00d4, dur: 0, a: [MAC.phone] },
+    deauth: { fc: 0x00c0, dur: 0, a: [MAC.phone, MAC.ap, MAC.ap], seq: 9, body: le16(3) },
+  };
+  /** 데이터 예시의 주소: 휴대폰(SA)이 게이트웨이(DA)로, FromDS만이면 반대 방향, 둘 다면 메인 공유기 → 위성 공유기 백홀 */
+  function dataAddrs(toDS, fromDS) {
+    if (toDS && fromDS) return [MAC.sat, MAC.ap, MAC.phone, MAC.gw];
+    if (toDS) return [MAC.ap, MAC.phone, MAC.gw];
+    if (fromDS) return [MAC.phone, MAC.ap, MAC.gw];
+    return [MAC.gw, MAC.phone, MAC.ap];
+  }
+  /** 예시 + 바꾼 FC 비트로 바이트열과 필드 목록을 만든다 */
+  function build(kind, fc) {
+    const s = SAMPLE[kind], f = parseFC(fc), out = [], fields = [];
+    const put = (name, bytes, desc) => { fields.push({ name, off: out.length, len: bytes.length, desc }); out.push(...bytes); };
+    const fl = ["toDS", "fromDS", "moreFrag", "retry", "pm", "moreData", "prot", "order"].filter((k) => f[k]);
+    put("Frame Control", le16(fc), `종류 ${f.type} · 하위 ${f.subtype} → ${frameName(fc)}${fl.length ? " · " + fl.join(", ") : ""}`);
+    put("Duration", le16(s.dur), s.dur + " µs 동안 NAV 설정");
+    const hl = hdrLen(fc);
+    if (f.type === 1) {
+      put("주소 1 (RA)", mac(s.a[0]), s.a[0]);
+      if (hl === 16) put("주소 2 (TA)", mac(s.a[1] || MAC.phone), s.a[1] || MAC.phone);
+    } else {
+      const roles = addrRoles(f.toDS, f.fromDS), A = f.type === 2 ? dataAddrs(f.toDS, f.fromDS) : s.a;
+      [0, 1, 2].forEach((i) => put("주소 " + (i + 1) + " · " + roles[i], mac(A[i]), A[i]));
+      put("Sequence Control", le16(((s.seq || 0) << 4) & 0xffff), "시퀀스 " + (s.seq || 0) + " · 조각 0");
+      if (f.type === 2 && f.toDS && f.fromDS) put("주소 4 · SA", mac(A[3]), A[3]);
+      if (f.type === 2 && f.subtype & 8) put("QoS Control", le16(s.qos || 0), "TID " + ((s.qos || 0) & 15) + " (일반) · 즉시 ACK");
+      if (hl > out.length) put("HT Control", [0x03, 0, 0, 0], "+HTC 비트로 붙은 4바이트 (링크 적응 등)");
+      if (f.type === 0 && (f.subtype === 8 || f.subtype === 5)) {
+        put("타임스탬프", s.body.slice(0, 8), "AP 시계(µs) — 단말이 시계를 맞춘다");
+        put("비컨 간격", s.body.slice(8, 10), (s.body[8] | (s.body[9] << 8)) + " TU = " + ((s.body[8] | (s.body[9] << 8)) * 1.024).toFixed(1) + " ms");
+        put("능력 정보", s.body.slice(10, 12), "ESS(AP 망) · Privacy(암호화)");
+        parseIEs(s.body, 12, s.body.length).forEach((e) => put("IE " + e.id + (e.ext != null ? "/" + e.ext : "") + " · " + (e.ext != null ? EIDX[e.ext] || "Extension" : EID[e.id] || "?"), s.body.slice(e.off, e.off + 2 + e.len), ieDesc(e, s.body)));
+      } else if (f.type === 0 && f.subtype === 4) {
+        parseIEs(s.body, 0, s.body.length).forEach((e) => put("IE " + e.id + " · " + (EID[e.id] || "?"), s.body.slice(e.off, e.off + 2 + e.len), ieDesc(e, s.body)));
+      } else if (f.type === 0 && f.subtype === 12) {
+        put("이유 코드", s.body, (s.body[0] | (s.body[1] << 8)) + " = 단말이 떠나서 연결을 끊음");
+      } else if (s.body && s.body.length) {
+        if (f.prot) {
+          put("CCMP 머리말", [0x01, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00], "패킷 번호(PN) 1 · 키 번호 0 (10장)");
+          const r = WF.rng(7); put("암호화된 데이터", s.body.map(() => Math.floor(r() * 256)), "LLC·IP 패킷이 암호화되어 읽을 수 없음");
+          put("MIC", [0x5e, 0x91, 0x0a, 0x7c, 0x33, 0xd2, 0x48, 0xe1], "무결성 검사값 8바이트");
+        } else {
+          put("LLC/SNAP", s.body.slice(0, 8), "AA AA 03 00 00 00 + 08 00 = 그 뒤는 IPv4");
+          put("IP 패킷", s.body.slice(8), "192.168.0.23 → 8.8.8.8 (ICMP)");
+        }
+      }
+    }
+    put("FCS", le32(crc32(out)), "앞 모든 바이트의 CRC-32");
+    return { bytes: out, fields, hl };
+  }
+  const le32 = (v) => [v & 255, (v >>> 8) & 255, (v >>> 16) & 255, (v >>> 24) & 255];
+  function ieDesc(e, b) {
+    const d = b.slice(e.off + 2, e.off + 2 + e.len);
+    if (e.id === 0) return e.len ? "“" + new TextDecoder().decode(new Uint8Array(d)) + "” (UTF-8 " + e.len + "바이트)" : "길이 0 = 아무 네트워크나 응답하라";
+    if (e.id === 1) return d.map((x) => (x & 0x7f) / 2 + (x & 0x80 ? "(기본)" : "")).join(" · ") + " Mb/s";
+    if (e.id === 3) return "채널 " + d[0];
+    if (e.id === 5) return "DTIM 카운트 " + d[0] + " · 주기 " + d[1] + " · 쌓인 데이터 없음";
+    if (e.id === 48) return "CCMP-128 · 인증 SAE(WPA3) · 관리 프레임 보호 필수";
+    if (e.id === 255) return "Wi-Fi 6 운영 정보";
+    return e.len + "바이트";
+  }
+
+  /* ================================================================ 1. 해부 도구 */
+  (function () {
+    let kind = "beacon", flip = -1, hl = -1;
+    const BITS = { "ds-tods": 0x100, "ds-fromds": 0x200, "ds-retry": 0x800, "ds-prot": 0x4000, "ds-order": 0x8000 };
+    const COLORS = ["#7c3aed", "#ea580c", "#0891b2", "#16a34a", "#db2777", "#ca8a04", "#2563eb", "#dc2626", "#0d9488", "#9333ea", "#65a30d", "#c026d3"];
+    const fcNow = () => { let fc = SAMPLE[kind].fc; Object.entries(BITS).forEach(([id, b]) => { if ($(id).checked) fc |= b; }); return fc; };
+    function syncBoxes() { const s = SAMPLE[kind]; Object.entries(BITS).forEach(([id, b]) => { $(id).checked = !!(s.fc & b); const dataOnly = id !== "ds-retry" && id !== "ds-order"; $(id).disabled = dataOnly && (s.fc & 0x0c) !== 0x08; }); if ((s.fc & 0x0c) === 0x04) $("ds-order").disabled = true; }
+    function render() {
+      const fc = fcNow(), fr = build(kind, fc), bytes = fr.bytes.slice();
+      if (flip >= 0 && flip < bytes.length) bytes[flip] ^= 0x10;
+      const owner = []; fr.fields.forEach((f, i) => { for (let k = 0; k < f.len; k++) owner[f.off + k] = i; });
+      $("ds-hex").innerHTML = bytes.map((b, k) => `<span data-f="${owner[k]}" style="background:${COLORS[owner[k] % COLORS.length]}26;${k === flip ? "color:var(--bad);font-weight:700" : ""}" class="${owner[k] === hl ? "hl" : ""}">${b.toString(16).padStart(2, "0")}</span>`).join("");
+      $("ds-tab").innerHTML = fr.fields.map((f, i) => `<tr data-f="${i}" class="${i === hl ? "hl" : ""}"><td><span class="sw" style="background:${COLORS[i % COLORS.length]}"></span>${f.name}</td><td>${f.off}–${f.off + f.len - 1}</td><td>${f.desc}</td></tr>`).join("");
+      const n = bytes.length, got = bytes[n - 4] | (bytes[n - 3] << 8) | (bytes[n - 2] << 16) | (bytes[n - 1] << 24), calc = crc32(bytes.slice(0, n - 4)), good = (got >>> 0) === calc;
+      $("ds-fcs").innerHTML = good ? `<span class="fcs-ok">FCS 일치 (0x${calc.toString(16).padStart(8, "0")}) → 받고 ACK</span>` : `<span class="fcs-bad">FCS 불일치: 계산 0x${calc.toString(16).padStart(8, "0")} ≠ 받은 0x${(got >>> 0).toString(16).padStart(8, "0")} → 버리고 ACK 안 함</span>`;
+      WF.stat("ds-type", frameName(fc)); WF.stat("ds-hl", fr.hl + " B"); WF.stat("ds-len", n + " B");
+    }
+    const pick = (e) => { const t = e.target.closest("[data-f]"); if (!t) return; hl = +t.dataset.f === hl ? -1 : +t.dataset.f; render(); };
+    $("ds-hex").addEventListener("click", pick); $("ds-tab").addEventListener("click", pick);
+    WF.seg("ds-kind", (v) => { kind = v; flip = -1; hl = -1; syncBoxes(); render(); });
+    Object.keys(BITS).forEach((id) => $(id).addEventListener("change", () => { flip = -1; render(); }));
+    $("ds-flip").addEventListener("click", () => { const n = build(kind, fcNow()).bytes.length; flip = flip >= 0 ? -1 : Math.floor(n / 2); $("ds-flip").textContent = flip >= 0 ? "원래대로" : "전송 중 1비트 뒤집기"; render(); });
+    syncBoxes(); render();
+  })();
+
+  /* ================================================================ 2. 비컨 시간 */
+  /** 비컨 하나의 전송 시간(µs). bytes는 FCS 포함. 1 Mb/s는 DSSS 긴 프리앰블, 나머지는 OFDM */
+  function beaconUs(bytes, rate) { return rate < 6 ? 192 + Math.ceil((8 * bytes) / rate) : 20 + 4 * Math.ceil((16 + 8 * bytes + 6) / (4 * rate)); }
+  function beaconShare(bytes, rate, nSsid, nAp) { return (beaconUs(bytes, rate) * nSsid * nAp) / 102400; }
+  (function () {
+    let rate = 1;
+    const len = WF.range("bc-len", (v) => v + " B", draw), ss = WF.range("bc-ssid", (v) => v + "개", draw), ap = WF.range("bc-ap", (v) => v + "대", draw);
+    WF.seg("bc-rate", (v) => { rate = +v; draw(); });
+    const cv = WF.canvas($("cv-bcn"), (ctx, w, h) => {
+      const P = WF.palette(), L = 12, R = w - 12, y = 30, bh = 34, share = Math.min(1, beaconShare(len(), rate, ss(), ap())), n = ss() * ap(), each = (R - L) * Math.min(1, beaconUs(len(), rate) / 102400);
+      ctx.fillStyle = P.grid; WF.rrect(ctx, L, y, R - L, bh, 6); ctx.fill();
+      ctx.fillStyle = P.bad; for (let i = 0; i < n; i++) { const x = L + ((R - L) * i) / n; ctx.fillRect(x, y, Math.max(1, Math.min(each, (R - L) / n)), bh); }
+      WF.text(ctx, "0", L, y - 8, { size: 11, color: P.faint }); WF.text(ctx, "102.4 ms (비컨 한 주기)", R, y - 8, { size: 11, color: P.faint, align: "right" });
+      WF.text(ctx, `비컨 ${n}개 × ${(beaconUs(len(), rate) / 1000).toFixed(2)} ms = ${(share * 102.4).toFixed(1)} ms`, L, y + bh + 22, { size: 12.5, color: P.text, bold: true });
+    }, { aspect: 0.22, minHeight: 100, maxHeight: 120 });
+    function draw() { const u = beaconUs(len(), rate), s = beaconShare(len(), rate, ss(), ap()); WF.stat("bc-one", u >= 1000 ? (u / 1000).toFixed(2) + " ms" : u + " µs"); WF.stat("bc-n", Math.round((ss() * ap() * 1e6) / 102400) + "개"); WF.stat("bc-pct", s >= 1 ? "100% 넘음" : (s * 100).toFixed(1) + "%"); cv.redraw(); }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

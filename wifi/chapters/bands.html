@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>대역과 채널: 2.4·5·6 GHz · WiFiBook</title>
+<meta name="description" content="와이파이가 쓰는 2.4·5·6 GHz 대역과 채널 번호의 규칙, 2.4 GHz에서 1·6·11번만 쓰라는 이유, 레이더를 피하는 DFS, 6 GHz의 1.2 GHz 폭과 PSC, 20 MHz에서 320 MHz까지 채널을 묶는 규칙을 Linux 커널의 채널 계산과 맞춰 본다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/wifi/chapters/bands.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="WiFiBook">
+<meta property="og:title" content="대역과 채널: 2.4·5·6 GHz · WiFiBook">
+<meta property="og:description" content="와이파이가 쓰는 2.4·5·6 GHz 대역과 채널 번호의 규칙, 2.4 GHz에서 1·6·11번만 쓰라는 이유, 레이더를 피하는 DFS, 6 GHz의 1.2 GHz 폭과 PSC, 20 MHz에서 320 MHz까지 채널을 묶는 규칙을 Linux 커널의 채널 계산과 맞춰 본다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/wifi/chapters/bands.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/wifi/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"대역과 채널: 2.4·5·6 GHz","name":"대역과 채널: 2.4·5·6 GHz · WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/chapters/bands.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/wifi/chapters/bands.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":2,"image":"https://yalex-kim.github.io/yalexBook/wifi/og.png","dateModified":"2026-10-17","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/wifi/#book","name":"WiFiBook — 누구나 읽는 인터랙티브 와이파이 교과서","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"publisher":{"@type":"Organization","name":"WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"description":"와이파이가 쓰는 2.4·5·6 GHz 대역과 채널 번호의 규칙, 2.4 GHz에서 1·6·11번만 쓰라는 이유, 레이더를 피하는 DFS, 6 GHz의 1.2 GHz 폭과 PSC, 20 MHz에서 320 MHz까지 채널을 묶는 규칙을 Linux 커널의 채널 계산과 맞춰 본다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"WiFiBook","item":"https://yalex-kim.github.io/yalexBook/wifi/"},{"@type":"ListItem","position":2,"name":"02 대역과 채널: 2.4·5·6 GHz","item":"https://yalex-kim.github.io/yalexBook/wifi/chapters/bands.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<style>
+  .chlist { display: flex; flex-wrap: wrap; gap: 4px; font-family: var(--mono); font-size: 12px; margin-top: 8px; }
+  .chlist span { padding: 3px 7px; border-radius: 6px; background: var(--surface); }
+  .chlist span.psc { background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+</style>
+</head>
+<body data-chapter="bands">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 02</div>
+    <h1>대역과 채널: 2.4·5·6 GHz</h1>
+    <p class="lead">공유기 설정 화면을 열면 “채널: 자동, 6, 36, 149, 37…” 같은 숫자가 보인다. 2.4 GHz에서는 1~13번인데 5 GHz에서는 36번부터 시작하고, 6 GHz에서는 또 1번부터 다시 센다. 어떤 채널 옆에는 “DFS”라는 꼬리표가 붙어 있고, 그 채널을 고르면 공유기가 1분 넘게 조용해진다. 이 장에서는 와이파이의 세 대역과 채널 번호의 규칙을 정리하고, 채널을 넓게 묶을수록 무엇을 얻고 잃는지 따져 본다.</p>
+    <ul class="objectives">
+      <li>세 대역의 채널 번호와 중심 주파수의 관계(2.4 GHz: 2407 + 5k, 5 GHz: 5000 + 5k, 6 GHz: 5950 + 5k)를 계산한다.</li>
+      <li>2.4 GHz에서 1·6·11번만 쓰라는 이유와, 반쯤 겹치는 채널이 같은 채널보다 나쁜 이유를 설명한다.</li>
+      <li>DFS가 레이더를 피하는 방법과 그 대가(채널 사용 전 60초 이상 듣기, 갑작스러운 채널 이동)를 안다.</li>
+      <li>6 GHz의 채널 배치, PSC, 20~320 MHz 채널 묶기 규칙을 시뮬레이터로 확인한다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="three">
+    <h2>세 개의 대역</h2>
+    <p>와이파이는 면허 없이 쓰는 세 대역을 쓴다. 블루투스·전자레인지와 나눠 쓰는 <b>2.4 GHz</b>(2,400~2,483.5 MHz, 폭 83.5 MHz), 802.11a부터 쓴 <b>5 GHz</b>(약 5,150~5,850 MHz 사이의 여러 조각), 그리고 Wi-Fi 6E부터 쓰는 <b>6 GHz</b>(5,925~7,125 MHz, 폭 1.2 GHz)다. 한국은 2020년 10월 6 GHz 대역 1.2 GHz 전체를 비면허 와이파이용으로 공급했다. 미국에 이어 세계에서 두 번째였다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>대역</th><th>폭</th><th>20 MHz 채널 수</th><th>장점</th><th>약점</th></tr></thead>
+      <tbody>
+        <tr><td>2.4 GHz</td><td class="num">83.5 MHz</td><td class="num">겹치지 않는 것 3개</td><td>벽을 잘 뚫는다, 오래된 기기도 지원</td><td>좁고 붐빈다(블루투스·전자레인지·이웃)</td></tr>
+        <tr><td>5 GHz</td><td class="num">나라마다 다름 (수백 MHz)</td><td class="num">20개 남짓</td><td>넓다, 대부분의 기기가 지원</td><td>일부 채널은 DFS, 벽에 약하다</td></tr>
+        <tr><td>6 GHz</td><td class="num">1,200 MHz</td><td class="num">59개</td><td>매우 넓다, 옛 기기가 없다(구형 배려 없음)</td><td>더 높은 주파수라 벽에 더 약하다, 6E·7 기기만</td></tr>
+      </tbody>
+    </table></div>
+    <p class="spec-ref">한국 6 GHz 5,925~7,125 MHz 비면허 공급(2020-10-15, 과학기술정보통신부): 언론 보도 · 채널 수와 배치: 아래 계산</p>
+    <div class="callout analogy"><strong>층이 다른 회의실</strong><p>세 대역은 같은 건물의 <b>세 층</b>이다. 2.4 GHz 층은 회의실이 세 개뿐이고 다른 회사(블루투스, 전자레인지)도 같이 쓴다. 5 GHz 층은 회의실이 많지만 일부는 “방송 장비(레이더)가 쓰면 즉시 비워야 하는” 방이다(DFS). 6 GHz 층은 새로 지은 넓은 층이라 회의실이 59개나 되고, 옛날 방식으로 말하는 손님은 들어오지 못한다. 대신 높은 층이라 벽이 두꺼워 다른 방까지 목소리가 덜 들린다(전파가 벽에 약하다).</p></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="numbers">
+    <h2>채널 번호의 규칙</h2>
+    <p>채널 번호는 그냥 순서가 아니라 <b>주파수를 5 MHz 단위로 센 값</b>이다. 그래서 공식 하나로 바로 바꿀 수 있다.</p>
+    <div class="formula">2.4 GHz: f = 2407 + 5k MHz (k = 1~13, 14번만 2484 MHz) &nbsp;&nbsp; 5 GHz: f = 5000 + 5k MHz &nbsp;&nbsp; 6 GHz: f = 5950 + 5k MHz (2번만 5935 MHz)
+      <div class="where">예: 2.4 GHz 6번 = 2437 MHz, 5 GHz 36번 = 5180 MHz, 149번 = 5745 MHz, 6 GHz 37번 = 6135 MHz. 5 GHz의 36, 40, 44…처럼 4씩 띄는 이유는 채널 폭이 20 MHz(= 5 MHz × 4)이기 때문이다. 같은 번호라도 대역이 다르면 다른 주파수다(2.4 GHz 1번과 6 GHz 1번).</div>
+    </div>
+    <p class="spec-ref">채널↔주파수 변환: Linux 커널 <code>net/wireless/util.c</code>의 <code>ieee80211_channel_to_freq_khz()</code>·<code>ieee80211_freq_khz_to_channel()</code> (코드 주석이 인용한 표준 위치: 802.11 17.3.8.3.2, Annex J, 6 GHz는 802.11ax D6.1 27.3.23.2)</p>
+    <div class="sim" id="sim-ch">
+      <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>채널 번호 ↔ 주파수, 그리고 세 대역 지도</h3></div>
+      <div class="sim-view"><canvas id="cv-ch"></canvas></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>대역</span><div class="seg" id="ch-band"><button data-value="2">2.4 GHz</button><button data-value="5" class="on">5 GHz</button><button data-value="6">6 GHz</button></div></div>
+        <label class="ctrl"><span>채널 번호 <output id="ch-n-out"></output></span><input type="range" id="ch-n" min="1" max="233" value="36"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">중심 주파수</span><span class="v" id="ch-f">—</span></div>
+        <div class="stat"><span class="k">20 MHz 채널 범위</span><span class="v" id="ch-r">—</span></div>
+        <div class="stat"><span class="k">파장</span><span class="v" id="ch-l">—</span></div>
+        <div class="stat"><span class="k">비고</span><span class="v" id="ch-note">—</span></div>
+      </div>
+      <div class="sim-note">가로축은 2.3~7.2 GHz의 주파수, 세 회색 띠가 와이파이 대역이다. 슬라이더는 고른 대역에서 쓰는 번호만 지나간다. 해볼 것: ① 5 GHz 36번과 6 GHz 1번을 비교하자. 번호는 6 GHz 쪽이 작지만 주파수는 훨씬 높다. ② 5 GHz 52~144번에 “DFS”가 붙는 것을 보자(나라마다 허용 범위가 다르며, 여기서는 흔한 배치를 보였다). 이 변환 함수는 Linux 커널의 함수와 같은 결과를 내는지 자동 검증한다.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="overlap">
+    <h2>2.4 GHz: 1·6·11번만 쓰라는 이유</h2>
+    <p>2.4 GHz의 채널 번호는 5 MHz 간격인데, 와이파이 신호 하나는 폭이 약 20 MHz(802.11b는 22 MHz)다. 그래서 인접한 번호끼리는 스펙트럼이 크게 겹치고, <b>서로 완전히 떨어진 채널은 1·6·11번(13번까지 쓰는 나라에서는 1·5·9·13번)</b>뿐이다.</p>
+    <p>직관과 다른 사실이 있다. 이웃이 1번과 6번을 쓸 때 “사이의 3번은 비었겠지”라며 3번을 고르면 <b>더 나쁘다</b>. 같은 채널(1번)의 이웃끼리는 서로의 프레임 머리를 알아들어 6장의 규칙대로 차례를 지킨다. 손해는 시간을 나눠 쓰는 것뿐이다. 반쯤 겹친 채널의 신호는 알아들을 수 없는 잡음으로 들어와, 내 프레임이 날아가는 도중에 끼어들어 깨뜨린다.</p>
+    <div class="sim" id="sim-24">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>아파트 2.4 GHz 채널 고르기</h3></div>
+      <div class="sim-view"><canvas id="cv-24"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>내 채널 <output id="c24-me-out"></output></span><input type="range" id="c24-me" min="1" max="13" value="3"></label>
+        <label class="ctrl"><span>이웃이 말하는 시간 비율 <output id="c24-load-out"></output></span><input type="range" id="c24-load" min="0" max="90" step="5" value="40"></label>
+        <div class="ctrl"><span>&nbsp;</span><div class="btn-row"><button class="btn primary" id="c24-best">가장 좋은 채널 찾기</button></div></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">같은 채널 이웃</span><span class="v" id="c24-co">—</span></div>
+        <div class="stat"><span class="k">일부 겹치는 이웃</span><span class="v" id="c24-adj">—</span></div>
+        <div class="stat"><span class="k">내 몫의 상대 처리율</span><span class="v" id="c24-tp">—</span></div>
+      </div>
+      <div class="sim-note">언덕 하나가 이웃 AP 하나의 스펙트럼(높이 = 우리 집에서 들리는 세기)이다. 파랑 = 내 AP, 주황 = 같은 채널 이웃(차례를 나눠 씀), 빨강 = 일부 겹쳐 잡음이 되는 이웃. 해볼 것: ① 3번과 1번을 비교하자. ② “가장 좋은 채널 찾기”는 일부 겹치는 이웃이 가장 적은 자리를 고른다. 이 배치에서는 13번이 비어 있어 13번을 고른다(13번까지 쓰는 한국 기준, 1·5·9·13 배치). 3번처럼 두 이웃 사이에 낀 채널은 거의 항상 최악에 가깝다. 단순화한 모델: 같은 채널 이웃은 말하는 비율만큼 내 시간을 나눠 가지고, 겹치는 이웃은 겹친 폭 비율 × 말하는 비율만큼 내 프레임을 깨뜨린다고 보았다(이웃 배치는 예).</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="dfs">
+    <h2>5 GHz와 DFS: 레이더에게 비켜 주기</h2>
+    <p>5 GHz의 일부(흔히 52~144번 부근)는 기상·군용 레이더와 함께 쓰는 대역이다. 이 채널에서 와이파이는 <span class="term">DFS</span><span class="en">(Dynamic Frequency Selection)</span> 규칙을 지켜야 한다.</p>
+    <ol>
+      <li><b>쓰기 전에 듣기</b>: DFS 채널을 쓰기 전에 레이더 신호가 없는지 일정 시간 듣는다. 이것을 <span class="term">CAC</span><span class="en">(Channel Availability Check)</span>라 하고, 최소 60초다(기상 레이더 대역은 지역에 따라 훨씬 길다). 공유기가 켜지거나 채널을 바꾼 뒤 한동안 5 GHz가 안 보이는 이유다.</li>
+      <li><b>쓰는 중에도 듣기</b>: 레이더가 나타나면 정해진 시간 안에 그 채널을 비우고 다른 채널로 옮긴다. 붙어 있던 기기들은 갑자기 끊기거나 채널 전환을 따라간다.</li>
+    </ol>
+    <p>DFS 채널은 이웃이 덜 쓰는 만큼 깨끗하지만, 레이더가 잦은 지역(공항·항만 근처)에서는 연결이 자주 흔들린다. 그래서 많은 공유기는 “DFS 채널 제외” 설정을 둔다.</p>
+    <p class="spec-ref">최소 CAC 60 s: Linux <code>include/net/cfg80211.h</code>의 <code>IEEE80211_DFS_MIN_CAC_TIME_MS = 60000</code> · DFS 지원과 ACS의 DFS 제외 설정: hostapd <code>hostapd.conf</code> (ieee80211h, acs_exclude_dfs). 허용 채널과 세부 시간은 나라별 전파 규정이 정한다.</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="bonding">
+    <h2>채널 묶기와 6 GHz</h2>
+    <p>이웃한 20 MHz 채널을 붙여 하나처럼 쓰는 것이 <span class="term">채널 본딩</span><span class="en">(channel bonding)</span>이다. 40 → 80 → 160 → 320 MHz로 폭을 두 배로 할 때마다 부반송파가 두 배가 되어 속도도 약 두 배가 된다(3·4장). 대신 같은 대역에서 동시에 쓸 수 있는 채널 개수는 반으로 줄어 이웃과 겹칠 확률이 커지고, 잡음도 폭에 비례해 커져(폭 두 배마다 +3 dB) 먼 거리에서는 이득이 줄어든다.</p>
+    <p>묶음은 아무렇게나 만들지 않는다. 6 GHz는 5,945 MHz부터 20·40·80·160 MHz 블록을 차례로 빈틈없이 쌓는다. 320 MHz만 예외로, 160 MHz씩 겹치게 놓아 “320-1”과 “320-2” 두 계열이 생긴다. 묶음 안의 20 MHz 채널 하나는 <b>주 채널</b><span class="en">(primary channel)</span>이 되어 비컨과 제어 프레임이 오가고, 나머지는 데이터를 실을 때만 함께 쓴다.</p>
+    <p>6 GHz에는 채널이 59개나 되어, 단말이 전부 훑으면 시간이 오래 걸린다. 그래서 16번마다 하나씩(번호 % 16 = 5: 5, 21, 37, …, 229) <span class="term">PSC</span><span class="en">(Preferred Scanning Channel)</span>를 정해 두고, AP는 가능하면 주 채널을 PSC에 둔다. 단말은 PSC 15개만 훑어도 대부분의 AP를 찾는다.</p>
+    <p class="spec-ref">6 GHz 채널 블록(5,945 MHz부터, 320 MHz는 160 MHz 간격으로 겹침): Linux <code>net/wireless/chan.c</code>의 <code>cfg80211_valid_center_freq()</code> · PSC(번호 % 16 = 5): Linux <code>include/net/cfg80211.h</code>의 <code>cfg80211_channel_is_psc()</code> (주석: Draft IEEE P802.11ax/D5.0 26.17.2.3.3)</p>
+    <div class="sim" id="sim-6g">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>6 GHz 채널 계획: 폭을 넓히면 몇 개가 남나</h3></div>
+      <div class="sim-view"><canvas id="cv-6g"></canvas><div class="chlist" id="g6-list"></div></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>채널 폭</span><div class="seg" id="g6-w"><button data-value="20">20</button><button data-value="40">40</button><button data-value="80" class="on">80</button><button data-value="160">160</button><button data-value="320">320 MHz</button></div></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">쓸 수 있는 채널</span><span class="v" id="g6-n">—</span></div>
+        <div class="stat"><span class="k">겹치지 않게 동시에</span><span class="v" id="g6-nn">—</span></div>
+        <div class="stat"><span class="k">PSC (20 MHz)</span><span class="v">15개</span></div>
+      </div>
+      <div class="sim-note">위: 6 GHz 대역(5,925~7,125 MHz) 위에 쓸 수 있는 채널 블록을 그렸다. 아래: 각 블록의 중심 채널 번호(진한 칸 = 그 안에 PSC가 있는 블록의 예). 해볼 것: ① 20 → 320 MHz로 넓히며 개수가 59 → 29 → 14 → 7 → 6으로 주는 것을 보자. 320 MHz는 겹치는 블록을 포함한 수이고, 동시에 겹치지 않게 쓸 수 있는 것은 3개다. ② 맨 위 6,945~7,125 MHz 근처는 160 MHz 블록이 들어가지 못해 남는다. 블록 계산은 Linux 커널의 유효성 검사 규칙을 그대로 따랐고 자동 검증한다.</div>
+    </div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">아파트에 이웃 AP가 많다. 6 GHz에서 320 MHz 채널을 쓰는 것과 80 MHz 채널을 쓰는 것 중, 저녁 시간 실제 속도가 더 좋을 가능성이 높은 쪽은?</p><p class="wi-hint">6 GHz 시뮬레이터에서 폭별로 동시에 쓸 수 있는 채널 수를 보자.</p><div class="opts">
+      <button class="opt">320 MHz — 네 배 넓으니 항상 네 배 빠르다</button>
+      <button class="opt" data-correct>상황에 따라 80 MHz가 낫다 — 겹치지 않는 채널이 14개라 이웃과 나눠 쓸 일이 적다</button>
+      <button class="opt">둘 다 같다</button>
+    </div><div class="quiz-exp">320 MHz는 겹치지 않는 채널이 3개뿐이라 이웃이 많으면 같은 채널을 나눠 써야 하고, 잡음 바닥도 6 dB 높다. 이웃이 적은 단독 주택이라면 320 MHz가 이긴다. Wi-Fi 7의 프리앰블 펑처링은 넓은 채널의 일부가 막혔을 때 그 조각만 빼고 쓰게 해 이 문제를 줄인다(13장).</div></div>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>와이파이 대역은 <b>2.4 GHz</b>(83.5 MHz), <b>5 GHz</b>, <b>6 GHz</b>(5,925~7,125 MHz, 1.2 GHz 폭, 한국 2020년 공급)다. 높을수록 넓고 깨끗하지만 벽에 약하다.</li>
+      <li>채널 번호 = 주파수를 5 MHz로 센 값. 2.4: 2407 + 5k, 5: 5000 + 5k, 6: 5950 + 5k MHz.</li>
+      <li>2.4 GHz에서 겹치지 않는 채널은 <b>1·6·11</b>. 반쯤 겹친 채널은 알아들을 수 없는 잡음이라 같은 채널을 나눠 쓰는 것보다 나쁘다.</li>
+      <li><b>DFS</b> 채널은 쓰기 전 최소 60초 레이더를 듣고(CAC), 레이더가 나오면 비킨다.</li>
+      <li>채널 본딩은 폭 두 배 → 속도 약 두 배, 대신 채널 수 절반·잡음 +3 dB. 6 GHz는 5,945 MHz부터 블록을 쌓고(320 MHz만 160 MHz씩 겹침), <b>PSC</b>(번호 % 16 = 5) 15개로 빠르게 찾는다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>5 GHz 채널 149번의 중심 주파수는?</p><div class="opts">
+        <button class="opt">5149 MHz</button><button class="opt" data-correct>5745 MHz</button><button class="opt">5490 MHz</button><button class="opt">6695 MHz</button>
+      </div><div class="quiz-exp">5000 + 5 × 149 = 5745 MHz.</div></div>
+      <div class="quiz-q"><p>2.4 GHz 11번 채널의 중심 주파수는?</p><div class="opts">
+        <button class="opt">2411 MHz</button><button class="opt" data-correct>2462 MHz</button><button class="opt">2472 MHz</button><button class="opt">2484 MHz</button>
+      </div><div class="quiz-exp">2407 + 5 × 11 = 2462 MHz. 2484 MHz는 일본의 14번(802.11b 전용)이다.</div></div>
+      <div class="quiz-q"><p>공유기 채널을 DFS 채널(예: 100번)로 바꿨더니 1분 넘게 5 GHz가 보이지 않았다. 이유는?</p><div class="opts">
+        <button class="opt">공유기가 고장 나서</button><button class="opt" data-correct>쓰기 전에 레이더가 없는지 최소 60초 듣는 CAC를 하고 있어서</button><button class="opt">6 GHz로 옮겨 가서</button><button class="opt">비밀번호를 다시 계산해서</button>
+      </div><div class="quiz-exp">DFS 채널은 사용 전 CAC가 필요하다. Linux 커널의 최소 CAC 시간 상수는 60,000 ms다.</div></div>
+      <div class="quiz-q"><p>6 GHz에서 PSC가 아닌 것은?</p><div class="opts">
+        <button class="opt">5번</button><button class="opt">21번</button><button class="opt" data-correct>33번</button><button class="opt">37번</button>
+      </div><div class="quiz-exp">PSC는 번호 % 16 = 5인 채널: 5, 21, 37, 53, …. 33 % 16 = 1이다.</div></div>
+      <div class="quiz-q"><p>채널 폭을 80 MHz에서 160 MHz로 넓힐 때 일어나지 않는 일은?</p><div class="opts">
+        <button class="opt">이론 속도가 약 두 배가 된다</button><button class="opt">겹치지 않는 채널 수가 절반이 된다</button><button class="opt">잡음 바닥이 약 3 dB 올라간다</button><button class="opt" data-correct>전파가 벽을 더 잘 뚫는다</button>
+      </div><div class="quiz-exp">벽 투과는 주파수에 달렸지 폭과는 상관없다. 오히려 같은 송신 전력을 더 넓게 나눠 써서 먼 거리에서는 불리하다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  /** 채널 → 중심 주파수(MHz). Linux ieee80211_channel_to_freq_khz()와 같은 규칙 */
+  function channelToFreq(chan, band) {
+    if (chan <= 0) return 0;
+    if (band === 2) return chan === 14 ? 2484 : chan < 14 ? 2407 + chan * 5 : 0;
+    if (band === 5) return chan >= 182 && chan <= 196 ? 4000 + chan * 5 : 5000 + chan * 5;
+    if (band === 6) return chan === 2 ? 5935 : chan <= 253 ? 5950 + chan * 5 : 0;
+    return 0;
+  }
+  /** 중심 주파수(MHz) → 채널. Linux ieee80211_freq_khz_to_channel()과 같은 규칙 */
+  function freqToChannel(f) {
+    const t = Math.trunc; // C의 정수 나눗셈
+    if (f === 2484) return 14;
+    if (f < 2484) return t((f - 2407) / 5);
+    if (f >= 4910 && f <= 4980) return t((f - 4000) / 5);
+    if (f < 5925) return t((f - 5000) / 5);
+    if (f === 5935) return 2;
+    if (f <= 45000) return t((f - 5950) / 5);
+    return 0;
+  }
+  /** 6 GHz에서 폭 bw의 유효한 중심 주파수인가. Linux cfg80211_valid_center_freq() 규칙 */
+  function valid6gCenter(center, bw) {
+    if (center - bw / 2 < 5945 || center + bw / 2 > 7225) return false;
+    const step = bw === 320 ? 160 : bw;
+    return (center - bw / 2 - 5945) % step === 0;
+  }
+  /** 6 GHz에서 폭 bw로 쓸 수 있는 중심 주파수 목록 */
+  function sixGhzChannels(bw) { const out = []; for (let c = 5945 + bw / 2; c + bw / 2 <= 7125; c += 10) if (valid6gCenter(c, bw)) out.push(c); return out; }
+  /** PSC 여부 (6 GHz, 번호 % 16 == 5) */
+  function isPsc(chan) { return chan % 16 === 5; }
+
+  /* ================================================================ 1. 채널 ↔ 주파수 */
+  (function () {
+    const LISTS = {
+      2: Array.from({ length: 13 }, (_, i) => i + 1),
+      5: [36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140, 144, 149, 153, 157, 161, 165],
+      6: Array.from({ length: 59 }, (_, i) => 1 + 4 * i),
+    };
+    const band = WF.seg("ch-band", () => { idx.el.max = LISTS[+band()].length - 1; idx.set(0); });
+    const idx = WF.range("ch-n", (v) => String(LISTS[+band()][Math.min(v, LISTS[+band()].length - 1)]), draw);
+    idx.el.min = 0; idx.el.max = LISTS[5].length - 1;
+    const cur = () => LISTS[+band()][Math.min(idx(), LISTS[+band()].length - 1)];
+    const cv = WF.canvas($("cv-ch"), (ctx, w, h) => {
+      const P = WF.palette(), f0 = 2300, f1 = 7200, L = 10, Rr = w - 10, X = (f) => L + ((f - f0) / (f1 - f0)) * (Rr - L), top = 30, base = h - 30;
+      [[2400, 2483.5, "2.4"], [5150, 5895, "5"], [5925, 7125, "6"]].forEach(([a, b, n]) => { ctx.fillStyle = P.surface; ctx.fillRect(X(a), top, Math.max(3, X(b) - X(a)), base - top); WF.text(ctx, n + " GHz", X((a + b) / 2), top - 10, { size: 11, color: P.dim, align: "center", bold: true }); });
+      const f = channelToFreq(cur(), +band());
+      ctx.fillStyle = P.accent; ctx.fillRect(X(f - 10), top + 6, Math.max(3, X(f + 10) - X(f - 10)), base - top - 6);
+      WF.text(ctx, f + " MHz", X(f), base + 14, { size: 11, mono: true, color: P.accent, align: "center", bold: true });
+    }, { aspect: 0.22, minHeight: 120, maxHeight: 160 });
+    function draw() {
+      const c = cur(), b = +band(), f = channelToFreq(c, b);
+      WF.stat("ch-f", f + " MHz");
+      WF.stat("ch-r", (f - 10) + " ~ " + (f + 10) + " MHz");
+      WF.stat("ch-l", ((299792458 / (f * 1e6)) * 100).toFixed(1) + " cm");
+      let note = "—";
+      if (b === 2) note = [1, 6, 11].includes(c) ? "겹치지 않는 3채널 중 하나" : "1·6·11과 일부 겹침";
+      if (b === 5) note = c >= 52 && c <= 144 ? "DFS (레이더 확인 필요)" : "DFS 아님";
+      if (b === 6) note = isPsc(c) ? "PSC" : "PSC 아님";
+      WF.stat("ch-note", note);
+      cv.redraw();
+    }
+    idx.set(0);
+  })();
+
+  /* ================================================================ 2. 2.4 GHz 이웃 */
+  (function () {
+    const NB = [[1, -62], [1, -70], [6, -58], [6, -75], [11, -68], [4, -80], [9, -77]];
+    const me = WF.range("c24-me", (v) => v + "번 (" + channelToFreq(v, 2) + " MHz)", draw);
+    const load = WF.range("c24-load", (v) => v + "%", draw);
+    /** 내 상대 처리율 (0~1): 같은 채널은 시간 공유, 일부 겹치면 깨짐 */
+    function share(ch, l) {
+      let co = 0, hurt = 0;
+      NB.forEach(([c]) => { const d = Math.abs(c - ch) * 5; if (d === 0) co++; else if (d < 20) hurt += ((20 - d) / 20) * l; });
+      const time = 1 / (1 + co * l * 2); // 같은 채널 이웃과 공중 시간 나누기(단순화)
+      return { tp: time * Math.max(0, 1 - Math.min(1, hurt)), co, adj: NB.filter(([c]) => { const d = Math.abs(c - ch) * 5; return d > 0 && d < 20; }).length };
+    }
+    $("c24-best").addEventListener("click", () => { let b = 1, bv = -1; for (let c = 1; c <= 13; c++) { const v = share(c, load() / 100).tp; if (v > bv) { bv = v; b = c; } } me.set(b); });
+    const cv = WF.canvas($("cv-24"), (ctx, w, h) => {
+      const P = WF.palette(), f0 = 2398, f1 = 2486, L = 10, Rr = w - 10, X = (f) => L + ((f - f0) / (f1 - f0)) * (Rr - L), base = h - 26, top = 14;
+      const hump = (fc, hgt, col, a) => { ctx.fillStyle = col; ctx.globalAlpha = a; ctx.beginPath(); ctx.moveTo(X(fc - 10), base); ctx.bezierCurveTo(X(fc - 9), base - hgt, X(fc + 9), base - hgt, X(fc + 10), base); ctx.fill(); ctx.globalAlpha = 1; };
+      const m = me();
+      NB.forEach(([c, r]) => { const d = Math.abs(c - m) * 5; hump(channelToFreq(c, 2), ((r + 90) / 40) * (base - top), d === 0 ? P.warn : d < 20 ? P.bad : P.faint, 0.35); });
+      hump(channelToFreq(m, 2), base - top, P.accent, 0.55);
+      for (let c = 1; c <= 13; c++) WF.text(ctx, String(c), X(channelToFreq(c, 2)), base + 12, { size: 10.5, mono: true, color: [1, 6, 11].includes(c) ? P.text : P.faint, align: "center", bold: [1, 6, 11].includes(c) });
+    }, { aspect: 0.36, minHeight: 190, maxHeight: 260 });
+    function draw() {
+      const s = share(me(), load() / 100);
+      WF.stat("c24-co", s.co + "개"); WF.stat("c24-adj", s.adj + "개");
+      WF.stat("c24-tp", Math.round(s.tp * 100) + "%");
+      cv.redraw();
+    }
+    draw();
+  })();
+
+  /* ================================================================ 3. 6 GHz 계획 */
+  (function () {
+    const wsel = WF.seg("g6-w", draw);
+    const cv = WF.canvas($("cv-6g"), (ctx, w, h) => {
+      const P = WF.palette(), bw = +wsel(), f0 = 5925, f1 = 7125, L = 10, Rr = w - 10, X = (f) => L + ((f - f0) / (f1 - f0)) * (Rr - L);
+      ctx.fillStyle = P.surface; ctx.fillRect(X(5925), 8, X(7125) - X(5925), h - 30);
+      const list = sixGhzChannels(bw), rowH = bw === 320 ? (h - 40) / 2 : h - 40;
+      list.forEach((c, i) => { const row = bw === 320 ? ((c - 6105) / 160) % 2 : 0; const y = 12 + row * rowH;
+        ctx.fillStyle = i % 2 ? P.accent : P.accent2; ctx.globalAlpha = 0.55; ctx.fillRect(X(c - bw / 2) + 1, y, X(c + bw / 2) - X(c - bw / 2) - 2, rowH - 6); ctx.globalAlpha = 1; });
+      [5925, 6425, 6925, 7125].forEach((f) => WF.text(ctx, String(f), X(f), h - 10, { size: 10, mono: true, color: P.dim, align: "center" }));
+    }, { aspect: 0.2, minHeight: 110, maxHeight: 150 });
+    function draw() {
+      const bw = +wsel(), list = sixGhzChannels(bw);
+      WF.stat("g6-n", list.length + "개");
+      WF.stat("g6-nn", (bw === 320 ? 3 : list.length) + "개");
+      $("g6-list").innerHTML = list.map((c) => { const ch = freqToChannel(c); const hasPsc = Array.from({ length: bw / 20 }, (_, k) => freqToChannel(c - bw / 2 + 10 + 20 * k)).some(isPsc); return `<span class="${hasPsc ? "psc" : ""}">${ch}</span>`; }).join("");
+      cv.redraw();
+    }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

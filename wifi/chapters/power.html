@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>전력 절약: 잠자는 단말 · WiFiBook</title>
+<meta name="description" content="와이파이 단말은 대부분의 시간을 잔다. AP가 대신 데이터를 맡아 두는 절전 모드, 비컨의 TIM과 DTIM, PS-Poll과 U-APSD, Wi-Fi 6의 TWT를 TIM 인코더와 배터리 계산기로 익힌다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/wifi/chapters/power.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="WiFiBook">
+<meta property="og:title" content="전력 절약: 잠자는 단말 · WiFiBook">
+<meta property="og:description" content="와이파이 단말은 대부분의 시간을 잔다. AP가 대신 데이터를 맡아 두는 절전 모드, 비컨의 TIM과 DTIM, PS-Poll과 U-APSD, Wi-Fi 6의 TWT를 TIM 인코더와 배터리 계산기로 익힌다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/wifi/chapters/power.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/wifi/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"전력 절약: 잠자는 단말","name":"전력 절약: 잠자는 단말 · WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/chapters/power.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/wifi/chapters/power.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":11,"image":"https://yalex-kim.github.io/yalexBook/wifi/og.png","dateModified":"2026-10-17","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/wifi/#book","name":"WiFiBook — 누구나 읽는 인터랙티브 와이파이 교과서","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"publisher":{"@type":"Organization","name":"WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"description":"와이파이 단말은 대부분의 시간을 잔다. AP가 대신 데이터를 맡아 두는 절전 모드, 비컨의 TIM과 DTIM, PS-Poll과 U-APSD, Wi-Fi 6의 TWT를 TIM 인코더와 배터리 계산기로 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"WiFiBook","item":"https://yalex-kim.github.io/yalexBook/wifi/"},{"@type":"ListItem","position":2,"name":"11 전력 절약: 잠자는 단말","item":"https://yalex-kim.github.io/yalexBook/wifi/chapters/power.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<style>
+  .aid { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 4px; }
+  .aid button { font: 600 12px var(--mono); padding: 7px 0; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; }
+  .aid button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .aid button:disabled { opacity: .35; cursor: default; }
+</style>
+</head>
+<body data-chapter="power">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 11</div>
+    <h1>전력 절약: 잠자는 단말</h1>
+    <p class="lead">휴대폰 화면을 끄고 한참 두어도 카카오톡 알림은 몇 초 안에 온다. 그런데 와이파이 칩은 그동안 대부분 꺼져 있다. 받을 게 있는지 모르는데 어떻게 깨어날 때를 알까? 와이파이 도어벨이나 온도 센서는 배터리 하나로 몇 달을 버틴다. 이 장에서는 단말이 자는 동안 AP가 데이터를 맡아 두는 약속과, 그 약속이 세대마다 어떻게 정교해졌는지를 본다.</p>
+    <ul class="objectives">
+      <li>절전 모드에서 AP가 프레임을 버퍼에 모아 두고, 비컨의 TIM으로 알리는 흐름을 안다.</li>
+      <li>TIM 요소의 부분 가상 비트맵을 직접 인코딩해 본다.</li>
+      <li>DTIM 주기가 배터리와 방송 프레임 지연을 어떻게 맞바꾸는지 계산한다.</li>
+      <li>PS-Poll, U-APSD, TWT가 각각 어떤 기기에 맞는지 구별한다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="ps">
+    <h2>“나 잘게, 맡아 줘”</h2>
+    <p>와이파이 칩이 받을 준비를 하고 깨어 있기만 해도(수신 대기) 수십~백수십 mA를 쓰지만, 깊이 자면 1 mA도 안 쓴다. 그래서 단말은 할 일이 없으면 잔다. 다만 AP와 약속을 한다.</p>
+    <ol>
+      <li>단말이 보내는 프레임의 Frame Control에 <b>Power Management 비트</b>를 켜서 “이제부터 잔다”고 알린다(7장). 보낼 데이터가 없으면 몸통 없는 <b>Null 프레임</b>으로 알린다.</li>
+      <li>AP는 그 단말에게 갈 프레임을 바로 보내지 않고 <b>버퍼</b>에 모아 둔다.</li>
+      <li>AP는 매 비컨의 <span class="term">TIM</span><span class="en">(Traffic Indication Map)</span> 요소에 “데이터가 쌓인 단말”의 AID(연결 번호, 9장) 비트를 켠다.</li>
+      <li>단말은 비컨 시간에 맞춰 잠깐 깨어 TIM만 보고, 자기 비트가 꺼져 있으면 다시 잔다. 켜져 있으면 PS-Poll을 보내거나 PM 비트를 끈 프레임을 보내 데이터를 받아 간다. AP는 더 남은 게 있으면 More Data 비트를 켠다.</li>
+    </ol>
+    <p>방송·멀티캐스트 프레임(ARP, mDNS 등)은 누구 하나를 위한 것이 아니어서, AP는 이것들을 모아 두었다가 <span class="term">DTIM</span><span class="en">(Delivery TIM)</span> 비컨 바로 뒤에 한꺼번에 내보낸다. DTIM은 비컨 N개마다 한 번이다(DTIM 주기). 절전 단말은 적어도 DTIM 비컨에는 깨어 있어야 방송을 놓치지 않는다.</p>
+    <div class="callout analogy"><strong>아파트 택배 보관함</strong><p>집에 없을 때 온 택배는 경비실(AP)이 맡아 둔다. 경비실은 정해진 시간마다 게시판(비컨)에 “택배 있는 집 호수”(TIM)를 붙인다. 주민은 그 시간에만 잠깐 내려와 게시판을 보고, 자기 호수가 있으면 찾아간다. 전단지(방송) 같은 모두에게 가는 것은 정해진 날(DTIM)에 한꺼번에 돌린다.</p></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="tim">
+    <h2>TIM 비트맵 읽기</h2>
+    <p>AID는 1~2007까지 있을 수 있으니 비트맵 전체는 251바이트다. 매 비컨에 다 싣기엔 아깝다. 그래서 앞뒤의 0바이트를 잘라낸 <b>부분 가상 비트맵</b>만 싣고, 잘라낸 앞부분의 길이를 <b>비트맵 제어</b> 바이트에 적는다. 비트맵 제어의 맨 아래 비트는 “DTIM 뒤에 방송 프레임이 나간다”는 표시다.</p>
+    <div class="sim" id="sim-tim">
+      <div class="sim-head"><span class="sim-tag">INTERACTIVE</span><h3>TIM 요소 인코더</h3></div>
+      <div class="sim-view" style="padding:14px">
+        <div style="font-size:13px;color:var(--text-dim);margin-bottom:8px">데이터가 쌓인 단말의 AID를 눌러 켜 보자(AID 1~63 표시).</div>
+        <div class="aid" id="tm-grid"></div>
+        <div class="info" id="tm-out" style="margin-top:12px"></div>
+      </div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>DTIM 주기 <output id="tm-p-out"></output></span><input type="range" id="tm-p" min="1" max="10" value="3"></label>
+        <label class="ctrl"><span>이번 비컨의 DTIM 카운트 <output id="tm-c-out"></output></span><input type="range" id="tm-c" min="0" max="9" value="0"></label>
+        <label class="check"><input type="checkbox" id="tm-mc" checked> 방송·멀티캐스트 프레임이 쌓여 있음</label>
+      </div>
+      <div class="sim-note">DTIM 카운트가 0인 비컨이 DTIM이다. 방송 표시 비트는 DTIM 비컨에서만 켜진다. 해볼 것: ① AID 3·17을 끄고 33만 켜면 앞의 0바이트 4개가 잘려 비트맵 제어 = 4(잘라낸 바이트 수, 항상 짝수), 부분 비트맵은 1바이트다. ② AID 2와 60을 함께 켜면 가운데 0이 잘리지 않아 비트맵이 8바이트가 된다. ③ 아무도 안 켜면 비트맵은 0 한 바이트. 인코딩은 Linux mac80211 <code>ieee80211_beacon_add_tim_pvb()</code>를 옮긴 것이다.</div>
+    </div>
+    <p class="spec-ref">TIM 인코딩: Linux <code>net/mac80211/tx.c</code>의 <code>__ieee80211_beacon_add_tim()</code>, <code>ieee80211_beacon_add_tim_pvb()</code>(“N1은 비트 1 ~ N1×8−1이 모두 0인 가장 큰 짝수”) · 최대 AID 2007, TIM 최대 251바이트: <code>include/linux/ieee80211.h</code>의 <code>IEEE80211_MAX_AID</code>, <code>IEEE80211_MAX_TIM_LEN</code> · 기본값 beacon_int=100, dtim_period=2: hostapd <code>hostapd.conf</code></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="battery">
+    <h2>배터리 계산</h2>
+    <p>평균 전류 = 잠잘 때 전류 + (깨어 있을 때 전류 − 잠잘 때 전류) × 깨어 있는 시간 비율. 깨어나는 횟수를 줄이는 것이 핵심이다. 단말은 매 비컨이 아니라 DTIM마다, 또는 “듣기 간격”(연결 요청에 적는 listen interval)마다만 깨어날 수 있다. 대신 그만큼 들어오는 데이터가 늦게 도착한다.</p>
+    <div class="sim" id="sim-bat">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>깨어나는 간격과 배터리</h3></div>
+      <div class="sim-view"><canvas id="cv-bat"></canvas></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>방식</span><div class="seg" id="bt-mode"><button data-value="awake">항상 깨어 있음</button><button data-value="dtim" class="on">DTIM마다 깸</button><button data-value="twt">TWT (약속한 시각)</button></div></div>
+        <label class="ctrl"><span>DTIM 주기 / TWT 간격 <output id="bt-n-out"></output></span><input type="range" id="bt-n" min="0" max="14" value="2"></label>
+        <label class="ctrl"><span>한 번 깨어 있는 시간 <output id="bt-on-out"></output></span><input type="range" id="bt-on" min="1" max="20" value="4"></label>
+        <label class="ctrl"><span>배터리 <output id="bt-cap-out"></output></span><input type="range" id="bt-cap" min="200" max="5000" step="100" value="1000"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">깨는 간격</span><span class="v" id="bt-iv">—</span></div>
+        <div class="stat"><span class="k">평균 전류</span><span class="v" id="bt-i">—</span></div>
+        <div class="stat"><span class="k">와이파이만으로 버티는 시간</span><span class="v" id="bt-life">—</span></div>
+      </div>
+      <div class="sim-note">그래프: 깨는 간격(가로, 로그)에 따른 배터리 수명. 해볼 것: ① 항상 깨어 있으면 1,000 mAh가 하루도 못 간다. ② DTIM 주기 1 → 3이면 수명이 거의 세 배. 대신 단말에게 가는 데이터는 최대 그만큼(307 ms) 늦을 수 있다. ③ TWT로 10분마다 깨는 센서는 잠잘 때 전류가 수명을 정한다. 가정(칩마다 크게 다름, 예시 값): 수신 대기 60 mA, 깊은 잠 0.05 mA, 깨어날 때마다 평균 4 ms 수신 대기(비컨 수신 + 깨어나는 준비). 데이터 송수신과 칩 외 부품 전력은 뺐다.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="modes">
+    <h2>PS-Poll, U-APSD, TWT</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>방식</th><th>세대</th><th>데이터를 받는 법</th><th>잘 맞는 기기</th></tr></thead>
+      <tbody>
+        <tr><td><b>PS-Poll</b></td><td>802.11 원본</td><td>TIM을 보고 PS-Poll 제어 프레임을 보내면 AP가 프레임 하나를 보낸다. More Data가 켜져 있으면 다시 PS-Poll</td><td>옛 기기. 프레임마다 왕복이 필요해 느리다</td></tr>
+        <tr><td><b>“깨어남” 알리기</b></td><td>오늘날 대부분</td><td>PM 비트를 끈 Null 프레임으로 “깼다”고 알리고 쌓인 것을 한꺼번에 받은 뒤, PM 비트를 켜 다시 잔다</td><td>휴대폰·노트북. 드라이버가 트래픽을 보고 자동으로 오간다</td></tr>
+        <tr><td><b>U-APSD</b> (WMM 절전)</td><td>802.11e</td><td>단말이 보내는 프레임(예: 음성 패킷)이 “방아쇠”가 되어 AP가 쌓인 프레임을 바로 돌려준다</td><td>VoIP 통화 중인 휴대폰. 20 ms마다 보내고 받으며 그 사이 잔다</td></tr>
+        <tr><td><b>TWT</b> (Target Wake Time)</td><td>Wi-Fi 6</td><td>AP와 단말이 “몇 시 몇 분부터 얼마 동안, 몇 초마다 깨어 있겠다”는 일정을 협상한다. 그 사이엔 비컨도 안 들어도 된다</td><td>배터리 IoT 센서, 그리고 AP가 여러 단말의 깨는 시각을 흩어 경쟁을 줄일 때</td></tr>
+      </tbody>
+    </table></div>
+    <p class="spec-ref">PS-Poll 하위 종류 <code>IEEE80211_STYPE_PSPOLL</code>, PM·More Data 비트: Linux <code>include/linux/ieee80211.h</code> · U-APSD: hostapd <code>uapsd_advertisement_enabled</code>, WMM 매개변수(6장) · TWT 지원 비트 <code>WLAN_EXT_CAPA10_TWT_REQUESTER_SUPPORT</code>/<code>_RESPONDER_SUPPORT</code>, hostapd <code>he_twt_responder</code></p>
+    <p>절전에는 함정이 있다. 단말이 자는 사이 AP가 맡아 둔 프레임은 늦게 도착하므로, 화면이 꺼진 휴대폰에 핑을 보내면 수백 ms가 걸리기도 한다. 게임처럼 지연이 중요한 앱이 실행 중이면 운영체제가 절전을 잠시 끄기도 한다. 또 DTIM 주기를 너무 크게 잡으면 방송에 기대는 기능(ARP, 기기 찾기)이 늦어져 “같은 와이파이인데 기기가 안 보인다”는 문제가 생길 수 있다.</p>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">공유기의 DTIM 주기를 1에서 10으로 바꿨다(비컨 간격 102.4 ms). 화면 꺼진 휴대폰이 AirPlay·크롬캐스트 같은 기기 찾기(멀티캐스트)에 응답하는 데 걸리는 시간은?</p><p class="wi-hint">멀티캐스트는 DTIM 비컨 뒤에만 나간다.</p><div class="opts">
+      <button class="opt">달라지지 않는다</button><button class="opt" data-correct>최대 약 1초까지 늦어질 수 있다</button><button class="opt">더 빨라진다</button>
+    </div><div class="quiz-exp">DTIM 간격 = 10 × 102.4 ms = 1.024 s. 배터리는 아끼지만 방송·멀티캐스트 지연이 그만큼 커진다.</div></div>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>단말은 PM 비트로 잠든다고 알리고, AP는 그동안의 프레임을 버퍼에 모은다.</li>
+      <li>비컨의 TIM이 데이터가 쌓인 AID를 알린다. 앞뒤 0바이트를 자른 부분 가상 비트맵 + 비트맵 제어(오프셋, 방송 표시).</li>
+      <li>방송·멀티캐스트는 DTIM 비컨 뒤에 나간다. DTIM 주기가 크면 배터리는 아끼고 지연은 커진다.</li>
+      <li>평균 전류는 깨어 있는 비율이 정한다. 깨는 횟수를 줄이면 수명이 거의 비례해 는다.</li>
+      <li>PS-Poll(옛 방식), Null 프레임 깨어남(일반), U-APSD(통화), TWT(Wi-Fi 6, IoT·일정 협상).</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>단말이 “이제 잔다”고 AP에 알리는 방법은?</p><div class="opts">
+        <button class="opt">비컨을 보낸다</button><button class="opt" data-correct>Power Management 비트를 켠 프레임(예: Null)을 보낸다</button><button class="opt">연결을 끊는다</button><button class="opt">Duration을 0으로 한다</button>
+      </div><div class="quiz-exp">Frame Control의 PM 비트다. 그 뒤로 AP는 프레임을 버퍼에 모은다.</div></div>
+      <div class="quiz-q"><p>TIM에서 AID 17의 비트가 켜져 있다면?</p><div class="opts">
+        <button class="opt">AID 17이 연결을 끊었다</button><button class="opt" data-correct>AID 17 단말에게 갈 데이터가 AP에 쌓여 있다</button><button class="opt">AID 17이 방송을 보냈다</button><button class="opt">AID 17이 DTIM이다</button>
+      </div><div class="quiz-exp">단말은 자기 비트가 켜져 있으면 깨어 데이터를 받아 간다.</div></div>
+      <div class="quiz-q"><p>비컨 간격 100 TU, DTIM 주기 3이면 방송 프레임은 최대 약 얼마나 기다릴 수 있나?</p><div class="opts">
+        <button class="opt">102 ms</button><button class="opt" data-correct>307 ms</button><button class="opt">3 s</button><button class="opt">30 ms</button>
+      </div><div class="quiz-exp">3 × 102.4 ms ≈ 307 ms.</div></div>
+      <div class="quiz-q"><p>Wi-Fi 6의 TWT가 특히 유리한 기기는?</p><div class="opts">
+        <button class="opt">유선 데스크톱</button><button class="opt" data-correct>몇 분에 한 번 값을 보내는 배터리 센서</button><button class="opt">4K 스트리밍 TV</button><button class="opt">AP 자신</button>
+      </div><div class="quiz-exp">약속한 시각에만 깨어나므로 비컨조차 듣지 않고 오래 잘 수 있다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const MAX_TIM_LEN = 251;
+  /** TIM 요소 [5, len, DTIM count, DTIM period, bitmap control, PVB...] — mac80211 __ieee80211_beacon_add_tim()을 옮김 */
+  function timElement(aids, dtimCount, dtimPeriod, mcastQueued) {
+    const tim = new Array(MAX_TIM_LEN).fill(0); aids.forEach((a) => { tim[a >> 3] |= 1 << (a & 7); });
+    const mcast = dtimCount === 0 && mcastQueued ? 1 : 0, body = [dtimCount, dtimPeriod];
+    if (aids.length) {
+      let n1 = 0, n2;
+      for (let i = 0; i < MAX_TIM_LEN; i++) if (tim[i]) { n1 = i & 0xfe; break; }
+      n2 = n1; for (let i = MAX_TIM_LEN - 1; i >= n1; i--) if (tim[i]) { n2 = i; break; }
+      body.push(n1 | mcast, ...tim.slice(n1, n2 + 1));
+    } else body.push(mcast, 0);
+    return [5, body.length, ...body];
+  }
+  /** TIM을 읽어 쌓인 AID 목록 */
+  function timAids(el) { const n1 = el[4] & 0xfe, pvb = el.slice(5), out = []; pvb.forEach((b, i) => { for (let k = 0; k < 8; k++) if (b & (1 << k)) { const a = (n1 + i) * 8 + k; if (a) out.push(a); } }); return out; }
+  /** 평균 전류(mA): 깨는 간격 intervalMs마다 onMs 동안 activeMa, 나머지 sleepMa */
+  function avgCurrent(intervalMs, onMs, activeMa, sleepMa) { const d = Math.min(1, onMs / intervalMs); return sleepMa + (activeMa - sleepMa) * d; }
+  const TU = 1.024, BEACON = 100 * TU, ACTIVE = 60, SLEEP = 0.05;
+
+  /* ================================================================ 1. TIM */
+  (function () {
+    const on = new Set([3, 17]);
+    const p = WF.range("tm-p", (v) => String(v), draw), c = WF.range("tm-c", (v) => String(v), draw);
+    $("tm-mc").addEventListener("change", draw);
+    $("tm-grid").innerHTML = Array.from({ length: 64 }, (_, a) => `<button data-a="${a}" ${a === 0 ? "disabled" : ""}>${a}</button>`).join("");
+    $("tm-grid").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b || b.disabled) return; const a = +b.dataset.a; on.has(a) ? on.delete(a) : on.add(a); draw(); });
+    function draw() {
+      if (c() >= p()) { c.el.value = p() - 1; c.el.dispatchEvent(new Event("input")); return; }
+      [...$("tm-grid").children].forEach((b) => b.classList.toggle("on", on.has(+b.dataset.a)));
+      const el = timElement([...on].sort((x, y) => x - y), c(), p(), $("tm-mc").checked), h = el.map((x) => x.toString(16).padStart(2, "0"));
+      $("tm-out").innerHTML = `<h4>TIM 요소 (${el.length}바이트)</h4><code>${h.join(" ")}</code><br>ID 5 · 길이 ${el[1]} · DTIM 카운트 ${el[2]} · 주기 ${el[3]} · 비트맵 제어 0x${h[4]} (오프셋 ${el[4] & 0xfe}바이트${el[4] & 1 ? ", 방송 있음" : ""}) · 부분 비트맵 ${el.length - 5}바이트<br>${c() === 0 ? "이 비컨은 <b>DTIM</b>이다." : "DTIM까지 비컨 " + c() + "개 남음."} 읽어 낸 AID: ${timAids(el).join(", ") || "없음"}`;
+    }
+    draw();
+  })();
+
+  /* ================================================================ 2. 배터리 */
+  (function () {
+    let mode = "dtim";
+    const TWT_S = [1, 2, 5, 10, 20, 30, 60, 120, 300, 600, 900, 1800, 3600, 7200, 14400];
+    const ivMs = () => (mode === "awake" ? Infinity : mode === "dtim" ? Math.min(n(), 10) * BEACON : TWT_S[n()] * 1000);
+    const lab = (v) => (mode === "dtim" ? `${Math.min(v, 10)} (= ${(Math.min(v, 10) * BEACON).toFixed(0)} ms)` : mode === "twt" ? (TWT_S[v] >= 60 ? TWT_S[v] / 60 + "분" : TWT_S[v] + "초") : "—");
+    const n = WF.range("bt-n", lab, draw), on = WF.range("bt-on", (v) => v + " ms", draw), cap = WF.range("bt-cap", (v) => v + " mAh", draw);
+    WF.seg("bt-mode", (v) => { mode = v; n.set(v === "dtim" ? 1 : v === "twt" ? 9 : +n.el.value); });
+    const cur = () => (mode === "awake" ? ACTIVE : avgCurrent(ivMs(), on(), ACTIVE, SLEEP));
+    const life = (mA) => cap() / mA; // 시간
+    const fmtLife = (h) => (h < 48 ? h.toFixed(1) + "시간" : h < 24 * 60 ? (h / 24).toFixed(1) + "일" : (h / 24 / 365).toFixed(1) + "년");
+    const cv = WF.canvas($("cv-bat"), (ctx, w, h) => {
+      const P = WF.palette(), d = []; for (let lg = 1.5; lg <= 6.86; lg += 0.05) { const iv = 10 ** lg; d.push([iv, life(avgCurrent(iv, on(), ACTIVE, SLEEP)) / 24]); }
+      const ch = WF.chart(ctx, null, { x: [30, 7.2e6], logX: true, y: [0.1, 1e4], logY: true, xLabel: "깨는 간격", yLabel: "수명 (일)", xTicks: [100, 1000, 1e4, 6e4, 6e5, 3.6e6], xFmt: (v) => ({ 100: "0.1s", 1000: "1s", 10000: "10s", 60000: "1분", 600000: "10분", 3600000: "1시간" }[v] || ""), yFmt: (v) => (v >= 1 ? String(v) : v.toString()), series: [{ data: d, color: P.accent, width: 2.4 }], hlines: [{ y: life(ACTIVE) / 24, label: "항상 깨어 있음", color: P.bad }, { y: life(SLEEP) / 24, label: "잠만 잘 때", color: P.faint }] });
+      if (mode !== "awake") { ctx.fillStyle = P.accent2; ctx.beginPath(); ctx.arc(ch.X(ivMs()), ch.Y(life(cur()) / 24), 6, 0, 7); ctx.fill(); }
+    }, { aspect: 0.5, minHeight: 240, maxHeight: 340 });
+    function draw() {
+      n.el.disabled = mode === "awake";
+      const iv = ivMs(); WF.stat("bt-iv", iv === Infinity ? "—" : iv >= 1000 ? (iv / 1000).toFixed(iv >= 10000 ? 0 : 1) + " s" : iv.toFixed(0) + " ms");
+      WF.stat("bt-i", cur() < 1 ? cur().toFixed(3) + " mA" : cur().toFixed(2) + " mA"); WF.stat("bt-life", fmtLife(life(cur()))); cv.redraw();
+    }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

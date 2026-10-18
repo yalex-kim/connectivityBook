@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>채널 차지하기: CSMA/CA와 EDCA · WiFiBook</title>
+<meta name="description" content="한 채널을 여러 기기가 나눠 쓰는 규칙. 먼저 듣고 기다렸다 보내는 CSMA/CA, 무작위 백오프와 충돌, 숨은 단말과 RTS/CTS, 음성·영상에 먼저 기회를 주는 EDCA를 시뮬레이터로 익힌다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/wifi/chapters/access.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="WiFiBook">
+<meta property="og:title" content="채널 차지하기: CSMA/CA와 EDCA · WiFiBook">
+<meta property="og:description" content="한 채널을 여러 기기가 나눠 쓰는 규칙. 먼저 듣고 기다렸다 보내는 CSMA/CA, 무작위 백오프와 충돌, 숨은 단말과 RTS/CTS, 음성·영상에 먼저 기회를 주는 EDCA를 시뮬레이터로 익힌다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/wifi/chapters/access.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/wifi/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"채널 차지하기: CSMA/CA와 EDCA","name":"채널 차지하기: CSMA/CA와 EDCA · WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/chapters/access.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/wifi/chapters/access.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":6,"image":"https://yalex-kim.github.io/yalexBook/wifi/og.png","dateModified":"2026-10-17","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/wifi/#book","name":"WiFiBook — 누구나 읽는 인터랙티브 와이파이 교과서","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"publisher":{"@type":"Organization","name":"WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"description":"한 채널을 여러 기기가 나눠 쓰는 규칙. 먼저 듣고 기다렸다 보내는 CSMA/CA, 무작위 백오프와 충돌, 숨은 단말과 RTS/CTS, 음성·영상에 먼저 기회를 주는 EDCA를 시뮬레이터로 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"WiFiBook","item":"https://yalex-kim.github.io/yalexBook/wifi/"},{"@type":"ListItem","position":2,"name":"06 채널 차지하기: CSMA/CA와 EDCA","item":"https://yalex-kim.github.io/yalexBook/wifi/chapters/access.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+</head>
+<body data-chapter="access">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 06</div>
+    <h1>채널 차지하기: CSMA/CA와 EDCA</h1>
+    <p class="lead">공유기 속도 표시는 1,201 Mb/s인데, 실제로 파일을 받으면 그 절반쯤이다. 아파트에서 저녁만 되면 더 느려진다. 4장의 링크 속도는 “말하는 순간의 속도”일 뿐이고, 와이파이는 <b>말할 차례를 얻는 데</b> 시간을 꽤 쓴다. 이 장에서는 한 채널을 여러 기기가 나눠 쓰는 규칙, 즉 먼저 듣고(CS) 무작위로 기다렸다가(CA) 말하는 방법과 그 비용을 숫자로 본다.</p>
+    <ul class="objectives">
+      <li>와이파이가 이더넷처럼 충돌을 “감지”하지 못하고 “회피”해야 하는 이유를 안다.</li>
+      <li>SIFS·슬롯·AIFS와 무작위 백오프가 만드는 한 번의 프레임 교환을 마이크로초 단위로 그린다.</li>
+      <li>기기가 많아질수록 충돌과 대기가 어떻게 늘어나는지 시뮬레이션으로 확인한다.</li>
+      <li>숨은 단말 문제와 RTS/CTS, NAV를 설명한다.</li>
+      <li>EDCA의 네 가지 접근 범주(음성·영상·일반·배경)가 우선순위를 만드는 방법을 계산한다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="why">
+    <h2>왜 “회피”인가</h2>
+    <p>예전 이더넷은 한 선을 여럿이 나눠 썼고, 말하면서 동시에 들어 충돌을 알아챘다(CSMA/CD). 무선은 그럴 수 없다. 내 안테나에서 나가는 신호는 몇 미터 밖에서 오는 신호보다 수백만 배(60 dB 이상) 세서, 보내는 동안에는 다른 소리를 들을 수 없다. 그래서 와이파이는 충돌을 감지하는 대신 <b>충돌이 덜 나도록 미리 피하고</b>(Collision Avoidance), 받은 쪽이 <b>ACK</b>로 확인해 주지 않으면 충돌이나 오류로 보고 다시 보낸다.</p>
+    <div class="callout analogy"><strong>손을 들 수 없는 회의</strong><p>회의실(채널)에서 누가 말하는 중이면(<b>캐리어 센스</b>) 모두 기다린다. 말이 끝나면 바로 끼어들지 않고 각자 마음속으로 무작위 숫자를 골라 세다가 0이 된 사람이 말한다(<b>백오프</b>). 그 사이 누가 먼저 말을 시작하면 세던 숫자를 멈췄다가 다음 번에 이어서 센다. 두 사람이 같은 숫자를 골랐다면 동시에 말해 서로 망친다(충돌). 그럴 때는 다음번에 더 큰 범위에서 숫자를 고른다.</p></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="timing">
+    <h2>한 번의 프레임 교환을 마이크로초로 보기</h2>
+    <p>와이파이의 시간은 몇 가지 간격으로 짜여 있다. 5 GHz OFDM 기준으로:</p>
+    <ul>
+      <li><span class="term">SIFS</span><span class="en">(Short Interframe Space)</span> 16 µs: 데이터를 받고 ACK를 보내기 전처럼 “이미 차례를 가진” 쪽이 기다리는 가장 짧은 간격. 2.4 GHz에서는 10 µs에 신호 확장 6 µs가 붙는다.</li>
+      <li><span class="term">슬롯</span><span class="en">(slot time)</span> 9 µs: 백오프 숫자 하나를 세는 단위. 옛 802.11b가 섞인 2.4 GHz에서는 20 µs.</li>
+      <li><span class="term">AIFS</span>: 새로 차례를 얻으려는 쪽이 채널이 비고 나서 먼저 기다리는 시간 = SIFS + AIFSN × 슬롯. 일반 데이터(AIFSN 3)는 16 + 27 = 43 µs. 옛 방식의 DIFS(AIFSN 2)는 34 µs다.</li>
+      <li><b>백오프</b>: 그다음 0~CW 사이의 무작위 슬롯 수만큼 더 기다린다. 일반 데이터의 CW는 처음 15, 충돌할 때마다 31, 63, … 최대 1023까지 두 배씩 늘어난다(이진 지수 백오프).</li>
+    </ul>
+    <p>SIFS가 AIFS보다 짧기 때문에, 데이터를 받은 쪽의 ACK는 다른 누구도 끼어들기 전에 나간다. 간격의 길이 차이가 곧 우선순위다.</p>
+    <div class="sim" id="sim-air">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>프레임 하나 보내는 데 드는 시간</h3></div>
+      <div class="sim-view"><canvas id="cv-air"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>IP 패킷 크기 <output id="ai-len-out"></output></span><input type="range" id="ai-len" min="40" max="1500" step="20" value="1500"></label>
+        <div class="ctrl"><span>데이터 전송률 (802.11a/g)</span><div class="seg" id="ai-rate"><button data-value="6">6</button><button data-value="12">12</button><button data-value="24">24</button><button data-value="54" class="on">54 Mb/s</button></div></div>
+        <label class="check"><input type="checkbox" id="ai-rts"> RTS/CTS 먼저 주고받기</label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">한 번 교환</span><span class="v" id="ai-tot">—</span></div>
+        <div class="stat"><span class="k">실제 처리량</span><span class="v" id="ai-tp">—</span></div>
+        <div class="stat"><span class="k">효율</span><span class="v" id="ai-eff">—</span></div>
+      </div>
+      <div class="sim-note">해볼 것: ① 54 Mb/s로 1,500바이트를 보내도 실제로는 약 30 Mb/s다. 대기·프리앰블·ACK가 시간의 40% 가까이를 먹는다. ② 패킷을 100바이트로 줄이면 효율이 10% 아래로 떨어진다. 게임·음성 같은 작은 패킷이 많을수록 손해다. ③ 전송률을 올릴수록 데이터 부분만 짧아지고 고정 비용은 그대로라 효율은 오히려 떨어진다. 이 문제를 푸는 것이 여러 패킷을 한 번에 묶는 집적(8장)이다. 계산: 백오프는 평균값(7.5슬롯), 충돌·재전송 없음, MAC 머리말·LLC·FCS 38바이트, 암호화 생략, ACK·RTS·CTS는 데이터 속도 이하의 가장 높은 기본 속도(6·12·24 Mb/s).</div>
+    </div>
+    <p class="spec-ref">OFDM 전송 시간 = 프리앰블 16 µs + SIGNAL 4 µs + 4 µs × ⌈(16 + 8 × 바이트 + 6) ÷ (4 × Mb/s)⌉: Linux <code>net/mac80211/util.c</code>의 <code>ieee80211_frame_duration()</code> (주석: 802.11-2012 18.3.2.4, aSIFSTime 16 µs / 802.11g 10 µs + 신호 확장 6 µs) · 슬롯 9 µs, SIFS 16/10 µs: Linux ath9k 드라이버 <code>drivers/net/wireless/ath/ath9k/hw.c</code> · AIFSN·CW 기본값: hostapd <code>hostapd.conf</code> WMM 기본 설정</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="crowd">
+    <h2>기기가 많아지면</h2>
+    <p>CW가 15라면 기기 둘이 같은 숫자를 고를 확률은 1/16 정도로 작다. 하지만 기기가 열, 스물이 되면 누군가와 겹칠 확률이 빠르게 커진다. 충돌한 프레임은 공중 시간을 통째로 버리고, 충돌한 기기들은 CW를 키워 더 오래 기다린다. 와이파이 6가 아파트·경기장처럼 붐비는 곳을 겨냥해 새 장치(OFDMA, BSS 컬러링, 12장)를 들여온 이유가 여기에 있다.</p>
+    <div class="sim" id="sim-crowd">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>백오프 경쟁: 기기 수와 충돌</h3></div>
+      <div class="sim-view"><canvas id="cv-crowd"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>계속 보낼 게 있는 기기 수 <output id="cr-n-out"></output></span><input type="range" id="cr-n" min="1" max="50" value="10"></label>
+        <label class="ctrl"><span>처음 CW <output id="cr-cw-out"></output></span><input type="range" id="cr-cw" min="2" max="7" value="4"></label>
+        <button class="btn" id="cr-step">한 차례 더 보기</button>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">보낸 프레임 중 충돌</span><span class="v" id="cr-p">—</span></div>
+        <div class="stat"><span class="k">공중 시간 효율</span><span class="v" id="cr-eff">—</span></div>
+        <div class="stat"><span class="k">기기 하나의 몫</span><span class="v" id="cr-per">—</span></div>
+      </div>
+      <div class="sim-note">위: 한 차례 경쟁에서 기기마다 남은 백오프 숫자(가장 작은 쪽이 보낸다, 빨강 = 같은 숫자로 충돌). 아래 수치: 같은 조건으로 2만 차례를 돌린 평균. 해볼 것: ① 기기 1대는 충돌이 없다. ② 10대면 보낸 프레임의 약 37%가 충돌한다. ③ 처음 CW를 3(=2³−1)으로 줄이면 대기는 짧아지지만 충돌이 훨씬 늘어 효율이 떨어진다. 모델: 모든 기기가 쉬지 않고 보낼 데이터가 있고(포화), 서로 다 들리며, 1,500바이트를 54 Mb/s로 보낸다. 충돌은 성공과 같은 시간을 버린다고 본다. 이 모델의 충돌 확률은 Bianchi(2000)의 해석 모델과 2%p 안에서 맞는다(검증 스크립트).</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="hidden">
+    <h2>숨은 단말과 RTS/CTS</h2>
+    <p>캐리어 센스는 “내가 들을 수 있는 범위”에서만 동작한다. 거실 양 끝의 노트북 A와 휴대폰 C가 둘 다 공유기와는 잘 통하지만 서로는 벽 때문에 안 들린다면, A가 보내는 중에 C는 채널이 비었다고 생각하고 보내 버린다. 공유기에서는 두 신호가 겹쳐 둘 다 망가진다. 이것이 <span class="term">숨은 단말</span><span class="en">(hidden node)</span> 문제다.</p>
+    <figure class="diagram">
+      <div style="overflow-x:auto">
+      <svg viewBox="0 0 760 250" role="img" aria-label="A와 C는 AP의 범위 안에 있지만 서로의 범위 밖에 있는 숨은 단말 그림" style="min-width:560px">
+        <circle cx="200" cy="120" r="150" class="f-acc-soft"/><circle cx="560" cy="120" r="150" class="f-acc2-soft"/>
+        <rect x="358" y="104" width="44" height="30" rx="6" class="f-elev" stroke="var(--border)"/><text x="380" y="124" text-anchor="middle" class="t-mono">AP</text>
+        <text x="200" y="126" text-anchor="middle" class="t">💻 A</text><text x="560" y="126" text-anchor="middle" class="t">📱 C</text>
+        <text x="120" y="40" class="t-acc">A가 들리는 범위</text><text x="560" y="40" class="t-dim">C가 들리는 범위</text>
+        <path d="M222 120 H352" class="s-line" fill="none"/><path d="M408 120 H538" class="s-line" fill="none"/>
+        <text x="380" y="168" text-anchor="middle" class="t-mono">AP에서 겹쳐 둘 다 실패</text>
+        <text x="380" y="236" text-anchor="middle" class="t-dim">A와 C는 서로의 범위 밖: 상대가 보내는 중인지 모른다</text>
+      </svg>
+      </div>
+      <figcaption><b>그림 6-1.</b> 숨은 단말. A와 C는 AP와는 통하지만 서로 들리지 않아, 캐리어 센스가 서로를 막지 못한다.</figcaption>
+    </figure>
+    <p>해결책은 짧은 프레임으로 먼저 예약하는 것이다. A가 짧은 <b>RTS</b><span class="en">(Request To Send, 20바이트)</span>를 보내면 AP가 <b>CTS</b><span class="en">(Clear To Send, 14바이트)</span>로 답한다. C는 A의 RTS는 못 들어도 AP의 CTS는 듣는다. 모든 프레임에는 “이 교환이 앞으로 몇 µs 동안 이어지는지”를 적은 <b>Duration</b> 칸이 있어서, 이를 들은 기기는 그동안 채널이 바쁘다고 기록하고(<span class="term">NAV</span><span class="en">(Network Allocation Vector)</span>, 가상 캐리어 센스) 조용히 기다린다. 충돌이 나더라도 짧은 RTS끼리 부딪히므로 손해가 적다.</p>
+    <p>대가는 매번 RTS + SIFS + CTS + SIFS(24 Mb/s 기준 88 µs)가 더 든다는 것이다. 그래서 RTS/CTS는 보통 큰 프레임이나 묶음에만 쓰고, 드라이버가 상황을 보고 켠다. 위의 “프레임 하나 보내는 데 드는 시간” 시뮬레이터에서 체크해 보면 작은 패킷에서는 손해가 크다는 것이 보인다.</p>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">숨은 단말 C가 AP의 CTS를 들었다. CTS의 Duration 칸에는 무엇이 들어 있어야 할까?</p><p class="wi-hint">C는 A의 데이터가 끝나고 ACK까지 나갈 때까지 조용해야 한다.</p><div class="opts">
+      <button class="opt">CTS 자신의 길이만</button>
+      <button class="opt" data-correct>SIFS + 데이터 + SIFS + ACK 시간 (CTS 이후 교환이 끝날 때까지)</button>
+      <button class="opt">비컨 간격(102.4 ms)</button>
+    </div><div class="quiz-exp">Duration은 “이 프레임이 끝난 뒤 교환이 끝날 때까지 남은 시간”이다. RTS에는 CTS·데이터·ACK와 그 사이 SIFS 셋까지, CTS에는 데이터와 ACK까지가 적힌다. Linux mac80211은 이 값을 <code>ieee80211_rts_duration()</code>·<code>ieee80211_ctstoself_duration()</code>으로 계산한다.</div></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="edca">
+    <h2>EDCA: 통화가 먼저다</h2>
+    <p>영상 통화의 음성은 몇십 밀리초만 늦어도 끊기지만, 백업 업로드는 1초 늦어도 아무도 모른다. 802.11e(상품명 WMM)는 트래픽을 네 가지 <span class="term">접근 범주</span><span class="en">(Access Category, AC)</span>로 나누고, 범주마다 AIFSN과 CW를 달리해 확률적으로 우선순위를 준다. 이것이 <span class="term">EDCA</span><span class="en">(Enhanced Distributed Channel Access)</span>다. 기기 안에서도 범주마다 따로 줄을 서서 경쟁한다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>범주</th><th>예</th><th>AIFSN</th><th>AIFS (5 GHz)</th><th>CW 처음 ~ 최대</th><th>한 번에 쓸 수 있는 시간(TXOP)</th></tr></thead>
+      <tbody>
+        <tr><td>AC_VO 음성</td><td>통화 음성</td><td>2</td><td>34 µs</td><td>3 ~ 7</td><td>47 × 32 µs = 1.504 ms</td></tr>
+        <tr><td>AC_VI 영상</td><td>영상 통화, 스트리밍</td><td>2</td><td>34 µs</td><td>7 ~ 15</td><td>94 × 32 µs = 3.008 ms</td></tr>
+        <tr><td>AC_BE 일반</td><td>웹, 대부분의 트래픽</td><td>3</td><td>43 µs</td><td>15 ~ 1023</td><td>프레임 하나</td></tr>
+        <tr><td>AC_BK 배경</td><td>백업, 업데이트</td><td>7</td><td>79 µs</td><td>15 ~ 1023</td><td>프레임 하나</td></tr>
+      </tbody>
+    </table></div>
+    <p class="spec-ref">단말용 기본값: hostapd <code>hostapd.conf</code>의 <code>wmm_ac_*</code> (CW는 지수 표기 n → 2ⁿ − 1, TXOP는 32 µs 단위). AP 자신이 보낼 때는 음성·영상의 AIFSN이 1로 더 짧다(<code>tx_queue_data*</code>). Linux mac80211이 WMM 정보가 없을 때 쓰는 기본값도 같은 표를 따른다(<code>ieee80211_set_wmm_default()</code>).</p>
+    <p>어떤 범주의 트래픽인지는 IP 헤더의 DSCP나 VLAN 우선순위 값을 보고 정한다(Linux는 <code>cfg80211_classify8021d()</code>). 앱이 표시하지 않으면 대부분 일반(BE)으로 간다.</p>
+    <div class="sim" id="sim-edca">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>두 범주가 같은 순간 경쟁하면</h3></div>
+      <div class="sim-view"><canvas id="cv-edca"></canvas></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>A</span><div class="seg" id="ed-a"><button data-value="vo" class="on">음성</button><button data-value="vi">영상</button><button data-value="be">일반</button><button data-value="bk">배경</button></div></div>
+        <div class="ctrl"><span>B</span><div class="seg" id="ed-b"><button data-value="vo">음성</button><button data-value="vi">영상</button><button data-value="be" class="on">일반</button><button data-value="bk">배경</button></div></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">A가 먼저</span><span class="v" id="ed-pa">—</span></div>
+        <div class="stat"><span class="k">B가 먼저</span><span class="v" id="ed-pb">—</span></div>
+        <div class="stat"><span class="k">동시(충돌)</span><span class="v" id="ed-pt">—</span></div>
+      </div>
+      <div class="sim-note">그래프: 채널이 빈 순간부터 각 범주가 보내기 시작할 수 있는 시각의 분포(AIFS + 백오프, 처음 CW 기준). 해볼 것: ① 음성 대 일반은 음성이 약 91% 먼저 가고 5%쯤은 겹친다. 배경 대 일반은 일반이 이긴다. ② 같은 범주끼리는 반반이고, 겹칠 확률이 CW가 작은 음성끼리에서 가장 크다(25%). 우선순위가 “보장”이 아니라 “확률”인 이유다. 계산: 처음 CW에서 백오프 숫자의 모든 조합을 정확히 셈(첫 시도, 다른 기기 없음).</div>
+    </div>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>무선은 보내면서 들을 수 없어 충돌을 감지하지 못한다. 그래서 <b>먼저 듣고 무작위로 기다려 피하고</b>(CSMA/CA), <b>ACK</b>가 없으면 다시 보낸다.</li>
+      <li>5 GHz: SIFS 16 µs, 슬롯 9 µs, AIFS = SIFS + AIFSN × 슬롯. 짧은 간격이 곧 우선순위다(ACK는 SIFS 뒤).</li>
+      <li>54 Mb/s로 1,500바이트를 보내도 대기·프리앰블·ACK 때문에 실제는 약 30 Mb/s. 작은 패킷일수록, 빠른 전송률일수록 고정 비용의 비중이 커진다.</li>
+      <li>기기가 많으면 충돌이 늘고 CW가 커져 대기도 는다(10대면 보낸 프레임의 약 37%가 충돌).</li>
+      <li>숨은 단말은 RTS/CTS와 Duration·NAV(가상 캐리어 센스)로 막는다. 대가는 교환마다 약 88 µs.</li>
+      <li>EDCA는 음성·영상·일반·배경 네 범주에 다른 AIFSN·CW·TXOP를 줘 확률적 우선순위를 만든다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>데이터를 받은 기기가 ACK를 다른 기기보다 먼저 보낼 수 있는 이유는?</p><div class="opts">
+        <button class="opt">ACK는 다른 채널로 보낸다</button><button class="opt" data-correct>ACK 앞 간격(SIFS)이 새 경쟁 전 간격(AIFS)보다 짧다</button><button class="opt">ACK는 백오프를 두 번 한다</button><button class="opt">ACK는 전력이 더 세다</button>
+      </div><div class="quiz-exp">SIFS 16 µs &lt; AIFS 34 µs 이상. 다른 기기가 기다리는 동안 ACK가 먼저 나간다.</div></div>
+      <div class="quiz-q"><p>5 GHz에서 일반(BE) 트래픽의 AIFS는?</p><div class="opts">
+        <button class="opt">16 µs</button><button class="opt">34 µs</button><button class="opt" data-correct>43 µs</button><button class="opt">79 µs</button>
+      </div><div class="quiz-exp">16 + 3 × 9 = 43 µs.</div></div>
+      <div class="quiz-q"><p>전송률을 54 Mb/s에서 더 올려도 작은 패킷의 처리량이 크게 늘지 않는 이유는?</p><div class="opts">
+        <button class="opt">작은 패킷은 암호화되지 않아서</button><button class="opt" data-correct>대기·프리앰블·ACK 같은 고정 비용이 대부분이라 데이터 부분만 짧아져서</button><button class="opt">작은 패킷은 2.4 GHz로만 가서</button><button class="opt">CW가 커져서</button>
+      </div><div class="quiz-exp">그래서 802.11n부터 여러 패킷을 묶어 고정 비용을 한 번만 낸다(8장).</div></div>
+      <div class="quiz-q"><p>숨은 단말 C가 A의 전송 중에 조용히 하게 만드는 것은?</p><div class="opts">
+        <button class="opt">A의 RTS</button><button class="opt" data-correct>AP의 CTS에 적힌 Duration으로 설정한 NAV</button><button class="opt">비컨의 SSID</button><button class="opt">C의 백오프 CW</button>
+      </div><div class="quiz-exp">C는 A를 못 듣지만 AP는 듣는다. CTS의 Duration을 보고 NAV를 설정해 기다린다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const SIFS = 16, SLOT = 9, PRE = 20; // 5 GHz OFDM: SIFS, 슬롯, 프리앰블+SIGNAL (µs)
+  const AC = { vo: { aifsn: 2, cw: 3, cwmax: 7, name: "음성" }, vi: { aifsn: 2, cw: 7, cwmax: 15, name: "영상" }, be: { aifsn: 3, cw: 15, cwmax: 1023, name: "일반" }, bk: { aifsn: 7, cw: 15, cwmax: 1023, name: "배경" } };
+  /** OFDM(802.11a/g) 전송 시간(µs): bytes는 FCS 포함 */
+  function ofdmTxUs(bytes, rateMbps) { return PRE + 4 * Math.ceil((16 + 8 * bytes + 6) / (4 * rateMbps)); }
+  /** 제어 응답 속도: 데이터 속도 이하의 가장 높은 기본 속도 */
+  function ctrlRate(rate) { return rate >= 24 ? 24 : rate >= 12 ? 12 : 6; }
+  function aifsUs(aifsn) { return SIFS + aifsn * SLOT; }
+  /** 한 번의 프레임 교환을 구간별로(µs). payload = IP 패킷 바이트, MAC 머리말·LLC·FCS 38바이트 */
+  function exchangeUs(payload, rate, rts) {
+    const r = ctrlRate(rate), parts = [["AIFS", aifsUs(3)], ["백오프(평균)", (15 / 2) * SLOT]];
+    if (rts) parts.push(["RTS", ofdmTxUs(20, r)], ["SIFS", SIFS], ["CTS", ofdmTxUs(14, r)], ["SIFS", SIFS]);
+    parts.push(["데이터", ofdmTxUs(payload + 38, rate)], ["SIFS", SIFS], ["ACK", ofdmTxUs(14, r)]);
+    return parts;
+  }
+  /** 포화 상태 n대의 백오프 경쟁(이진 지수 백오프, 동결 후 이어 세기) */
+  function contention(n, cwmin, cwmax, rounds, rand) {
+    const cw = Array(n).fill(cwmin), c = cw.map((w) => Math.floor(rand() * (w + 1)));
+    let succ = 0, coll = 0, idle = 0, tx = 0, txColl = 0;
+    for (let r = 0; r < rounds; r++) {
+      const m = Math.min(...c); idle += m;
+      const win = []; for (let i = 0; i < n; i++) { c[i] -= m; if (c[i] === 0) win.push(i); }
+      tx += win.length;
+      if (win.length === 1) succ++; else { coll++; txColl += win.length; }
+      for (const i of win) { cw[i] = win.length === 1 ? cwmin : Math.min(cwmax, 2 * cw[i] + 1); c[i] = Math.floor(rand() * (cw[i] + 1)); }
+    }
+    return { succ, coll, idle, pColl: tx ? txColl / tx : 0 };
+  }
+  /** 두 범주의 첫 시도: 시작 슬롯 = AIFSN + U[0, CW]. 먼저/동시 확률을 정확히 셈 */
+  function edcaRace(a, b) {
+    let pa = 0, pb = 0, pt = 0; const w = 1 / ((a.cw + 1) * (b.cw + 1));
+    for (let i = 0; i <= a.cw; i++) for (let j = 0; j <= b.cw; j++) { const ta = a.aifsn + i, tb = b.aifsn + j; if (ta < tb) pa += w; else if (tb < ta) pb += w; else pt += w; }
+    return { a: pa, b: pb, tie: pt };
+  }
+  const pct = (x) => (x * 100).toFixed(1) + "%";
+
+  /* ================================================================ 1. 교환 시간 */
+  (function () {
+    const len = WF.range("ai-len", (v) => v + " B", draw); let rate = 54;
+    WF.seg("ai-rate", (v) => { rate = +v; draw(); }); $("ai-rts").addEventListener("change", draw);
+    const COL = (P, k) => ({ AIFS: P.faint, "백오프(평균)": P.warn, RTS: P.accent2, CTS: P.accent2, SIFS: P.grid, 데이터: P.accent, ACK: P.ok }[k]);
+    const cv = WF.canvas($("cv-air"), (ctx, w, h) => {
+      const P = WF.palette(), parts = exchangeUs(len(), rate, $("ai-rts").checked), tot = parts.reduce((s, p) => s + p[1], 0);
+      const L = 12, R = w - 12, scale = (R - L) / Math.max(tot, 400); let x = L;
+      WF.text(ctx, "0 µs", L, 20, { size: 11, color: P.faint }); WF.text(ctx, Math.round(Math.max(tot, 400)) + " µs", R, 20, { size: 11, color: P.faint, align: "right" });
+      parts.forEach(([k, d], i) => { const wd = d * scale; ctx.fillStyle = COL(P, k); WF.rrect(ctx, x, 34, Math.max(wd - 1, 1), 40, 4); ctx.fill(); if (wd > 30) WF.text(ctx, k === "백오프(평균)" ? "백오프" : k, x + wd / 2, 58, { size: 11, color: k === "SIFS" || k === "AIFS" ? P.text : "#fff", align: "center", bold: true }); x += wd; });
+      // 범례
+      let lx = L, ly = 96; [["AIFS", "대기"], ["백오프(평균)", "백오프"], ["데이터", "데이터"], ["ACK", "ACK"], ["RTS", "RTS/CTS"]].forEach(([k, t]) => { ctx.fillStyle = COL(P, k); ctx.fillRect(lx, ly - 9, 12, 12); WF.text(ctx, t, lx + 16, ly + 1, { size: 11.5, color: P.dim }); lx += 30 + t.length * 9; if (lx > R - 60) { lx = L; ly += 18; } });
+      const d = parts.find((p) => p[0] === "데이터")[1];
+      WF.text(ctx, "데이터 " + d + " µs / 전체 " + tot.toFixed(1) + " µs", L, h - 12, { size: 12, color: P.text });
+    }, { aspect: 0.3, minHeight: 150, maxHeight: 200 });
+    function draw() { const parts = exchangeUs(len(), rate, $("ai-rts").checked), tot = parts.reduce((s, p) => s + p[1], 0), tp = (len() * 8) / tot; WF.stat("ai-tot", tot.toFixed(1) + " µs"); WF.stat("ai-tp", tp.toFixed(1) + " Mb/s"); WF.stat("ai-eff", pct(tp / rate)); cv.redraw(); }
+    draw();
+  })();
+
+  /* ================================================================ 2. 경쟁 */
+  (function () {
+    const n = WF.range("cr-n", (v) => v + "대", draw), e = WF.range("cr-cw", (v) => String(2 ** v - 1), draw);
+    const TX = aifsUs(3) + ofdmTxUs(1538, 54) + SIFS + ofdmTxUs(14, 24); // 성공(또는 충돌) 한 번이 쓰는 시간
+    let seed = 1, snap = [];
+    const cv = WF.canvas($("cv-crowd"), (ctx, w, h) => {
+      const P = WF.palette(), N = snap.length, m = Math.min(...snap), top = 16, bw = Math.min(28, (w - 40) / N), x0 = (w - bw * N) / 2, base = h - 26, mx = Math.max(15, ...snap);
+      snap.forEach((v, i) => { const hh = Math.max(3, ((base - top) * v) / mx), win = v === m, tie = win && snap.filter((u) => u === m).length > 1; ctx.fillStyle = tie ? P.bad : win ? P.ok : P.accent; WF.rrect(ctx, x0 + i * bw + 2, base - hh, bw - 4, hh, 3); ctx.fill(); if (bw > 16) WF.text(ctx, String(v), x0 + i * bw + bw / 2, base - hh - 4, { size: 10, color: P.dim, align: "center" }); });
+      ctx.strokeStyle = P.axis; ctx.beginPath(); ctx.moveTo(x0, base); ctx.lineTo(x0 + bw * N, base); ctx.stroke();
+      const ties = snap.filter((u) => u === m).length;
+      WF.text(ctx, ties > 1 ? `숫자 ${m}에서 ${ties}대가 겹쳐 충돌` : `숫자 ${m}인 기기가 혼자 보낸다`, w / 2, h - 8, { size: 12, color: ties > 1 ? P.bad : P.ok, align: "center", bold: true });
+    }, { aspect: 0.34, minHeight: 170, maxHeight: 230 });
+    function sample() { const r = WF.rng(seed), cw = 2 ** e() - 1; snap = Array.from({ length: n() }, () => Math.floor(r() * (cw + 1))); }
+    function draw() {
+      const s = contention(n(), 2 ** e() - 1, 1023, 20000, WF.rng(42)), rounds = s.succ + s.coll, time = s.idle * SLOT + rounds * TX, eff = (s.succ * ofdmTxUs(1538, 54)) / time;
+      WF.stat("cr-p", pct(s.pColl)); WF.stat("cr-eff", pct(eff)); WF.stat("cr-per", ((eff * 54) / n()).toFixed(1) + " Mb/s");
+      sample(); cv.redraw();
+    }
+    $("cr-step").addEventListener("click", () => { seed++; sample(); cv.redraw(); });
+    draw();
+  })();
+
+  /* ================================================================ 3. EDCA */
+  (function () {
+    let a = "vo", b = "be";
+    WF.seg("ed-a", (v) => { a = v; draw(); }); WF.seg("ed-b", (v) => { b = v; draw(); });
+    const cv = WF.canvas($("cv-edca"), (ctx, w, h) => {
+      const P = WF.palette(), mx = 24, row = (ac, y, col, lab) => {
+        const A = AC[ac], x = (s) => 70 + ((w - 90) * s) / mx;
+        ctx.fillStyle = P.grid; ctx.fillRect(x(0), y, x(A.aifsn) - x(0), 26); WF.text(ctx, "AIFS", (x(0) + x(A.aifsn)) / 2, y + 17, { size: 10.5, color: P.dim, align: "center" });
+        ctx.globalAlpha = 0.85; ctx.fillStyle = col; ctx.fillRect(x(A.aifsn), y, x(A.aifsn + A.cw + 1) - x(A.aifsn), 26); ctx.globalAlpha = 1;
+        WF.text(ctx, lab + " " + A.name, 8, y + 17, { size: 12, color: col, bold: true });
+      };
+      row(a, 22, P.accent, "A"); row(b, 64, P.accent2, "B");
+      for (let s = 0; s <= mx; s += 2) { const x = 70 + ((w - 90) * s) / mx; WF.text(ctx, String(Math.round(SIFS + s * SLOT)), x, 112, { size: 10, color: P.faint, align: "center" }); }
+      WF.text(ctx, "채널이 빈 뒤 시각 (µs, 9 µs 슬롯)", w / 2, h - 6, { size: 11, color: P.dim, align: "center" });
+    }, { aspect: 0.26, minHeight: 140, maxHeight: 170 });
+    function draw() { const r = edcaRace(AC[a], AC[b]); WF.stat("ed-pa", pct(r.a)); WF.stat("ed-pb", pct(r.b)); WF.stat("ed-pt", pct(r.tie)); cv.redraw(); }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

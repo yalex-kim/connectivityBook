@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>OFDM: 수천 개의 부반송파 · WiFiBook</title>
+<meta name="description" content="와이파이가 채널 하나를 수십~수천 개의 좁은 부반송파로 나눠 보내는 이유. 반사파와 심볼 간 간섭, 직교성과 부반송파 간격, 보호 구간(GI), 802.11a의 312.5 kHz·3.2 µs에서 Wi-Fi 6의 78.125 kHz·12.8 µs로 바뀐 숫자를 시뮬레이터로 익힌다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/wifi/chapters/ofdm.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="WiFiBook">
+<meta property="og:title" content="OFDM: 수천 개의 부반송파 · WiFiBook">
+<meta property="og:description" content="와이파이가 채널 하나를 수십~수천 개의 좁은 부반송파로 나눠 보내는 이유. 반사파와 심볼 간 간섭, 직교성과 부반송파 간격, 보호 구간(GI), 802.11a의 312.5 kHz·3.2 µs에서 Wi-Fi 6의 78.125 kHz·12.8 µs로 바뀐 숫자를 시뮬레이터로 익힌다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/wifi/chapters/ofdm.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/wifi/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"OFDM: 수천 개의 부반송파","name":"OFDM: 수천 개의 부반송파 · WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/chapters/ofdm.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/wifi/chapters/ofdm.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":3,"image":"https://yalex-kim.github.io/yalexBook/wifi/og.png","dateModified":"2026-10-17","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/wifi/#book","name":"WiFiBook — 누구나 읽는 인터랙티브 와이파이 교과서","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"publisher":{"@type":"Organization","name":"WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"description":"와이파이가 채널 하나를 수십~수천 개의 좁은 부반송파로 나눠 보내는 이유. 반사파와 심볼 간 간섭, 직교성과 부반송파 간격, 보호 구간(GI), 802.11a의 312.5 kHz·3.2 µs에서 Wi-Fi 6의 78.125 kHz·12.8 µs로 바뀐 숫자를 시뮬레이터로 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"WiFiBook","item":"https://yalex-kim.github.io/yalexBook/wifi/"},{"@type":"ListItem","position":2,"name":"03 OFDM: 수천 개의 부반송파","item":"https://yalex-kim.github.io/yalexBook/wifi/chapters/ofdm.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+</head>
+<body data-chapter="ofdm">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 03</div>
+    <h1>OFDM: 수천 개의 부반송파</h1>
+    <p class="lead">거실에서 공유기가 보낸 전파는 휴대폰에 한 번만 도착하지 않는다. 곧장 온 전파, 천장에 튕긴 전파, 냉장고에 튕긴 전파가 수십~수백 나노초씩 늦게 겹쳐 도착한다. 메아리가 심한 강당에서 빨리 말하면 앞 단어와 뒤 단어가 뒤엉켜 알아듣지 못하는 것과 같다. 와이파이는 이 문제를 이상한 방법으로 푼다. 채널 하나를 <b>수십~수천 개의 아주 느린 부반송파</b>로 쪼개, 각각을 천천히 말하게 한다. 이것이 802.11a부터 모든 와이파이의 바탕인 OFDM이다.</p>
+    <ul class="objectives">
+      <li>반사파가 빠른 신호에 심볼 간 간섭(ISI)을 만드는 이유와, 느린 부반송파 여러 개가 이를 피하는 원리를 안다.</li>
+      <li>부반송파가 서로 겹쳐도 간섭하지 않는 직교성 조건(간격 = 1 / 심볼 길이)을 이해한다.</li>
+      <li>보호 구간(GI)이 무엇을 막고 얼마를 비용으로 치르는지 계산한다.</li>
+      <li>802.11a/n/ac(312.5 kHz, 3.2 µs)와 Wi-Fi 6·7(78.125 kHz, 12.8 µs)의 숫자 차이와 그 효과를 비교한다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="echo">
+    <h2>메아리 문제: 빨리 말할수록 뒤엉킨다</h2>
+    <p>20 MHz 채널로 데이터를 보내는 가장 단순한 방법은 반송파 하나를 초당 2,000만 번 바꾸는 것이다. 심볼 하나가 50 ns다. 그런데 실내 반사파는 직접파보다 수십~수백 ns 늦게 온다. 늦게 온 앞 심볼이 다음 심볼 위에 겹쳐 내려앉는다. 이것이 <span class="term">심볼 간 간섭</span><span class="en">(ISI, Inter-Symbol Interference)</span>이다. 반사가 여러 심볼에 걸쳐 번지면 수신기는 복잡한 보정(등화기)을 해야 한다.</p>
+    <p>OFDM의 발상은 반대다. 채널을 <b>N개의 좁은 부반송파</b>로 나누고, 각 부반송파는 N배 느리게 바꾼다. 802.11a의 20 MHz 채널은 64개로 나눠, 부반송파 하나의 심볼이 3.2 µs가 된다. 메아리 수백 ns는 3.2 µs에 비하면 작다. 게다가 심볼 앞에 짧은 <span class="term">보호 구간</span><span class="en">(GI, Guard Interval)</span>을 붙여, 메아리가 도착하는 동안은 버리고 그다음부터 듣는다. 그러면 ISI가 아예 사라진다.</p>
+    <div class="callout analogy"><strong>큰 강당에서 말하기</strong><p>메아리가 0.3초 울리는 강당에서 1초에 열 단어를 말하면 앞 단어 메아리가 뒤 단어를 덮는다. 사회자는 꾀를 낸다. 64명이 각자 다른 <b>음높이</b>로 1초에 한 단어씩만 천천히 말하게 하고(부반송파), 단어마다 앞의 0.3초는 메아리가 가라앉도록 그냥 흘려보낸다(보호 구간). 한 사람은 느리지만 64명이 동시에 말하니 전체 속도는 그대로다.</p></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="orth">
+    <h2>직교성: 겹쳐도 섞이지 않는 조건</h2>
+    <p>부반송파를 좁은 간격으로 촘촘히 붙이면 스펙트럼이 서로 겹친다. 그런데도 섞이지 않는 비결이 <span class="term">직교성</span><span class="en">(orthogonality)</span>이다. 심볼 길이 T 동안 각 부반송파가 정수 번 진동하도록, 부반송파 간격을 <b>Δf = 1 / T</b>로 맞추면, 한 부반송파의 스펙트럼 꼭대기 자리에서 다른 모든 부반송파의 스펙트럼은 정확히 0이 된다. 수신기는 그 자리에서만 값을 읽는다(FFT).</p>
+    <div class="formula">부반송파 간격 Δf = 1 / T<sub>DFT</sub> &nbsp;&nbsp; 802.11a/g/n/ac: 20 MHz ÷ 64 = 312.5 kHz ↔ 3.2 µs &nbsp;&nbsp; Wi-Fi 6·7: 20 MHz ÷ 256 = 78.125 kHz ↔ 12.8 µs
+      <div class="where">심볼 전체 길이 = T<sub>DFT</sub> + GI. 802.11a는 3.2 + 0.8 = 4.0 µs(802.11n·ac의 짧은 GI 0.4 µs면 3.6 µs). Wi-Fi 6·7은 12.8 + 0.8/1.6/3.2 = 13.6/14.4/16.0 µs.</div>
+    </div>
+    <p class="spec-ref">심볼 길이 4.0·3.6 µs와 13.6·14.4·16.0 µs: Linux <code>net/mac80211/airtime.c</code>의 <code>MCS_SYMBOL_TIME</code>·<code>HE_SYMBOL_TIME</code> · 레거시 OFDM 심볼 4 µs: <code>net/mac80211/util.c</code>의 <code>ieee80211_frame_duration()</code></p>
+    <div class="sim" id="sim-orth">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>겹친 부반송파와 직교성: 주파수가 조금 틀어지면</h3></div>
+      <div class="sim-view"><canvas id="cv-orth"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>그릴 부반송파 수 <output id="or-n-out"></output></span><input type="range" id="or-n" min="1" max="7" value="5"></label>
+        <label class="ctrl"><span>수신기의 주파수 오차 (간격 대비) <output id="or-e-out"></output></span><input type="range" id="or-e" min="0" max="0.5" step="0.01" value="0"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">가운데 부반송파 신호 크기</span><span class="v" id="or-sig">—</span></div>
+        <div class="stat"><span class="k">이웃 부반송파가 새어 든 양</span><span class="v" id="or-ici">—</span></div>
+        <div class="stat"><span class="k">신호 대 간섭비</span><span class="v" id="or-sir">—</span></div>
+      </div>
+      <div class="sim-note">곡선 하나가 부반송파 하나의 스펙트럼(sinc 모양)이다. 세로 점선은 수신기가 값을 읽는 자리다. 해볼 것: ① 오차 0이면 점선 위에서 다른 곡선들이 모두 0을 지난다. 직교성이다. ② 오차를 0.1(312.5 kHz 간격이면 약 31 kHz)만 줘도 이웃이 새어 들어 신호 대 간섭비가 떨어진다(반송파 간 간섭, ICI). 와이파이 수신기가 프레임 머리(프리앰블)에서 가장 먼저 주파수 오차를 재 보정하는 이유다. 간격이 1/4로 좁은 Wi-Fi 6에서는 같은 Hz 오차가 간격 대비 네 배가 되어 더 엄격한 보정이 필요하다.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="gi">
+    <h2>보호 구간: 메아리를 버리는 시간</h2>
+    <p>보호 구간은 공짜가 아니다. 그 시간 동안은 데이터를 싣지 않으므로 효율이 T<sub>DFT</sub> / (T<sub>DFT</sub> + GI)로 떨어진다. 802.11a의 0.8 µs GI는 4 µs 중 20%를 버린다. 그래서 802.11n·ac는 반사가 짧은 환경을 위해 0.4 µs “짧은 GI”를 두어 10% 남짓을 되찾았다. GI보다 긴 메아리가 오면 ISI가 다시 생긴다.</p>
+    <p>Wi-Fi 6는 심볼을 네 배(12.8 µs)로 늘려 이 균형을 바꿨다. 같은 0.8 µs GI라도 심볼에서 차지하는 비율이 6%로 줄고, 넓은 실외나 큰 홀처럼 메아리가 긴 곳에서는 1.6·3.2 µs GI를 골라도 손해가 크지 않다.</p>
+    <div class="sim" id="sim-gi">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>메아리 길이 vs 보호 구간</h3></div>
+      <div class="sim-view"><canvas id="cv-gi"></canvas></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>심볼 구조</span><div class="seg" id="gi-sys"><button data-value="leg" class="on">802.11a/n/ac (3.2 µs)</button><button data-value="he">Wi-Fi 6·7 (12.8 µs)</button></div></div>
+        <div class="ctrl"><span>보호 구간</span><div class="seg" id="gi-g"><button data-value="0.4">0.4 µs</button><button data-value="0.8" class="on">0.8 µs</button><button data-value="1.6">1.6 µs</button><button data-value="3.2">3.2 µs</button></div></div>
+        <label class="ctrl"><span>가장 늦은 메아리 지연 <output id="gi-d-out"></output></span><input type="range" id="gi-d" min="0" max="3000" step="25" value="300"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">심볼 전체 길이</span><span class="v" id="gi-t">—</span></div>
+        <div class="stat"><span class="k">GI 효율</span><span class="v" id="gi-eff">—</span></div>
+        <div class="stat"><span class="k">ISI</span><span class="v" id="gi-isi">—</span></div>
+      </div>
+      <div class="sim-note">위: 직접파의 심볼 셋(진한 칸 = 데이터 부분, 연한 칸 = GI), 아래: 늦게 온 메아리. 빨간 부분은 메아리의 앞 심볼이 다음 심볼의 데이터 부분을 덮은 곳(ISI)이다. 해볼 것: ① 집 안(메아리 수십~수백 ns)에서는 0.4 µs도 충분하다. ② 메아리 1.5 µs(큰 홀·실외)면 레거시 0.8 µs는 ISI가 생긴다. Wi-Fi 6에서 GI 1.6 µs를 고르면 효율 89%로 막는다. 레거시 구조에서 0.4·0.8 µs 외의 GI는 표준에 없으므로 고를 수 없다(시뮬레이터에서는 비교용으로만 보인다). Wi-Fi 6·7의 GI는 0.8·1.6·3.2 µs다.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="numbers">
+    <h2>부반송파의 쓰임: 데이터, 파일럿, 빈칸</h2>
+    <p>FFT 크기만큼의 부반송파가 모두 데이터를 싣는 것은 아니다. 가운데(직류 성분)와 양 끝(옆 채널과의 보호대)은 비우고, 일부는 <b>파일럿</b>으로 써서 알려진 값을 보내 위상·주파수가 흔들리는 것을 계속 따라간다. 나머지가 <b>데이터 부반송파</b> N<sub>SD</sub>이고, 4장의 링크 속도 공식에 그대로 들어간다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>세대</th><th>폭</th><th>부반송파 간격</th><th>데이터 부반송파 N<sub>SD</sub></th></tr></thead>
+      <tbody>
+        <tr><td>802.11a/g</td><td>20 MHz</td><td class="num">312.5 kHz</td><td class="num">48</td></tr>
+        <tr><td>802.11n/ac</td><td>20 / 40 / 80 / 160 MHz</td><td class="num">312.5 kHz</td><td class="num">52 / 108 / 234 / 468</td></tr>
+        <tr><td>Wi-Fi 6 (802.11ax)</td><td>20 / 40 / 80 / 160 MHz</td><td class="num">78.125 kHz</td><td class="num">234 / 468 / 980 / 1,960</td></tr>
+        <tr><td>Wi-Fi 7 (802.11be)</td><td>+ 320 MHz</td><td class="num">78.125 kHz</td><td class="num">+ 3,920</td></tr>
+      </tbody>
+    </table></div>
+    <p class="spec-ref">N<sub>SD</sub>는 4장의 속도 공식으로 Linux <code>net/wireless/util.c</code>의 <code>cfg80211_calculate_bitrate_vht/he/eht()</code>가 내는 값과 일치하는지 검증한다(예: VHT 80 MHz MCS 9 1스트림 = 234 × 8 × 5/6 ÷ 4 µs = 390 Mb/s).</p>
+    <div class="sim" id="sim-num">
+      <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>레거시 vs Wi-Fi 6: 같은 20 MHz, 다른 숫자</h3></div>
+      <div class="sim-view"><canvas id="cv-num"></canvas></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>채널 폭</span><div class="seg" id="nm-w"><button data-value="20" class="on">20</button><button data-value="40">40</button><button data-value="80">80</button><button data-value="160">160 MHz</button></div></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">VHT 데이터 부반송파 / 심볼</span><span class="v" id="nm-vht">—</span></div>
+        <div class="stat"><span class="k">HE 데이터 부반송파 / 심볼</span><span class="v" id="nm-he">—</span></div>
+        <div class="stat"><span class="k">같은 변조에서 HE ÷ VHT 속도</span><span class="v" id="nm-ratio">—</span></div>
+      </div>
+      <div class="sim-note">막대는 1 µs당 실어 나르는 데이터 부반송파 수(= N<sub>SD</sub> ÷ 심볼 길이)로, 같은 변조·부호율이라면 속도에 비례한다. 해볼 것: 20 MHz에서 Wi-Fi 6는 레거시보다 약 32% 더 많이 싣는다(예: 64-QAM 5/6 1스트림 86.0 Mb/s vs 65 Mb/s, 레거시가 짧은 GI 0.4 µs를 쓰면 72.2 Mb/s라 차이는 약 19%). 80 MHz에서는 약 23%다. 부반송파를 네 배 촘촘히 쓰면서 가장자리 보호대 비율이 줄었고, 심볼이 길어져 GI 비율도 줄었기 때문이다(GI는 둘 다 0.8 µs로 비교).</div>
+    </div>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>빠른 단일 반송파는 실내 메아리(수십~수백 ns) 때문에 <b>심볼 간 간섭</b>을 겪는다. OFDM은 채널을 많은 느린 <b>부반송파</b>로 나눠 심볼을 길게 만든다.</li>
+      <li>부반송파 간격 = 1 / 심볼 길이일 때 <b>직교</b>해서 겹쳐도 섞이지 않는다. 주파수 오차는 직교성을 깨 이웃을 새어 들게 한다(ICI).</li>
+      <li><b>보호 구간</b>은 메아리를 버리는 시간이다. 레거시 3.2 µs 심볼에 0.8 µs(짧은 GI 0.4 µs), Wi-Fi 6·7 12.8 µs 심볼에 0.8/1.6/3.2 µs.</li>
+      <li>Wi-Fi 6·7은 간격 78.125 kHz(1/4), 심볼 12.8 µs(4배). GI 비율과 보호대 비율이 줄어 같은 폭에서 더 많이 싣는다.</li>
+      <li>데이터 부반송파 N<sub>SD</sub>: VHT 52/108/234/468, HE 234/468/980/1960, EHT 320 MHz 3920.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>OFDM이 반사파에 강한 가장 직접적인 이유는?</p><div class="opts">
+        <button class="opt">송신 전력이 높아서</button><button class="opt" data-correct>부반송파 하나하나의 심볼이 길어 메아리 지연이 심볼에 비해 작고, 보호 구간이 그 메아리를 버리기 때문</button><button class="opt">반사파를 모두 차단하는 필터가 있어서</button><button class="opt">2.4 GHz만 쓰기 때문</button>
+      </div><div class="quiz-exp">20 MHz 단일 반송파의 50 ns 심볼과 달리 OFDM 심볼은 3.2~12.8 µs라 수백 ns 메아리를 GI 안에 가둘 수 있다.</div></div>
+      <div class="quiz-q"><p>Wi-Fi 6의 부반송파 간격 78.125 kHz에 대응하는 심볼(DFT) 길이는?</p><div class="opts">
+        <button class="opt">3.2 µs</button><button class="opt">6.4 µs</button><button class="opt" data-correct>12.8 µs</button><button class="opt">25.6 µs</button>
+      </div><div class="quiz-exp">T = 1 / Δf = 1 / 78,125 Hz = 12.8 µs. 레거시는 1 / 312,500 = 3.2 µs.</div></div>
+      <div class="quiz-q"><p>Wi-Fi 6에서 GI 0.8 µs일 때 심볼 전체 길이와 GI 효율은?</p><div class="opts">
+        <button class="opt">4.0 µs, 80%</button><button class="opt" data-correct>13.6 µs, 약 94%</button><button class="opt">16.0 µs, 80%</button><button class="opt">12.8 µs, 100%</button>
+      </div><div class="quiz-exp">12.8 + 0.8 = 13.6 µs, 12.8 / 13.6 ≈ 94%. 레거시는 3.2 / 4.0 = 80%.</div></div>
+      <div class="quiz-q"><p>수신기가 프레임 머리에서 가장 먼저 주파수 오차를 재 보정하는 이유는?</p><div class="opts">
+        <button class="opt">채널 번호를 알아내려고</button><button class="opt" data-correct>주파수가 조금만 틀어져도 부반송파 직교성이 깨져 서로 새어 들기(ICI) 때문</button><button class="opt">암호 키를 만들려고</button><button class="opt">보호 구간 길이를 정하려고</button>
+      </div><div class="quiz-exp">직교성은 간격 = 1 / T가 정확할 때만 성립한다. 간격이 좁은 Wi-Fi 6는 같은 오차에 더 민감하다.</div></div>
+      <div class="quiz-q"><p>VHT 80 MHz, 256-QAM 5/6(MCS 9), 1스트림, GI 0.8 µs의 링크 속도는?</p><div class="opts">
+        <button class="opt">433.3 Mb/s</button><button class="opt" data-correct>390 Mb/s</button><button class="opt">600 Mb/s</button><button class="opt">86.7 Mb/s</button>
+      </div><div class="quiz-exp">234 × 8 × 5/6 ÷ 4 µs = 390 Mb/s. 짧은 GI(3.6 µs)면 433.3 Mb/s다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  /** 정규화된 sinc: 간격 1 단위의 부반송파 k가 주파수 x에서 갖는 크기 */
+  function sinc(x) { return Math.abs(x) < 1e-9 ? 1 : Math.sin(Math.PI * x) / (Math.PI * x); }
+  /** 주파수 오차 e(간격 대비)일 때 가운데 부반송파의 신호와, 이웃 ±1..±n이 새어 든 전력 */
+  function iciPower(e, n) { let s = 0; for (let k = 1; k <= n; k++) s += sinc(k - e) ** 2 + sinc(-k - e) ** 2; return { sig: sinc(e) ** 2, ici: s }; }
+  /** GI 효율 */
+  function giEfficiency(tDft, gi) { return tDft / (tDft + gi); }
+  /** ISI: 메아리 지연이 GI를 넘는 만큼(µs) */
+  function isiOverlap(delayUs, gi) { return Math.max(0, delayUs - gi); }
+  const NSD = { vht: { 20: 52, 40: 108, 80: 234, 160: 468 }, he: { 20: 234, 40: 468, 80: 980, 160: 1960 } };
+
+  /* ================================================================ 1. 직교성 */
+  (function () {
+    const n = WF.range("or-n", (v) => v + "개", draw), e = WF.range("or-e", (v) => v.toFixed(2) + (v ? " (≈" + Math.round(v * 312.5) + " kHz @312.5 kHz)" : ""), draw);
+    const cv = WF.canvas($("cv-orth"), (ctx, w, h) => {
+      const P = WF.palette(), N = n(), half = (N - 1) / 2, x0 = -half - 2, x1 = half + 2;
+      const ch = WF.chart(ctx, null, { x: [x0, x1], y: [-0.3, 1.05], xLabel: "주파수 (부반송파 간격 단위)", yLabel: "진폭", xTicks: Array.from({ length: x1 - x0 + 1 }, (_, i) => Math.round(x0 + i)), yTicks: [0, 0.5, 1] });
+      const cols = [P.accent, P.accent2, P.warn, P.ok, P.bad, P.blue, P.dim];
+      for (let k = 0; k < N; k++) { const c = k - half; const data = []; for (let i = 0; i <= 400; i++) { const x = x0 + ((x1 - x0) * i) / 400; data.push([x, sinc(x - c)]); }
+        ctx.strokeStyle = cols[k % cols.length]; ctx.lineWidth = 1.8; ctx.beginPath(); data.forEach(([x, y], i) => (i ? ctx.lineTo(ch.X(x), ch.Y(y)) : ctx.moveTo(ch.X(x), ch.Y(y)))); ctx.stroke(); }
+      for (let k = 0; k < N; k++) { const c = k - half + e(); ctx.strokeStyle = P.text; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(ch.X(c), ch.box.y); ctx.lineTo(ch.X(c), ch.box.y + ch.box.h); ctx.stroke(); ctx.setLineDash([]); }
+    }, { aspect: 0.45, minHeight: 230, maxHeight: 320 });
+    function draw() {
+      const r = iciPower(e(), 32);
+      WF.stat("or-sig", (r.sig * 100).toFixed(1) + "%");
+      WF.stat("or-ici", (r.ici * 100).toFixed(2) + "%");
+      WF.stat("or-sir", r.ici < 1e-9 ? "∞ (직교)" : (10 * Math.log10(r.sig / r.ici)).toFixed(1) + " dB");
+      cv.redraw();
+    }
+    draw();
+  })();
+
+  /* ================================================================ 2. GI */
+  (function () {
+    const sys = WF.seg("gi-sys", draw), g = WF.seg("gi-g", draw), d = WF.range("gi-d", (v) => (v >= 1000 ? (v / 1000).toFixed(2) + " µs" : v + " ns"), draw);
+    const cv = WF.canvas($("cv-gi"), (ctx, w, h) => {
+      const P = WF.palette(), T = sys() === "he" ? 12.8 : 3.2, G = +g(), S = T + G, span = 3 * S + 0.5, L = 70, Rr = w - 10, X = (t) => L + (t / span) * (Rr - L), dl = d() / 1000;
+      const row = (y, off, label, col) => { WF.text(ctx, label, 6, y + 14, { size: 11, color: P.dim });
+        for (let k = 0; k < 3; k++) { const s = off + k * S; ctx.fillStyle = col; ctx.globalAlpha = 0.3; ctx.fillRect(X(s), y, X(s + G) - X(s), 28); ctx.globalAlpha = 0.85; ctx.fillRect(X(s + G), y, X(s + S) - X(s + G) - 1, 28); ctx.globalAlpha = 1; } };
+      row(16, 0, "직접파", P.accent); row(60, dl, "메아리", P.accent2);
+      const ov = isiOverlap(dl, G);
+      if (ov > 0) for (let k = 1; k < 3; k++) { const s = k * S + G; ctx.fillStyle = P.bad; ctx.globalAlpha = 0.6; ctx.fillRect(X(s), 16, X(s + ov) - X(s), 28); ctx.globalAlpha = 1; }
+      WF.text(ctx, "시간 →", Rr, h - 8, { size: 11, color: P.dim, align: "right" });
+    }, { aspect: 0.22, minHeight: 120, maxHeight: 150 });
+    function draw() {
+      const T = sys() === "he" ? 12.8 : 3.2, G = +g(), ov = isiOverlap(d() / 1000, G);
+      const legal = sys() === "he" ? [0.8, 1.6, 3.2].includes(G) : [0.4, 0.8].includes(G);
+      WF.stat("gi-t", (T + G).toFixed(1) + " µs" + (legal ? "" : ' <small style="color:var(--warn)">(표준에 없는 조합)</small>'));
+      WF.stat("gi-eff", Math.round(giEfficiency(T, G) * 100) + "%");
+      WF.stat("gi-isi", ov > 0 ? `<span style="color:var(--bad)">있음 (${Math.round(ov * 1000)} ns 덮음)</span>` : '<span style="color:var(--ok)">없음</span>');
+      cv.redraw();
+    }
+    draw();
+  })();
+
+  /* ================================================================ 3. 숫자 비교 */
+  (function () {
+    const wsel = WF.seg("nm-w", draw);
+    const cv = WF.canvas($("cv-num"), (ctx, w, h) => {
+      const P = WF.palette(), bw = +wsel(), v = NSD.vht[bw] / 4.0, e = NSD.he[bw] / 13.6, mx = Math.max(v, e) * 1.15, L = 120, Rr = w - 60;
+      [["VHT (Wi-Fi 5)", v, P.accent], ["HE (Wi-Fi 6)", e, P.accent2]].forEach(([n, val, c], i) => { const y = 20 + i * 44, bwid = ((Rr - L) * val) / mx;
+        WF.text(ctx, n, 8, y + 14, { size: 12, color: P.text }); ctx.fillStyle = c; ctx.globalAlpha = 0.8; ctx.fillRect(L, y, bwid, 28); ctx.globalAlpha = 1;
+        WF.text(ctx, val.toFixed(1) + "/µs", L + bwid + 6, y + 14, { size: 11, mono: true, color: P.dim }); });
+    }, { aspect: 0.2, minHeight: 110, maxHeight: 130 });
+    function draw() {
+      const bw = +wsel();
+      WF.stat("nm-vht", NSD.vht[bw] + " / 4.0 µs"); WF.stat("nm-he", NSD.he[bw] + " / 13.6 µs");
+      WF.stat("nm-ratio", "×" + ((NSD.he[bw] / 13.6) / (NSD.vht[bw] / 4.0)).toFixed(3));
+      cv.redraw();
+    }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>우리 집 와이파이 설계 플레이그라운드 · WiFiBook</title>
+<meta name="description" content="평면도에 공유기와 메시 노드를 놓고 대역·벽 재질·백홀을 고르면 방마다 신호와 예상 속도가 따라온다. 책 전체의 계산(경로 손실, SNR → MCS, 실제 처리량, 메시 백홀)을 한 화면에 모은 설계 도구와 점검표.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/wifi/chapters/design.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="WiFiBook">
+<meta property="og:title" content="우리 집 와이파이 설계 플레이그라운드 · WiFiBook">
+<meta property="og:description" content="평면도에 공유기와 메시 노드를 놓고 대역·벽 재질·백홀을 고르면 방마다 신호와 예상 속도가 따라온다. 책 전체의 계산(경로 손실, SNR → MCS, 실제 처리량, 메시 백홀)을 한 화면에 모은 설계 도구와 점검표.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/wifi/chapters/design.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/wifi/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"우리 집 와이파이 설계 플레이그라운드","name":"우리 집 와이파이 설계 플레이그라운드 · WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/chapters/design.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/wifi/chapters/design.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":14,"image":"https://yalex-kim.github.io/yalexBook/wifi/og.png","dateModified":"2026-10-17","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/wifi/#book","name":"WiFiBook — 누구나 읽는 인터랙티브 와이파이 교과서","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"publisher":{"@type":"Organization","name":"WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"description":"평면도에 공유기와 메시 노드를 놓고 대역·벽 재질·백홀을 고르면 방마다 신호와 예상 속도가 따라온다. 책 전체의 계산(경로 손실, SNR → MCS, 실제 처리량, 메시 백홀)을 한 화면에 모은 설계 도구와 점검표."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"WiFiBook","item":"https://yalex-kim.github.io/yalexBook/wifi/"},{"@type":"ListItem","position":2,"name":"14 우리 집 와이파이 설계 플레이그라운드","item":"https://yalex-kim.github.io/yalexBook/wifi/chapters/design.html"}]}]}</script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+</head>
+<body data-chapter="design">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 14</div>
+    <h1>우리 집 와이파이 설계 플레이그라운드</h1>
+    <p class="lead">공유기를 거실 TV장 뒤에 둘까, 복도 천장 가까이에 둘까? 6 GHz를 켜면 안방까지 닿을까? 메시 노드는 어디에, 무선으로 이을까 랜선으로 이을까? 지금까지 배운 것을 한 화면에 모았다. 평면도에 공유기를 놓고 대역과 벽 재질을 고르면, 방마다 신호 세기와 예상 속도가 계산된다.</p>
+    <ul class="objectives">
+      <li>거리와 벽이 대역별 신호를 얼마나 깎는지 평면도 위에서 확인한다.</li>
+      <li>공유기 위치와 메시 노드 배치를 바꿔 방마다 예상 속도를 비교한다.</li>
+      <li>무선 백홀과 유선 백홀의 차이를 계산으로 설명한다.</li>
+      <li>책 전체의 내용을 바탕으로 우리 집 설정 점검표를 만든다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="play">
+    <h2>평면도 위에 공유기 놓기</h2>
+    <p>아래는 방 셋, 거실, 주방, 욕실이 있는 14 m × 10 m 아파트다. 평면도를 누르면 선택한 기기(공유기 또는 메시 노드)가 그 자리로 옮겨 간다. 색은 그 자리에서 휴대폰(2×2)이 얻을 예상 실제 속도다.</p>
+    <div class="sim" id="sim-plan">
+      <div class="sim-head"><span class="sim-tag">PLAYGROUND</span><h3>우리 집 와이파이 지도</h3></div>
+      <div class="sim-view"><canvas id="cv-plan"></canvas></div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>평면도를 누르면</span><div class="seg" id="pl-tool"><button data-value="ap" class="on">공유기 옮기기</button><button data-value="node">메시 노드 옮기기</button></div></div>
+        <div class="ctrl"><span>대역 (채널 폭)</span><div class="seg" id="pl-band"><button data-value="2">2.4 GHz (20)</button><button data-value="5" class="on">5 GHz (80)</button><button data-value="6">6 GHz (160)</button></div></div>
+        <div class="ctrl"><span>안쪽 벽</span><div class="seg" id="pl-wall"><button data-value="gyp">석고보드</button><button data-value="con" class="on">콘크리트</button></div></div>
+        <div class="ctrl"><span>메시</span><div class="seg" id="pl-mesh"><button data-value="none" class="on">없음</button><button data-value="wifi">무선 백홀(같은 대역)</button><button data-value="ded">무선 백홀(전용 대역)</button><button data-value="wired">유선 백홀</button></div></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">가장 느린 방</span><span class="v" id="pl-worst">—</span></div>
+        <div class="stat"><span class="k">100 Mb/s 이상 면적</span><span class="v" id="pl-area">—</span></div>
+        <div class="stat"><span class="k">메시 백홀</span><span class="v" id="pl-bh">—</span></div>
+      </div>
+      <div class="table-wrap" style="margin:0"><table id="pl-rooms"></table></div>
+      <div class="sim-note">해볼 것: ① 공유기를 거실 구석(TV장, 처음 위치)에서 집 가운데 복도(“복도” 글자 근처)로 옮기면 5 GHz·콘크리트 벽 기준 가장 느린 방이 “끊김”에서 약 190 Mb/s로 올라간다. ② 6 GHz는 공유기가 있는 방에서는 가장 빠르지만 콘크리트 벽 둘을 넘으면 2.4·5 GHz보다 느려질 수 있다. ③ 공유기를 구석에 둔 채 메시를 켜면 노드는 작은방 2 문 앞 복도에 있다. 작은방 2의 속도가 같은 대역 무선 백홀 약 290, 전용 대역 약 470, 유선 백홀 약 780 Mb/s로 달라진다. 같은 대역 무선 백홀은 노드가 같은 무선으로 받고 다시 보내므로 두 구간의 시간을 더해야 한다(두 구간이 같은 속도면 절반). 모델(어림): 송신 2.4 GHz 20 dBm·5 GHz 23 dBm·6 GHz 20 dBm, 자유 공간 손실 + 벽마다 손실(석고보드 3/4/5 dB, 콘크리트 12/16/18 dB, 2.4/5/6 GHz 순), 잡음 지수 7 dB, SNR → MCS는 4장의 어림 표, Wi-Fi 6 2스트림 링크 속도 × 0.65(8장의 실제 효율 어림), 두 단말 수신 다이버시티·반사·가구·사람은 뺐다. 실제 집에서는 앱의 측정으로 확인하자.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="lessons">
+    <h2>플레이그라운드가 보여 주는 것</h2>
+    <ul>
+      <li><b>위치가 대역보다 먼저다.</b> 공유기 한 대의 자리를 집 가운데로 옮기는 것만으로 가장 먼 방의 벽 수가 하나 줄어든다. 콘크리트 벽 하나는 5·6 GHz에서 15 dB 넘게, 즉 MCS 다섯 계단쯤을 깎는다(4장).</li>
+      <li><b>높은 대역은 넓고 빠르지만 짧다.</b> 2장에서 본 대로 6 GHz는 채널이 넓고 깨끗하지만, 주파수가 높을수록 같은 거리·같은 벽에서 손실이 크다. 공유기와 같은 방이나 한 벽 너머에서 가장 큰 이득을 본다. 단말은 MLO(13장)나 대역 조종으로 상황에 맞게 대역을 골라 쓴다.</li>
+      <li><b>메시는 백홀이 성능을 정한다.</b> 노드가 같은 무선으로 공유기와도, 단말과도 이야기하면 공중 시간을 둘로 나눈다(6장의 공유 매체). 전용 백홀 대역이 있는 트라이밴드 메시나, 가능하면 랜선(유선 백홀)이 가장 좋다. 노드는 공유기 신호가 아직 충분히 좋은 “중간”에 둔다. 신호가 이미 약한 곳에 두면 백홀부터 느리다.</li>
+      <li><b>노드를 늘린다고 다 좋지 않다.</b> 같은 채널의 노드가 많아지면 서로 양보하고(6장), 단말은 먼 노드를 붙잡는다(9장). 꼭 필요한 곳에만 두고, 노드끼리 다른 채널을 쓰게 하는 것이 좋다.</li>
+    </ul>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="checklist">
+    <h2>설정 점검표</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>항목</th><th>권장</th><th>이유</th></tr></thead>
+      <tbody>
+        <tr><td>공유기 위치</td><td>집 가운데, 바닥보다 높은 곳, 금속 장·어항·TV 뒤를 피해서</td><td>벽 수와 거리 최소화(2·4장)</td></tr>
+        <tr><td>2.4 GHz 채널</td><td>20 MHz, 겹치지 않는 채널(1·5·9·13 또는 1·6·11) 중 이웃이 적은 것</td><td>40 MHz는 2.4 GHz를 거의 다 차지한다(2장)</td></tr>
+        <tr><td>5 GHz 채널</td><td>80 MHz. DFS를 쓰면 채널 선택이 넓어지지만 시작에 1분, 레이더 감지 시 채널 이동</td><td>2장</td></tr>
+        <tr><td>6 GHz</td><td>160 MHz(가까운 방), 기기가 지원하면 320 MHz. PSC 채널</td><td>2·13장</td></tr>
+        <tr><td>802.11b 호환</td><td>끄기(기본 속도 6 Mb/s 이상)</td><td>비컨·관리 프레임이 공중 시간을 덜 먹는다(7장)</td></tr>
+        <tr><td>SSID 수</td><td>꼭 필요한 만큼(본망 + 게스트/IoT)</td><td>SSID마다 비컨이 따로 나간다(7장)</td></tr>
+        <tr><td>보안</td><td>WPA3-Personal, 오래된 기기가 있으면 전환 모드 + 긴 비밀번호, PMF</td><td>10장</td></tr>
+        <tr><td>로밍(메시)</td><td>802.11k·v·r 켜기, 노드 간 유선 백홀이 가능하면 유선</td><td>9장, 위 플레이그라운드</td></tr>
+        <tr><td>DTIM</td><td>기본값(1~3) 유지</td><td>크게 하면 배터리는 아끼지만 기기 찾기·방송이 늦다(11장)</td></tr>
+        <tr><td>펌웨어</td><td>자동 업데이트</td><td>보안 수정(KRACK 등)과 드라이버 개선(10장)</td></tr>
+      </tbody>
+    </table></div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">거실 공유기에서 콘크리트 벽 둘 너머 작은방이 느리다. 메시 노드를 하나 살 수 있다면 어디에 둘까?</p><p class="wi-hint">노드도 공유기 신호를 받아야 한다(무선 백홀).</p><div class="opts">
+      <button class="opt">작은방 안, 가장 느린 자리</button>
+      <button class="opt" data-correct>공유기와 작은방 사이, 벽 하나만 넘는 복도 쪽</button>
+      <button class="opt">공유기 바로 옆</button>
+    </div><div class="quiz-exp">느린 방 안에 두면 노드가 받는 백홀부터 느리다. 공유기 바로 옆이면 작은방까지 여전히 벽 둘이다. 백홀과 단말 쪽이 둘 다 벽 하나 정도인 중간이 좋다. 유선 백홀이 가능하면 작은방 안이 최선이다.</div></div>
+  </section>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>공유기 위치가 가장 큰 변수다. 집 가운데, 높은 곳, 금속을 피해서.</li>
+      <li>콘크리트 벽 하나는 5·6 GHz에서 MCS 여러 계단을 깎는다. 높은 대역은 가까운 곳에서 빠르다.</li>
+      <li>메시는 백홀이 성능을 정한다. 유선 > 전용 무선 대역 > 같은 대역 무선(두 구간 시간을 더함, 같은 속도면 절반).</li>
+      <li>점검표: 20 MHz 2.4 GHz, 80 MHz 5 GHz, 6 GHz PSC, 11b 호환 끄기, SSID 최소, WPA3 + PMF, 11k·v·r, 펌웨어 업데이트.</li>
+    </ol>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const W = 14, H = 10; // m
+  /** 벽: [x1, y1, x2, y2, 종류] — 바깥벽은 항상 콘크리트, 안쪽 벽은 선택. 문은 벽의 틈 */
+  const WALLS = [
+    [0, 0, 14, 0, "out"], [14, 0, 14, 10, "out"], [14, 10, 0, 10, "out"], [0, 10, 0, 0, "out"],
+    [0, 5.5, 3.5, 5.5, "in"], [4.5, 5.5, 5.5, 5.5, "in"], [6.5, 5.5, 9.6, 5.5, "in"], [10.4, 5.5, 12, 5.5, "in"], [13, 5.5, 14, 5.5, "in"], // 복도 북쪽(문 넷)
+    [5, 5.5, 5, 10, "in"], [9, 5.5, 9, 10, "in"], [11, 5.5, 11, 10, "in"],                                                                  // 방 사이
+    [10, 4, 14, 4, "in"],                                                                                                                    // 주방 칸막이
+  ];
+  const ROOMS = [
+    { name: "거실", x: 3.5, y: 2.8 }, { name: "주방", x: 12, y: 2 }, { name: "안방", x: 2.5, y: 7.8 },
+    { name: "작은방 1", x: 7, y: 7.8 }, { name: "작은방 2", x: 12.5, y: 7.8 },
+  ];
+  const LABELS = [{ name: "욕실", x: 10, y: 7.8 }, { name: "복도", x: 9, y: 4.75 }];
+  const BAND = { 2: { f: 2437, tx: 20, nsd: 234, wall: { gyp: 3, con: 12 } }, 5: { f: 5500, tx: 23, nsd: 980, wall: { gyp: 4, con: 16 } }, 6: { f: 6500, tx: 20, nsd: 1960, wall: { gyp: 5, con: 18 } } };
+  const SNR_REQ = [5, 8, 11, 14, 17, 21, 23, 25, 29, 31, 34, 37]; // 4장 어림
+  const MCS = [[1, 1 / 2], [2, 1 / 2], [2, 3 / 4], [4, 1 / 2], [4, 3 / 4], [6, 2 / 3], [6, 3 / 4], [6, 5 / 6], [8, 3 / 4], [8, 5 / 6], [10, 3 / 4], [10, 5 / 6]];
+  const EFF = 0.65;
+  /** 선분 교차 */
+  function crosses(ax, ay, bx, by, cx, cy, dx, dy) {
+    const d = (bx - ax) * (dy - cy) - (by - ay) * (dx - cx); if (Math.abs(d) < 1e-12) return false;
+    const t = ((cx - ax) * (dy - cy) - (cy - ay) * (dx - cx)) / d, u = ((cx - ax) * (by - ay) - (cy - ay) * (bx - ax)) / d;
+    return t > 1e-9 && t < 1 - 1e-9 && u >= 0 && u <= 1;
+  }
+  /** 두 점 사이 벽 손실(dB) */
+  function wallLoss(p, q, band, inner) { let L = 0; for (const [x1, y1, x2, y2, k] of WALLS) if (crosses(p.x, p.y, q.x, q.y, x1, y1, x2, y2)) L += BAND[band].wall[k === "out" ? "con" : inner]; return L; }
+  /** 자유 공간 손실(dB): 20·log10(d m) + 20·log10(f MHz) − 27.55, 최소 0.5 m */
+  function fspl(dM, fMHz) { return 20 * Math.log10(Math.max(0.5, dM)) + 20 * Math.log10(fMHz) - 27.55; }
+  function rssi(ap, p, band, inner) { return BAND[band].tx - fspl(Math.hypot(ap.x - p.x, ap.y - p.y), BAND[band].f) - wallLoss(ap, p, band, inner); }
+  /** 잡음 = −174 dBm/Hz + 10·log10(대역폭) + 잡음 지수 7 dB */
+  function noiseDbm(band) { const bw = band === 2 ? 20e6 : band === 5 ? 80e6 : 160e6; return -174 + 10 * Math.log10(bw) + 7; }
+  /** 예상 실제 속도(Mb/s): SNR → MCS → 2스트림 링크 속도 × 효율 */
+  function goodputAt(rssiDbm, band) {
+    const snr = rssiDbm - noiseDbm(band); let m = -1; SNR_REQ.forEach((t, i) => { if (snr >= t) m = i; });
+    if (m < 0) return 0; const [b, r] = MCS[m]; return ((BAND[band].nsd * b * r * 2) / 13.6) * EFF;
+  }
+  /** 메시: 단말은 공유기와 노드 중 더 빠른 쪽. 노드 경유: 유선·전용 대역 백홀이면 min(노드→단말, 백홀),
+   *  같은 대역 무선 백홀이면 노드의 무선이 두 구간을 번갈아 보내므로 1 / (1/노드→단말 + 1/백홀) */
+  function meshRate(direct, viaNode, backhaul, mode) {
+    if (mode === "none" || viaNode <= 0 || backhaul <= 0) return direct;
+    const via = mode === "wifi" ? 1 / (1 / viaNode + 1 / backhaul) : Math.min(viaNode, backhaul);
+    return Math.max(direct, via);
+  }
+  /** 백홀 속도: 유선 940 Mb/s(기가비트 이더넷 실효), 무선은 공유기 ↔ 노드 5 GHz 80 MHz 2스트림 */
+  function backhaulRate(ap, node, inner, mode) { if (mode === "wired") return 940; if (mode === "none") return 0; return goodputAt(rssi(ap, node, 5, inner), 5); }
+
+  /* ================================================================ 플레이그라운드 */
+  (function () {
+    let tool = "ap", band = 5, inner = "con", mesh = "none";
+    const ap = { x: 0.8, y: 0.8 }, node = { x: 12.5, y: 4.8 };
+    WF.seg("pl-tool", (v) => { tool = v; }); WF.seg("pl-band", (v) => { band = +v; draw(); }); WF.seg("pl-wall", (v) => { inner = v; draw(); }); WF.seg("pl-mesh", (v) => { mesh = v; draw(); });
+    const rateAt = (p) => { const d = goodputAt(rssi(ap, p, band, inner), band); if (mesh === "none") return d; const v = goodputAt(rssi(node, p, band, inner), band); return meshRate(d, v, backhaulRate(ap, node, inner, mesh), mesh); };
+    const col = (r, P) => { if (r <= 0) return "rgba(120,120,120,.35)"; const t = Math.min(1, Math.log10(1 + r) / Math.log10(1201)); const h = 0 + 140 * t; return `hsla(${h}, 75%, 50%, .55)`; };
+    let geo = null;
+    const cv = WF.canvas($("cv-plan"), (ctx, w, h) => {
+      const P = WF.palette(), s = Math.min((w - 20) / W, (h - 36) / H), ox = (w - W * s) / 2, oy = 8; geo = { s, ox, oy };
+      const X = (x) => ox + x * s, Y = (y) => oy + y * s, step = 0.25;
+      for (let x = 0; x < W; x += step) for (let y = 0; y < H; y += step) { ctx.fillStyle = col(rateAt({ x: x + step / 2, y: y + step / 2 }), P); ctx.fillRect(X(x), Y(y), s * step + 0.5, s * step + 0.5); }
+      WALLS.forEach(([x1, y1, x2, y2, k]) => { ctx.strokeStyle = P.text; ctx.lineWidth = k === "out" ? 4 : inner === "con" ? 3 : 1.6; ctx.beginPath(); ctx.moveTo(X(x1), Y(y1)); ctx.lineTo(X(x2), Y(y2)); ctx.stroke(); });
+      ROOMS.forEach((r) => WF.text(ctx, r.name, X(r.x), Y(r.y), { size: 11.5, color: P.text, align: "center", bold: true })); LABELS.forEach((r) => WF.text(ctx, r.name, X(r.x), Y(r.y), { size: 10.5, color: P.dim, align: "center" }));
+      const dev = (p, label, c) => { ctx.fillStyle = c; ctx.beginPath(); ctx.arc(X(p.x), Y(p.y), 9, 0, 7); ctx.fill(); WF.text(ctx, label, X(p.x), Y(p.y) + 4, { size: 10, color: "#fff", align: "center", bold: true }); };
+      if (mesh !== "none") { if (mesh === "wired") { ctx.strokeStyle = P.dim; ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.moveTo(X(ap.x), Y(ap.y)); ctx.lineTo(X(node.x), Y(node.y)); ctx.stroke(); ctx.setLineDash([]); } dev(node, "N", P.accent2); }
+      dev(ap, "AP", P.accent);
+      // 범례
+      const lx = ox, ly = oy + H * s + 16; const lw = (W * s) / 5; [[0, "끊김"], [25, "25"], [100, "100"], [400, "400"], [1000, "1000 Mb/s"]].forEach(([r, t], i) => { ctx.fillStyle = col(r, P); ctx.fillRect(lx + i * lw, ly - 9, 12, 12); WF.text(ctx, t, lx + i * lw + 15, ly + 1, { size: 10, color: P.dim }); });
+    }, { aspect: 0.8, minHeight: 300, maxHeight: 560 });
+    cv.canvas.addEventListener("click", (e) => { if (!geo) return; const r = cv.canvas.getBoundingClientRect(), x = (e.clientX - r.left - geo.ox) / geo.s, y = (e.clientY - r.top - geo.oy) / geo.s; if (x < 0.2 || y < 0.2 || x > W - 0.2 || y > H - 0.2) return; const t = tool === "node" ? node : ap; t.x = x; t.y = y; if (tool === "node" && mesh === "none") { mesh = "wifi"; $("pl-mesh").querySelectorAll("button").forEach((b) => b.classList.toggle("on", b.dataset.value === "wifi")); } draw(); });
+    const fmt = (r) => (r <= 0 ? "끊김" : r >= 100 ? r.toFixed(0) + " Mb/s" : r.toFixed(1) + " Mb/s");
+    function draw() {
+      const rows = ROOMS.map((r) => { const p = { x: r.x, y: r.y }, s = rssi(ap, p, band, inner); return { ...r, rssi: s, walls: Math.round(wallLoss(ap, p, band, inner)), rate: rateAt(p) }; });
+      $("pl-rooms").innerHTML = `<thead><tr><th>방</th><th class="num">신호</th><th class="num">벽</th><th class="num">속도</th></tr></thead><tbody>` + rows.map((r) => `<tr><td>${r.name}</td><td class="num">${r.rssi.toFixed(0)} dBm</td><td class="num">${r.walls} dB</td><td class="num">${fmt(r.rate)}</td></tr>`).join("") + "</tbody>";
+      const worst = rows.reduce((a, b) => (b.rate < a.rate ? b : a)); WF.stat("pl-worst", worst.name + " " + fmt(worst.rate));
+      let ok = 0, n = 0; for (let x = 0.25; x < W; x += 0.5) for (let y = 0.25; y < H; y += 0.5) { n++; if (rateAt({ x, y }) >= 100) ok++; } WF.stat("pl-area", ((ok / n) * 100).toFixed(0) + "%");
+      WF.stat("pl-bh", mesh === "none" ? "—" : mesh === "wired" ? "유선 940 Mb/s" : fmt(backhaulRate(ap, node, inner, mesh)) + (mesh === "wifi" ? " (단말 구간과 나눠 씀)" : ""));
+      cv.redraw();
+    }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>
