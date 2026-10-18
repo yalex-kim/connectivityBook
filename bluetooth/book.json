@@ -6,5 +6,27 @@
   "repo": "https://github.com/yalex-kim/yalexBook/tree/main/bluetooth",
   "field": "electronics",
   "status": "published",
-  "path": "bluetooth/"
+  "path": "bluetooth/",
+  "ui": {
+    "ns": "BT",
+    "prefix": "bt",
+    "short": "블루투스 교과서",
+    "footer": "BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서 · 기준 사양: Bluetooth Core 6.2",
+    "specLabel": "사양 들여다보기",
+    "colors": {
+      "light": {
+        "accent": "#0b62d6",
+        "accent-soft": "rgba(11, 98, 214, 0.11)",
+        "accent-2": "#0a8f9c",
+        "accent-2-soft": "rgba(10, 143, 156, 0.12)"
+      },
+      "dark": {
+        "accent": "#4fa8ff",
+        "accent-soft": "rgba(79, 168, 255, 0.15)",
+        "accent-2": "#3fd0dc",
+        "accent-2-soft": "rgba(63, 208, 220, 0.14)"
+      }
+    },
+    "logo": "<path d=\"M10.5 11.5 20.5 20.5 15.5 25V7l5 4.5-10 9\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>"
+  }
 }

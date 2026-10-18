@@ -1,5 +1,6 @@
 /* ==========================================================================
    WiFiBook 공통 스크립트 — 전역 객체 WF
+   이 파일은 shared/common.js에서 tools/sync_shared.py로 만든다. 장 목록 밖을 고치려면 shared/common.js를 고친 뒤 동기화한다.
    - 레이아웃(상단바, 목차, 이전/다음, 테마) 자동 생성
    - 시뮬레이터 헬퍼: canvas, chart, range, seg, 그리기·포맷 유틸
    이 파일은 <head>에서 defer 없이 로드된다. 페이지 스크립트는 </body> 직전에 둔다.
@@ -7,6 +8,7 @@
 (function () {
   "use strict";
 
+  // @book-chapters-begin — 이 사이(장 목록)는 책마다 다르다. tools/sync_shared.py가 책의 것을 그대로 둔다.
   const CHAPTERS = [
     { slug: "intro",      num: "01", part: "시작하기",   title: "와이파이란 무엇인가",               desc: "선 없는 이더넷의 탄생. IEEE 802.11과 Wi-Fi Alliance, 세대 이름(Wi-Fi 4~7), AP·STA·BSS·SSID로 그리는 무선 랜의 구조.", tags: ["기초", "sim"] },
     { slug: "bands",      num: "02", part: "시작하기",   title: "대역과 채널: 2.4·5·6 GHz",          desc: "채널 번호와 주파수의 관계, 겹치지 않는 채널, DFS, 6 GHz의 1.2 GHz 폭과 PSC, 20~320 MHz 채널 묶기.", tags: ["무선", "sim"] },
@@ -24,7 +26,7 @@
     { slug: "design",     num: "14", part: "종합",       title: "우리 집 와이파이 설계 플레이그라운드", desc: "방과 벽, 공유기 위치, 대역과 메시를 고르면 방마다 속도가 따라온다. 공존과 채널 계획까지.", tags: ["종합", "sim"] },
     { slug: "glossary",   num: "15", part: "종합",       title: "용어집 & 종합 퀴즈",                 desc: "와이파이 핵심 용어를 검색하고 종합 퀴즈로 배운 내용을 점검하자.", tags: ["정리"] },
   ];
-
+  // @book-chapters-end
   const WF = (window.WF = {});
   WF.CHAPTERS = CHAPTERS;
 

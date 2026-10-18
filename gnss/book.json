@@ -6,5 +6,27 @@
   "repo": "https://github.com/yalex-kim/yalexBook/tree/main/gnss",
   "field": "electronics",
   "status": "published",
-  "path": "gnss/"
+  "path": "gnss/",
+  "ui": {
+    "ns": "GN",
+    "prefix": "gn",
+    "short": "GNSS 교과서",
+    "footer": "GNSSBook — 누구나 읽는 인터랙티브 GNSS 교과서 · 공개 규격(IS-GPS-200, Galileo OS SIS ICD)과 공개 구현(RTKLIB)으로 확인한 값을 씁니다",
+    "specLabel": "규격 들여다보기",
+    "colors": {
+      "light": {
+        "accent": "#15803d",
+        "accent-soft": "rgba(21, 128, 61, 0.11)",
+        "accent-2": "#1d4ed8",
+        "accent-2-soft": "rgba(29, 78, 216, 0.12)"
+      },
+      "dark": {
+        "accent": "#4ade80",
+        "accent-soft": "rgba(74, 222, 128, 0.16)",
+        "accent-2": "#60a5fa",
+        "accent-2-soft": "rgba(96, 165, 250, 0.15)"
+      }
+    },
+    "logo": "<g fill=\"none\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\"><circle cx=\"16\" cy=\"17\" r=\"4.5\"/><path d=\"M7 9l4 3M25 9l-4 3M16 6v4\"/></g><circle cx=\"16\" cy=\"17\" r=\"1.6\" fill=\"#fff\"/>"
+  }
 }

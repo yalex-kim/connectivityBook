@@ -1,5 +1,6 @@
 /* ==========================================================================
    GNSSBook 공통 스크립트 — 전역 객체 GN
+   이 파일은 shared/common.js에서 tools/sync_shared.py로 만든다. 장 목록 밖을 고치려면 shared/common.js를 고친 뒤 동기화한다.
    - 레이아웃(상단바, 목차, 이전/다음, 테마) 자동 생성
    - 시뮬레이터 헬퍼: canvas, chart, range, seg, 그리기·포맷 유틸
    이 파일은 <head>에서 defer 없이 로드된다. 페이지 스크립트는 </body> 직전에 둔다.
@@ -7,6 +8,7 @@
 (function () {
   "use strict";
 
+  // @book-chapters-begin — 이 사이(장 목록)는 책마다 다르다. tools/sync_shared.py가 책의 것을 그대로 둔다.
   const CHAPTERS = [
     { slug: "intro",       num: "01", part: "시작하기",    title: "GNSS란 무엇인가",                         desc: "하늘의 시계로 위치 재기. GPS·GLONASS·Galileo·BeiDou·QZSS, 우주·관제·사용자 부문, 미지수가 넷인 이유.", tags: ["기초", "sim"] },
     { slug: "orbits",      num: "02", part: "시작하기",    title: "궤도: 2만 km 위의 별자리",                desc: "중궤도 위성의 고도와 주기, 케플러 법칙, 하늘에 보이는 위성 수와 스카이 플롯, 반나절마다 돌아오는 궤적.", tags: ["궤도", "sim"] },
@@ -24,9 +26,7 @@
     { slug: "design",      num: "14", part: "응용과 종합", title: "GNSS 설계 플레이그라운드",                  desc: "위성군·주파수·보강·환경을 고르면 보이는 위성, DOP, 오차 예산, 첫 위치 시간과 정확도가 따라온다.", tags: ["종합", "sim"] },
     { slug: "glossary",    num: "15", part: "응용과 종합", title: "용어집 & 종합 퀴즈",                       desc: "GNSS 핵심 용어를 검색하고 종합 퀴즈로 배운 내용을 점검하자.", tags: ["정리"] },
   ];
-
-
-
+  // @book-chapters-end
   const GN = (window.GN = {});
   GN.CHAPTERS = CHAPTERS;
 
