@@ -22,6 +22,8 @@ jobs:
       # 책마다 복사해 쓰는 공통 코드(js/common.js, css/style.css)가 shared/ 원본과 같은가
       - name: Shared code in sync
         run: python3 tools/sync_shared.py --check
+      - name: Library search index up to date
+        run: python3 tools/build_search.py --check
       # 책마다 scripts/verify-factcheck.cjs가 있으면 실행한다
       - name: Verify every book
         run: |
