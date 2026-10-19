@@ -14,6 +14,8 @@
 | 07 | chapters/smp.html | SMP 완전판: P-256에서 LTK까지 | [Vol 3] Part H 부록 D.1~D.12, c1·s1 예, 디버그 키, OpenSSL ECDH |
 | 08 | chapters/privacy.html | 프라이버시와 필터링 | 부록 D.7(ah), 해석·필터 규칙 사례, OpenSSL AES |
 | 09 | chapters/bigsec.html | BIG 보안과 BIS | [Vol 6] Part C §5(BIS 접근 주소 31개)·§6(h8, “Børne House” → GSK) |
+| 10 | chapters/l2cap.html | L2CAP: 채널, 신호, 크레딧 흐름 제어 | K-frame 분할·크레딧·재설정 규칙 사례(무작위 400개) |
+| 11 | chapters/gatt.html | ATT/GATT 심화: EATT, 큐 쓰기, Database Hash | Database Hash 붙이는 규칙(§7.3.1의 예), Robust Caching 전이, AES-CMAC 시험 벡터 |
 
 계획 전체(19장)는 책 홈(`index.html`)에 있습니다.
 
@@ -22,6 +24,7 @@
 python3 -m http.server 8000                       # 저장소 루트에서 → http://localhost:8000/bluetooth-deep/
 node bluetooth-deep/scripts/verify-factcheck.cjs   # 계산·구조 검증
 ```
+인용한 절·표가 사양에 있는지는 `python3 tools/check_spec_refs.py 6.3 --titles`로 확인합니다(사양 HTML을 받아 `.spec-cache/`에 둡니다).
 공통 코드(`js/common.js`, `css/style.css`)는 저장소 루트 `shared/`에서 만듭니다. 작성 규칙은 [CONTRIBUTING.md](CONTRIBUTING.md)와 저장소 루트의 `CLAUDE.md`를 따릅니다.
 
 ## 라이선스

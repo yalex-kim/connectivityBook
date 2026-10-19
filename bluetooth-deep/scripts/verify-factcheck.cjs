@@ -351,6 +351,59 @@ const bitsStr = (s) => s.replace(/\s/g, '').split('').map(Number);
   ok(!f.pawrCheck({ ...good, subInterval: 320 })[2][1] && !f.pawrCheck({ ...good, slotSpacing: 0.2 })[5][1], 'ranges');
 }
 
+// ---------------------------------------------------------------- 10 l2cap
+{
+  const f = load('l2cap', ['kframes', 'kframeBytes', 'segment', 'reconfigureOk', 'rxCheck']);
+  eq(f.kframes(600, 200), [200, 200, 200, 2], 'SDU 600 / MPS 200 → 4 K-frames (first carries SDU length)');
+  for (let t = 0; t < 400; t++) {
+    const sdu = 1 + ((t * 977) % 4000), mps = 23 + ((t * 131) % 490), k = f.kframes(sdu, mps);
+    ok(k.every((p) => p <= mps) && k.reduce((a, b) => a + b, 0) === sdu + 2 && k.length === Math.ceil((sdu + 2) / mps), `K-frames ≤ MPS and carry SDU+2 (${sdu}/${mps})`);
+  }
+  eq(f.kframeBytes(0x0040, [0xaa, 0xbb], 300), [4, 0, 0x40, 0, 0x2c, 0x01, 0xaa, 0xbb], 'K-frame bytes: length, CID, SDU length (LE)');
+  const s = f.segment(1000, 247, 251, 251); eq([s.kframes, s.hci, s.ll], [5, 5, 5], 'MPS 247 + 4 = 251 fits one LL PDU');
+  eq(f.segment(1000, 247, 251, 27).ll, 41, 'LL 27: four 251-byte PDUs → 10 each, last 18 → 1');
+  // ECFC 재설정 규칙 [Vol 3] Part A §7.11
+  ok(f.reconfigureOk(2, 256, 128, 512, 128).ok && !f.reconfigureOk(2, 256, 128, 128, 128).ok && !f.reconfigureOk(2, 256, 128, 512, 96).ok && f.reconfigureOk(1, 256, 128, 512, 96).ok && !f.reconfigureOk(1, 64, 64, 64, 48).ok && !f.reconfigureOk(6, 64, 64, 64, 64).ok, 'reconfigure rules');
+  // 수신 규칙 [Vol 3] Part A §3.4·§10.1
+  const st = { credits: 65530, rxCredits: 1, mps: 100, mtu: 500 };
+  eq(f.rxCheck(st, { type: 'credit', n: 0 }).act, '무시', 'zero credit IND ignored');
+  eq(f.rxCheck(st, { type: 'credit', n: 6 }).act, '끊기', 'credit > 65535 → disconnect');
+  eq(f.rxCheck({ ...st, rxCredits: 0 }, { type: 'k', payload: 10 }).act, '끊기', 'K-frame with zero credits → disconnect');
+  eq(f.rxCheck(st, { type: 'k', payload: 101 }).act, '끊기', 'payload > MPS → disconnect');
+  eq(f.rxCheck(st, { type: 'k', payload: 50, first: true, sduLen: 501 }).act, '끊기', 'SDU > MTU → disconnect');
+  eq(f.rxCheck(st, { type: 'k', payload: 50, first: true, sduLen: 400 }).st.rxCredits, 0, 'valid K-frame consumes a credit');
+}
+
+// ---------------------------------------------------------------- 11 gatt
+{
+  const src = read('gatt'), line = (k) => src.slice(src.indexOf(k), src.indexOf('\n', src.indexOf(k)));
+  const f = load('gatt', ['aes128', 'aesCmac', 'splitAttOpcode', 'attRoom', 'hashBytes', 'databaseHash', 'charDecl', 'robust'], line('  const SBOX =') + '\n' + line('  const FULL ='));
+  eq(f.splitAttOpcode(0x52), { method: 0x12, command: 1, bit7: 0 }, 'WRITE_CMD 0x52 = command flag | write');
+  eq(f.splitAttOpcode(0xd2).bit7, 1, '0xD2 (previously signed write) has bit 7');
+  eq([f.attRoom('prepare', 23), f.attRoom('readRsp', 23), f.attRoom('prepare', 247)], [18, 22, 242], 'ATT room per PDU');
+  eq(X(f.aesCmac(H('2b7e151628aed2a6abf7158809cf4f3c'), H('6bc1bee22e409f96e93d7e117393172a'))), '070a16b46b4d4144f79bdd9dd04a287c', 'AES-CMAC RFC 4493 ex2');
+  // 사양 §7.3.1의 예: 특성 선언 값 {0x02, 0x0005, 0x2A00} → 02 05 00 00 2A
+  eq(X(f.charDecl(0x02, 0x0005, 0x2a00)), '020500002a', 'characteristic declaration bytes (§7.3.1 example)');
+  eq(X(f.hashBytes({ handle: 0x0004, type: 0x2803, value: f.charDecl(0x02, 0x0005, 0x2a00) })), '04000328020500002a', 'declaration: handle, type, value');
+  eq(X(f.hashBytes({ handle: 0x0009, type: 0x2902, value: [1, 0] })), '09000229', 'CCCD: handle and type only');
+  eq(f.hashBytes({ handle: 0x0005, type: 0x2a00, value: [1, 2, 3] }).length, 0, 'characteristic value not included');
+  const db = (name, props) => [{ handle: 1, type: 0x2800, value: [0x00, 0x18] }, { handle: 2, type: 0x2803, value: f.charDecl(props, 3, 0x2a00) }, { handle: 3, type: 0x2a00, value: Array.from(new TextEncoder().encode(name)) }, { handle: 4, type: 0x2902, value: [0, 0] }];
+  const h0 = X(f.databaseHash(db('A', 2)).hash);
+  ok(X(f.databaseHash(db('Another name', 2)).hash) === h0, 'value change keeps hash');
+  ok(X(f.databaseHash(db('A', 0x12)).hash) !== h0, 'property change changes hash');
+  ok(X(f.databaseHash(db('A', 2).reverse()).hash) === h0, 'ascending handle order regardless of input order');
+  eq(X(f.databaseHash(db('A', 2)).hash), X(f.aesCmac(new Array(16).fill(0), H('010000280018 02000328020300002a 04000229'))), 'hash = CMAC(0, concatenation)');
+  // Robust Caching [Vol 3] Part G §2.5.2.1
+  let st = { aware: true, errSent: false, hashRead: false }, r;
+  r = f.robust(st, 'change'); st = r.st; ok(!st.aware, 'database change → unaware');
+  r = f.robust(st, 'cmd'); ok(r.rsp.startsWith('무시'), 'command ignored while unaware');
+  r = f.robust(st, 'req'); st = r.st; ok(r.rsp.includes('0x12') && !st.aware, 'first request → 0x12');
+  r = f.robust(st, 'req'); st = r.st; ok(st.aware && !r.rsp.includes('0x12'), 'next request after 0x12 → aware');
+  st = f.robust(st, 'change').st; st = f.robust(st, 'hash').st; ok(!st.aware, 'hash read alone does not make aware');
+  r = f.robust(st, 'req'); ok(r.st.aware && !r.rsp.includes('0x12'), 'request after hash read → aware, no error');
+  st = f.robust({ aware: true }, 'change').st; ok(f.robust(st, 'scCfm').st.aware, 'SC confirmation → aware (single bearer)');
+}
+
 // ---------------------------------------------------------------- 모든 인라인 스크립트가 문법 오류 없이 컴파일되는가, JSON-LD가 올바른가
 let scripts = 0;
 for (const f of ['../index.html', ...fs.readdirSync(path.join(root, 'chapters')).filter((x) => x.endsWith('.html'))]) {

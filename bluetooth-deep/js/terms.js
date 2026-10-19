@@ -60,6 +60,19 @@ window.BD_TERMS = [
   ["T_MAFS", "Minimum AUX Frame Space", "AuxPtr를 실은 패킷의 끝과 그것이 가리키는 보조 패킷 시작 사이 최소 300 µs. [Vol 6] Part B §4.1.2", "extadv"],
   ["SyncInfo", "SyncInfo", "주기적 광고 열차에 동기화하는 데 필요한 18바이트(오프셋, 주기, 채널 맵, 접근 주소 등). [Vol 6] Part B §2.3.4.6", "extadv"],
   ["PAST", "Periodic Advertising Sync Transfer", "이미 동기화한 기기가 연결로 SyncInfo를 넘겨 상대가 스캔 없이 동기화하게 하는 절차. [Vol 6] Part B §5.1.13", "extadv"],
+  // 10 l2cap
+  ["CID", "Channel Identifier", "L2CAP 채널 번호. LE 고정 채널은 ATT 0x0004, 신호 0x0005, SMP 0x0006, 동적 채널은 0x0040~0x007F. [Vol 3] Part A §2.1", "l2cap"],
+  ["K-frame", "Credit-based frame", "크레딧 기반 채널의 L2CAP PDU. 첫 조각에만 SDU 길이 2바이트를 싣는다. 하나 보낼 때 크레딧 하나. [Vol 3] Part A §3.4", "l2cap"],
+  ["MPS", "Maximum PDU Payload Size", "받을 수 있는 가장 큰 K-frame 페이로드. LE 크레딧 기반 최소 23, ECFC 최소 64. [Vol 3] Part A §4.22·§4.25", "l2cap"],
+  ["크레딧", "Credits", "상대가 보내도 되는 K-frame 수. 0에서 받거나 65535를 넘으면 채널을 끊는다. [Vol 3] Part A §10.1", "l2cap"],
+  ["ECFC", "Enhanced Credit Based Flow Control", "LE와 클래식에서 쓰는 크레딧 기반 방식. 요청 하나로 채널 최대 5개, MTU·MPS ≥ 64, 재설정 가능. EATT가 쓴다. [Vol 3] Part A §10.2", "l2cap"],
+  ["SPSM", "Simplified Protocol/Service Multiplexer", "크레딧 기반 채널을 열 때 고르는 서비스 번호. 0x0001~0x007F SIG 할당, 0x0080~0x00FF 동적. [Vol 3] Part A §4.22", "l2cap"],
+  // 11 gatt
+  ["ATT 베어러", "ATT bearer", "ATT PDU가 오가는 L2CAP 채널. 고정 채널 0x0004 하나(일반) 또는 ECFC 채널 여럿(EATT). 순차 규칙은 베어러마다. [Vol 3] Part F §3.2.11", "gatt"],
+  ["EATT", "Enhanced ATT", "ECFC 채널 여러 개를 ATT 베어러로 쓰는 것. 병렬 트랜잭션, ATT_MTU ≥ 64, 알림을 버리지 않음. [Vol 3] Part G §5.3", "gatt"],
+  ["큐 쓰기", "Queued writes", "Prepare Write로 조각을 서버 대기열에 넣고 Execute Write로 한꺼번에 반영(또는 취소)하는 쓰기. [Vol 3] Part F §3.4.6", "gatt"],
+  ["Database Hash", "Database Hash", "서비스 구조를 요약한 128비트 값(키 0의 AES-CMAC). 특성 값은 넣지 않는다. UUID 0x2B2A. [Vol 3] Part G §7.3", "gatt"],
+  ["Robust Caching", "Robust Caching", "변경을 모르는(change-unaware) 클라이언트의 요청에 0x12 Database Out Of Sync로 답해 옛 캐시 사용을 막는 기능. [Vol 3] Part G §2.5.2.1", "gatt"],
 ];
 
 /* 본문 표기 → 용어집 표제어 */

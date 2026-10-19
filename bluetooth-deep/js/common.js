@@ -18,6 +18,8 @@
     { slug: "scheduling", num: "03", part: "컨트롤러", title: "링크 계층 상태 기계와 컨트롤러 스케줄링", desc: "일곱 상태와 여러 상태 기계, 반드시 함께 지원할 조합, 앵커 포인트와 connEventCounter, 서브레이팅·연속 이벤트·페리페럴 지연의 규칙, 무선 하나로 여러 일을 돌리는 스케줄러와 건너뛴 이벤트.", tags: ["컨트롤러", "sim"] },
     { slug: "procedures", num: "04", part: "컨트롤러", title: "링크 계층 제어 절차: instant와 충돌 규칙", desc: "LL 제어 PDU와 한 번에 하나의 절차, 40초 응답 타임아웃, instant 규칙과 Instant Passed, 연결 갱신의 전송 창, 절차 충돌 판정(0x23·0x2A), 제어 PDU를 CRC·화이트닝·CTE까지 공중 비트로 만들기.", tags: ["컨트롤러", "sim"] },
     { slug: "extadv",     num: "05", part: "컨트롤러", title: "광고 끝까지: 확장 광고 체인, 주기적 광고와 PAwR", desc: "ADV_EXT_IND·AUX_ADV_IND·AUX_CHAIN_IND, 공통 확장 페이로드와 AuxPtr·ADI, 1650바이트 체인과 T_MAFS, 주기적 광고와 PAST, PAwR 시간 규칙. 사양 샘플 AUX_ADV_IND를 공중 비트까지 재현한다.", tags: ["컨트롤러", "sim"] },
+    { slug: "l2cap",      num: "10", part: "호스트", title: "L2CAP: 채널, 신호, 크레딧 기반 흐름 제어", desc: "LE 고정 채널과 동적 CID, 신호 명령, K-frame·MTU·MPS·크레딧 규칙, SDU가 K-frame·HCI 조각·LL PDU로 나뉘는 계산, 여러 채널을 한 번에 여는 ECFC와 재설정 규칙.", tags: ["호스트", "sim"] },
+    { slug: "gatt",       num: "11", part: "호스트", title: "ATT/GATT 심화: EATT, 큐 쓰기, Database Hash", desc: "ATT opcode 구조와 순차 프로토콜·30초 트랜잭션, Read Blob과 큐 쓰기·신뢰성 있는 쓰기, EATT의 병렬 트랜잭션과 새 PDU, Database Hash 계산과 Robust Caching의 change-aware 규칙.", tags: ["호스트", "sim"] },
   ];
   // @book-chapters-end
   const BD = (window.BD = {});
