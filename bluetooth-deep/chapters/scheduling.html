@@ -101,10 +101,10 @@
         <div style="font-size:12.5px;color:var(--text-dim);margin-top:8px">채움 = 서브레이트 이벤트(S) · 다른 색 = 연속 이벤트(C) · 점선 = 페리페럴이 지연을 써서 듣지 않는 S(L) · 아래 점 = 그 이벤트에 길이가 0이 아닌 PDU가 오감 · 회색 = 쓰지 않는 이벤트</div>
       </div>
       <div class="sim-controls">
-        <label class="ctrl"><span>connSubrateFactor <b id="sb-fv">3</b></span><input type="range" id="sb-f" min="1" max="12" value="3"></label>
-        <label class="ctrl"><span>connSubrateBaseEvent <b id="sb-bv">0</b></span><input type="range" id="sb-b" min="0" max="11" value="0"></label>
-        <label class="ctrl"><span>connContinuationNumber <b id="sb-cv">0</b></span><input type="range" id="sb-c" min="0" max="11" value="0"></label>
-        <label class="ctrl"><span>connPeripheralLatency <b id="sb-lv">6</b></span><input type="range" id="sb-l" min="0" max="10" value="6"></label>
+        <label class="ctrl"><span>connSubrateFactor <b id="sb-f-out">3</b></span><input type="range" id="sb-f" min="1" max="12" value="3"></label>
+        <label class="ctrl"><span>connSubrateBaseEvent <b id="sb-b-out">0</b></span><input type="range" id="sb-b" min="0" max="11" value="0"></label>
+        <label class="ctrl"><span>connContinuationNumber <b id="sb-c-out">0</b></span><input type="range" id="sb-c" min="0" max="11" value="0"></label>
+        <label class="ctrl"><span>connPeripheralLatency <b id="sb-l-out">6</b></span><input type="range" id="sb-l" min="0" max="10" value="6"></label>
         <div class="ctrl"><span>데이터</span><div class="seg" id="sb-d"><button data-value="none" class="on">없음</button><button data-value="burst">이벤트 9에 한 번</button><button data-value="every">S마다</button></div></div>
       </div>
       <div class="sim-readout">
@@ -126,9 +126,9 @@
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>스케줄러 예시 모델: 1초 동안의 무선</h3></div>
       <div class="sim-view"><canvas id="cv-sch"></canvas></div>
       <div class="sim-controls">
-        <label class="ctrl"><span>연결 A 간격 <b id="sc-av">30 ms</b></span><input type="range" id="sc-a" min="6" max="80" value="24"></label>
-        <label class="ctrl"><span>연결 B 간격 <b id="sc-bv">50 ms</b></span><input type="range" id="sc-b" min="6" max="80" value="40"></label>
-        <label class="ctrl"><span>스캔 창 / 스캔 간격 <b id="sc-sv">30 / 100 ms</b></span><input type="range" id="sc-s" min="0" max="100" value="30"></label>
+        <label class="ctrl"><span>연결 A 간격 <b id="sc-a-out">30 ms</b></span><input type="range" id="sc-a" min="6" max="80" value="24"></label>
+        <label class="ctrl"><span>연결 B 간격 <b id="sc-b-out">50 ms</b></span><input type="range" id="sc-b" min="6" max="80" value="40"></label>
+        <label class="ctrl"><span>스캔 창 / 스캔 간격 <b id="sc-s-out">30 / 100 ms</b></span><input type="range" id="sc-s" min="0" max="100" value="30"></label>
         <div class="ctrl"><span>충돌 규칙</span><div class="seg" id="sc-r"><button data-value="fixed">고정 우선순위</button><button data-value="starve" class="on">굶은 만큼 올림</button></div></div>
       </div>
       <div class="sim-readout">

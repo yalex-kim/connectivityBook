@@ -79,7 +79,7 @@
       <div class="sim-controls" style="border-top:0">
         <div class="ctrl"><span>Central 주소 (UAP·LAP)</span><div class="seg" id="hp-a"><button data-value="00000000" class="on">0x00000000</button><button data-value="2a96ef25">0x2a96ef25</button><button data-value="6587cba9">0x6587cba9</button></div></div>
         <div class="ctrl"><span>채널 지도</span><div class="seg" id="hp-m"><button data-value="basic" class="on">기본(79)</button><button data-value="hi">0~21 미사용</button><button data-value="even">짝수만</button><button data-value="odd">홀수만</button></div></div>
-        <label class="ctrl"><span>시작 CLK <b id="hp-cv">0x0000010</b></span><input type="range" id="hp-c" min="0" max="31" value="0"></label>
+        <label class="ctrl"><span>시작 CLK <b id="hp-c-out">0x0000010</b></span><input type="range" id="hp-c" min="0" max="31" value="0"></label>
       </div>
       <div class="sim-view" style="padding:12px 16px">
         <div class="mono" id="hp-io"></div>
@@ -129,7 +129,7 @@
       <div class="sim-controls" style="border-top:0">
         <div class="ctrl"><span>패킷</span><div class="seg" id="pk-t"><button data-value="DH1" class="on">DH1 (FEC 없음)</button><button data-value="DM1">DM1 (2/3 FEC)</button></div></div>
         <div class="ctrl"><span>화이트닝</span><div class="seg" id="pk-w"><button data-value="off" class="on">끔 (사양 예)</button><button data-value="on">켬</button></div></div>
-        <label class="ctrl"><span>CLK₆₋₁ <b id="pk-cv">0</b></span><input type="range" id="pk-c" min="0" max="63" value="0"></label>
+        <label class="ctrl"><span>CLK₆₋₁ <b id="pk-c-out">0</b></span><input type="range" id="pk-c" min="0" max="63" value="0"></label>
       </div>
       <div class="sim-view" style="padding:12px 16px"><div class="mono" id="pk-io"></div></div>
       <div class="sim-readout">

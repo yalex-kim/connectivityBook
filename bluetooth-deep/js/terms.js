@@ -103,6 +103,12 @@ window.BD_TERMS = [
   ["UAP", "Upper Address Part", "BD_ADDR의 가운데 8비트. HEC·CRC 초기값, 도약 주소 A₂₇₋₂₄", "baseband"],
   ["HEC", "Header Error Check", "패킷 헤더 10비트에 붙는 8비트 검사. UAP로 초기화. [Vol 2] Part B §7.1.1", "baseband"],
   ["화이트닝", "Data whitening", "헤더·페이로드에 D⁷+D⁴+1 수열을 XOR해 같은 비트가 길게 이어지지 않게 함. FEC 전에 적용", "baseband"],
+  ["SAFER+", "SAFER+", "레거시 BR/EDR 키 함수(E1·E21·E22·E3)의 바탕인 128비트 블록 암호. A_r. [Vol 2] Part H §6.2", "classicsec"],
+  ["SSP", "Secure Simple Pairing", "ECDH와 HMAC-SHA-256으로 링크 키를 만드는 BR/EDR 페어링(2.1). 숫자 비교·Just Works·패스키·OOB. [Vol 2] Part H §7", "classicsec"],
+  ["ACO", "Authenticated Ciphering Offset", "장치 인증(E1·h5)의 부산물. 암호화 키(E3·h3)와 AES-CCM nonce의 IV에 쓰인다", "classicsec"],
+  ["SRES", "Signed Response", "장치 인증에서 상대가 돌려주는 32비트 응답. E1 또는 h5의 앞부분", "classicsec"],
+  ["IOcap", "IO capability data", "AuthReq·OOB 유무·IO 능력 3바이트. f3에 들어가 인증 방식 변조를 잡는다", "classicsec"],
+  ["Secure Connections Only", "Secure Connections Only mode", "모든 서비스에 보안 모드 4 레벨 4(P-256 인증 키, AES-CCM)를 요구하는 GAP 모드. [Vol 3] Part C §5.2.2", "classicsec"],
 ];
 
 /* 본문 표기 → 용어집 표제어 */

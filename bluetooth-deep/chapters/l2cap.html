@@ -93,9 +93,9 @@
       <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>SDU 하나가 각 층에서 몇 조각이 되나</h3></div>
       <div class="sim-view"><canvas id="cv-seg"></canvas><div class="blk" id="sg-out" style="margin:0 14px 14px"></div></div>
       <div class="sim-controls">
-        <label class="ctrl"><span>SDU <b id="sg-sv">1000</b> 바이트</span><input type="range" id="sg-s" min="1" max="4000" value="1000"></label>
-        <label class="ctrl"><span>상대 MPS <b id="sg-mv">247</b></span><input type="range" id="sg-m" min="23" max="512" value="247"></label>
-        <label class="ctrl"><span>HCI ACL 버퍼(LE_ACL_Data_Packet_Length) <b id="sg-hv">251</b></span><input type="range" id="sg-h" min="27" max="512" value="251"></label>
+        <label class="ctrl"><span>SDU <b id="sg-s-out">1000</b> 바이트</span><input type="range" id="sg-s" min="1" max="4000" value="1000"></label>
+        <label class="ctrl"><span>상대 MPS <b id="sg-m-out">247</b></span><input type="range" id="sg-m" min="23" max="512" value="247"></label>
+        <label class="ctrl"><span>HCI ACL 버퍼(LE_ACL_Data_Packet_Length) <b id="sg-h-out">251</b></span><input type="range" id="sg-h" min="27" max="512" value="251"></label>
         <div class="ctrl"><span>LL 최대 페이로드(데이터 길이 갱신)</span><div class="seg" id="sg-l"><button data-value="27">27</button><button data-value="251" class="on">251</button></div></div>
       </div>
       <div class="sim-readout">
@@ -121,10 +121,10 @@
     <div class="sim" id="sim-rcf">
       <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>ECFC 재설정 요청 검사</h3></div>
       <div class="sim-controls" style="border-top:0">
-        <label class="ctrl"><span>채널 수 <b id="rc-nv">2</b></span><input type="range" id="rc-n" min="1" max="5" value="2"></label>
-        <label class="ctrl"><span>지금 MTU / MPS <b id="rc-cv">256 / 128</b></span><input type="range" id="rc-c" min="64" max="512" step="16" value="256"></label>
-        <label class="ctrl"><span>새 MTU <b id="rc-mv">512</b></span><input type="range" id="rc-m" min="64" max="1024" step="16" value="512"></label>
-        <label class="ctrl"><span>새 MPS <b id="rc-pv">128</b></span><input type="range" id="rc-p" min="64" max="512" step="16" value="128"></label>
+        <label class="ctrl"><span>채널 수 <b id="rc-n-out">2</b></span><input type="range" id="rc-n" min="1" max="5" value="2"></label>
+        <label class="ctrl"><span>지금 MTU / MPS <b id="rc-c-out">256 / 128</b></span><input type="range" id="rc-c" min="64" max="512" step="16" value="256"></label>
+        <label class="ctrl"><span>새 MTU <b id="rc-m-out">512</b></span><input type="range" id="rc-m" min="64" max="1024" step="16" value="512"></label>
+        <label class="ctrl"><span>새 MPS <b id="rc-p-out">128</b></span><input type="range" id="rc-p" min="64" max="512" step="16" value="128"></label>
       </div>
       <div class="sim-readout">
         <div class="stat"><span class="k">요청</span><span class="v" id="rc-ok" style="font-size:15px">—</span></div>

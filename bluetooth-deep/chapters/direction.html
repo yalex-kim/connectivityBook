@@ -60,7 +60,7 @@
     <div class="sim" id="sim-cte">
       <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>CTE 배치와 IQ 표본 수</h3></div>
       <div class="sim-controls" style="border-top:0">
-        <label class="ctrl"><span>CTETime <b id="ct-tv">20</b> (× 8 µs)</span><input type="range" id="ct-t" min="2" max="20" value="20"></label>
+        <label class="ctrl"><span>CTETime <b id="ct-t-out">20</b> (× 8 µs)</span><input type="range" id="ct-t" min="2" max="20" value="20"></label>
         <div class="ctrl"><span>슬롯 길이</span><div class="seg" id="ct-s"><button data-value="2" class="on">2 µs (필수)</button><button data-value="1">1 µs (선택)</button></div></div>
         <div class="ctrl"><span>전환 패턴</span><div class="seg" id="ct-p"><button data-value="1,2,3,4" class="on">1-2-3-4</button><button data-value="1,2">1-2</button><button data-value="1,3,2,4,3">1-3-2-4-3</button></div></div>
       </div>
@@ -110,9 +110,9 @@
     <div class="sim" id="sim-aoa">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>4안테나 일렬 배열 AoA (이상적 신호)</h3></div>
       <div class="sim-controls" style="border-top:0">
-        <label class="ctrl"><span>실제 각도 <b id="ao-av">30°</b></span><input type="range" id="ao-a" min="-80" max="80" value="30"></label>
-        <label class="ctrl"><span>톤 주파수 오프셋 <b id="ao-fv">250 kHz</b></span><input type="range" id="ao-f" min="200" max="300" value="250"></label>
-        <label class="ctrl"><span>안테나 간격 <b id="ao-dv">0.50 λ</b></span><input type="range" id="ao-d" min="30" max="100" value="50"></label>
+        <label class="ctrl"><span>실제 각도 <b id="ao-a-out">30°</b></span><input type="range" id="ao-a" min="-80" max="80" value="30"></label>
+        <label class="ctrl"><span>톤 주파수 오프셋 <b id="ao-f-out">250 kHz</b></span><input type="range" id="ao-f" min="200" max="300" value="250"></label>
+        <label class="ctrl"><span>안테나 간격 <b id="ao-d-out">0.50 λ</b></span><input type="range" id="ao-d" min="30" max="100" value="50"></label>
         <div class="ctrl"><span>슬롯</span><div class="seg" id="ao-s"><button data-value="2" class="on">2 µs</button><button data-value="1">1 µs</button></div></div>
       </div>
       <div class="sim-view" style="padding:10px 16px"><svg class="iq" id="ao-svg" viewBox="-110 -110 220 220" role="img" aria-label="IQ 평면의 표본"></svg></div>

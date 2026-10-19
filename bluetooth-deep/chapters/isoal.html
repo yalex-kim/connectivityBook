@@ -64,11 +64,11 @@
       <div class="sim-head"><span class="sim-tag">WORKBENCH</span><h3>SDU 박자 → 프레임 있는 PDU (분할 모드)</h3></div>
       <div class="sim-view" style="padding:14px 16px"><div class="blk" id="sg-out"></div></div>
       <div class="sim-controls">
-        <label class="ctrl"><span>SDU 간격 <b id="sg-iv">7.5 ms</b></span><input type="range" id="sg-i" min="0" max="2" value="0"></label>
-        <label class="ctrl"><span>ISO 간격 <b id="sg-ov">10 ms</b></span><input type="range" id="sg-o" min="0" max="2" value="1"></label>
-        <label class="ctrl"><span>SDU 크기 <b id="sg-sv">40</b> 바이트</span><input type="range" id="sg-s" min="10" max="120" value="40"></label>
-        <label class="ctrl"><span>Max_PDU <b id="sg-pv">64</b></span><input type="range" id="sg-p" min="20" max="251" value="64"></label>
-        <label class="ctrl"><span>BN <b id="sg-bv">1</b></span><input type="range" id="sg-b" min="1" max="4" value="1"></label>
+        <label class="ctrl"><span>SDU 간격 <b id="sg-i-out">7.5 ms</b></span><input type="range" id="sg-i" min="0" max="2" value="0"></label>
+        <label class="ctrl"><span>ISO 간격 <b id="sg-o-out">10 ms</b></span><input type="range" id="sg-o" min="0" max="2" value="1"></label>
+        <label class="ctrl"><span>SDU 크기 <b id="sg-s-out">40</b> 바이트</span><input type="range" id="sg-s" min="10" max="120" value="40"></label>
+        <label class="ctrl"><span>Max_PDU <b id="sg-p-out">64</b></span><input type="range" id="sg-p" min="20" max="251" value="64"></label>
+        <label class="ctrl"><span>BN <b id="sg-b-out">1</b></span><input type="range" id="sg-b" min="1" max="4" value="1"></label>
       </div>
       <div class="sim-readout">
         <div class="stat"><span class="k">대역 조건 BN×(Max_PDU−2) ≥ F×(5 + Max_SDU)</span><span class="v" id="sg-c" style="font-size:14px">—</span></div>
@@ -88,12 +88,12 @@
     <div class="sim" id="sim-cfg">
       <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>ISOAL 설정 점검과 전송 지연</h3></div>
       <div class="sim-controls" style="border-top:0">
-        <label class="ctrl"><span>SDU 간격 (ms) <b id="cf-iv">10</b></span><input type="range" id="cf-i" min="0" max="3" value="1"></label>
-        <label class="ctrl"><span>ISO 간격 (ms) <b id="cf-ov">10</b></span><input type="range" id="cf-o" min="0" max="3" value="1"></label>
-        <label class="ctrl"><span>Max_SDU <b id="cf-sv">40</b></span><input type="range" id="cf-s" min="20" max="155" value="40"></label>
-        <label class="ctrl"><span>Max_PDU <b id="cf-pv">40</b></span><input type="range" id="cf-p" min="20" max="251" value="40"></label>
-        <label class="ctrl"><span>FT(재전송 이벤트 수) <b id="cf-fv">2</b></span><input type="range" id="cf-f" min="1" max="8" value="2"></label>
-        <label class="ctrl"><span>CIG_Sync_Delay (ms) <b id="cf-dv">2</b></span><input type="range" id="cf-d" min="1" max="20" value="2"></label>
+        <label class="ctrl"><span>SDU 간격 (ms) <b id="cf-i-out">10</b></span><input type="range" id="cf-i" min="0" max="3" value="1"></label>
+        <label class="ctrl"><span>ISO 간격 (ms) <b id="cf-o-out">10</b></span><input type="range" id="cf-o" min="0" max="3" value="1"></label>
+        <label class="ctrl"><span>Max_SDU <b id="cf-s-out">40</b></span><input type="range" id="cf-s" min="20" max="155" value="40"></label>
+        <label class="ctrl"><span>Max_PDU <b id="cf-p-out">40</b></span><input type="range" id="cf-p" min="20" max="251" value="40"></label>
+        <label class="ctrl"><span>FT(재전송 이벤트 수) <b id="cf-f-out">2</b></span><input type="range" id="cf-f" min="1" max="8" value="2"></label>
+        <label class="ctrl"><span>CIG_Sync_Delay (ms) <b id="cf-d-out">2</b></span><input type="range" id="cf-d" min="1" max="20" value="2"></label>
       </div>
       <div class="sim-view" style="padding:12px 16px"><div class="blk" id="cf-out"></div></div>
       <div class="sim-note">CIS 센트럴 → 페리페럴 방향의 전송 지연. 프레임 없음: CIG_Sync_Delay + FT × ISO_Interval − SDU_Interval. 프레임 있음: CIG_Sync_Delay + FT × ISO_Interval + (분할 모드면 SDU_Interval, 비분할이면 0). 해볼 것: ① 10/10, 40/40이면 프레임 없음 BN 1, UPPS 1. ② SDU 10, ISO 20이면 USPI 2(사양의 예: SDU 두 개를 묶느라 10 ms 더). ③ SDU 7.5, ISO 10이면 프레임 없음은 불가. 분할 모드는 SDU 간격만큼 더 늦다.</div>

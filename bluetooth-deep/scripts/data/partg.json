@@ -210,5 +210,1095 @@
 "61654b a bf2885e134a9a18d 5",
 "61650c a ec4c69b54c29a18d 5"
 ]
+},
+"legacy": {
+"_source": "[Vol 2] Part G §10.1–§10.5 (E1, E21, E22, E3). Bytes: index 0 leftmost",
+"sets": {
+"e1": [
+{
+"rand": "00000000000000000000000000000000",
+"address": "000000000000",
+"key": "00000000000000000000000000000000",
+"sres": "056c0fe6",
+"aco": "48afcdd4bd40fef76693b113"
+},
+{
+"rand": "bc3f30689647c8d7c5a03ca80a91eceb",
+"address": "7ca89b233c2d",
+"key": "159dd9f43fc3d328efba0cd8a861fa57",
+"sres": "8d5205c5",
+"aco": "3ed75df4abd9af638d144e94"
+},
+{
+"rand": "0891caee063f5da1809577ff94ccdcfb",
+"address": "c62f19f6ce98",
+"key": "45298d06e46bac21421ddfbed94c032b",
+"sres": "00507e5f",
+"aco": "2a5f19fbf60907e69f39ca9f"
+},
+{
+"rand": "0ecd61782b4128480c05dc45542b1b8c",
+"address": "f428f0e624b3",
+"key": "35949a914225fabad91995d226de1d92",
+"sres": "80e5629c",
+"aco": "a6fe4dcde3924611d3cc6ba1"
+}
+],
+"e21": [
+{
+"rand": "00000000000000000000000000000000",
+"address": "000000000000",
+"Ka": "d14ca028545ec262cee700e39b5c39ee"
+},
+{
+"rand": "2dd9a550343191304013b2d7e1189d09",
+"address": "cac4364303b6",
+"Ka": "e62f8bac609139b3999aedbc9d228042"
+},
+{
+"rand": "dab3cffe9d5739d1b7bf4a667ae5ee24",
+"address": "02f8fd4cd661",
+"Ka": "b0376d0a9b338c2e133c32b69cb816b3"
+},
+{
+"rand": "13ecad08ad63c37f8a54dc56e82f4dc1",
+"address": "9846c5ead4d9",
+"Ka": "5b61e83ad04d23e9d1c698851fa30447"
+}
+],
+"e22": [
+{
+"rand": "001de169248850245a5f7cc7f0d6d633",
+"PIN": "d5a51083a04a1971f18649ea8b79311a",
+"Ka": "539e4f2732e5ae2de1e0401f0813bd0d"
+},
+{
+"rand": "67ed56bfcf99825f0c6b349369da30ab",
+"PIN": "7885b515e84b1f082cc499976f1725ce",
+"Ka": "04435771e03a9daceb8bb1a493ee9bd8"
+},
+{
+"rand": "40a94509238664f244ff8e3d13b119d3",
+"PIN": "1ce44839badde30396d03c4c36f23006",
+"Ka": "9cde4b60f9b5861ed9df80858bac6f7f"
+},
+{
+"rand": "24b101fd56117d42c0545a4247357048",
+"PIN": "fd397c7f5c1f937cdf82d8816cc377e2",
+"Ka": "a5f2adf328e4e6a2b42f19c8b74ba884"
+},
+{
+"rand": "321964061ac49a436f9fb9824ac63f8b",
+"PIN": "ad955d58b6b8857820ac1262d617a6",
+"address": "0314c0642543",
+"Ka": "c0ec1a5694e2b48d54297911e6c98b8f"
+},
+{
+"rand": "d4ae20c80094547d7051931b5cc2a8d6",
+"PIN": "e1232e2c5f3b833b3309088a87b6",
+"address": "fabecc58e609",
+"Ka": "d7b39be13e3692c65b4a9e17a9c55e17"
+},
+{
+"rand": "272b73a2e40db52a6a61c6520549794a",
+"PIN": "549f2694f353f5145772d8ae1e",
+"address": "20487681eb9f",
+"Ka": "9ac64309a37c25c3b4a584fc002a1618"
+},
+{
+"rand": "7edb65f01a2f45a2bc9b24fb3390667e",
+"PIN": "2e5a42797958557b23447ca8",
+"address": "04f0d2737f02",
+"Ka": "d3af4c81e3f482f062999dee7882a73b"
+},
+{
+"rand": "26a92358294dce97b1d79ec32a67e81a",
+"PIN": "05fbad03f52fa9324f7732",
+"address": "b9ac071f9d70",
+"Ka": "be87b44d079d45a08a71d15208c5cb50"
+},
+{
+"rand": "0edef05327eab5262430f21fc91ce682",
+"PIN": "8210e47390f3f48c32b3",
+"address": "7a3cdfe377d1",
+"Ka": "bf0706d76ec3b11cce724b311bf71ff5"
+},
+{
+"rand": "86290e2892f278ff6c3fb917b020576a",
+"PIN": "3dcdffcfd086802107",
+"address": "791a6a2c5cc3",
+"Ka": "cdb0cc68f6f6fbd70b46652de3ef3ffb"
+},
+{
+"rand": "3ab52a65bb3b24a08eb6cd284b4b9d4b",
+"PIN": "d0fb9b6838d464d8",
+"address": "25a868db91ab",
+"Ka": "983218718ca9aa97892e312d86dd9516"
+},
+{
+"rand": "a6dc447ff08d4b366ff96e6cf207e179",
+"PIN": "9c57e10b4766cc",
+"address": "54ebd9328cb6",
+"Ka": "9cd6650ead86323e87cafb1ff516d1e0"
+},
+{
+"rand": "3348470a7ea6cc6eb81b40472133262c",
+"PIN": "fcad169d7295",
+"address": "430d572f8842",
+"Ka": "98f1543ab4d87bd5ef5296fb5e3d3a21"
+},
+{
+"rand": "0f5bb150b4371ae4e5785293d22b7b0c",
+"PIN": "b10d068bca",
+"address": "b44775199f29",
+"Ka": "c55070b72bc982adb972ed05d1a74ddb"
+},
+{
+"rand": "148662a4baa73cfadb55489159e476e1",
+"PIN": "fb20f177",
+"address": "a683bd0b1896",
+"Ka": "7ec864df2f1637c7e81f2319ae8f4671"
+},
+{
+"rand": "193a1b84376c88882c8d3b4ee93ba8d5",
+"PIN": "a123b9",
+"address": "4459a44610f6",
+"Ka": "ac0daabf17732f632e34ef193658bf5d"
+},
+{
+"rand": "1453db4d057654e8eb62d7d62ec3608c",
+"PIN": "3eaf",
+"address": "411fbbb51d1e",
+"Ka": "1674f9dc2063cc2b83d3ef8ba692ebef"
+},
+{
+"rand": "1313f7115a9db842fcedc4b10088b48d",
+"PIN": "6d",
+"address": "008aa9be62d5",
+"Ka": "38ec0258134ec3f08461ae5c328968a1"
+}
+],
+"e3": [
+{
+"rand": "00000000000000000000000000000000",
+"aco": "48afcdd4bd40fef76693b113",
+"key": "00000000000000000000000000000000",
+"K_enc": "cc802aecc7312285912e90af6a1e1154"
+},
+{
+"rand": "950e604e655ea3800fe3eb4a28918087",
+"aco": "68f4f472b5586ac5850f5f74",
+"key": "34e86915d20c485090a6977931f96df5",
+"K_enc": "c1beafea6e747e304cf0bd7734b0a9e2"
+},
+{
+"rand": "6a8ebcf5e6e471505be68d5eb8a3200c",
+"aco": "658d791a9554b77c0b2f7b9f",
+"key": "35cf77b333c294671d426fa79993a133",
+"K_enc": "a3032b4df1cceba8adc1a04427224299"
+},
+{
+"rand": "5ecd6d75db322c75b6afbd799cb18668",
+"aco": "63f701c7013238bbf88714ee",
+"key": "b9f90c53206792b1826838b435b87d4d",
+"K_enc": "ea520cfc546b00eb7c3a6cea3ecb39ed"
+}
+]
+}
+},
+"ssp": {
+"_source": "[Vol 2] Part G §7.1 (ECDH) and §7.2 (f1, g, f2, f3, h3, h4, h5). Big-endian hex",
+"ec": [
+{
+"Private A": "07915f86918ddc27005df1d6cf0c142b625ed2eff4a518ff",
+"Private B": "1e636ca790b50f68f15d8dbe86244e309211d635de00e16d",
+"Public A(x)": "15207009984421a6586f9fc3fe7e4329d2809ea51125f8ed",
+"Public A(y)": "b09d42b81bc5bd009f79e4b59dbbaa857fca856fb9f7ea25",
+"DHKey": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"curve": "P-192"
+},
+{
+"Private A": "52ec1ca6e0ec973c29065c3ca10be80057243002f09bb43e",
+"Private B": "57231203533e9efe18cc622fd0e34c6a29c6e0fa3ab3bc53",
+"Public A(x)": "45571f027e0d690795d61560804da5de789a48f94ab4b07e",
+"Public A(y)": "0220016e8a6bce74b45ffec1e664aaa0273b7cbd907a8e2b",
+"DHKey": "a20a34b5497332aa7a76ab135cc0c168333be309d463c0c0",
+"curve": "P-192"
+},
+{
+"Private A": "00a0df08eaf51e6e7be519d67c6749ea3f4517cdd2e9e821",
+"Private B": "2bf5e0d1699d50ca5025e8e2d9b13244b4d322a328be1821",
+"Public A(x)": "2ed35b430fa45f9d329186d754eeeb0495f0f653127f613d",
+"Public A(y)": "27e08db74e424395052ddae7e3d5a8fecb52a8039b735b73",
+"DHKey": "3b3986ba70790762f282a12a6d3bcae7a2ca01e25b87724e",
+"curve": "P-192"
+},
+{
+"Private A": "030a4af66e1a4d590a83e0284fca5cdf83292b84f4c71168",
+"Private B": "12448b5c69ecd10c0471060f2bf86345c5e83c03d16bae2c",
+"Public A(x)": "f24a6899218fa912e7e4a8ba9357cb8182958f9fa42c968c",
+"Public A(y)": "7c0b8a9ebe6ea92e968c3a65f9f1a9716fe826ad88c97032",
+"DHKey": "4a78f83fba757c35f94abea43e92effdd2bc700723c61939",
+"curve": "P-192"
+},
+{
+"Private A": "604df406c649cb460be16244589a40895c0db7367dc11a2f",
+"Private B": "526c2327303cd505b9cf0c012471902bb9e842ce32b0addc",
+"Public A(x)": "cbe3c629aceb41b73d475a79fbfe8c08cdc80ceec00ee7c9",
+"Public A(y)": "f9f70f7ae42abda4f33af56f7f6aa383354e453fa1a2bd18",
+"DHKey": "64d4fe35567e6ea0ca31f947e1533a635436d4870ce88c45",
+"curve": "P-192"
+},
+{
+"Private A": "1a2c582a09852979eb2cee18fb0befb9a55a6d06f6a8fad3",
+"Private B": "243778916920d68df535955bc1a3cccd5811133a8205ae41",
+"Public A(x)": "eca2d8d30bbef3ba8b7d591fdb98064a6c7b870cdcebe67c",
+"Public A(y)": "2e4163a44f3ae26e70dae86f1bf786e1a5db5562a8ed9fee",
+"DHKey": "6433b36a7e9341940e78a63e31b3cf023282f7f1e3bf83bd",
+"curve": "P-192"
+},
+{
+"Private A": "0f494dd08b493edb07228058a9f30797ff147a5a2adef9b3",
+"Private B": "2da4cd46d9e06e81b1542503f2da89372e927877becec1be",
+"Public A(x)": "9f56a8aa27346d66652a546abacc7d69c17fd66e0853989f",
+"Public A(y)": "d7234c1464882250df7bbe67e0fa22aae475dc58af0c4210",
+"DHKey": "c67beda9baf3c96a30616bf87a7d0ae704bc969e5cad354b",
+"curve": "P-192"
+},
+{
+"Private A": "7381d2bc6ddecb65126564cb1af6ca1985d19fb57f0fff16",
+"Private B": "18e276beff75adc3d520badb3806822e1c820f1064447848",
+"Public A(x)": "61c7f3c6f9e09f41423dce889de1973d346f2505a5a3b19b",
+"Public A(y)": "919972ff4cd6aed8a4821e3adc358b41f7be07ede20137df",
+"DHKey": "6931496eef2fcfb03e0b1eef515dd4e1b0115b8b241b0b84",
+"curve": "P-192"
+},
+{
+"Private A": "41c7b484ddc37ef6b7952c379f87593789dac6e4f3d8d8e6",
+"Private B": "33e4eaa77f78216e0e99a9b200f81d2ca20dc74ad62d9b78",
+"Public A(x)": "9f09c773adb8e7b66b5d986cd15b143341a66d824113c15f",
+"Public A(y)": "d2000a91738217ab8070a76c5f96c03de317dfab774f4837",
+"DHKey": "a518f3826bb5fa3d5bc37da4217296d5b6af51e5445c6625",
+"curve": "P-192"
+},
+{
+"Private A": "703cf5ee9c075f7726d0bb36d131c664f5534a6e6305d631",
+"Private B": "757291c620a0e7e9dd13ce09ceb729c0ce1980e64d569b5f",
+"Public A(x)": "fa2b96d382cf894aeeb0bd985f3891e655a6315cd5060d03",
+"Public A(y)": "f7e8206d05c7255300cc56c88448158c497f2df596add7a2",
+"DHKey": "12a3343bb453bb5408da42d20c2d0fcc18ff078f56d9c68c",
+"curve": "P-192"
+},
+{
+"Private A": "3f49f6d4a3c55f3874c9b3e3d2103f504aff607beb40b7995899b8a6cd3c1abd",
+"Private B": "55188b3d32f6bb9a900afcfbeed4e72a59cb9ac2f19d7cfb6b4fdd49f47fc5fd",
+"Public A(x)": "20b003d2f297be2c5e2c83a7e9f9a5b9eff49111acf4fddbcc0301480e359de6",
+"Public A(y)": "dc809c49652aeb6d63329abf5a52155c766345c28fed3024741c8ed01589d28b",
+"Public B(x)": "1ea1f0f01faf1d9609592284f19e4c0047b58afd8615a69f559077b22faaa190",
+"Public B(y)": "4c55f33e429dad377356703a9ab85160472d1130e28e36765f89aff915b1214a",
+"DHKey": "ec0234a357c8ad05341010a60a397d9b99796b13b4f866f1868d34f373bfa698",
+"curve": "P-256"
+},
+{
+"Private A": "06a516693c9aa31a6084545d0c5db641b48572b97203ddffb7ac73f7d0457663",
+"Private B": "529aa0670d72cd6497502ed473502b037e8803b5c60829a5a3caa219505530ba",
+"Public A(x)": "2c31a47b5779809ef44cb5eaaf5c3e43d5f8faad4a8794cb987e9b03745c78dd",
+"Public A(y)": "919512183898dfbecd52e2408e43871fd021109117bd3ed4eaf8437743715d4f",
+"Public B(x)": "f465e43ff23d3f1b9dc7dfc04da8758184dbc966204796eccf0d6cf5e16500cc",
+"Public B(y)": "0201d048bcbbd899eeefc424164e33c201c2b010ca6b4d43a8a155cad8ecb279",
+"DHKey": "ab85843a2f6d883f62e5684b38e307335fe6e1945ecd19604105c6f23221eb69",
+"curve": "P-256"
+}
+],
+"hash": [
+{
+"U": "15207009984421a6586f9fc3fe7e4329d2809ea51125f8ed",
+"V": "356b31938421fbbf2fb331c89fd588a69367e9a833f56812",
+"X": "d5cb8454d177733effffb2ec712baeab",
+"Z": "00",
+"output": "1bdc955a9d542ffc9f9e670cdf665010",
+"fn": "f1",
+"curve": "P-192"
+},
+{
+"U": "15207009984421a6586f9fc3fe7e4329d2809ea51125f8ed",
+"V": "356b31938421fbbf2fb331c89fd588a69367e9a833f56812",
+"X": "d5cb8454d177733effffb2ec712baeab",
+"Z": "80",
+"output": "611325ebcb6e5269b868113306095fa6",
+"fn": "f1",
+"curve": "P-192"
+},
+{
+"U": "15207009984421a6586f9fc3fe7e4329d2809ea51125f8ed",
+"V": "356b31938421fbbf2fb331c89fd588a69367e9a833f56812",
+"X": "d5cb8454d177733effffb2ec712baeab",
+"Z": "81",
+"output": "b68df39fd8a406b06a6c517d3666cf91",
+"fn": "f1",
+"curve": "P-192"
+},
+{
+"U": "356b31938421fbbf2fb331c89fd588a69367e9a833f56812",
+"V": "15207009984421a6586f9fc3fe7e4329d2809ea51125f8ed",
+"X": "d5cb8454d177733effffb2ec712baeab",
+"Z": "00",
+"output": "f4e1ec4b88f305e81477627b1643a927",
+"fn": "f1",
+"curve": "P-192"
+},
+{
+"U": "356b31938421fbbf2fb331c89fd588a69367e9a833f56812",
+"V": "15207009984421a6586f9fc3fe7e4329d2809ea51125f8ed",
+"X": "d5cb8454d177733effffb2ec712baeab",
+"Z": "80",
+"output": "ac6aa7cfa96ae99dd3a74225adb068ae",
+"fn": "f1",
+"curve": "P-192"
+},
+{
+"U": "356b31938421fbbf2fb331c89fd588a69367e9a833f56812",
+"V": "15207009984421a6586f9fc3fe7e4329d2809ea51125f8ed",
+"X": "d5cb8454d177733effffb2ec712baeab",
+"Z": "81",
+"output": "5ad4721258aa1fa06082edad980d0cc5",
+"fn": "f1",
+"curve": "P-192"
+},
+{
+"U": "15207009984421a6586f9fc3fe7e4329d2809ea51125f8ed",
+"V": "15207009984421a6586f9fc3fe7e4329d2809ea51125f8ed",
+"X": "d5cb8454d177733effffb2ec712baeab",
+"Z": "00",
+"output": "49125fc1e8cdc615826c15e5d23ede41",
+"fn": "f1",
+"curve": "P-192"
+},
+{
+"U": "356b31938421fbbf2fb331c89fd588a69367e9a833f56812",
+"V": "356b31938421fbbf2fb331c89fd588a69367e9a833f56812",
+"X": "d5cb8454d177733effffb2ec712baeab",
+"Z": "80",
+"output": "159f204c520565175c2b9c523acad2eb",
+"fn": "f1",
+"curve": "P-192"
+},
+{
+"U": "356b31938421fbbf2fb331c89fd588a69367e9a833f56812",
+"V": "356b31938421fbbf2fb331c89fd588a69367e9a833f56812",
+"X": "d5cb8454d177733effffb2ec712baeab",
+"Z": "81",
+"output": "9a162ff9a8235e5b12539ba0ff9179da",
+"fn": "f1",
+"curve": "P-192"
+},
+{
+"U": "20b003d2f297be2c5e2c83a7e9f9a5b9eff49111acf4fddbcc0301480e359de6",
+"V": "55188b3d32f6bb9a900afcfbeed4e72a59cb9ac2f19d7cfb6b4fdd49f47fc5fd",
+"X": "d5cb8454d177733effffb2ec712baeab",
+"Z": "00",
+"output": "D301CE92CC7B9E3F51D2924B8B33FACA",
+"fn": "f1",
+"curve": "P-256"
+},
+{
+"U": "20b003d2f297be2c5e2c83a7e9f9a5b9eff49111acf4fddbcc0301480e359de6",
+"V": "55188b3d32f6bb9a900afcfbeed4e72a59cb9ac2f19d7cfb6b4fdd49f47fc5fd",
+"X": "d5cb8454d177733effffb2ec712baeab",
+"Z": "80",
+"output": "7E431112C10DE8A3984C8AC8149FF6EC",
+"fn": "f1",
+"curve": "P-256"
+},
+{
+"U": "15207009984421a6586f9fc3fe7e4329d2809ea51125f8ed",
+"V": "356b31938421fbbf2fb331c89fd588a69367e9a833f56812",
+"X": "d5cb8454d177733effffb2ec712baeab",
+"Y": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"output": "52146a1e",
+"fn": "g",
+"curve": "P-192"
+},
+{
+"U": "20b003d2f297be2c5e2c83a7e9f9a5b9eff49111acf4fddbcc0301480e359de6",
+"V": "55188b3d32f6bb9a900afcfbeed4e72a59cb9ac2f19d7cfb6b4fdd49f47fc5fd",
+"X": "d5cb8454d177733effffb2ec712baeab",
+"Y": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"output": "000240E0",
+"fn": "g",
+"curve": "P-256"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "d5cb8454d177733effffb2ec712baeab",
+"N2": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"keyID": "62746c6b",
+"A1": "56123737bfce",
+"A2": "a713702dcfc1",
+"output": "c234c1198f3b520186ab92a2f874934e",
+"fn": "f2",
+"curve": "P-192"
+},
+{
+"W": "ec0234a357c8ad05341010a60a397d9b99796b13b4f866f1868d34f373bfa698",
+"N1": "d5cb8454d177733effffb2ec712baeab",
+"N2": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"keyID": "62746c6b",
+"A1": "56123737bfce",
+"A2": "a713702dcfc1",
+"output": "47300bb95c7404129450674b1741104d",
+"fn": "f2",
+"curve": "P-256"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "d5cb8454d177733effffb2ec712baeab",
+"N2": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "000000",
+"A1": "56123737bfce",
+"A2": "a713702dcfc1",
+"output": "5e6a346b8add7ee80e7ec0c2461b1509",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "d5cb8454d177733effffb2ec712baeab",
+"N2": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "000001",
+"A1": "56123737bfce",
+"A2": "a713702dcfc1",
+"output": "7840e5445a13e3ce6e48a2decbe51482",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "d5cb8454d177733effffb2ec712baeab",
+"N2": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "000002",
+"A1": "56123737bfce",
+"A2": "a713702dcfc1",
+"output": "da9afb5c6c9dbe0af4722b532520c4b3",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "d5cb8454d177733effffb2ec712baeab",
+"N2": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "000003",
+"A1": "56123737bfce",
+"A2": "a713702dcfc1",
+"output": "2c0f220c50075285852e01bcee4b5f90",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "d5cb8454d177733effffb2ec712baeab",
+"N2": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "000100",
+"A1": "56123737bfce",
+"A2": "a713702dcfc1",
+"output": "0a096af0fa61dce0933987febe95fc7d",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "d5cb8454d177733effffb2ec712baeab",
+"N2": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "000101",
+"A1": "56123737bfce",
+"A2": "a713702dcfc1",
+"output": "49b8d74007888e770e1a49d6810069b9",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "d5cb8454d177733effffb2ec712baeab",
+"N2": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "000102",
+"A1": "56123737bfce",
+"A2": "a713702dcfc1",
+"output": "309cd0327dec2514894a0c88b101a436",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "d5cb8454d177733effffb2ec712baeab",
+"N2": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "000103",
+"A1": "56123737bfce",
+"A2": "a713702dcfc1",
+"output": "4512274ba875b156c2187e2061b90434",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"N2": "d5cb8454d177733effffb2ec712baeab",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "000000",
+"A1": "a713702dcfc1",
+"A2": "56123737bfce",
+"output": "8d56dc59e70855f563b5e85e42d5964e",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"N2": "d5cb8454d177733effffb2ec712baeab",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "000001",
+"A1": "a713702dcfc1",
+"A2": "56123737bfce",
+"output": "c92fdacbf0ce931e9c4087a9dfb7bc0b",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"N2": "d5cb8454d177733effffb2ec712baeab",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "000002",
+"A1": "a713702dcfc1",
+"A2": "56123737bfce",
+"output": "52ac910200dc34285bbbf2144883c498",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"N2": "d5cb8454d177733effffb2ec712baeab",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "000003",
+"A1": "a713702dcfc1",
+"A2": "56123737bfce",
+"output": "c419d677e0d426e6bb36de5fa54c5041",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"N2": "d5cb8454d177733effffb2ec712baeab",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "000100",
+"A1": "a713702dcfc1",
+"A2": "56123737bfce",
+"output": "fb0e1f9f7c623c1bf2675fcff1551137",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"N2": "d5cb8454d177733effffb2ec712baeab",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "000101",
+"A1": "a713702dcfc1",
+"A2": "56123737bfce",
+"output": "16c7be68184f1170fbbb2bef5a9c515d",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"N2": "d5cb8454d177733effffb2ec712baeab",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "000102",
+"A1": "a713702dcfc1",
+"A2": "56123737bfce",
+"output": "24849f33d3ac05fef9034c18d9adb310",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"N2": "d5cb8454d177733effffb2ec712baeab",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "000103",
+"A1": "a713702dcfc1",
+"A2": "56123737bfce",
+"output": "e0f484bb0b071483285903e85094046b",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "d5cb8454d177733effffb2ec712baeab",
+"N2": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "010000",
+"A1": "56123737bfce",
+"A2": "a713702dcfc1",
+"output": "4bf22677415ed90aceb21873c71c1884",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "d5cb8454d177733effffb2ec712baeab",
+"N2": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "010001",
+"A1": "56123737bfce",
+"A2": "a713702dcfc1",
+"output": "0d4b97992eb570efb369cfe45e1681b5",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "d5cb8454d177733effffb2ec712baeab",
+"N2": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "010002",
+"A1": "56123737bfce",
+"A2": "a713702dcfc1",
+"output": "0f0906bbfa75e95c471e97c4211b2741",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "d5cb8454d177733effffb2ec712baeab",
+"N2": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "010003",
+"A1": "56123737bfce",
+"A2": "a713702dcfc1",
+"output": "88f1f60ce1ff4bf8aa08a170dd061d4e",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "d5cb8454d177733effffb2ec712baeab",
+"N2": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "010100",
+"A1": "56123737bfce",
+"A2": "a713702dcfc1",
+"output": "940f88f25317c358d9bd2f146778e36b",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "d5cb8454d177733effffb2ec712baeab",
+"N2": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "010101",
+"A1": "56123737bfce",
+"A2": "a713702dcfc1",
+"output": "591396355ac4dc72be05a15e718ec945",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "d5cb8454d177733effffb2ec712baeab",
+"N2": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "010102",
+"A1": "56123737bfce",
+"A2": "a713702dcfc1",
+"output": "a3dc055f656abb1d6e11d3f37340189a",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "d5cb8454d177733effffb2ec712baeab",
+"N2": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "010103",
+"A1": "56123737bfce",
+"A2": "a713702dcfc1",
+"output": "fd5412a22ba5dd893852608f8ab0c934",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"N2": "d5cb8454d177733effffb2ec712baeab",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "010000",
+"A1": "a713702dcfc1",
+"A2": "56123737bfce",
+"output": "2a742039c5fd6c6faafce17b619ac56f",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"N2": "d5cb8454d177733effffb2ec712baeab",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "010001",
+"A1": "a713702dcfc1",
+"A2": "56123737bfce",
+"output": "a60d89efb52db7905179a6c63b8f212a",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"N2": "d5cb8454d177733effffb2ec712baeab",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "010002",
+"A1": "a713702dcfc1",
+"A2": "56123737bfce",
+"output": "cb02f803d755fd936f0a832f4ee9fd4a",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"N2": "d5cb8454d177733effffb2ec712baeab",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "010003",
+"A1": "a713702dcfc1",
+"A2": "56123737bfce",
+"output": "00786c04a24561485aaf22808871b874",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"N2": "d5cb8454d177733effffb2ec712baeab",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "010100",
+"A1": "a713702dcfc1",
+"A2": "56123737bfce",
+"output": "2a58ef2d99281d472a88027423f8215f",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"N2": "d5cb8454d177733effffb2ec712baeab",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "010101",
+"A1": "a713702dcfc1",
+"A2": "56123737bfce",
+"output": "ff7ab3752a144232f2cbbcbf979f5517",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"N2": "d5cb8454d177733effffb2ec712baeab",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "010102",
+"A1": "a713702dcfc1",
+"A2": "56123737bfce",
+"output": "9d7fccef23625b1cc684fbf3f8b0e182",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46",
+"N1": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"N2": "d5cb8454d177733effffb2ec712baeab",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "010103",
+"A1": "a713702dcfc1",
+"A2": "56123737bfce",
+"output": "864f87e26dece4dfdde30ade1e463d4f",
+"fn": "f3",
+"curve": "P-192"
+},
+{
+"W": "ec0234a357c8ad05341010a60a397d9b99796b13b4f866f1868d34f373bfa698",
+"N1": "d5cb8454d177733effffb2ec712baeab",
+"N2": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"R": "12a3343bb453bb5408da42d20c2d0fc8",
+"IOcap": "000000",
+"A1": "56123737bfce",
+"A2": "a713702dcfc1",
+"output": "5634c83c9996a86b53473fe25979ec90",
+"fn": "f3",
+"curve": "P-256"
+},
+{
+"keyID": "6274646b",
+"A1": "56123737bfce",
+"A2": "a713702dcfc1",
+"W": "c234c1198f3b520186ab92a2f874934e",
+"output": "b089c4e39d7c192c3aba3c2109d24c0dc039e700adf3a263008e65a8b00fb1fa",
+"fn": "h4",
+"curve": null
+},
+{
+"R1": "d5cb8454d177733effffb2ec712baeab",
+"R2": "a6e8e7cc25a75f6e216583f7ff3dc4cf",
+"W": "b089c4e39d7c192c3aba3c2109d24c0d",
+"output": "746af87e1eeb1137c683b97d9d421f911f3ddf100403871b362958c458976d65",
+"ACO": "c683b97d9d421f91",
+"fn": "h5",
+"curve": null
+},
+{
+"keyID": "6274616b",
+"A1": "56123737bfce",
+"A2": "a713702dcfc1",
+"ACO": "c683b97d9d421f91",
+"W": "c234c1198f3b520186ab92a2f874934e",
+"output": "677b377f74a5d501121c46492d4cb489e27fe151026ab47f271a47399c8969ff",
+"fn": "h3",
+"curve": null
+}
+]
+},
+"ccm": {
+"_source": "[Vol 2] Part G §1.2 AES-CCM sample data 1–14",
+"sets": [
+{
+"name": "DM1, Central → Peripheral",
+"Payload byte length": "00",
+"K": "89678967896789674523452345234523",
+"Payload counter": "0000bc614e",
+"Zero-length ACL-U Continuation": "0",
+"Direction": "0",
+"Initialization vector": "66778899aabbccdd",
+"LT_ADDR": "1",
+"Packet Type": "3",
+"LLID": "2",
+"Payload": "",
+"B1": "00190200000000000000000000000000",
+"MIC": "10a2ddc5",
+"Encrypted payload": ""
+},
+{
+"name": "DM1, Central → Peripheral",
+"Payload byte length": "08",
+"K": "89678967896789674523452345234523",
+"Payload counter": "0000bc614e",
+"Zero-length ACL-U Continuation": "0",
+"Direction": "0",
+"Initialization vector": "66778899aabbccdd",
+"LT_ADDR": "1",
+"Packet Type": "3",
+"LLID": "2",
+"Payload": "68696a6b6c6d6e6f",
+"B1": "00190200000000000000000000000000",
+"MIC": "b1d8a011",
+"Encrypted payload": "b0ae898a6e6864d4"
+},
+{
+"name": "DM1, Peripheral → Central",
+"Payload byte length": "08",
+"K": "89678967896789674523452345234523",
+"Payload counter": "0000bc614e",
+"Zero-length ACL-U Continuation": "0",
+"Direction": "1",
+"Initialization vector": "66778899aabbccdd",
+"LT_ADDR": "1",
+"Packet Type": "3",
+"LLID": "2",
+"Payload": "68696a6b6c6d6e6f",
+"B1": "00190200000000000000000000000000",
+"MIC": "59cfe237",
+"Encrypted payload": "f4e09ce4df769ada"
+},
+{
+"name": "DM1, Central → Peripheral",
+"Payload byte length": "11",
+"K": "ce2ad11ba11456bdbd9d8b1f848322fc",
+"Payload counter": "00bdb3be95",
+"Zero-length ACL-U Continuation": "0",
+"Direction": "0",
+"Initialization vector": "82b8b7275bf92769",
+"LT_ADDR": "1",
+"Packet Type": "3",
+"LLID": "2",
+"Payload": "86126da5dbb391649ba1cac46091723305",
+"B1": "00190200000000000000000000000000",
+"MIC": "c62c327c",
+"Encrypted payload": "39b85fc8563749927ff047d6402bcc7cf9"
+},
+{
+"name": "DM1, Peripheral → Central",
+"Payload byte length": "11",
+"K": "ce2ad11ba11456bdbd9d8b1f848322fc",
+"Payload counter": "00bdb3be95",
+"Zero-length ACL-U Continuation": "0",
+"Direction": "1",
+"Initialization vector": "82b8b7275bf92769",
+"LT_ADDR": "1",
+"Packet Type": "3",
+"LLID": "2",
+"Payload": "86126da5dbb391649ba1cac46091723305",
+"B1": "00190200000000000000000000000000",
+"MIC": "0e4cfd0b",
+"Encrypted payload": "43fb6250b5ad97d7d6caa358ff265c0eb3"
+},
+{
+"name": "DH1, Central → Peripheral",
+"Payload byte length": "14",
+"K": "7b04934fd9d25294ef1a014da094f0b5",
+"Payload counter": "006267f78b",
+"Zero-length ACL-U Continuation": "0",
+"Direction": "0",
+"Initialization vector": "74ca58e8b136986f",
+"LT_ADDR": "1",
+"Packet Type": "4",
+"LLID": "2",
+"Payload": "9bb3a2bddd043b3a904cc2470a1d545fb2095e3d",
+"B1": "00210200000000000000000000000000",
+"MIC": "38004b33",
+"Encrypted payload": "34fa8cd8173d201c7882541443938481349b2fd0"
+},
+{
+"name": "DH1, Peripheral → Central",
+"Payload byte length": "14",
+"K": "7b04934fd9d25294ef1a014da094f0b5",
+"Payload counter": "006267f78b",
+"Zero-length ACL-U Continuation": "0",
+"Direction": "1",
+"Initialization vector": "74ca58e8b136986f",
+"LT_ADDR": "1",
+"Packet Type": "4",
+"LLID": "2",
+"Payload": "9bb3a2bddd043b3a904cc2470a1d545fb2095e3d",
+"B1": "00210200000000000000000000000000",
+"MIC": "982630f2",
+"Encrypted payload": "19bb8e018a07b68dd86f7cdd3efdfc88a9562b1b"
+},
+{
+"name": "DH1, Central → Peripheral",
+"Payload byte length": "1b",
+"K": "7b04934fd9d25294ef1a014da094f0b5",
+"Payload counter": "006267f78b",
+"Zero-length ACL-U Continuation": "0",
+"Direction": "0",
+"Initialization vector": "74ca58e8b136986f",
+"LT_ADDR": "1",
+"Packet Type": "4",
+"LLID": "2",
+"Payload": "8f11d05ee0e749b5eeda42f92b18450295388ce5872916b4bf7260",
+"B1": "00210200000000000000000000000000",
+"MIC": "f9aae3a3",
+"Encrypted payload": "2058fe3b2ade52930614d4aa629695dc13aafd082b50d708838299"
+},
+{
+"name": "DH1, Peripheral → Central",
+"Payload byte length": "1b",
+"K": "7b04934fd9d25294ef1a014da094f0b5",
+"Payload counter": "006267f78b",
+"Zero-length ACL-U Continuation": "0",
+"Direction": "1",
+"Initialization vector": "74ca58e8b136986f",
+"LT_ADDR": "1",
+"Packet Type": "4",
+"LLID": "2",
+"Payload": "8f11d05ee0e749b5eeda42f92b18450295388ce5872916b4bf7260",
+"B1": "00210200000000000000000000000000",
+"MIC": "a5fb0f2f",
+"Encrypted payload": "0d19fce2b7e4c402a6f9fc631ff8edd58e67f9c35546f1d7c91bbf"
+},
+{
+"name": "2-DH3, Central → Peripheral",
+"Payload byte length": "16f",
+"K": "7b04934fd9d25294ef1a014da094f0b5",
+"Payload counter": "006267f78b",
+"Zero-length ACL-U Continuation": "0",
+"Direction": "0",
+"Initialization vector": "74ca58e8b136986f",
+"LT_ADDR": "1",
+"Packet Type": "a",
+"LLID": "2",
+"Payload": "969b0972549738ea8912071055797f19631dd8e7219308a0836e8d6ba55ec08f42604406543c2f9660c261c31c3d882673aab82ebd5a827893625aa8b9a4c5b3bc310174e4d6436e2e44aa081d64e751b5501222dcc342706aefd3981e10b2e256e20d951e4e68cc3fdd4b5c8e93809aff0082323b6a864eb8556219e94fbdd2500550e9939e610843a375aba75d1f6da0304656b45f488c0ba402594e1ee6a1c59301e8f150790640dc0c24330120c0ac7f6707e7f00d4aea6c0577a31abbb64f9b6bab47bfa387c89bbbe16d8cbd494a9c452f9d46ab05dcf0f434f4c27bce2e0e177d1aba438d64a8cd72ca0c170c9fa6e227992fe35498c94581f1d869eeb07ffcf2c19b35c85e22939eb54c772c2c4c0963f51a653d777879f2d1ab67fcba300c9efa3ba62e9f70e4b91a996f817a9dff0b56fd15c2e9858db39b33e8c2254df11b64b9ac36409f24065c9e478afc3b8161b32d1b569236e63123ed2a5389d4c4e08a799f0a370e7310734c9f",
+"B1": "00510200000000000000000000000000",
+"MIC": "ff59d683",
+"Encrypted payload": "39d227179eae23cc61dc91431cf7afc7e58fa90a8deac91cbf9e7432672fdfb4733508b1fea7326d4478eae5f68812fe0f192c3b2094029e99a2bf482fc3b1cd2b16b26d286a813ffb7d5700541da59908c7362afde9560c5459b51f0a98503bf811ecdc750009970f4734cfdd59a91b9427eb2626fffda2f4d285740727a3a4f2da68d67d50fa0506f08743c8d67f58b1ea80ea704830bccca78cb8a8d5e3d8f52cd0278ef928533cdb5b9bc24960608f6a0f2cf8bcbcbcfa914612ee81dae330d1c95666a41f9f57686736a59c9f69eaeeef17eda581672bd1bb8563198033d9cca15f8c1bba6cb74f4e0de333798a799b2bda1a26a781213367d64139fdec5c910a6526f452d7005c1ff01b0f811785f0c459bffcd1a537de93241cc96754915247f503184d218e7f17f85183d683dee04d9ba695dfa020a6e35f4687d93681e0ccde1a8bee6659a7b10827a66077ca77b3b986db2753ceb9d4ecc68de6dc7b29453c476b4fc619410b2430ebd9"
+},
+{
+"name": "2-DH3, Peripheral → Central",
+"Payload byte length": "16f",
+"K": "7b04934fd9d25294ef1a014da094f0b5",
+"Payload counter": "006267f78b",
+"Zero-length ACL-U Continuation": "0",
+"Direction": "1",
+"Initialization vector": "74ca58e8b136986f",
+"LT_ADDR": "1",
+"Packet Type": "a",
+"LLID": "2",
+"Payload": "969b0972549738ea8912071055797f19631dd8e7219308a0836e8d6ba55ec08f42604406543c2f9660c261c31c3d882673aab82ebd5a827893625aa8b9a4c5b3bc310174e4d6436e2e44aa081d64e751b5501222dcc342706aefd3981e10b2e256e20d951e4e68cc3fdd4b5c8e93809aff0082323b6a864eb8556219e94fbdd2500550e9939e610843a375aba75d1f6da0304656b45f488c0ba402594e1ee6a1c59301e8f150790640dc0c24330120c0ac7f6707e7f00d4aea6c0577a31abbb64f9b6bab47bfa387c89bbbe16d8cbd494a9c452f9d46ab05dcf0f434f4c27bce2e0e177d1aba438d64a8cd72ca0c170c9fa6e227992fe35498c94581f1d869eeb07ffcf2c19b35c85e22939eb54c772c2c4c0963f51a653d777879f2d1ab67fcba300c9efa3ba62e9f70e4b91a996f817a9dff0b56fd15c2e9858db39b33e8c2254df11b64b9ac36409f24065c9e478afc3b8161b32d1b569236e63123ed2a5389d4c4e08a799f0a370e7310734c9f",
+"B1": "00510200000000000000000000000000",
+"MIC": "38a424ca",
+"Encrypted payload": "149325ce0394b55dc131b98a6199d7ce7842adc1f3fcefc3f5075285c62afdb5e107765e041ce95bb7e994d4b0f6eb0bf9ca5398e49f18b9373845554cebb964bf5e34b3f7dac95e0bad701c6d0912ed5678d992d50a5f269aff6796feeceedd348f30f2ab70d9f5de8882fe51d3fb8d264ec139b9f6fae190c84a81d5271788863164bb4ab2d0a4f05e9ca045ad67f22a88076ab9aec253a5a3a516ccad2fbea42cadbae30bf6c2aa703cd3695518e1c4f6f888cf629e5762dc8c51dcb9747fc92d036e094de7d2ea3fe4a30c22155fbfe70c6e1e745bb6abb91e04a7656a20773b75d55f7d19f114abc27aa5e1ce6967f896083e6c1007f2ebf6054fc5c2325d01cd89a2c6db1bb6948a6c2e8a299c0c796b4e616befebb61b6650a4f3e408fac50aa657b9ca64a3d41f315ced2a2f98e349395ad7fb9e7b953c74e85c505554576af8a3bce393c27354b05e1ace6d876fb1e0760337ecb476e85a6589075e508283d38b83e0a44bf4b1b750daa6"
+},
+{
+"name": "3-DH5, Central → Peripheral",
+"Payload byte length": "3fd",
+"K": "7b04934fd9d25294ef1a014da094f0b5",
+"Payload counter": "006267f78b",
+"Zero-length ACL-U Continuation": "0",
+"Direction": "0",
+"Initialization vector": "74ca58e8b136986f",
+"LT_ADDR": "1",
+"Packet Type": "f",
+"LLID": "2",
+"Payload": "6d42614c50694940209c8bd55be577333ec1066a76cb602ea58ced25f98ceb9458bc3db4e7c46bb9e23f922068bfca00c1da8f081c10e5260ea37fab3d91be9f3a4e68e9006cca11fdc76c591e20769de1e34385af105dab4d44eda7eacd19745414d5a9568d67afc05aedd96726a1307ebe31fd81881237c953d2a542c57c3b019691ef911953fb39264712c61e3e5e2128642185891af5bf8ca29159c3059611bbe5cd8f88a7bbb8afd34a4211eed5850ca781cc9cf5b906d5fced79d3598139a1a2392965b0d5c6c03a9fe22433ba08e7aac77d207392b3486eaddd5c81c65454d575edd918920a2f0fe9f6d5c037fec1272ef22c9aa0d02b341281f60847887cd303a82937cfded4be2d139342cebd09041af5eaa6754307eb2d20a60f7b1b944afee3ae1a6f476021c7d30d300e44f9eaa242e8cb7a6d74d5b50f2d6c1bd436f44f1ddf857970821a65117e1200e0270f007cbe6bb2020ec332bc46429920131eb1e88642063b4a8324522cfe0aa5209fd73f11a1e0da00c945835b6b5fec9eaea99d177dc0cbd2efe821b388c378b2e137c84f37a45599ffc0a91062045ed1439f7e67ea1d6ab024f7247e85dfbf15d19cb0f488d2cb06bed9644ec34c2e69f7524af3831981c7556e359bfaf522a008784ce3e7e2362698ea6c00001dfdf0936d2cf7a318ed4f0447ad506cddc2fcf8b7328bb527063859b5f60819d3eebdd2910a12c6af1c670a3038fd9e2c4a6a3ad7a51982bd8d4fabf5a8c16517831661b0094050529fba337b2b3544cf6811a761093afd668b154a21a5941b88a482c5cef04b18c1c2e67d7df90c3a4dd4ee12fe4b734174d3ee8b0c1ade74eb237710da4694764b7cce26c47a2570bf30bb18c76571ab0526892de7b5d628407f30097114d6014b2ca566b3d6ad1ef596e552e6defc287e6a5a5c16be31d26a392e1570a9f9e0b332d223e5b15407f341cc55f83296f3f5175ebece580a3f2449494406fa75e051c829441bce7cba98cb7ea85d8031787d9495b971c6925f642726ef05932d3f1a14a9bd1ad88a9b316f54d80e9fe31dcfc94c1f6a92cc2c8260bd9296e075b8842976b667041800df520e7a28e5b9314a0bb939661aba4643829544e2d69f255cce5bfa899a4704f3be803081fbc36f5c65fb13c869fc770a07cbc8ff50b8dbe3b171e9f9ebc8cf22491276073297380695979b3cd75a3f8ff933a408d4945f6396755d6e493b554b58e78f5ba21d31b3bbcddf6283e9423315a3bea83a6ff73ff02809da3c6d8208acfd6f05b62bb5a591f1e4d54b84d3572f00672a3e3c434c1736072b45f6370cbb46706b56a57e863ed2217a816e5c091e2895f789b57c5ec0a67011d5f2f69d6dac39413bc897dccb42d3bcffda31e0e961f3fbe4f4004169e86cc0530e891c7665902a1ce0804c921780aee2",
+"B1": "00790200000000000000000000000000",
+"MIC": "48ac482c",
+"Encrypted payload": "c20b4f299a505266c8521d86126ba7edb8537787dab2a192997c147c3bfdf4af69e971034d5f7642c6851906820a50d8bd691b1d81de65c004639a4babf6cae1ad69dbf0ccd0084028fe9151575934555c74678d8e3a49d773f28b20fe45fbadfae734e03dc306f4f0c0924a34ec88b1159958e99c1d69db85d435c8acad624da349a9d07fd7c8f67c75b5faa9955e6b30f2a29d419e62c5788f2c70bf0800ef21043402f021f6eec4a884f5b359ae75a619cfaad3d0444f1628bf88344838d446eb00c4087e0ccd5933e6482a34119aa89500ff0dc359f04469211c4a877a3ba39663577b78e173d9c88c96dfeaaeb118fceed37125de7569d1164531179c45649225944f4650d080aa3243bdd0b4f514b5c920bf0c12ed03a101fbedc40fd330f601951a8df160566fd2869817890ce0845832b2800118a457bb59d2995def709bc98a63edc72969ba8f6b6a4635fdd66b3dd8494857b75e81f1ef59268e16d2ee9f6d259492ca1505fb10118bb83add55208fb50782956850a0933b7424694af51c79de907ec18c090819b343c3f72a0a9e09b124172a0f96a801c4f8ee576fffc752f1059b5f9519923a72b0b986d9807541ae7143d70901b0a59e581edc3eb68066c0e3e98ebaf09066d0d43ba2760bd0385b968c8b3d588091835c8eb8f605672fef0969a589fc178d3ad79de96811c972aa5a021dc8977d98c1b89607d929b7e1f6eb848f6ba869ea7f7ce937e137e94002d95a2ef6586a27435aa724f071d32c078c3a24858665796bff686d03489b0cfe72a4f3787a5b48ad0810615b4895f13ff39c4db1050d3ca98d12ee90a0069ff22db76e4327b93a4074eb4363eed1f937ebf0945f2f486b04f5656043b90f164d8bb1fd5481494a2c952c293cd6b13581d0870e766f735ecd6b76530804298cbb094b5828bee43f0b055b2f95dc1bb7bce29543ef92005f61cdb0ef0044528fd2a536ec6eb05bd04ca31b494bf26f07b3f40079159f287c697bc08310ee0d7b5b44be4c478f4fec29e9cfe6daf93540a68e3a496c5fe8d1326e4ae25b263178ade6fe5421654537092d2ec69b54f32bc387e4f4e10a1a4f1163550e72a76d6268184f021dc9bf9b48bb8af8bb9f265a46394c9d76cf8c253e29e37b5dd49bfe46f9922167cd02def853c82bcc2a8ce6fba293a2802443520a1cd546869dafffbff4f66c515f8447527037903f980ee990130e16644ccb54507e309ad7a587db37851a696afcae5b6a23240849dde286a02a8cd6c27e2937dc2bdeff55165df157abf2a77b0e9004952c71c2c466ce4f6b6db2d4a602928367f667901ba8125603c7cd2012380df77760ecd1f97eb3c716c827258d0e9fed3153168897b664e847177af7249567b51fbff2decaeb334d14f91b1a1e58fd0ca7aa76d8255ba7fdad99390fc146943c06"
+},
+{
+"name": "3-DH5, Peripheral → Central",
+"Payload byte length": "3fd",
+"K": "7b04934fd9d25294ef1a014da094f0b5",
+"Payload counter": "006267f78b",
+"Zero-length ACL-U Continuation": "0",
+"Direction": "1",
+"Initialization vector": "74ca58e8b136986f",
+"LT_ADDR": "1",
+"Packet Type": "f",
+"LLID": "2",
+"Payload": "6d42614c50694940209c8bd55be577333ec1066a76cb602ea58ced25f98ceb9458bc3db4e7c46bb9e23f922068bfca00c1da8f081c10e5260ea37fab3d91be9f3a4e68e9006cca11fdc76c591e20769de1e34385af105dab4d44eda7eacd19745414d5a9568d67afc05aedd96726a1307ebe31fd81881237c953d2a542c57c3b019691ef911953fb39264712c61e3e5e2128642185891af5bf8ca29159c3059611bbe5cd8f88a7bbb8afd34a4211eed5850ca781cc9cf5b906d5fced79d3598139a1a2392965b0d5c6c03a9fe22433ba08e7aac77d207392b3486eaddd5c81c65454d575edd918920a2f0fe9f6d5c037fec1272ef22c9aa0d02b341281f60847887cd303a82937cfded4be2d139342cebd09041af5eaa6754307eb2d20a60f7b1b944afee3ae1a6f476021c7d30d300e44f9eaa242e8cb7a6d74d5b50f2d6c1bd436f44f1ddf857970821a65117e1200e0270f007cbe6bb2020ec332bc46429920131eb1e88642063b4a8324522cfe0aa5209fd73f11a1e0da00c945835b6b5fec9eaea99d177dc0cbd2efe821b388c378b2e137c84f37a45599ffc0a91062045ed1439f7e67ea1d6ab024f7247e85dfbf15d19cb0f488d2cb06bed9644ec34c2e69f7524af3831981c7556e359bfaf522a008784ce3e7e2362698ea6c00001dfdf0936d2cf7a318ed4f0447ad506cddc2fcf8b7328bb527063859b5f60819d3eebdd2910a12c6af1c670a3038fd9e2c4a6a3ad7a51982bd8d4fabf5a8c16517831661b0094050529fba337b2b3544cf6811a761093afd668b154a21a5941b88a482c5cef04b18c1c2e67d7df90c3a4dd4ee12fe4b734174d3ee8b0c1ade74eb237710da4694764b7cce26c47a2570bf30bb18c76571ab0526892de7b5d628407f30097114d6014b2ca566b3d6ad1ef596e552e6defc287e6a5a5c16be31d26a392e1570a9f9e0b332d223e5b15407f341cc55f83296f3f5175ebece580a3f2449494406fa75e051c829441bce7cba98cb7ea85d8031787d9495b971c6925f642726ef05932d3f1a14a9bd1ad88a9b316f54d80e9fe31dcfc94c1f6a92cc2c8260bd9296e075b8842976b667041800df520e7a28e5b9314a0bb939661aba4643829544e2d69f255cce5bfa899a4704f3be803081fbc36f5c65fb13c869fc770a07cbc8ff50b8dbe3b171e9f9ebc8cf22491276073297380695979b3cd75a3f8ff933a408d4945f6396755d6e493b554b58e78f5ba21d31b3bbcddf6283e9423315a3bea83a6ff73ff02809da3c6d8208acfd6f05b62bb5a591f1e4d54b84d3572f00672a3e3c434c1736072b45f6370cbb46706b56a57e863ed2217a816e5c091e2895f789b57c5ec0a67011d5f2f69d6dac39413bc897dccb42d3bcffda31e0e961f3fbe4f4004169e86cc0530e891c7665902a1ce0804c921780aee2",
+"B1": "00790200000000000000000000000000",
+"MIC": "7c2a8dae",
+"Encrypted payload": "ef4a4df0076ac4f768bf354f6f05dfe4259e734ca4a4874dd3e532cb9af8d6aefbdb0fecb7e4ad7435146737c474a92d4bba64be45d57fe7aaf96056c8dec24839215d2e13604021d82eb64d6e4d832102cb8835a6d940fdbd5459a90a31454b3679e8cee3b3d696210f247bb866da27a7f072f603146e98e1cefa3d7eadd661d7a2a5bd4835e2578adbae1924ee46c1ab90251d8878902a118b05dedb70cc897004499f9dd3287f5203e3bd1845d6f4ed85380ee40e66a48e6575cb06709648bf17cafc6797f480e46465dd838a9bacfd9ce386fe128321c401849d8efb90280d61b7dda81e42ee7a2c00e199381952069f5301556f69f3ba0987963feba39b6502e278cb74d91c3662a7df88551c7e9d3c6637619b2ca38264f48f55fe8c8f5b614cc64e2c76257bc4da4f957975a0a6875c904ec22526ff6464727c42d48ca52c6facdadacadcf26e6ad313fa9be79b733f81b9904708244ecd59fa226f94f9455982e97c3da847b0418371bac7e8850e494150ad8f2f2a98e03ca6e598b50e8a20d8c4229f6576c5b101862a2d8a0f83e916ae3ed1786f8beca90c47c84b33bd65c678648511765c731a6e4890520d037b2f0ef27532ed2c5c338c5211a9253f767c1845d0e08fe06340e8e63121fdf907cd9f6d462fcecdb5b15147424e996301212bca07a7382a85c6e5e541ab2ab5e64bc55a3e2d04473cdb308073ae059b18c55730d4be6fc73ddcdccdcdc5b045a408eb841ea12721d3994f82a4d74c955ce80410de5c45d365714de684f49d838b5a4ab80d691071a1901738d0383ebd6b2599b6a120f8e42250d0902d33e38310c83dbca3c5cfe0bf26b53835603e5d4a6b3b5c60a510f9ce917dd46b68f38566581318069562eb72a0a483ec51c5d0682f899eb35e273b16d6d21d8002f68b5f54c9190d63d0529fcd4c38c797cbac97ae1fa2bd7f395ad33591ae4fe331d2325398cc05370cafe2a1b239a57cf41832c86bc6c9de36b1dbeb0883238755c6ff993fdde28b255233bc3538e20d5de95dd2b25c6be21d64e2564fa25dfd09e4a6b0a9869d52b2c94bfbd93529aaf115b8eb1301f35456be336b0c4d4c525daa29add9734391e11908d47f7393d3a9624e430c295d8b3683583b129b2629a8b3b5ec510ecde7f10ac5a366b6af7cb7505895aff02cc70823ad6cab52c54035c85fea2cf8a83b223e6ff9f198babf0c002e58a0749a8eb7391eee39b33542c43574675af5e4ec286cd3af7161ac9e8ab8cc12143f975d6de40b789f3eec0646add18e5fd454d45707af9158d335d9723cf392d17c12b36efb452b786c0504af600fefb82800f7e18f6796b7714a41665968a2527eb332e064e03c8d61aefc5e14ab975848ec2816821f97c1d944a7887b8f526127575b728265d71377d760990f4b2c778c3039c8d22334ea"
+},
+{
+"name": "EV3",
+"Payload byte length": "1e",
+"K": "972b7dcdbe8942b7d8fdc356a5590aca",
+"CLK[27:1]": "030b5a8f",
+"dayCounter": "061a",
+"Initialization vector": "70b690bddfe9630f",
+"LT_ADDR": "1",
+"Packet Type": "7",
+"Payload": "4625f778578290f90ee83576b3f8a898faff3fe45db812b2e189297afd89",
+"Encrypted payload": "7663793769b2ba4c41704100d6c4602adbae2a87f77a9fdba0c56d2cb532"
+}
+]
 }
 }

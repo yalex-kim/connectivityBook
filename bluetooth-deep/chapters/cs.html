@@ -75,8 +75,8 @@
     <div class="sim" id="sim-rng">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>거리 → RTT와 채널별 왕복 위상</h3></div>
       <div class="sim-controls" style="border-top:0">
-        <label class="ctrl"><span>실제 거리 <b id="rg-dv">5.0 m</b></span><input type="range" id="rg-d" min="1" max="4000" value="50"></label>
-        <label class="ctrl"><span>채널 간격 Δf <b id="rg-fv">1 MHz</b></span><input type="range" id="rg-f" min="1" max="5" value="1"></label>
+        <label class="ctrl"><span>실제 거리 <b id="rg-d-out">5.0 m</b></span><input type="range" id="rg-d" min="1" max="4000" value="50"></label>
+        <label class="ctrl"><span>채널 간격 Δf <b id="rg-f-out">1 MHz</b></span><input type="range" id="rg-f" min="1" max="5" value="1"></label>
       </div>
       <div class="sim-view" style="padding:12px 16px">
         <div class="phase" id="rg-ph" aria-hidden="true"></div>
@@ -122,8 +122,8 @@
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>CS DRBG 재현 ([Vol 6] Part C §8.1.1 Set 1의 입력)</h3></div>
       <div class="sim-controls" style="border-top:0">
         <div class="ctrl"><span>거래 종류</span><div class="seg" id="dr-t"><button data-value="1" class="on">0x01 모드 0 채널</button><button data-value="0">0x00 그 밖의 채널</button><button data-value="5">0x05 접근 주소</button></div></div>
-        <label class="ctrl"><span>스텝 번호 <b id="dr-sv">0</b></span><input type="range" id="dr-s" min="0" max="20" value="0"></label>
-        <label class="ctrl"><span>필터된 채널 수 <b id="dr-nv">19</b> (2번부터)</span><input type="range" id="dr-n" min="2" max="72" value="19"></label>
+        <label class="ctrl"><span>스텝 번호 <b id="dr-s-out">0</b></span><input type="range" id="dr-s" min="0" max="20" value="0"></label>
+        <label class="ctrl"><span>필터된 채널 수 <b id="dr-n-out">19</b> (2번부터)</span><input type="range" id="dr-n" min="2" max="72" value="19"></label>
       </div>
       <div class="sim-view" style="padding:12px 16px">
         <div class="mono" id="dr-io"></div>

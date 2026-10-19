@@ -575,6 +575,65 @@ const bitsStr = (s) => s.replace(/\s/g, '').split('').map(Number);
   FEC.forEach((p, i) => eq(j(f.fec23Parity(f.lsbBits(1 << i, 10))), p, `FEC 2/3 데이터 0x${(1 << i).toString(16)} (§9)`));
 }
 
+// ---------------------------------------------------------------- 13 classicsec
+{
+  const src = read('classicsec'), line = (n) => { const i = src.indexOf(n); return src.slice(i, src.indexOf('\n', i)); };
+  const curves = src.slice(src.indexOf('  const CURVES ='), src.indexOf('\n  };', src.indexOf('  const CURVES =')) + 5);
+  const f = load('classicsec', ['aes128', 'saferKeys', 'ar', 'hashE', 'e1', 'e21', 'e22', 'e3', 'sha256', 'hmac', 'f1', 'g', 'f2', 'f3', 'h4', 'h5', 'h3', 'ecMul', 'nonceAcl', 'nonceClk', 'ccmBr', 'shortenKey'], [line('  const SBOX ='), line('  const EXP45 ='), line('  const LOG45 ='), curves].join('\n'));
+  const G = JSON.parse(fs.readFileSync(path.join(root, 'scripts', 'data', 'partg.json'), 'utf8')), crypto = require('node:crypto');
+  const ecb = (k, b) => { const c = crypto.createCipheriv('aes-128-ecb', Buffer.from(k), null); c.setAutoPadding(false); return [...Buffer.concat([c.update(Buffer.from(b)), c.final()])]; };
+  for (let i = 0; i < 10; i++) { const k = [...crypto.randomBytes(16)], b = [...crypto.randomBytes(16)]; eq(X(f.aes128(k, b)), X(ecb(k, b)), 'AES-128 = OpenSSL'); }
+  for (const n of [0, 3, 55, 56, 64, 100, 200]) { const m = [...crypto.randomBytes(n)], k = [...crypto.randomBytes(32)]; eq(X(f.sha256(m)), crypto.createHash('sha256').update(Buffer.from(m)).digest('hex'), `SHA-256 ${n}바이트 = OpenSSL`); eq(X(f.hmac(k, m)), crypto.createHmac('sha256', Buffer.from(k)).update(Buffer.from(m)).digest('hex'), 'HMAC = OpenSSL'); }
+  // [Vol 2] Part G §10: SAFER+ 라운드 키와 E1·E21·E22·E3
+  const z16 = new Array(16).fill(0), ks = f.saferKeys(z16);
+  eq(X(ks[1]), '4697b1baa3b7100ac537b3c95a28ac64', 'Key[2] (§10.1)'); eq(X(ks[16]), '884697b1baa3b7100ac537b3c95a28ac', 'Key[17] (§10.1)');
+  eq(X(f.ar(z16, z16, false)), '158ffe43352085e8a5ec7a88e1ff2ba8', 'A_r(0, 0) = 둘째 A′_r의 1라운드 입력 (§10.1 첫 예)');
+  const L = G.legacy.sets;
+  for (const r of L.e1) { const o = f.e1(H(r.key), H(r.rand), H(r.address)); eq(X(o.sres) + ' ' + X(o.aco), r.sres + ' ' + r.aco, `E1 ${r.key.slice(0, 8)} (§10.1)`); }
+  for (const r of L.e21) eq(X(f.e21(H(r.rand), H(r.address))), r.Ka, `E21 ${r.rand.slice(0, 8)} (§10.2)`);
+  for (const r of L.e22) eq(X(f.e22(H(r.PIN), r.address ? H(r.address) : [], H(r.rand)).key), r.Ka, `E22 PIN ${r.PIN.length / 2}바이트 (§10.3·§10.4)`);
+  for (const r of L.e3) eq(X(f.e3(H(r.key), H(r.rand), H(r.aco))), r.K_enc, `E3 ${r.key.slice(0, 8)} (§10.5)`);
+  eq(L.e1.length + L.e21.length + L.e22.length + L.e3.length, 31, '레거시 예 31개');
+  // §7.1: P-192 10세트, P-256 2세트 (OpenSSL과도 대조)
+  const big = (h) => BigInt('0x' + h), hx = (n, len) => n.toString(16).padStart(len, '0');
+  for (const s of G.ssp.ec) {
+    const len = s.curve === 'P-192' ? 48 : 64, pa = f.ecMul(s.curve, big(s['Private A'])), pb = f.ecMul(s.curve, big(s['Private B']));
+    eq(hx(pa[0], len) + hx(pa[1], len), s['Public A(x)'] + s['Public A(y)'], `${s.curve} 공개 키 A`);
+    if (s['Public B(x)']) eq(hx(pb[0], len) + hx(pb[1], len), s['Public B(x)'] + s['Public B(y)'], `${s.curve} 공개 키 B`);
+    eq(hx(f.ecMul(s.curve, big(s['Private A']), pb)[0], len), s.DHKey, `${s.curve} DHKey`);
+    const o = crypto.createECDH(s.curve === 'P-192' ? 'prime192v1' : 'prime256v1'); o.setPrivateKey(Buffer.from(s['Private A'], 'hex'));
+    eq(o.getPublicKey('hex').slice(2, 2 + len), s['Public A(x)'], 'OpenSSL 공개 키와 같음');
+  }
+  eq(G.ssp.ec.length, 12, 'ECDH 예 12개');
+  // §7.2: f1·g·f2·f3·h3·h4·h5
+  let n = 0;
+  for (const s of G.ssp.hash) {
+    const h = (k) => H(s[k]), out = s.output.toLowerCase();
+    if (s.fn === 'f1') eq(X(f.f1(h('U'), h('V'), h('X'), parseInt(s.Z, 16))), out, `f1 ${s.curve} Z=${s.Z}`);
+    // g P-256 예(§7.2.2.2)는 적힌 입력으로 다시 계산되지 않는다: SHA-256(U‖V‖X‖Y)의 하위 32비트는 5fda62e0인데 예는 000240E0. P-192 예와 같은 방법이라 예의 오류로 본다(본문 경고 참고)
+    if (s.fn === 'g' && s.curve === 'P-256') { eq(f.g(h('U'), h('V'), h('X'), h('Y')).toString(16), '5fda62e0', 'g P-256: 적힌 입력의 실제 값'); eq(out, '000240e0', 'g P-256: 예에 적힌 값(불일치 기록)'); eq(crypto.createHash('sha256').update(Buffer.from(s.U + s.V + s.X + s.Y, 'hex')).digest('hex').slice(56), '5fda62e0', 'OpenSSL도 5fda62e0'); }
+    else if (s.fn === 'g') eq(f.g(h('U'), h('V'), h('X'), h('Y')).toString(16).padStart(8, '0'), out, `g ${s.curve}`);
+    if (s.fn === 'f2') eq(X(f.f2(h('W'), h('N1'), h('N2'), h('keyID'), h('A1'), h('A2'))), out, `f2 ${s.curve}`);
+    if (s.fn === 'f3') eq(X(f.f3(h('W'), h('N1'), h('N2'), h('R'), h('IOcap'), h('A1'), h('A2'))), out, `f3 ${s.curve} IOcap ${s.IOcap}`);
+    if (s.fn === 'h4') eq(X(f.h4(h('W'), h('keyID'), h('A1'), h('A2'))), out.slice(0, 32), 'h4');
+    if (s.fn === 'h5') { const o = f.h5(h('W'), h('R1'), h('R2')); eq(X(o.sresC) + X(o.sresP) + X(o.aco), out.slice(0, 32), 'h5'); eq(X(o.aco), s.ACO, 'h5 ACO'); }
+    if (s.fn === 'h3') eq(X(f.h3(h('W'), h('keyID'), h('A1'), h('A2'), h('ACO'))), out.slice(0, 32), 'h3');
+    n++;
+  }
+  eq(n, 51, '해시 함수 예 51개');
+  eq(f.g(H('15207009984421a6586f9fc3fe7e4329d2809ea51125f8ed'), H('356b31938421fbbf2fb331c89fd588a69367e9a833f56812'), H('d5cb8454d177733effffb2ec712baeab'), H('a6e8e7cc25a75f6e216583f7ff3dc4cf')) % 1000000, 69598, '숫자 비교 069598 (§7.2.2.1)');
+  // §1.2: AES-CCM 14개
+  for (const r of G.ccm.sets) {
+    const iv = H(r['Initialization vector']).reverse(), clk = r['CLK[27:1]'];
+    const nonce = clk ? f.nonceClk(parseInt(clk, 16), parseInt(r.dayCounter, 16), iv) : f.nonceAcl(parseInt(r['Payload counter'], 16), +r['Zero-length ACL-U Continuation'], +r.Direction, iv);
+    const o = f.ccmBr(H(r.K), nonce, clk ? null : [0, (+r.LT_ADDR) | (parseInt(r['Packet Type'], 16) << 3), +r.LLID], (r.Payload ? H(r.Payload) : []));
+    eq(X(o.out), r['Encrypted payload'] || '', `CCM ${r.name} 암호문`);
+    if (!clk) { eq(X(o.mic), r.MIC, `CCM ${r.name} MIC`); eq(X(o.b1), r.B1, 'B1 형식'); }
+  }
+  eq(G.ccm.sets.length, 14, 'CCM 예 14개');
+  eq(X(f.shortenKey(H('123456789abcdef0123456789abcdef0'), 7)), '123456789abcde000000000000000000', '키 7바이트로 줄이기 (§9.4의 예)');
+}
+
 // ---------------------------------------------------------------- 모든 인라인 스크립트가 문법 오류 없이 컴파일되는가, JSON-LD가 올바른가
 let scripts = 0;
 for (const f of ['../index.html', ...fs.readdirSync(path.join(root, 'chapters')).filter((x) => x.endsWith('.html'))]) {
