@@ -91,6 +91,11 @@ window.BD_TERMS = [
   ["PBR", "Phase-Based Ranging", "여러 주파수 톤의 왕복 위상 차이로 거리를 구하는 방식. 스텝 모드 2·3", "cs"],
   ["개시자", "Initiator", "CS에서 스텝을 시작하고 거리를 계산하는 쪽. 상대는 반사자(Reflector)", "cs"],
   ["NADM", "Normalized Attack Detector Metric", "조기 응답 감지 결과를 정규화해 보고하는 값. [Vol 6] Part H §3.5", "cs"],
+  ["CTE", "Constant Tone Extension", "CRC 뒤에 붙는 화이트닝 없는 1의 연속(16~160 µs). 방향 찾기용 톤. [Vol 6] Part B §2.5", "direction"],
+  ["IQ 표본", "IQ sample", "받은 신호의 진폭·위상을 I + jQ 복소수로 찍은 값. CTE 기준 구간 8개 + 표본 슬롯마다 1개. [Vol 6] Part B §2.5.4", "direction"],
+  ["AoA", "Angle of Arrival", "수신기가 안테나를 바꿔 가며 받아 도착 방향을 구하는 방식. CTEType 0", "direction"],
+  ["AoD", "Angle of Departure", "송신기가 안테나를 바꿔 가며 보내고 수신기가 출발 방향을 구하는 방식. CTEType 1·2", "direction"],
+  ["안테나 전환 패턴", "Antenna switching pattern", "호스트가 정한 안테나 순서. 첫 안테나는 기준 구간, 모자라면 처음부터 반복. [Vol 6] Part A §5.1", "direction"],
 ];
 
 /* 본문 표기 → 용어집 표제어 */

@@ -23,6 +23,7 @@
     { slug: "isoal",      num: "14", part: "오디오·위치", title: "ISOAL과 등시성 타이밍", desc: "프레임 없는 PDU의 USPI·UPPS·BN과 LLID, 프레임 있는 PDU의 분할 헤더와 Time_Offset, 분할·비분할 모드의 Max_PDU 조건, CIG·BIG 전송 지연을 사양의 예로 계산한다.", tags: ["오디오", "sim"] },
     { slug: "leaudio",    num: "15", part: "오디오·위치", title: "LE 오디오 프로파일: PACS·ASCS·BAP·CAP", desc: "Core 밖의 LE 오디오 사양. ASE 상태 기계의 일곱 상태와 여덟 동작, 끊김 규칙, BAP 코덱·QoS 설정 이름(16_2_1 등)과 비트레이트, CAP·BASS의 역할을 ASCS·BAP 원문 표로 따라간다.", tags: ["오디오", "sim"] },
     { slug: "cs",         num: "16", part: "오디오·위치", title: "Channel Sounding: 위상과 왕복 시간으로 거리 재기", desc: "CS 채널 72개와 스텝 모드 0~3, RTT·위상 기반 거리와 모호 거리, CS DRBG(h9·f7·f8·f9)와 채널 섞기 hr1·cr1, 접근 주소 자기상관 점수를 Core 6.3 예제 데이터로 재현한다.", tags: ["위치", "sim"] },
+    { slug: "direction",  num: "17", part: "오디오·위치", title: "방향 찾기: CTE, IQ 표본, 안테나 전환", desc: "CTE의 보호·기준 구간과 전환·표본 슬롯, IQ 표본 9~82개 규칙, AoA·AoD의 안테나 전환 패턴, 기준 구간으로 톤 회전을 지우고 안테나 위상차로 각도를 구하는 계산.", tags: ["위치", "sim"] },
   ];
   // @book-chapters-end
   const BD = (window.BD = {});

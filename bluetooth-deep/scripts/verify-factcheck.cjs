@@ -509,6 +509,27 @@ const bitsStr = (s) => s.replace(/\s/g, '').split('').map(Number);
   for (const d of [0.5, 3, 12.3, 80, 149]) { let p = f.twoWayPhase(d, 2405e6) - f.twoWayPhase(d, 2404e6); if (p < 0) p += 2 * Math.PI; ok(Math.abs(f.pbrDistance(p, 1e6) - d) < 1e-6, `위상 차로 ${d} m`); }
 }
 
+// ---------------------------------------------------------------- 17 direction
+{
+  const f = load('direction', ['cteLayout', 'antennaAt', 'sampleTimes', 'iqSamples', 'estimateAngle']);
+  // [Vol 6] Part B §2.5.4: 기준 8개, 2 µs 슬롯 1~37, 1 µs 슬롯 2~74, 합계 9~82
+  eq([f.cteLayout(2, 2).slots, f.cteLayout(20, 2).slots, f.cteLayout(2, 1).slots, f.cteLayout(20, 1).slots].join(), '1,37,2,74', '표본 슬롯 수 범위');
+  eq([f.cteLayout(2, 2).total, f.cteLayout(20, 1).total].join(), '9,82', 'IQ 표본 9~82개');
+  eq([f.cteLayout(2, 1).len, f.cteLayout(20, 2).len].join(), '16,160', 'CTE 16~160 µs (§2.5.1)');
+  for (let t = 2; t <= 20; t++) for (const s of [1, 2]) { const L = f.cteLayout(t, s); ok(Number.isInteger(L.slots) && L.slots >= 1, `CTETime ${t}, ${s} µs: 정수 슬롯`); eq(f.sampleTimes(t, s).length, L.total, '표본 시각 수'); }
+  eq(f.cteLayout(10, 1).total, 42, '퀴즈: CTETime 10, 1 µs → 42');
+  // [Vol 6] Part A §5.1: 첫 안테나는 기준, 슬롯 i는 패턴[i mod n], 반복
+  eq([0, 1, 2, 3, 4, 5].map((i) => f.antennaAt([1, 2, 3], i)).join(''), '123123', '패턴 반복');
+  // 이상적 신호에서 각도 복원 (배열 기하)
+  for (const s of [1, 2]) for (const fo of [225e3, 250e3, 275e3]) for (const th of [-70, -30, 0, 12.5, 45, 70]) {
+    const r = f.estimateAngle(f.iqSamples(th, s, 20, [1, 2, 3, 4], 0.5, fo, 0.4), 0.5);
+    ok(Math.abs(r.theta - th) < 1e-6, `${s} µs, ${fo / 1e3} kHz, ${th}° 복원`); ok(Math.abs(r.w - 2 * Math.PI * fo * 1e-6) < 1e-9, '기준 구간 회전');
+  }
+  ok(Math.abs(f.estimateAngle(f.iqSamples(30, 2, 20, [1, 3, 2, 4], 0.5, 250e3, 1), 0.5).theta - 30) < 1e-6, '패턴 순서와 무관');
+  ok(Math.abs(f.estimateAngle(f.iqSamples(60, 2, 20, [1, 2, 3, 4], 0.9, 250e3, 0), 0.9).theta - 60) > 10, '간격 0.9 λ, 60°는 접힌다');
+  ok(Math.abs(Math.asin(0.5) * 180 / Math.PI - 30) < 1e-12, '퀴즈: Δψ 90°, λ/2 → 30°');
+}
+
 // ---------------------------------------------------------------- 모든 인라인 스크립트가 문법 오류 없이 컴파일되는가, JSON-LD가 올바른가
 let scripts = 0;
 for (const f of ['../index.html', ...fs.readdirSync(path.join(root, 'chapters')).filter((x) => x.endsWith('.html'))]) {

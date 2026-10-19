@@ -83,7 +83,7 @@ window.YB_BOOKS = [
     description: "BluetoothBook의 다음 책. HCI와 링크 계층 절차, 패킷 암호화와 페어링 함수 전부, 프라이버시, L2CAP·EATT, 클래식 베이스밴드, 등시성 채널과 LE 오디오, 채널 사운딩과 방향 찾기를 Core 6.3의 시험 데이터로 계산을 맞춰 보며 따라간다.",
     status: "draft",
     chapters: 19,
-    simulators: 27,
+    simulators: 31,
     level: "엔지니어 (1권 다음)",
     reference: "Bluetooth Core 6.3 (시험 데이터로 검증)",
     color: "#4338ca",
