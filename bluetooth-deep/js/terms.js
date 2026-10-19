@@ -85,6 +85,12 @@ window.BD_TERMS = [
   ["BAP", "Basic Audio Profile", "LE 오디오의 유니캐스트·방송 절차와 필수 코덱·QoS 설정 표를 정한 프로파일", "leaudio"],
   ["CAP", "Common Audio Profile", "여러 기기(좌우 이어폰 등)를 조정 세트로 묶어 함께 다루는 프로파일", "leaudio"],
   ["BASS", "Broadcast Audio Scan Service", "방송 도우미가 수신기에게 들을 방송과 방송 코드를 알려 주는 GATT 서비스", "leaudio"],
+  ["Channel Sounding", "Channel Sounding (CS)", "왕복 시간과 여러 주파수의 위상으로 두 기기 사이 거리를 재는 LE 기능(6.0). [Vol 6] Part H", "cs"],
+  ["CS DRBG", "CS Deterministic Random Bit Generator", "두 기기가 같은 씨앗에서 같은 난수를 만드는 AES 기반 생성기. 채널 순서·접근 주소 등을 정한다. [Vol 6] Part E §3", "cs"],
+  ["RTT", "Round-Trip Time", "CS_SYNC가 갔다 오는 비행 시간. 거리 = c × RTT ÷ 2. [Vol 6] Part H §3.1", "cs"],
+  ["PBR", "Phase-Based Ranging", "여러 주파수 톤의 왕복 위상 차이로 거리를 구하는 방식. 스텝 모드 2·3", "cs"],
+  ["개시자", "Initiator", "CS에서 스텝을 시작하고 거리를 계산하는 쪽. 상대는 반사자(Reflector)", "cs"],
+  ["NADM", "Normalized Attack Detector Metric", "조기 응답 감지 결과를 정규화해 보고하는 값. [Vol 6] Part H §3.5", "cs"],
 ];
 
 /* 본문 표기 → 용어집 표제어 */

@@ -468,6 +468,47 @@ const bitsStr = (s) => s.replace(/\s/g, '').split('').map(Number);
   eq([q['441_1_2'][6], q['441_2_2'][6]].join(), '80,85', '44.1 kHz 높은 신뢰도 지연');
 }
 
+// ---------------------------------------------------------------- 16 cs
+{
+  const src = read('cs'), sbox = src.slice(src.indexOf('  const SBOX ='), src.indexOf('\n', src.indexOf('  const SBOX =')));
+  const f = load('cs', ['aes128', 'f7', 'f8', 'f9', 'h9', 'drbgBlock', 'makeDraw', 'hr1', 'cr1', 'aaScore', 'aaPick', 'trailer', 'csChannels', 'rttDistance', 'twoWayPhase', 'pbrDistance'], sbox + '\nconst C = 299792458;');
+  const crypto = require('node:crypto');
+  const ecb = (k, b) => { const c = crypto.createCipheriv('aes-128-ecb', Buffer.from(k), null); c.setAutoPadding(false); return [...Buffer.concat([c.update(Buffer.from(b)), c.final()])]; };
+  for (let i = 0; i < 20; i++) { const k = [...crypto.randomBytes(16)], b = [...crypto.randomBytes(16)]; eq(X(f.aes128(k, b)), X(ecb(k, b)), 'AES-128 = OpenSSL'); }
+  // [Vol 6] Part C §8.1.1 Set 1
+  const IV = H('E10BC28A0BFDDFE9 3E7F5186E0CA0B3B'), IN = H('9FF477C1 8673840D'), PV = H('C980DEDF9882ED44 64A674967868F143');
+  const S = [0, 0, 0, 0x28, 0, 0, 0, 0x20, ...IV, ...IN, ...PV, 0x80, ...new Array(15).fill(0)], K0 = [...Array(16).keys()];
+  eq(X(f.f7(K0, [...new Array(16).fill(0), ...S])), '8b2b06dc522d3e0af0a50caf4810e035', 'f7 K2 (§8.1.1)');
+  const v1 = new Array(16).fill(0); v1[3] = 1;
+  eq(X(f.f7(K0, [...v1, ...S])), 'a34fbe57f8f97e349d15a37679607464', 'f7 X (§8.1.1)');
+  eq(X(f.f8([...IV, ...IN, ...PV])), 'b602b1b28c6f0a3ddae637b48425087ddc188c89a1b0cdfda1e8fc66c9999750', 'f8 SM (§8.1.1)');
+  const { k, v } = f.h9(IV, IN, PV);
+  eq(X(k), 'eee04d7c76113a5cec992ae320c24d27', 'h9 K (§8.1.1 INITIAL K)');
+  eq(X(v), 'df905647c1066e6f52c03edfb82b6928', 'h9 V (§8.1.1 INITIAL V)');
+  for (const [tid, step, ctr, out] of [[1, 0, 0, 'ffbcc1ca39a69dc40738ef33d9d13532'], [1, 0, 1, '51ee4bb03ee6d0a171871c2e60468f6c'], [5, 0, 0, '0c00e4aa6c376ab800b8c55df079bc3a'], [5, 1, 0, '011cae4e9947d1b5d06acddac7f8f937'], [5, 2, 0, '640612148605afea71550bdd28942f38'], [0, 3, 0, '3273a22d8847da6a1c2cbd8ce8967962'], [0, 3, 1, 'abd10c59ddbdd9f30520f7d0ef378ebe'], [2, 3, 0, 'f8822a54e07c501557cd985169d4acab'], [3, 3, 0, '3b8e7e2aa8d7cff1cc69be13751fb395']])
+    eq(X(f.drbgBlock(k, v, tid, step, ctr)), out, `CS_DRBG T_ID ${tid} 스텝 ${step} 카운터 ${ctr} (§8.1.1)`);
+  const ch = []; for (let i = 2; i <= 20; i++) ch.push(i);
+  eq(f.cr1(ch, f.makeDraw(k, v, 1, 0)).join(' '), '11 7 14 18 9 19 10 8 5 2 4 15 16 13 12 6 17 20 3', '#3a 모드 0 채널 섞기 (§8.1.1)');
+  eq(f.cr1(ch, f.makeDraw(k, v, 0, 3)).join(' '), '6 12 5 10 3 2 18 17 16 8 11 7 19 4 13 20 9 15 14', '#3b 채널 섞기, 스텝 3 (§8.1.1)');
+  // hr1 두 바이트 경우 (§8.1.1 곳곳의 "(16 bits)" 줄)
+  for (const [a, b, R, o] of [[0x6c, 0xe1, 19, 16], [0x0b, 0x05, 24, 0], [0x00, 0x90, 29, 16], [0x47, 0x5c, 29, 10], [0x50, 0xdb, 29, 24], [0xc0, 0x85, 24, 12], [0xa0, 0xbd, 24, 17], [0x85, 0x85, 29, 15], [0xb1, 0xe5, 29, 26]]) {
+    const q = [a, b]; let used = 0; const d = () => [q[used++]];
+    eq(f.hr1(R, d), o, `hr1(${R}) ${a.toString(16)} ${b.toString(16)} → ${o}`); eq(used, 2, '두 바이트를 썼다');
+  }
+  for (const [a, R, o] of [[0xff, 2, 1], [0xbc, 3, 2], [0xc1, 4, 3], [0xca, 5, 3], [0x39, 6, 1], [0xef, 12, 11], [0xee, 19, 17]]) eq(f.hr1(R, () => [a]), o, `hr1(${R}) ${a.toString(16)} → ${o}`);
+  // 접근 주소 점수와 선택 (§2.2.1, 예 §8.1.1)
+  const sc = (h) => [0, 8, 16, 24].map((i) => parseInt(h.slice(i, i + 8), 16));
+  for (const [h, s, ai, ri] of [['0C00E4AA6C376AB800B8C55DF079BC3A', '12 8 16 16', 1, 3], ['011CAE4E9947D1B5D06ACDDAC7F8F937', '6 8 10 14', 0, 2], ['640612148605AFEA71550BDD28942F38', '10 12 28 8', 0, 3]]) {
+    const w = sc(h); eq(w.map(f.aaScore).join(' '), s, `점수 ${h}`);
+    eq(f.aaPick(w[0], w[1]), w[ai], '개시자 접근 주소'); eq(f.aaPick(w[2], w[3]), w[ri], '반사자 접근 주소 (같으면 두 번째)');
+  }
+  eq(f.trailer(0x6c376ab8), '1010', '최상위 0 → 1010 (§8.1.1)'); eq(f.trailer(0xf079bc3a), '0101', '최상위 1 → 0101');
+  // Table 1.1, 물리 관계
+  const cs = f.csChannels(); eq(cs.length, 72, 'CS 채널 72개'); ok(!cs.includes(23) && !cs.includes(25) && cs.includes(22) && cs.includes(26) && cs[cs.length - 1] === 76, '23~25, 77·78 제외');
+  ok(Math.abs(f.rttDistance(20) - 2.998) < 0.001, '20 ns → 3.0 m');
+  for (const d of [0.5, 3, 12.3, 80, 149]) { let p = f.twoWayPhase(d, 2405e6) - f.twoWayPhase(d, 2404e6); if (p < 0) p += 2 * Math.PI; ok(Math.abs(f.pbrDistance(p, 1e6) - d) < 1e-6, `위상 차로 ${d} m`); }
+}
+
 // ---------------------------------------------------------------- 모든 인라인 스크립트가 문법 오류 없이 컴파일되는가, JSON-LD가 올바른가
 let scripts = 0;
 for (const f of ['../index.html', ...fs.readdirSync(path.join(root, 'chapters')).filter((x) => x.endsWith('.html'))]) {

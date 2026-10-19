@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>Channel Sounding: 위상과 왕복 시간으로 거리 재기 · BluetoothBook 심화</title>
+<meta name="description" content="Bluetooth 6.0의 Channel Sounding. 72개 CS 채널, 스텝 모드 0~3, 왕복 시간(RTT)과 위상 기반 거리 측정의 원리, 두 기기가 같은 난수를 만드는 CS DRBG(h9·f7·f8·f9)와 채널 섞기 cr1·hr1, 접근 주소 자기상관 점수를 Core 6.3의 예제 데이터로 재현한다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/cs.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="BluetoothBook 심화">
+<meta property="og:title" content="Channel Sounding: 위상과 왕복 시간으로 거리 재기 · BluetoothBook 심화">
+<meta property="og:description" content="Bluetooth 6.0의 Channel Sounding. 72개 CS 채널, 스텝 모드 0~3, 왕복 시간(RTT)과 위상 기반 거리 측정의 원리, 두 기기가 같은 난수를 만드는 CS DRBG(h9·f7·f8·f9)와 채널 섞기 cr1·hr1, 접근 주소 자기상관 점수를 Core 6.3의 예제 데이터로 재현한다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/cs.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"Channel Sounding: 위상과 왕복 시간으로 거리 재기","name":"Channel Sounding: 위상과 왕복 시간으로 거리 재기 · BluetoothBook 심화","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/cs.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/cs.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":16,"image":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png","dateModified":"2026-10-19","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/#book","name":"BluetoothBook 심화 — 프로토콜 스택을 끝까지 따라가는 블루투스 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},"publisher":{"@type":"Organization","name":"BluetoothBook 심화","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},"description":"Bluetooth 6.0의 Channel Sounding. 72개 CS 채널, 스텝 모드 0~3, 왕복 시간(RTT)과 위상 기반 거리 측정의 원리, 두 기기가 같은 난수를 만드는 CS DRBG(h9·f7·f8·f9)와 채널 섞기 cr1·hr1, 접근 주소 자기상관 점수를 Core 6.3의 예제 데이터로 재현한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook 심화","item":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},{"@type":"ListItem","position":2,"name":"16 Channel Sounding: 위상과 왕복 시간으로 거리 재기","item":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/cs.html"}]}]}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<style>
+  .mono { font: 12.5px/1.8 var(--mono); word-break: break-all; }
+  .mono .k { color: var(--text-dim); }
+  .mono .hl { color: var(--accent); font-weight: 700; }
+  .chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .chips span { min-width: 30px; padding: 4px 6px; border-radius: 6px; background: var(--surface); border: 1px solid var(--border); font: 12.5px var(--mono); text-align: center; }
+  .chips span.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .phase { display: flex; align-items: flex-end; gap: 2px; height: 90px; margin-top: 8px; }
+  .phase i { flex: 1; background: var(--accent); border-radius: 2px 2px 0 0; opacity: .8; }
+  .badge-ok { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; background: var(--ok); color: #fff; }
+</style>
+</head>
+<body data-chapter="cs">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 16</div>
+    <h1>Channel Sounding: 위상과 왕복 시간으로 거리 재기</h1>
+    <p class="lead">신호 세기(RSSI)로 거리를 어림하던 방식은 손으로 가리기만 해도 몇 미터씩 틀린다. Bluetooth 6.0의 <span class="term">Channel Sounding</span>(CS)은 두 가지를 직접 잰다. 패킷이 갔다 오는 <b>시간</b>, 그리고 여러 주파수에서 돌아온 전파의 <b>위상</b>이다. 그리고 두 기기만 아는 난수로 채널 순서와 접근 주소를 매번 바꿔, 엉뚱한 기기가 끼어들기 어렵게 한다. 이 장은 그 난수 생성을 사양의 예제 데이터로 한 바이트씩 재현한다.</p>
+    <ul class="objectives">
+      <li>CS 채널 72개와 스텝 모드 0~3이 각각 무엇을 재는지 설명할 수 있다.</li>
+      <li>왕복 시간과 위상 차이에서 거리를 계산하고, 위상 방식의 모호 거리를 구할 수 있다.</li>
+      <li>CS DRBG의 h9·f7·f8·f9와 nonce의 카운터 칸을 따라가 사양 예의 난수를 재현할 수 있다.</li>
+      <li>hr1·cr1로 채널을 섞고, 자기상관 점수로 접근 주소를 고르는 규칙을 적용할 수 있다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="channels">
+    <h2>CS 채널과 스텝 모드</h2>
+    <p>CS는 광고·데이터 채널 번호와 별개로 2,402~2,480 MHz를 1 MHz 간격으로 나눈 <b>79개 채널</b>(인덱스 0~78, 주파수 = 2,402 + k MHz)을 쓴다. 그중 0·1, 23~25, 77·78은 쓰지 않는다(Table 1.1). 23~25는 2,425~2,427 MHz로 광고 채널 38(2,426 MHz) 자리이고, 양 끝은 대역 가장자리다. 남는 것은 2~22와 26~76, <b>72개</b>다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>스텝 모드</th><th>교환</th><th>재는 것</th><th>지원</th></tr></thead>
+      <tbody>
+        <tr><td class="num">0</td><td>CS_SYNC 주고받기</td><td>두 기기의 주파수 오차. 개시자(initiator)가 이후 스텝을 보정한다</td><td>필수</td></tr>
+        <tr><td class="num">1</td><td>CS_SYNC 주고받기</td><td>왕복 시간(RTT)</td><td>필수</td></tr>
+        <tr><td class="num">2</td><td>CS 톤 주고받기</td><td>위상 회전(위상 기반 거리, PBR)</td><td>필수</td></tr>
+        <tr><td class="num">3</td><td>CS_SYNC + 톤</td><td>RTT와 위상 둘 다</td><td>선택</td></tr>
+      </tbody>
+    </table></div>
+    <p>한 번의 측정은 <b>CS 프로시저</b>이고, 프로시저는 연결 이벤트에 맞춰 들어가는 <b>서브이벤트</b>로, 서브이벤트는 <b>스텝</b>으로 나뉜다. 서브이벤트는 모드 0 스텝 몇 개로 시작하고, 이어서 주 모드(Main_Mode, 예: 2) 스텝을 여러 번 하다가 가끔 부 모드(Sub_Mode, 예: 3)를 끼워 넣는다. 무엇을 언제 끼울지도 아래 DRBG가 정한다.</p>
+    <p class="spec-ref">CS 채널(Table 1.1): <b>[Vol 6] Part H §1</b> · CS_SYNC 형식: <b>§2</b> · 스텝 모드 0~3: <b>§4.3.1~§4.3.4</b> · 서브이벤트 구조·Sub_Mode 끼우기: <b>§4.4</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="ranging">
+    <h2>시간과 위상으로 거리 재기</h2>
+    <p><b>왕복 시간(<span class="term">RTT</span>)</b>: <span class="term">개시자</span>가 보낸 CS_SYNC를 반사자(reflector)가 정해진 시간 뒤 돌려보낸다. 양쪽이 잰 도착·출발 시각(ToA·ToD)을 빼면 순수한 비행 시간이 남고, 거리는 c × 시간 ÷ 2다. 빛은 1 ns에 약 30 cm를 가므로, 왕복 1 ns 오차가 거리 15 cm 오차다.</p>
+    <p><b>위상 기반(<span class="term">PBR</span>)</b>: 주파수 f의 톤이 거리 d를 왕복하면 위상이 4πfd/c만큼 돈다. 위상 하나는 2π마다 같은 값이라 거리를 모르지만, 두 주파수의 위상 <b>차이</b> Δφ = 4πΔf·d/c 에서 d = c·Δφ ÷ (4πΔf)를 얻는다. Δf가 1 MHz면 c/(2Δf) ≈ 150 m마다 같은 답이 반복된다(모호 거리). 실제로는 수십 개 채널의 위상을 모아 기울기를 맞추고, RTT로 어느 반복인지 고른다. 두 방식의 결합은 구현의 몫이고 사양은 측정값과 그 정확도 요구만 정한다.</p>
+    <div class="callout analogy"><strong>메아리와 물결</strong><p>RTT는 산에 소리치고 메아리가 올 때까지 시간을 재는 것이다. 정확하지만 시계가 아주 좋아야 한다. 위상은 연못에 일정한 간격으로 물결을 보내고 돌아온 물결의 마루가 어디쯤인지 보는 것이다. 물결 간격보다 작은 차이도 보이지만, 몇 번째 물결인지는 모른다. 그래서 둘을 같이 쓴다.</p></div>
+    <div class="sim" id="sim-rng">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>거리 → RTT와 채널별 왕복 위상</h3></div>
+      <div class="sim-controls" style="border-top:0">
+        <label class="ctrl"><span>실제 거리 <b id="rg-dv">5.0 m</b></span><input type="range" id="rg-d" min="1" max="4000" value="50"></label>
+        <label class="ctrl"><span>채널 간격 Δf <b id="rg-fv">1 MHz</b></span><input type="range" id="rg-f" min="1" max="5" value="1"></label>
+      </div>
+      <div class="sim-view" style="padding:12px 16px">
+        <div class="phase" id="rg-ph" aria-hidden="true"></div>
+        <p class="mono" style="margin:6px 0 0"><span class="k">채널 2부터 Δf 간격으로 20개 채널의 왕복 위상(0~2π). 거리가 늘면 기울기가 가팔라진다.</span></p>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">왕복 비행 시간</span><span class="v" id="rg-t">—</span></div>
+        <div class="stat"><span class="k">이웃 채널 위상 차 Δφ</span><span class="v" id="rg-p">—</span></div>
+        <div class="stat"><span class="k">위상으로 구한 거리</span><span class="v" id="rg-e">—</span></div>
+        <div class="stat"><span class="k">모호 거리 c/(2Δf)</span><span class="v" id="rg-a">—</span></div>
+      </div>
+      <div class="sim-note">잡음·다중 경로가 없는 이상적인 계산이다. 해볼 것: 거리를 150 m 넘게 올리면 위상 방식의 답이 0 근처로 되돌아간다(Δf = 1 MHz). Δf를 키우면 모호 거리가 줄어든다. 그래서 위상만으로는 “몇 번째 반복인지”를 알 수 없고 RTT가 필요하다.</div>
+    </div>
+    <p class="spec-ref">RTT 측정과 ToA·ToD 보고 정확도: <b>[Vol 6] Part H §3.1</b> · 위상 측정과 PCT: <b>§3.3·§4.6</b> · 거리 계산 식은 물리 관계(사양 밖)</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="drbg">
+    <h2>두 기기가 같은 난수를: CS DRBG</h2>
+    <p>CS의 채널 순서, 접근 주소, 부 모드 위치, 톤 연장 슬롯, 안테나 순서, 사운딩 시퀀스 마커는 모두 <b><span class="term">CS DRBG</span></b>가 정한다. 두 기기가 같은 씨앗에서 같은 난수를 만들기 때문에 미리 합의 없이도 같은 순서로 움직이고, 씨앗을 모르는 기기는 다음 채널이나 접근 주소를 맞힐 수 없다.</p>
+    <ol>
+      <li><b>CS 보안 시작</b>: 암호화된 연결 위에서 두 기기가 각자 CS_IV 64비트, CS_IN 32비트, CS_PV 64비트를 보내고, 주변 기기(Peripheral) 쪽을 앞에 붙여 128·64·128비트 값을 만든다.</li>
+      <li><b>h9</b>: SM = f8(CS_IV ‖ CS_IN ‖ CS_PV), 그다음 (K, V) = f9(SM, 0, 0). f8은 고정 키 00 01 … 0F로 f7(CBC-MAC 같은 사슬)을 두 번 돌려 256비트 씨앗을 만들고, f9는 V의 마지막 바이트를 1씩 올리며 AES를 두 번 돌려 SM과 XOR한다.</li>
+      <li><b>CS_DRBG</b>: 128비트 = e(K, V + 카운터). V의 오른쪽 네 바이트가 카운터 칸이다. 옥텟 0 = Transaction_Counter, 옥텟 1 = Transaction_ID(표 4.16의 거래 종류), 옥텟 2~3 = Step_Counter(지금 스텝 번호를 더함).</li>
+      <li>거래 종류마다 128비트에서 앞(최상위)부터 필요한 만큼 꺼내 쓰고, 모자라면 남은 비트를 버리고 Transaction_Counter를 올려 새 블록을 만든다. 새 프로시저마다 f9(0, K, V)로 되돌림 방지(backtracking resistance)를 한다.</li>
+    </ol>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Transaction_ID</th><th>무엇을 정하나</th></tr></thead>
+      <tbody>
+        <tr><td class="num">0x00</td><td>모드 0이 아닌 스텝의 채널 순서(#3b·#3c)</td></tr>
+        <tr><td class="num">0x01</td><td>모드 0 스텝의 채널 순서(#3a)</td></tr>
+        <tr><td class="num">0x02</td><td>부 모드 끼워 넣을 위치</td></tr>
+        <tr><td class="num">0x03</td><td>톤 연장 슬롯 유무</td></tr>
+        <tr><td class="num">0x04</td><td>안테나 경로 순서</td></tr>
+        <tr><td class="num">0x05</td><td>CS 접근 주소 후보</td></tr>
+        <tr><td class="num">0x06·0x07</td><td>사운딩 시퀀스 마커 위치·신호</td></tr>
+        <tr><td class="num">0x08</td><td>랜덤 시퀀스</td></tr>
+        <tr><td class="num">0x09</td><td>되돌림 방지</td></tr>
+      </tbody>
+    </table></div>
+    <p><b>hr1(R)</b>은 0~R−1 범위의 난수다. 8비트 v를 꺼내 T = R·v로 두고, 하위 8비트가 256 mod R보다 작으면(치우칠 수 있는 경우) 8비트를 하나 더 꺼내 ⌊(256·v₂·R + T) ÷ 65536⌋, 아니면 ⌊T ÷ 256⌋. <b>cr1</b>은 i = 0부터 차례로 j = hr1(i+1)을 뽑아 i번 자리를 j번과 바꾸는 피셔-예이츠 섞기다(hr1(1)은 비트를 쓰지 않고 0).</p>
+    <div class="sim" id="sim-drbg">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>CS DRBG 재현 ([Vol 6] Part C §8.1.1 Set 1의 입력)</h3></div>
+      <div class="sim-controls" style="border-top:0">
+        <div class="ctrl"><span>거래 종류</span><div class="seg" id="dr-t"><button data-value="1" class="on">0x01 모드 0 채널</button><button data-value="0">0x00 그 밖의 채널</button><button data-value="5">0x05 접근 주소</button></div></div>
+        <label class="ctrl"><span>스텝 번호 <b id="dr-sv">0</b></span><input type="range" id="dr-s" min="0" max="20" value="0"></label>
+        <label class="ctrl"><span>필터된 채널 수 <b id="dr-nv">19</b> (2번부터)</span><input type="range" id="dr-n" min="2" max="72" value="19"></label>
+      </div>
+      <div class="sim-view" style="padding:12px 16px">
+        <div class="mono" id="dr-io"></div>
+        <div class="chips" id="dr-out"></div>
+      </div>
+      <div class="sim-readout"><div class="stat"><span class="k">사양 예와 비교</span><span class="v" id="dr-ok">—</span></div></div>
+      <div class="sim-note">입력은 사양 예 그대로다: CS_IV = E10BC28A0BFDDFE9 ‖ 3E7F5186E0CA0B3B, CS_IN = 9FF477C1 ‖ 8673840D, CS_PV = C980DEDF9882ED44 ‖ 64A674967868F143, 채널 맵 0x1FFFFC(2~20번). 해볼 것: ① 모드 0 채널, 스텝 0 → “11 7 14 18 …”. ② 그 밖의 채널은 스텝 3에서 처음 뽑힌다(사양 예의 첫 모드 2 스텝) → “6 12 5 10 …”. ③ 접근 주소, 스텝 0·1·2 → 점수와 고른 주소, 트레일러. 스텝을 바꾸면 Step_Counter 칸만 바뀌는데도 출력 전체가 달라진다.</div>
+    </div>
+    <p class="spec-ref">CS DRBG(f7·f8·f9·h9·CS_DRBG·되돌림 방지·nonce 칸): <b>[Vol 6] Part E §3.1~§3.2</b> · 거래 종류(Table 4.16)와 hr1: <b>[Vol 6] Part H §4.8, §4.8.1</b> · cr1과 #3a: <b>§4.1.2, §4.1.3</b> · 예제 데이터: <b>[Vol 6] Part C §8.1.1</b> · CS 보안 시작: <b>[Vol 6] Part B §5.1.23</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="aa">
+    <h2>접근 주소 고르기와 트레일러</h2>
+    <p>RTT를 재는 스텝마다 DRBG 128비트에서 32비트 후보 넷(s0, s1, s2, s3)을 뽑는다. 앞의 둘은 개시자 → 반사자, 뒤의 둘은 반사자 → 개시자 방향 후보다. 각 쌍에서 <b>자기상관 점수</b>가 낮은 쪽을 고르고, 같으면 두 번째를 고른다. 점수는 k = 1, 2, 3칸 떨어진 비트끼리 다른 횟수 Cₖ로 |2C₁ − 31| + |2C₂ − 30| + |2C₃ − 29|. 자기 자신을 조금 밀어 겹쳤을 때 닮지 않을수록 점수가 낮고, 그래야 도착 시각을 날카롭게 잡을 수 있다.</p>
+    <p>CS_SYNC의 접근 주소 뒤에는 4비트 <b>트레일러</b>가 붙는다. 접근 주소의 최상위 비트(마지막으로 보내는 비트)가 0이면 1010, 1이면 0101. 끝까지 0과 1이 번갈아 나오게 해서 마지막 비트의 경계를 분명히 한다.</p>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">스텝 0의 반사자 후보 00B8C55D와 F079BC3A는 점수가 둘 다 16이다. 무엇이 접근 주소가 될까?</p><p class="wi-hint">같을 때의 규칙.</p><div class="opts">
+      <button class="opt">00B8C55D (첫 번째)</button>
+      <button class="opt" data-correct>F079BC3A (두 번째)</button>
+      <button class="opt">다시 뽑는다</button>
+    </div><div class="quiz-exp">점수가 같으면 쌍의 두 번째(s1, s3)를 고른다. 사양 예도 F079BC3A이고, 최상위 비트가 1이라 트레일러는 0101이다.</div></div>
+    <p class="spec-ref">후보 순서·점수식·같을 때 규칙: <b>[Vol 6] Part H §2.2, §2.2.1</b> · 트레일러: <b>§2.3</b> · 예: <b>[Vol 6] Part C §8.1.1</b>(스텝 0~2의 점수 12/8, 16/16, 6/8, 10/14, 10/12, 28/8)</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="security">
+    <h2>보안: 무엇을 막도록 설계되었나</h2>
+    <p>거리 측정은 “가까이 있으면 문이 열린다” 같은 결정에 쓰이므로, 실제보다 가깝게 보이도록 신호를 꾸며 내는 시도를 견뎌야 한다. CS의 방어는 층으로 쌓여 있다.</p>
+    <ul>
+      <li><b>예측 불가</b>: 채널 순서, 접근 주소, 사운딩 시퀀스 마커가 DRBG에서 나오므로 씨앗(CS 보안 시작은 암호화된 연결에서만)을 모르면 미리 응답을 만들 수 없다.</li>
+      <li><b>RTT와 위상의 교차 확인</b>: 두 방식이 서로 다른 물리량을 재므로 하나만 속이면 어긋난다.</li>
+      <li><b>조기 응답 감지</b>: 사운딩·랜덤 시퀀스에 대해 위상·진폭 기반 감지 지표를 계산하고 그 성능 요구를 사양이 정한다(6.2에서 진폭 기반 추가). 기기는 결과를 <span class="term">NADM</span>(Normalized Attack Detector Metric) 값으로 보고한다.</li>
+    </ul>
+    <p>판단은 결국 응용의 몫이다. 거리 하나로 잠금을 풀기보다, 여러 프로시저의 일관성과 감지 지표, 다른 인증 요소를 함께 쓰는 것이 권장되는 설계다.</p>
+    <p class="spec-ref">조기 응답 감지(위상·진폭 기반)와 요구: <b>[Vol 6] Part H §3.5~§3.5.4</b> · 사운딩 시퀀스 마커: <b>§2.4</b> · 랜덤 시퀀스: <b>§2.5</b></p>
+  </section>
+
+  <div class="callout related"><strong>다른 책에서</strong><ul><li><a href="../../bluetooth/chapters/location.html">BluetoothBook · 위치와 방향</a> — RSSI, AoA·AoD, Channel Sounding의 큰 그림</li></ul></div>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>CS 채널은 2,402 + k MHz(k = 0~78) 중 72개(2~22, 26~76). 모드 0 주파수 보정, 1 RTT, 2 위상, 3 둘 다.</li>
+      <li>거리 = c × 왕복 시간 ÷ 2, 위상 방식은 d = c·Δφ ÷ (4πΔf), Δf = 1 MHz면 약 150 m마다 반복.</li>
+      <li>CS DRBG: h9 = f8(씨앗) → f9, 출력 = e(K, V + 카운터). 카운터 칸은 Transaction_Counter·ID·Step_Counter.</li>
+      <li>hr1은 치우칠 수 있으면 8비트를 더 뽑고, cr1은 피셔-예이츠 섞기.</li>
+      <li>접근 주소는 자기상관 점수가 낮은 후보(같으면 두 번째), 트레일러는 최상위 비트 0이면 1010.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>CS 채널 인덱스 24의 주파수와 사용 여부는?</p><div class="opts">
+        <button class="opt">2,424 MHz, 사용</button><button class="opt" data-correct>2,426 MHz, 사용 안 함</button><button class="opt">2,426 MHz, 사용</button><button class="opt">2,450 MHz, 사용</button>
+      </div><div class="quiz-exp">2,402 + 24 = 2,426 MHz. 23~25는 Table 1.1에서 허용되지 않는다.</div></div>
+      <div class="quiz-q"><p>왕복 시간이 비행만으로 20 ns다. 거리는 약?</p><div class="opts">
+        <button class="opt">6 m</button><button class="opt" data-correct>3 m</button><button class="opt">1.5 m</button><button class="opt">20 m</button>
+      </div><div class="quiz-exp">c × 20 ns ÷ 2 ≈ 0.3 m/ns × 20 ÷ 2 = 3.0 m.</div></div>
+      <div class="quiz-q"><p>CS DRBG nonce V에서 스텝마다 바뀌는 칸은?</p><div class="opts">
+        <button class="opt">옥텟 15</button><button class="opt">옥텟 4~15 전체</button><button class="opt" data-correct>옥텟 2~3 (Step_Counter)</button><button class="opt">바뀌지 않는다</button>
+      </div><div class="quiz-exp">Part E Table 3.3. 옥텟 0은 Transaction_Counter, 1은 Transaction_ID, 2~3은 Step_Counter, 4~15는 고정.</div></div>
+      <div class="quiz-q"><p>hr1(19)에서 첫 바이트가 0x6C였다. 무엇이 일어나나?</p><div class="opts">
+        <button class="opt">⌊19 × 108 ÷ 256⌋ = 8</button><button class="opt" data-correct>하위 8비트 4 &lt; 256 mod 19 = 9이므로 한 바이트를 더 뽑는다</button><button class="opt">다시 처음부터 뽑는다</button><button class="opt">0을 돌려준다</button>
+      </div><div class="quiz-exp">T = 2052, T mod 256 = 4 &lt; 9. 사양 예는 다음 바이트 0xE1로 ⌊(256·225·19 + 2052) ÷ 65536⌋ = 16을 얻는다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const C = 299792458;
+  const SBOX = (() => { const s = new Array(256); let p = 1, q = 1; do { p = p ^ ((p << 1) & 0xff) ^ (p & 0x80 ? 0x1b : 0); q ^= q << 1; q ^= q << 2; q ^= q << 4; q &= 0xff; if (q & 0x80) q ^= 0x09; const x = q ^ ((q << 1) | (q >> 7)) ^ ((q << 2) | (q >> 6)) ^ ((q << 3) | (q >> 5)) ^ ((q << 4) | (q >> 4)); s[p] = (x ^ 0x63) & 0xff; } while (p !== 1); s[0] = 0x63; return s; })();
+  /* ================================================================ 계산 (검증 스크립트가 꺼내 쓴다) */
+  /** AES-128 한 블록 = 보안 함수 e. [Vol 3] Part H §2.2.1 */
+  function aes128(key, block) {
+    const xt = (a) => ((a << 1) ^ (a & 0x80 ? 0x1b : 0)) & 0xff;
+    const w = key.slice(); let rc = 1;
+    for (let i = 16; i < 176; i += 4) { let t = w.slice(i - 4, i); if (i % 16 === 0) { t = [SBOX[t[1]] ^ rc, SBOX[t[2]], SBOX[t[3]], SBOX[t[0]]]; rc = xt(rc); } for (let j = 0; j < 4; j++) w[i + j] = w[i - 16 + j] ^ t[j]; }
+    let s = block.map((b, i) => b ^ w[i]);
+    for (let r = 1; r <= 10; r++) {
+      s = s.map((b) => SBOX[b]);
+      s = [0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12, 1, 6, 11].map((i) => s[i]);
+      if (r < 10) { const o = []; for (let c = 0; c < 4; c++) { const a = s.slice(4 * c, 4 * c + 4), x = a[0] ^ a[1] ^ a[2] ^ a[3]; for (let i = 0; i < 4; i++) o.push(a[i] ^ x ^ xt(a[i] ^ a[(i + 1) % 4])); } s = o; }
+      s = s.map((b, i) => b ^ w[16 * r + i]);
+    }
+    return s;
+  }
+  /** f7: 128비트 블록마다 XOR 후 e. [Vol 6] Part E §3.1.2 */
+  function f7(k, s) { let h = new Array(16).fill(0); for (let i = 0; i < s.length; i += 16) h = aes128(k, h.map((b, j) => b ^ s[i + j])); return h; }
+  /** f8: 320비트 → 256비트 씨앗 SM. §3.1.3 */
+  function f8(inp) {
+    const S = [0, 0, 0, 0x28, 0, 0, 0, 0x20, ...inp, 0x80, ...new Array(15).fill(0)], K = [...Array(16).keys()];
+    const v1 = new Array(16).fill(0); v1[3] = 1;
+    const k2 = f7(K, [...new Array(16).fill(0), ...S]), x = f7(K, [...v1, ...S]), a = aes128(k2, x);
+    return [...a, ...aes128(k2, a)];
+  }
+  /** f9: V의 마지막 바이트를 올리며 e 두 번, SM과 XOR → (K, V). §3.1.4 */
+  function f9(sm, k, v) {
+    v = v.slice(); v[15] = (v[15] + 1) & 255; const x = aes128(k, v); v[15] = (v[15] + 1) & 255;
+    const X = [...x, ...aes128(k, v)].map((b, i) => b ^ sm[i]);
+    return { k: X.slice(0, 16), v: X.slice(16) };
+  }
+  /** h9: CS_IV(16)·CS_IN(8)·CS_PV(16) → K_DRBG, V_DRBG. §3.1.5 */
+  function h9(iv, inn, pv) { return f9(f8([...iv, ...inn, ...pv]), new Array(16).fill(0), new Array(16).fill(0)); }
+  /** 128비트 출력 = e(K, V + 카운터). 배열 끝(옥텟 0)부터 Transaction_Counter, ID, Step_Counter 하위·상위. Part E §3.1.6, Table 3.3, §3.2.2 */
+  function drbgBlock(k, v, tid, step, ctr) {
+    const n = v.slice(); n[15] = (n[15] + ctr) & 255; n[14] = (n[14] + tid) & 255;
+    const sc = (((n[12] << 8) | n[13]) + step) & 0xffff; n[12] = sc >> 8; n[13] = sc & 255;
+    return aes128(k, n);
+  }
+  /** 한 거래 종류의 비트 꺼내기(바이트 단위, 앞에서부터). 모자라면 남은 비트를 버리고 다음 블록. Part H §4.8 */
+  function makeDraw(k, v, tid, step) {
+    let ctr = 0, buf = [], pos = 16;
+    const draw = (nBytes) => { if (pos + nBytes > 16) { buf = drbgBlock(k, v, tid, step, ctr++); pos = 0; } const r = buf.slice(pos, pos + nBytes); pos += nBytes; return r; };
+    draw.blocks = () => ctr;
+    return draw;
+  }
+  /** hr1(R): 0~R-1. Part H §4.8.1 */
+  function hr1(R, draw) {
+    if (R === 1) return 0;
+    const t = R * draw(1)[0];
+    if ((t & 0xff) < 256 % R) return Math.floor((256 * draw(1)[0] * R + t) / 65536);
+    return t >> 8;
+  }
+  /** cr1: 피셔-예이츠 섞기. Part H §4.1.2 */
+  function cr1(arr, draw) {
+    const out = [];
+    for (let i = 0; i < arr.length; i++) { const j = hr1(i + 1, draw); if (i !== j) { out[i] = out[j]; out[j] = arr[i]; } else out[i] = arr[i]; }
+    return out;
+  }
+  /** 자기상관 점수. Part H §2.2.1 */
+  function aaScore(x) {
+    let s = 0;
+    for (let k = 1; k <= 3; k++) { let c = 0; for (let i = 0; i + k < 32; i++) c += ((x >>> (31 - i)) & 1) ^ ((x >>> (31 - i - k)) & 1); s += Math.abs(2 * c - (32 - k)); }
+    return s;
+  }
+  /** 쌍에서 점수 낮은 쪽, 같으면 두 번째 */
+  function aaPick(a, b) { return aaScore(a) < aaScore(b) ? a : b; }
+  /** 트레일러(전송 순서): 최상위 비트 0 → 1010. §2.3 */
+  function trailer(aa) { return aa >>> 31 ? "0101" : "1010"; }
+  /** 허용된 CS 채널 인덱스(Table 1.1) */
+  function csChannels() { const o = []; for (let k = 2; k <= 76; k++) if (k < 23 || k > 25) o.push(k); return o; }
+  /** 거리(m) ← 순수 왕복 비행 시간(ns) */
+  function rttDistance(ns) { return (C * ns * 1e-9) / 2; }
+  /** 왕복 위상(0~2π) */
+  function twoWayPhase(d, fHz) { const p = (4 * Math.PI * fHz * d) / C; return p - 2 * Math.PI * Math.floor(p / (2 * Math.PI)); }
+  /** 위상 차(0~2π)와 주파수 차로 거리 */
+  function pbrDistance(dphi, dfHz) { return (C * dphi) / (4 * Math.PI * dfHz); }
+
+  /* ================================================================ 1. 거리 */
+  (function () {
+    const d = BD.range("rg-d", (v) => (v / 10).toFixed(1) + " m", draw), f = BD.range("rg-f", (v) => v + " MHz", draw);
+    function draw() {
+      const dist = d() / 10, df = f() * 1e6, f0 = 2404e6;
+      $("rg-ph").innerHTML = Array.from({ length: 20 }, (_, i) => `<i style="height:${(twoWayPhase(dist, f0 + i * df) / (2 * Math.PI)) * 100}%"></i>`).join("");
+      const dphi = twoWayPhase(dist, f0 + df) - twoWayPhase(dist, f0), w = dphi < 0 ? dphi + 2 * Math.PI : dphi;
+      BD.stat("rg-t", ((2 * dist) / C * 1e9).toFixed(2) + " ns");
+      BD.stat("rg-p", ((w * 180) / Math.PI).toFixed(1) + "°");
+      BD.stat("rg-e", pbrDistance(w, df).toFixed(2) + " m");
+      BD.stat("rg-a", (C / (2 * df)).toFixed(1) + " m");
+    }
+    draw();
+  })();
+
+  /* ================================================================ 2. DRBG */
+  (function () {
+    const Hx = (s) => s.match(/../g).map((x) => parseInt(x, 16)), X = (a) => a.map((b) => BD.hex(b)).join(" ");
+    const { k, v } = h9(Hx("E10BC28A0BFDDFE93E7F5186E0CA0B3B"), Hx("9FF477C18673840D"), Hx("C980DEDF9882ED4464A674967868F143"));
+    const SPEC = { "1/0/19": "11 7 14 18 9 19 10 8 5 2 4 15 16 13 12 6 17 20 3", "0/3/19": "6 12 5 10 3 2 18 17 16 8 11 7 19 4 13 20 9 15 14", "5/0": "6C376AB8 F079BC3A", "5/1": "011CAE4E D06ACDDA", "5/2": "64061214 28942F38" };
+    const t = BD.seg("dr-t", draw), s = BD.range("dr-s", String, draw), n = BD.range("dr-n", String, draw);
+    function draw() {
+      const tid = +t(), step = s(), blk = drbgBlock(k, v, tid, step, 0);
+      let io = `<span class="k">K_DRBG</span> ${X(k)}<br><span class="k">V_DRBG</span> ${X(v)}<br><span class="k">V + 카운터</span> ${X(v.slice(0, 12))} <span class="hl">${X(drbgNonce(tid, step).slice(12))}</span><br><span class="k">첫 128비트</span> ${X(blk)}`, out = "", key, got;
+      if (tid === 5) {
+        const w = [0, 4, 8, 12].map((i) => ((blk[i] << 24) | (blk[i + 1] << 16) | (blk[i + 2] << 8) | blk[i + 3]) >>> 0), h8 = (x) => x.toString(16).toUpperCase().padStart(8, "0");
+        const a = aaPick(w[0], w[1]), b = aaPick(w[2], w[3]);
+        out = w.map((x, i) => `<span class="${x === (i < 2 ? a : b) ? "on" : ""}">s${i} ${h8(x)} · ${aaScore(x)}</span>`).join("");
+        io += `<br><span class="k">개시자→반사자</span> ${h8(a)} + 트레일러 ${trailer(a)} · <span class="k">반사자→개시자</span> ${h8(b)} + ${trailer(b)}`;
+        key = `5/${step}`; got = `${h8(a)} ${h8(b)}`;
+      } else {
+        const ch = csChannels().slice(0, n()), draw1 = makeDraw(k, v, tid, step), sh = cr1(ch, draw1);
+        out = sh.map((c) => `<span>${c}</span>`).join("");
+        io += `<br><span class="k">쓴 블록 수</span> ${draw1.blocks()} · <span class="k">채널</span> ${ch[0]}~${ch[ch.length - 1]} (${ch.length}개)`;
+        key = `${tid}/${step}/${n()}`; got = sh.join(" ");
+      }
+      $("dr-io").innerHTML = io; $("dr-out").innerHTML = out;
+      BD.stat("dr-ok", SPEC[key] ? (SPEC[key] === got ? '<span class="badge-ok">일치</span> Part C §8.1.1' : "불일치") : "이 조합은 예에 없음");
+    }
+    function drbgNonce(tid, step) { const x = v.slice(); x[14] = (x[14] + tid) & 255; const sc = (((x[12] << 8) | x[13]) + step) & 0xffff; x[12] = sc >> 8; x[13] = sc & 255; return x; }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>
