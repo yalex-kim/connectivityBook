@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>링크 계층 제어 절차: instant와 충돌 규칙 · BluetoothBook 심화</title>
+<meta name="description" content="LL 제어 PDU의 형식과 opcode, 한 번에 하나의 절차와 40초 응답 타임아웃, instant로 미래의 이벤트를 약속하는 규칙과 Instant Passed, 연결 갱신의 전송 창, 두 기기가 동시에 시작한 절차의 충돌 판정(0x23·0x2A), 그리고 LL_CHANNEL_MAP_IND 하나를 CRC·화이트닝·CTE까지 공중 비트로 만드는 작업대.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/procedures.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="BluetoothBook 심화">
+<meta property="og:title" content="링크 계층 제어 절차: instant와 충돌 규칙 · BluetoothBook 심화">
+<meta property="og:description" content="LL 제어 PDU의 형식과 opcode, 한 번에 하나의 절차와 40초 응답 타임아웃, instant로 미래의 이벤트를 약속하는 규칙과 Instant Passed, 연결 갱신의 전송 창, 두 기기가 동시에 시작한 절차의 충돌 판정(0x23·0x2A), 그리고 LL_CHANNEL_MAP_IND 하나를 CRC·화이트닝·CTE까지 공중 비트로 만드는 작업대.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/procedures.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"링크 계층 제어 절차: instant와 충돌 규칙","name":"링크 계층 제어 절차: instant와 충돌 규칙 · BluetoothBook 심화","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/procedures.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/procedures.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":4,"image":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png","dateModified":"2026-10-19","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/#book","name":"BluetoothBook 심화 — 프로토콜 스택을 끝까지 따라가는 블루투스 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},"publisher":{"@type":"Organization","name":"BluetoothBook 심화","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},"description":"LL 제어 PDU의 형식과 opcode, 한 번에 하나의 절차와 40초 응답 타임아웃, instant로 미래의 이벤트를 약속하는 규칙과 Instant Passed, 연결 갱신의 전송 창, 두 기기가 동시에 시작한 절차의 충돌 판정(0x23·0x2A), 그리고 LL_CHANNEL_MAP_IND 하나를 CRC·화이트닝·CTE까지 공중 비트로 만드는 작업대."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook 심화","item":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},{"@type":"ListItem","position":2,"name":"04 링크 계층 제어 절차: instant와 충돌 규칙","item":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/procedures.html"}]}]}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<style>
+  .hexin { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px 14px; }
+  .hexin label { display: grid; gap: 4px; font-size: 12.5px; color: var(--text-dim); }
+  .hexin input, .hexin select { font: 13px var(--mono); padding: 7px 9px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); min-width: 0; }
+  .blk { font: 12.5px/1.65 var(--mono); overflow-x: auto; white-space: pre; padding: 12px 14px; background: var(--surface); border-radius: 10px; color: var(--text); }
+  .blk .k { color: var(--text-dim); } .blk .a { color: var(--accent); font-weight: 600; } .blk .b { color: var(--accent-2); font-weight: 600; } .blk .ok { color: var(--ok); font-weight: 700; } .blk .bad { color: var(--bad); font-weight: 700; }
+  .verdict { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-elev); font-size: 15px; }
+  .verdict b { display: block; margin-bottom: 4px; }
+</style>
+</head>
+<body data-chapter="procedures">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 04</div>
+    <h1>링크 계층 제어 절차: instant와 충돌 규칙</h1>
+    <p class="lead">연결 간격을 바꾸고, 채널 맵을 바꾸고, PHY를 바꾸는 일은 두 기기가 <b>같은 이벤트에서 동시에</b> 바꿔야 한다. 한쪽만 먼저 바꾸면 서로 다른 시각, 다른 채널에서 기다리다 연결이 끊긴다. 링크 계층은 이것을 “<span class="term">instant</span>”라는 미래의 이벤트 번호로 약속한다. 이 장은 그 약속의 규칙과, 두 기기가 동시에 절차를 시작했을 때 누가 양보하는지를 따라가고, 제어 PDU 하나를 공중 비트까지 직접 만들어 본다.</p>
+    <ul class="objectives">
+      <li>LL 제어 PDU의 형식(헤더·opcode·CtrData)과 “한 번에 하나”, 40초 응답 타임아웃 규칙을 안다.</li>
+      <li>instant를 고르는 규칙(6번의 기회, mod 65536 비교)과 Instant Passed(0x28)가 언제 나는지 설명할 수 있다.</li>
+      <li>연결 갱신에서 전송 창(WinOffset·WinSize)과 새 앵커 포인트가 정해지는 방식을 안다.</li>
+      <li>두 절차가 충돌할 때 센트럴과 페리페럴이 각각 무엇을 하는지, 오류 코드 0x23과 0x2A를 구별할 수 있다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="pdu">
+    <h2>제어 PDU와 “한 번에 하나”</h2>
+    <p>데이터 PDU 헤더의 LLID가 0b11이면 그 페이로드는 <span class="term">LL 제어 PDU</span>다. 첫 바이트가 opcode이고 나머지가 CtrData다. 예: 0x00 LL_CONNECTION_UPDATE_IND, 0x01 LL_CHANNEL_MAP_IND, 0x02 LL_TERMINATE_IND, 0x03/0x04 LL_ENC_REQ/RSP(6장), 0x07 LL_UNKNOWN_RSP, 0x0F LL_CONNECTION_PARAM_REQ, 0x11 LL_REJECT_EXT_IND, 0x14/0x15 LL_LENGTH_REQ/RSP, 0x16~0x18 LL_PHY_REQ/RSP/UPDATE_IND. 모르는 opcode를 받으면 LL_UNKNOWN_RSP로 답하고, 이 답을 받은 쪽은 그 연결에서 같은 절차를 다시 시작하지 않는다.</p>
+    <p>규칙 둘. 종료 절차를 빼면 <b>한 기기는 한 연결에서 한 번에 한 절차만 시작</b>한다. 그리고 연결 갱신·채널 맵 갱신을 뺀 모든 절차에는 <b>40초 응답 타임아웃</b>(T_PRT)이 있다. 제어 PDU를 큐에 넣을 때마다 타이머를 다시 시작하고, 40초 안에 끝나지 않으면 연결을 잃은 것으로 본다(0x22 LL Response Timeout).</p>
+    <div class="callout analogy"><strong>공연장의 “셋에 맞춰 전환”</strong><p>무대 조명과 음향을 동시에 바꾸려면 “지금!”이라고 외치면 늦는다. 소리가 닿는 사이에 이미 박자가 지나 있다. 그래서 감독은 “다음 소절의 셋째 박에 전환”이라고 미리 알려 둔다. 두 기사는 같은 악보를 보고 박자를 세니까 같은 순간에 바꾼다. instant가 그 “셋째 박”이고, 악보의 박자 번호가 connEventCounter다(3장).</p></div>
+    <p class="spec-ref">LL 제어 PDU 형식과 opcode(Table 2.22), LL_UNKNOWN_RSP: <b>[Vol 6] Part B §2.4.2</b> · 한 번에 하나의 절차: <b>§5.1</b> · 응답 타임아웃 40초: <b>§5.2</b> · 오류 코드: <b>[Vol 1] Part F §2</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="instant">
+    <h2>instant: 미래의 이벤트 번호로 약속하기</h2>
+    <p>instant가 있는 PDU(연결 갱신, 채널 맵, PHY 갱신, 연결 속도 갱신 등)는 “connEventCount가 이 값이 되는 이벤트부터 새 값을 쓴다”를 뜻한다. 규칙은 이렇다.</p>
+    <ul>
+      <li>instant는 거의 언제나 <b>센트럴이 고른다</b>(채널 사운딩 채널 맵만 예외).</li>
+      <li>센트럴은 instant 전에 <b>페리페럴이 듣는 이벤트가 적어도 6번</b> 있도록 고르는 것이 좋다. 페리페럴은 factor × (latency + 1) 이벤트마다 한 번 들을 수 있으므로 그만큼 곱해서 멀리 잡는다.</li>
+      <li>비교는 mod 65536이다. (Instant − connEventCount) mod 65536이 32767보다 작고 0이 아니면 미래, 32767 이상이면 과거다.</li>
+      <li>미래의 instant를 받은 페리페럴은 센트럴이 자기 확인 응답을 받았다고 알 때까지(또는 instant까지) 모든 이벤트를 듣는다.</li>
+      <li>이미 지난 instant의 <b>연결 갱신</b>을 받으면 페리페럴은 연결을 잃은 것으로 처리한다(<b>0x28 Instant Passed</b>). 다른 PDU는 그렇게 해도 된다.</li>
+    </ul>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">페리페럴 지연이 4(서브레이팅 없음)인 연결에서, 센트럴이 연결 갱신의 instant를 지금부터 3 이벤트 뒤로 잡았다. 무엇이 일어나기 쉬울까?</p><p class="wi-hint">페리페럴은 몇 이벤트마다 한 번 듣나? instant 전에 PDU를 받을 기회는?</p><div class="opts">
+      <button class="opt">문제없다. 페리페럴은 instant에 맞춰 바꾼다</button>
+      <button class="opt" data-correct>페리페럴이 instant가 지난 뒤에 PDU를 받아 연결이 끊긴다(0x28)</button>
+      <button class="opt">센트럴이 instant를 자동으로 늦춘다</button>
+    </div><div class="quiz-exp">지연 4면 페리페럴은 최악의 경우 5 이벤트마다 한 번 듣는다. 3 이벤트 안에 한 번도 듣지 않을 수 있고, 그다음에 받은 연결 갱신은 instant가 이미 지났으므로 페리페럴은 연결을 잃은 것으로 처리한다. 그래서 사양은 instant를 factor × (latency + 1)을 곱해 6번의 기회 이상 뒤로 잡으라고 한다. 큰 서브레이트를 쓰는 연결이라면 먼저 서브레이트 갱신으로 factor를 1로 낮춘 뒤 절차를 하라고도 권한다.</div></div>
+    <div class="sim" id="sim-inst">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>instant를 얼마나 멀리 잡을까</h3></div>
+      <div class="sim-view"><canvas id="cv-inst"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>instant까지 이벤트 수 <b id="in-dv">12</b></span><input type="range" id="in-d" min="1" max="60" value="12"></label>
+        <label class="ctrl"><span>connSubrateFactor × (latency + 1) <b id="in-kv">1</b></span><input type="range" id="in-k" min="1" max="12" value="1"></label>
+        <label class="ctrl"><span>패킷 오류율 <b id="in-pv">30%</b></span><input type="range" id="in-p" min="0" max="90" step="5" value="30"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">페리페럴이 들을 기회</span><span class="v" id="in-n">—</span></div>
+        <div class="stat"><span class="k">instant 전에 한 번도 못 받을 확률</span><span class="v" id="in-r">—</span></div>
+        <div class="stat"><span class="k">사양 권장(기회 ≥ 6)</span><span class="v" id="in-ok">—</span></div>
+      </div>
+      <div class="sim-note">모델: 센트럴은 instant 전 모든 기회에 PDU를 (재)전송하고, 페리페럴은 factor × (latency + 1) 이벤트마다 한 번 들으며, 각 기회의 실패는 서로 독립이라고 본다. 실패 확률 = 오류율^기회 수. 해볼 것: ① 오류율 30%, 기회 6이면 약 0.07%. ② 지연을 써서 곱이 6이 되면 같은 12 이벤트에 기회는 2번뿐이라 9%로 뛴다. 사양이 “6번의 기회”를 factor와 latency로 곱해 세라고 하는 이유다. ③ 그래프는 instant까지 거리에 따른 실패 확률(로그 눈금).</div>
+    </div>
+    <p class="spec-ref">instant 규칙(6번, mod 65536, 과거 instant와 0x28): <b>[Vol 6] Part B §5.5·§5.5.1</b> · instant를 지나면 BIG도 동기를 멈출 수 있음: <b>§5.5.2</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="update">
+    <h2>연결 갱신: 전송 창과 새 앵커 포인트</h2>
+    <p>LL_CONNECTION_UPDATE_IND(opcode 0x00)의 CtrData는 WinSize(1바이트, × 1.25 ms), WinOffset(2바이트, × 1.25 ms), Interval(× 1.25 ms), Latency, Timeout(× 10 ms), Instant다. instant 이벤트의 앵커 포인트에서 바로 새 간격을 쓰는 것이 아니라, <b>instant 직전 이벤트의 앵커 포인트 + 옛 간격 + WinOffset</b>에서 시작하는 <span class="term">전송 창</span> 안에서 센트럴이 처음 보낸 패킷이 새 앵커 포인트가 된다. 그래서 센트럴은 갱신을 기회로 앵커 포인트를 옮겨 다른 연결과의 충돌을 피할 수 있다(호스트에 알리지 않는 “앵커 포인트 이동”).</p>
+    <p>그 밖의 규칙: WinOffset은 0 ~ 새 간격, WinSize는 1.25 ms ~ min(10 ms, 새 간격 − 1.25 ms). instant에 감독 타이머를 다시 시작한다. 간격이 바뀌면 서브레이트 factor는 1, continuation은 0으로 돌아간다. 센트럴은 instant와 그 직전 이벤트에서 보내고, 페리페럴은 서브레이팅이나 지연과 상관없이 그 두 이벤트를 듣는다. 두 기기 모두 연결 파라미터 요청 절차(0x0F)를 지원하면 그것을 먼저 쓴다.</p>
+    <p class="spec-ref">LL_CONNECTION_UPDATE_IND 형식: <b>[Vol 6] Part B §2.4.2.1</b> · 연결 갱신 절차(전송 창, instant 전후 이벤트, 서브레이트 초기화, 앵커 포인트 이동): <b>§5.1.1</b> · 연결 파라미터 요청: <b>§5.1.7</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="collide">
+    <h2>둘이 동시에 시작했을 때</h2>
+    <p>제어 PDU는 실시간으로 처리되지 않는다. 센트럴이 PHY 갱신을 보내는 사이 페리페럴도 연결 파라미터 요청을 보낼 수 있다. 둘 다 instant가 있는 절차면 서로 다른 instant로 다른 것을 바꾸려는 셈이라 함께 진행할 수 없다. 사양은 <b>양립할 수 없는</b> 쌍을 정해 둔다. 둘 다 instant가 있는 절차, 프레임 간격 갱신끼리 또는 프레임 간격 갱신과 CIS 생성, 서브레이트 갱신·요청과 연결 속도 갱신·요청, 그리고 몇몇 채널 사운딩 절차 쌍이다.</p>
+    <p>절차 A를 시작해 아직 끝나지 않았는데 상대가 양립할 수 없는 절차 B를 시작하면:</p>
+    <ol>
+      <li>상대가 이미 A에 응답 PDU를 하나라도 보냈다면 → 연결 상태를 떠나는 것이 좋다(끊는다).</li>
+      <li>아니면 <b>센트럴</b>은 B를 LL_REJECT_EXT_IND(둘 다 지원하면, 아니면 LL_REJECT_IND)로 거절하고 A를 계속한다.</li>
+      <li><b>페리페럴</b>은 센트럴의 B를 처리하고, 자기 A는 센트럴의 거절을 받는 것 말고는 손을 뗀다.</li>
+    </ol>
+    <p>오류 코드는 같은 절차끼리 부딪혔거나 A가 연결 갱신이고 B가 연결 파라미터 요청이면 <b>0x23</b>(LL Procedure Collision), 그 밖에는 <b>0x2A</b>(Different Transaction Collision)다. 한 번 상대 절차에 응답했다면, 그 절차가 끝날 때까지 양립할 수 없는 새 절차를 시작하지 않는다.</p>
+    <div class="sim" id="sim-col">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>절차 충돌 판정기</h3></div>
+      <div class="sim-controls" style="border-top:0">
+        <div class="ctrl"><span>나의 역할</span><div class="seg" id="co-r"><button data-value="C" class="on">센트럴</button><button data-value="P">페리페럴</button></div></div>
+        <label class="ctrl"><span>내가 시작한 절차 A</span><select id="co-a"></select></label>
+        <label class="ctrl"><span>상대가 시작한 절차 B</span><select id="co-b"></select></label>
+        <label class="check"><input type="checkbox" id="co-s"> 상대가 이미 A에 응답 PDU를 보냈다</label>
+      </div>
+      <div class="sim-view" style="padding:14px 16px"><div class="verdict" id="co-out" aria-live="polite"></div></div>
+      <div class="sim-note">절차마다 시작할 수 있는 역할이 정해져 있다(연결 갱신·채널 맵·서브레이트 갱신·연결 속도 갱신은 센트럴만, 서브레이트 요청·연결 속도 요청은 페리페럴만). 목록은 그 역할에 맞는 절차만 보인다. 해볼 것: ① 센트럴, A = PHY 갱신, B = 연결 파라미터 요청 → 둘 다 instant가 있어 충돌, 센트럴이 거절(0x2A). ② 페리페럴로 바꾸면 자기 A를 버리고 센트럴의 B를 따른다. ③ A = 데이터 길이 갱신이면 어느 쪽과도 양립한다.</div>
+    </div>
+    <p class="spec-ref">충돌하는 쌍과 처리 순서, 0x23·0x2A: <b>[Vol 6] Part B §5.3</b> · 절차별 시작 역할: <b>§5.1.1·§5.1.2·§5.1.19·§5.1.20·§5.1.32·§5.1.33</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="air">
+    <h2>제어 PDU 하나를 공중 비트까지</h2>
+    <p>사양 [Vol 6] Part C §4.3.2에는 LL_CHANNEL_MAP_IND 하나가 공중에 나가는 비트 그대로 실려 있다. 채널 2, 5, 33~36을 빼는 채널 맵, instant 0x4321, 그리고 40 µs짜리 AoD 상수 톤 확장(CTE, 17장)까지. 헤더 첫 바이트의 비트는 LLID(2) · NESN · SN · MD · CP(CTE 정보 있음) · RFU(2)이고, CP가 1이면 길이 바이트 뒤에 CTEInfo 바이트가 붙는다. CRC는 헤더(CTEInfo 포함)와 페이로드에 대해 계산하고, 화이트닝은 그 둘과 CRC에 걸고, CTE는 화이트닝하지 않은 1로 끝에 붙는다.</p>
+    <div class="sim" id="sim-air">
+      <div class="sim-head"><span class="sim-tag">WORKBENCH</span><h3>LL 제어 PDU → 공중 비트 (사양 4.3.2 샘플)</h3></div>
+      <div class="sim-view" style="padding:14px 16px">
+        <div class="hexin">
+          <label>PDU<select id="ai-t"><option value="1" selected>LL_CHANNEL_MAP_IND (0x01)</option><option value="0">LL_CONNECTION_UPDATE_IND (0x00)</option><option value="2">LL_TERMINATE_IND (0x02)</option></select></label>
+          <label>쓰지 않을 채널 (쉼표·범위)<input id="ai-ch" spellcheck="false" value="2, 5, 33-36"></label>
+          <label>Instant (hex)<input id="ai-in" spellcheck="false" value="4321"></label>
+          <label>NESN · SN · MD<input id="ai-h" spellcheck="false" value="0 1 1"></label>
+          <label>CTE (µs, 0 = 없음)<input id="ai-cte" spellcheck="false" value="40"></label>
+          <label>접근 주소 · CRCInit · 채널<input id="ai-aa" spellcheck="false" value="AA173C42 CD3F6C 29"></label>
+        </div>
+        <div class="blk" id="ai-out" style="margin-top:12px"></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">PDU 길이</span><span class="v" id="ai-len">—</span></div>
+        <div class="stat"><span class="k">공중 비트 수</span><span class="v" id="ai-bits">—</span></div>
+        <div class="stat"><span class="k">사양 샘플과 비교</span><span class="v" id="ai-ok">—</span></div>
+      </div>
+      <div class="sim-note">비트는 공중에 나가는 순서(각 바이트의 작은 비트부터, CRC는 큰 비트부터)로 적었다. 연결 갱신은 WinSize 1, WinOffset 0, Interval 24(30 ms), Latency 0, Timeout 200(2 s)을, 종료는 이유 0x13을 쓴다. 해볼 것: ① 처음 값이 사양의 “Complete packet”과 비트 하나까지 같은지 보자(✓). ② CTE를 0으로 하면 CP가 0이 되고 CTEInfo 바이트와 끝의 1들이 사라진다. ③ 채널 하나를 더 빼면 채널 맵 바이트, CRC, 화이트닝된 비트가 모두 바뀐다.</div>
+    </div>
+    <p class="spec-ref">헤더(Table 2.21)·CP·CTEInfo: <b>[Vol 6] Part B §2.4·§2.5.2</b> · LL_CHANNEL_MAP_IND: <b>§2.4.2.2</b> · CRC: <b>§3.1.1</b> · 화이트닝: <b>§3.2</b> · 샘플: <b>[Vol 6] Part C §4.3.2</b>(데이터 PDU는 §4.3.1)</p>
+  </section>
+
+  <div class="callout related"><strong>다른 책에서</strong><ul><li><a href="../../bluetooth/chapters/connection.html">BluetoothBook 06장 · 연결</a> — 연결 파라미터와 CRC·화이트닝의 기본</li><li><a href="../../bluetooth/chapters/hopping.html">BluetoothBook 04장 · 주파수 도약</a> — 채널 맵과 채널 선택</li></ul></div>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>LLID 0b11 = LL 제어 PDU, 첫 바이트 opcode. 한 기기는 한 연결에서 한 번에 한 절차(종료 제외), 응답 타임아웃 40초(연결 갱신·채널 맵 제외).</li>
+      <li>instant = 새 값을 쓰기 시작할 connEventCount. 센트럴이 고르고, 페리페럴이 들을 기회가 6번 이상이게, mod 65536으로 비교. 지난 instant의 연결 갱신은 0x28로 끊긴다.</li>
+      <li>연결 갱신의 새 앵커 포인트는 instant 직전 앵커 + 옛 간격 + WinOffset에서 여는 전송 창 안의 첫 패킷.</li>
+      <li>양립할 수 없는 절차가 겹치면: 상대가 이미 응답했으면 끊고, 아니면 센트럴이 거절, 페리페럴이 양보. 같은 절차끼리면 0x23, 아니면 0x2A.</li>
+      <li>공중 비트 = 프리앰블 · 접근 주소 · 화이트닝된(헤더 · CTEInfo · 페이로드 · CRC) · 화이트닝 안 한 CTE.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>connEventCount가 0xFFF0일 때 Instant 0x0005인 PDU를 받았다. instant는?</p><div class="opts">
+        <button class="opt">과거 (65,515 이벤트 전)</button><button class="opt" data-correct>미래 (21 이벤트 뒤)</button><button class="opt">지금</button><button class="opt">무효</button>
+      </div><div class="quiz-exp">(0x0005 − 0xFFF0) mod 65536 = 21 &lt; 32767 이므로 미래.</div></div>
+      <div class="quiz-q"><p>연결 갱신 PDU의 instant가 이미 지났다. 페리페럴은?</p><div class="opts">
+        <button class="opt">새 값을 바로 쓴다</button><button class="opt">LL_REJECT_EXT_IND</button><button class="opt" data-correct>연결을 잃은 것으로 처리(0x28)</button><button class="opt">무시한다</button>
+      </div><div class="quiz-exp">[Vol 6] Part B §5.5.1: LL_CONNECTION_UPDATE_IND면 반드시, 그 밖의 PDU면 그래도 된다.</div></div>
+      <div class="quiz-q"><p>페리페럴이 PHY 갱신을 시작했는데, 응답을 받기 전에 센트럴이 채널 맵 갱신을 보냈다. 페리페럴은?</p><div class="opts">
+        <button class="opt">채널 맵을 거절한다</button><button class="opt" data-correct>채널 맵을 처리하고 자기 PHY 갱신은 센트럴의 거절을 받는다</button><button class="opt">둘 다 진행한다</button><button class="opt">바로 연결을 끊는다</button>
+      </div><div class="quiz-exp">둘 다 instant가 있어 양립할 수 없다. 센트럴이 아직 PHY 갱신에 응답하지 않았으므로 페리페럴이 양보한다(오류 0x2A).</div></div>
+      <div class="quiz-q"><p>LL 제어 PDU 응답 타임아웃이 적용되지 않는 절차는?</p><div class="opts">
+        <button class="opt">PHY 갱신</button><button class="opt" data-correct>연결 갱신과 채널 맵 갱신</button><button class="opt">암호화 시작</button><button class="opt">데이터 길이 갱신</button>
+      </div><div class="quiz-exp">[Vol 6] Part B §5.2. 이 둘은 센트럴이 일방적으로 알리는 절차다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  /* ================================================================ 계산 (검증 스크립트가 꺼내 쓴다) */
+  /** instant가 미래인가: (instant − now) mod 65536이 0 < · < 32767. [Vol 6] Part B §5.5·§5.5.1 */
+  function instantState(instant, now) { const d = (((instant - now) % 65536) + 65536) % 65536; return d === 0 ? "now" : d < 32767 ? "future" : "past"; }
+  /** instant까지 d 이벤트, 페리페럴이 k 이벤트마다 들을 때 기회 수와 한 번도 못 받을 확률 */
+  function instantRisk(d, k, per) { const n = Math.floor((d - 1) / k) + 1; return { chances: n, miss: Math.pow(per, n) }; }
+  /** 연결 갱신 전송 창의 허용 범위(ms). [Vol 6] Part B §5.1.1 */
+  function windowOk(winOffsetMs, winSizeMs, newIntervalMs) { const m = (v) => Math.abs(v / 1.25 - Math.round(v / 1.25)) < 1e-9; return m(winOffsetMs) && m(winSizeMs) && winOffsetMs >= 0 && winOffsetMs <= newIntervalMs && winSizeMs >= 1.25 && winSizeMs <= Math.min(10, newIntervalMs - 1.25); }
+  const PROC = {
+    connUpdate: { name: "연결 갱신 (LL_CONNECTION_UPDATE_IND)", instant: true, roles: "C" },
+    chMap: { name: "채널 맵 갱신", instant: true, roles: "C" },
+    connParam: { name: "연결 파라미터 요청", instant: true, roles: "CP" },
+    phy: { name: "PHY 갱신", instant: true, roles: "CP" },
+    rateUpdate: { name: "연결 속도 갱신", instant: true, roles: "C", group: "rate" },
+    rateReq: { name: "연결 속도 요청", instant: true, roles: "P", group: "rate" },
+    subUpdate: { name: "서브레이트 갱신", instant: false, roles: "C", group: "subrate" },
+    subReq: { name: "서브레이트 요청", instant: false, roles: "P", group: "subrate" },
+    frameSpace: { name: "프레임 간격 갱신", instant: false, roles: "CP", group: "fsu" },
+    cisCreate: { name: "CIS 생성", instant: false, roles: "C", group: "cis" },
+    dataLen: { name: "데이터 길이 갱신", instant: false, roles: "CP" },
+    feature: { name: "기능 교환", instant: false, roles: "CP" },
+  };
+  /** 두 절차가 양립할 수 없는가. [Vol 6] Part B §5.3 (채널 사운딩 쌍은 생략) */
+  function incompatible(a, b) {
+    const A = PROC[a], B = PROC[b];
+    if (A.instant && B.instant) return true;
+    if (A.group === "fsu" && (B.group === "fsu" || B.group === "cis")) return true;
+    if (B.group === "fsu" && A.group === "cis") return true;
+    if ((A.group === "subrate" && B.group === "rate") || (A.group === "rate" && B.group === "subrate")) return true;
+    return false;
+  }
+  /** 내가 시작한 A가 끝나기 전에 상대가 B를 시작했을 때 처리. [Vol 6] Part B §5.3 */
+  function collision(myRole, a, b, peerRespondedToA) {
+    if (!incompatible(a, b)) return { action: "both", code: null };
+    const code = a === b || (a === "connUpdate" && b === "connParam") ? 0x23 : 0x2a;
+    if (peerRespondedToA) return { action: "disconnect", code };
+    return myRole === "C" ? { action: "rejectB", code } : { action: "yieldToB", code };
+  }
+  /** CRC-24 (x^24+x^10+x^9+x^6+x^4+x^3+x+1), 바이트마다 작은 비트부터. [Vol 6] Part B §3.1.1 */
+  function crc24(bytes, init) {
+    let r = init & 0xffffff;
+    for (const by of bytes) for (let i = 0; i < 8; i++) { const fb = ((r >> 23) & 1) ^ ((by >> i) & 1); r = (r << 1) & 0xffffff; if (fb) r ^= 0x00065b; }
+    return r;
+  }
+  /** 화이트닝 비트열(x^7+x^4+1, 채널 번호로 시작). [Vol 6] Part B §3.2 */
+  function whiteningBits(channel, n) {
+    let s = [1]; for (let i = 5; i >= 0; i--) s.push((channel >> i) & 1);
+    const out = [];
+    for (let k = 0; k < n; k++) { const o = s[6]; out.push(o); s = [o, s[0], s[1], s[2], s[3] ^ o, s[4], s[5]]; }
+    return out;
+  }
+  /** LL 제어 PDU 바이트(헤더 + [CTEInfo] + opcode + CtrData). o: { op, unused[], instant, nesn, sn, md, cteUs } */
+  function buildCtrl(o) {
+    let ctr = [];
+    if (o.op === 1) { const m = [0, 0, 0, 0, 0]; for (let c = 0; c < 37; c++) if (!o.unused.includes(c)) m[c >> 3] |= 1 << (c & 7); ctr = m.concat([o.instant & 255, (o.instant >> 8) & 255]); }
+    else if (o.op === 0) ctr = [1, 0, 0, 24, 0, 0, 0, 200, 0, o.instant & 255, (o.instant >> 8) & 255]; // WinSize 1, WinOffset 0, Interval 24, Latency 0, Timeout 200, Instant
+    else ctr = [0x13];
+    const cp = o.cteUs > 0 ? 1 : 0, h0 = 0b11 | (o.nesn << 2) | (o.sn << 3) | (o.md << 4) | (cp << 5);
+    const hdr = [h0, ctr.length + 1].concat(cp ? [((o.cteUs / 8) & 0x1f) | (2 << 6)] : []); // CTEType 2 = AoD 2 µs
+    return hdr.concat([o.op], ctr);
+  }
+  /** 공중 비트 문자열: 프리앰블(1M) · AA · whiten(PDU ‖ CRC) · CTE(1 × µs). [Vol 6] Part B §2.1·§3 */
+  function airBits(aa, pdu, crcInit, channel, cteUs) {
+    const lsb = (by) => Array.from({ length: 8 }, (_, i) => (by >> i) & 1);
+    const aaB = [aa & 255, (aa >> 8) & 255, (aa >> 16) & 255, (aa >>> 24) & 255], pre = aaB[0] & 1 ? [1, 0, 1, 0, 1, 0, 1, 0] : [0, 1, 0, 1, 0, 1, 0, 1];
+    const c = crc24(pdu, crcInit), body = [].concat(...pdu.map(lsb), Array.from({ length: 24 }, (_, i) => (c >> (23 - i)) & 1));
+    const w = whiteningBits(channel, body.length);
+    return { pre, aa: [].concat(...aaB.map(lsb)), crc: c, body, white: body.map((b, i) => b ^ w[i]), cte: new Array(cteUs).fill(1) };
+  }
+
+  /* ================================================================ 1. instant 위험 */
+  (function () {
+    const d = BD.range("in-d", (v) => String(v), draw), k = BD.range("in-k", (v) => String(v), draw), p = BD.range("in-p", (v) => v + "%", draw);
+    const cv = BD.canvas($("cv-inst"), (ctx, w, h) => {
+      const P = BD.palette(), per = +p() / 100, K = +k(), data = [];
+      for (let x = 1; x <= 60; x++) data.push([x, Math.max(1e-9, instantRisk(x, K, per).miss)]);
+      BD.chart(ctx, null, { x: [1, 60], y: [1e-9, 1], logY: true, xLabel: "instant까지 이벤트 수", yLabel: "실패 확률", series: [{ data, color: P.accent, width: 2 }], vlines: [{ x: +d(), color: P.warn, label: "지금" }], hlines: [{ y: 1e-3, color: P.dim, label: "0.1%" }] });
+    }, { aspect: 0.45, minHeight: 200, maxHeight: 300 });
+    function draw() { const r = instantRisk(+d(), +k(), +p() / 100); BD.stat("in-n", r.chances + "번"); BD.stat("in-r", r.miss < 1e-6 ? r.miss.toExponential(1) : (r.miss * 100).toFixed(r.miss < 0.01 ? 3 : 1) + "%"); BD.stat("in-ok", r.chances >= 6 ? "만족 ✓" : "부족 ✗"); cv.redraw(); }
+    draw();
+  })();
+
+  /* ================================================================ 2. 충돌 */
+  (function () {
+    const role = BD.seg("co-r", fill);
+    function fill() {
+      const me = role(), peer = me === "C" ? "P" : "C";
+      const opt = (r) => Object.entries(PROC).filter(([, v]) => v.roles.includes(r)).map(([k, v]) => `<option value="${k}">${v.name}</option>`).join("");
+      const a = $("co-a").value, b = $("co-b").value;
+      $("co-a").innerHTML = opt(me); $("co-b").innerHTML = opt(peer);
+      if ([...$("co-a").options].some((o) => o.value === a)) $("co-a").value = a; else $("co-a").value = me === "C" ? "phy" : "phy";
+      if ([...$("co-b").options].some((o) => o.value === b)) $("co-b").value = b; else $("co-b").value = me === "C" ? "connParam" : "chMap";
+      draw();
+    }
+    ["co-a", "co-b", "co-s"].forEach((id) => $(id).addEventListener("change", draw));
+    function draw() {
+      const me = role(), a = $("co-a").value, b = $("co-b").value, r = collision(me, a, b, $("co-s").checked), hx = (c) => "0x" + c.toString(16).padStart(2, "0").toUpperCase();
+      const why = incompatible(a, b) ? (PROC[a].instant && PROC[b].instant ? "둘 다 instant가 있는 절차" : "사양이 양립할 수 없다고 정한 쌍") : "";
+      const txt = { both: ["양립 가능", "두 절차를 함께 진행한다."], disconnect: ["연결 끊기", `상대가 이미 A에 응답했으므로 연결 상태를 떠난다. 호스트에 ${hx(r.code)}.`], rejectB: ["센트럴: B를 거절하고 A를 계속", `LL_REJECT_EXT_IND(오류 ${hx(r.code)})로 페리페럴의 B를 거절한다.`], yieldToB: ["페리페럴: B를 따르고 A를 놓는다", `센트럴의 B를 처리하고, 자기 A는 센트럴이 보낼 거절(오류 ${hx(r.code)})만 받는다.`] }[r.action];
+      $("co-out").innerHTML = `<b>${txt[0]}</b>${why ? why + ". " : ""}${txt[1]}`;
+    }
+    fill();
+  })();
+
+  /* ================================================================ 3. 공중 비트 */
+  (function () {
+    const WANT = "01010101 01000010 00111100 11101000 01010101 01110010 10011100 00101001 10010010 10110010 00010001 11100000 00111000 11100010 00010011 00010111 10010111 00111110 11100011 11111111 11111111 11111111 11111111 11111111";
+    const parseCh = (s) => { const out = []; s.split(/[,\s]+/).filter(Boolean).forEach((t) => { const m = t.match(/^(\d+)(?:-(\d+))?$/); if (!m) return; for (let c = +m[1]; c <= +(m[2] || m[1]); c++) if (c < 37) out.push(c); }); return out; };
+    const grp8 = (bits) => bits.join("").replace(/(.{8})/g, "$1 ").trim();
+    ["ai-t", "ai-ch", "ai-in", "ai-h", "ai-cte", "ai-aa"].forEach((id) => $(id).addEventListener("input", draw));
+    $("ai-t").addEventListener("change", draw);
+    function draw() {
+      const h = $("ai-h").value.trim().split(/\s+/).map(Number), aa3 = $("ai-aa").value.trim().split(/\s+/), cte = Math.max(0, Math.min(160, Math.round((+$("ai-cte").value || 0) / 8) * 8));
+      const o = { op: +$("ai-t").value, unused: parseCh($("ai-ch").value), instant: parseInt($("ai-in").value, 16) & 0xffff, nesn: h[0] & 1, sn: h[1] & 1, md: h[2] & 1, cteUs: cte };
+      const pdu = buildCtrl(o), a = airBits(parseInt(aa3[0], 16) >>> 0, pdu, parseInt(aa3[1], 16), (+aa3[2]) || 0, cte);
+      const all = a.pre.concat(a.aa, a.white, a.cte), L = (k, v, c) => `<span class="k">${k.padEnd(8)}</span> <span class="${c || ""}">${v}</span>\n`;
+      $("ai-out").innerHTML = L("PDU", pdu.map((b) => BD.hex(b)).join(" "), "a") + L("헤더비트", grp8(a.body.slice(0, 8)) + "  (LLID·NESN·SN·MD·CP·RFU)") + L("CRC", grp8(a.body.slice(-24)), "b") + L("화이트닝", grp8(a.white)) + L("공중", grp8(all), "a");
+      const same = grp8(all) === WANT, isSample = o.op === 1 && $("ai-ch").value.replace(/\s/g, "") === "2,5,33-36" && $("ai-in").value.toLowerCase() === "4321" && $("ai-h").value.trim() === "0 1 1" && cte === 40 && $("ai-aa").value.trim().toUpperCase() === "AA173C42 CD3F6C 29";
+      BD.stat("ai-len", pdu.length - (o.cteUs ? 3 : 2) + " 바이트(페이로드)"); BD.stat("ai-bits", all.length + "비트"); BD.stat("ai-ok", isSample ? (same ? "✓ 일치" : "✗ 다름") : "직접 입력");
+    }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

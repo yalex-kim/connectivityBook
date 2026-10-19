@@ -33,6 +33,33 @@ window.BD_TERMS = [
   ["GSKD", "Group Session Key Diversifier", "암호화된 BIG마다 컨트롤러가 새로 뽑아 BIGInfo에 싣는 128비트. 같은 방송 코드에서도 GSK가 달라진다. [Vol 6] Part B §4.4.6.10", "bigsec"],
   ["GIV", "Group Initialization Vector", "BIGInfo에 싣는 64비트. BIS의 IV는 GIV의 아래 32비트를 그 BIS의 접근 주소와 XOR한 값. [Vol 6] Part E §2.1", "bigsec"],
   ["시드 접근 주소", "Seed Access Address (SAA)", "BIGInfo에 싣는 32비트. BIS마다 SAA ⊕ DW(n)으로 접근 주소를 만든다. [Vol 6] Part B §2.1.2", "bigsec"],
+  // 02 hci
+  ["HCI", "Host Controller Interface", "호스트와 컨트롤러가 명령·이벤트·데이터를 주고받는 표준 형식. [Vol 4] Part E", "hci"],
+  ["H4", "HCI UART packet indicator", "UART 하나로 HCI 패킷을 섞어 보낼 때 앞에 붙이는 1바이트(명령 01, ACL 02, 동기 03, 이벤트 04, ISO 05). [Vol 4] Part A §2", "hci"],
+  ["OGF", "Opcode Group Field", "HCI 명령 opcode의 위 6비트. LE 명령은 0x08. [Vol 4] Part E §5.4.1", "hci"],
+  ["OCF", "Opcode Command Field", "HCI 명령 opcode의 아래 10비트. [Vol 4] Part E §5.4.1", "hci"],
+  ["Command Complete", "HCI_Command_Complete", "명령을 마쳤고 반환값을 싣는 이벤트(0x0E). 명령 크레딧 Num_HCI_Command_Packets를 함께 준다. [Vol 4] Part E §7.7.14", "hci"],
+  ["Command Status", "HCI_Command_Status", "명령을 받아 시작했음을 알리는 이벤트(0x0F). 결과는 나중에 다른 이벤트로 온다. [Vol 4] Part E §7.7.15", "hci"],
+  ["Number Of Completed Packets", "HCI_Number_Of_Completed_Packets", "컨트롤러가 비운 데이터 버퍼 수를 핸들별로 돌려주는 이벤트(0x13). 호스트의 데이터 크레딧. [Vol 4] Part E §7.7.19", "hci"],
+  ["LE Meta 이벤트", "HCI_LE_Meta event", "모든 LE 이벤트를 싣는 이벤트 코드 0x3E. 첫 바이트가 서브이벤트 코드. [Vol 4] Part E §7.7.65", "hci"],
+  // 03 scheduling
+  ["앵커 포인트", "Anchor point", "연결 이벤트의 시작 시각. 센트럴은 보낼 것이 있으면 여기서 첫 PDU를 보낸다. [Vol 6] Part B §4.5.1", "scheduling"],
+  ["connEventCounter", "connEventCounter", "두 기기가 함께 세는 16비트 연결 이벤트 번호. 건너뛴 이벤트도 센다. 절차의 instant 기준. [Vol 6] Part B §4.5.1", "scheduling"],
+  ["서브레이팅", "Connection subrating", "(이벤트 번호 − base)가 factor의 배수인 이벤트만 쓰는 것. 연결 간격을 바꾸지 않고 이벤트를 줄인다. [Vol 6] Part B §4.5.1", "scheduling"],
+  ["연속 이벤트", "Continuation event", "직전 continuation개 이벤트에 데이터가 오갔을 때 다음 서브레이트 이벤트를 기다리지 않고 쓰는 이벤트. [Vol 6] Part B §4.5.1", "scheduling"],
+  ["T_MCES", "Minimum Connection Event Spacing", "이벤트의 마지막 패킷과 다음 앵커 포인트 사이 최소 간격. 기본 150 µs. [Vol 6] Part B §4.1.5", "scheduling"],
+  // 04 procedures
+  ["LL 제어 PDU", "LL Control PDU", "LLID가 0b11인 데이터 PDU. 첫 바이트 opcode로 연결 갱신·채널 맵·암호화 등 절차를 나른다. [Vol 6] Part B §2.4.2", "procedures"],
+  ["instant", "Instant", "새 파라미터를 쓰기 시작할 connEventCount. 센트럴이 고르고 mod 65536으로 비교한다. 지난 instant의 연결 갱신은 0x28로 끊긴다. [Vol 6] Part B §5.5", "procedures"],
+  ["전송 창", "Transmit window", "연결 갱신 뒤 센트럴의 첫 패킷이 들어갈 구간. instant 직전 앵커 + 옛 간격 + WinOffset에서 WinSize만큼. [Vol 6] Part B §5.1.1", "procedures"],
+  ["절차 충돌", "Procedure collision", "양립할 수 없는 두 절차를 양쪽이 동시에 시작한 상황. 센트럴이 거절하고 페리페럴이 양보한다(0x23·0x2A). [Vol 6] Part B §5.3", "procedures"],
+  // 05 extadv
+  ["확장 광고", "Extended advertising", "주 채널의 ADV_EXT_IND가 보조 채널의 AUX_ADV_IND를 가리키고, 길면 AUX_CHAIN_IND로 잇는 광고. 호스트 데이터 최대 1650바이트. [Vol 6] Part B §2.3.4", "extadv"],
+  ["AuxPtr", "Auxiliary pointer", "다음 보조 패킷의 채널·시각·PHY를 담는 3바이트. 오프셋 단위 30 µs 또는 300 µs. [Vol 6] Part B §2.3.4.5", "extadv"],
+  ["ADI", "AdvDataInfo", "광고 묶음 번호 SID 4비트와 데이터 판 번호 DID 12비트. DID가 같으면 같은 데이터로 본다. [Vol 6] Part B §2.3.4.4", "extadv"],
+  ["T_MAFS", "Minimum AUX Frame Space", "AuxPtr를 실은 패킷의 끝과 그것이 가리키는 보조 패킷 시작 사이 최소 300 µs. [Vol 6] Part B §4.1.2", "extadv"],
+  ["SyncInfo", "SyncInfo", "주기적 광고 열차에 동기화하는 데 필요한 18바이트(오프셋, 주기, 채널 맵, 접근 주소 등). [Vol 6] Part B §2.3.4.6", "extadv"],
+  ["PAST", "Periodic Advertising Sync Transfer", "이미 동기화한 기기가 연결로 SyncInfo를 넘겨 상대가 스캔 없이 동기화하게 하는 절차. [Vol 6] Part B §5.1.13", "extadv"],
 ];
 
 /* 본문 표기 → 용어집 표제어 */

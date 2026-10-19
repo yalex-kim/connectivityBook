@@ -14,6 +14,10 @@
     { slug: "smp",        num: "07", part: "보안 끝까지", title: "SMP 완전판: P-256에서 LTK까지", desc: "P-256 공개 키 교환과 검증, 디버그 키, f4 약속값과 g2 숫자 비교, 패스키 20라운드, f5로 뽑는 MacKey와 LTK, f6 확인값, 레거시 c1·s1, CT2와 h6·h7로 하는 CTKD를 부록 D 샘플로 검증한다.", tags: ["보안", "sim"] },
     { slug: "privacy",    num: "08", part: "보안 끝까지", title: "프라이버시와 필터링: 해석 목록과 필터 수용 목록", desc: "주소 네 가지와 신원 주소, ah로 만들고 푸는 RPA, 컨트롤러의 해석 목록과 네트워크·기기 프라이버시 모드, 광고·스캔·연결 필터 정책과 TargetA, RPA를 바꾸는 시점.", tags: ["보안", "sim"] },
     { slug: "bigsec",     num: "09", part: "보안 끝까지", title: "BIG 보안과 BIS: 방송 코드에서 그룹 세션 키까지", desc: "방송 코드의 UTF-8 표현, h7·h6·h8로 이어지는 IGLTK·GLTK·GSK, BIGInfo의 GSKD와 GIV, BIS의 CCM, 시드 접근 주소에서 BIS 접근 주소를 만드는 규칙을 사양 샘플로 재현한다.", tags: ["보안", "sim"] },
+    { slug: "hci",        num: "02", part: "컨트롤러", title: "HCI: 호스트와 컨트롤러 사이의 바이트", desc: "HCI 패킷 다섯 가지와 UART 표시 바이트, OGF·OCF, Command Complete·Status, 명령·데이터 크레딧과 Number Of Completed Packets, 이벤트 마스크와 6.3 비트 확장, 초기화 순서를 사양 샘플의 HCI 바이트로 해독한다.", tags: ["컨트롤러", "sim"] },
+    { slug: "scheduling", num: "03", part: "컨트롤러", title: "링크 계층 상태 기계와 컨트롤러 스케줄링", desc: "일곱 상태와 여러 상태 기계, 반드시 함께 지원할 조합, 앵커 포인트와 connEventCounter, 서브레이팅·연속 이벤트·페리페럴 지연의 규칙, 무선 하나로 여러 일을 돌리는 스케줄러와 건너뛴 이벤트.", tags: ["컨트롤러", "sim"] },
+    { slug: "procedures", num: "04", part: "컨트롤러", title: "링크 계층 제어 절차: instant와 충돌 규칙", desc: "LL 제어 PDU와 한 번에 하나의 절차, 40초 응답 타임아웃, instant 규칙과 Instant Passed, 연결 갱신의 전송 창, 절차 충돌 판정(0x23·0x2A), 제어 PDU를 CRC·화이트닝·CTE까지 공중 비트로 만들기.", tags: ["컨트롤러", "sim"] },
+    { slug: "extadv",     num: "05", part: "컨트롤러", title: "광고 끝까지: 확장 광고 체인, 주기적 광고와 PAwR", desc: "ADV_EXT_IND·AUX_ADV_IND·AUX_CHAIN_IND, 공통 확장 페이로드와 AuxPtr·ADI, 1650바이트 체인과 T_MAFS, 주기적 광고와 PAST, PAwR 시간 규칙. 사양 샘플 AUX_ADV_IND를 공중 비트까지 재현한다.", tags: ["컨트롤러", "sim"] },
   ];
   // @book-chapters-end
   const BD = (window.BD = {});

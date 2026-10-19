@@ -6,6 +6,10 @@
 
 | 장 | 파일 | 주제 | 검증 근거 |
 |---|---|---|---|
+| 02 | chapters/hci.html | HCI: 호스트와 컨트롤러 사이의 바이트 | [Vol 6] Part C §1의 HCI 바이트를 해독해 사양 주석과 비교, opcode·이벤트 코드 |
+| 03 | chapters/scheduling.html | 링크 계층 상태 기계와 스케줄링 | 서브레이팅·지연 규칙(사양의 21번째 이벤트 예, 그림 4.43·4.44), 스케줄러 모델의 겹침 없음 |
+| 04 | chapters/procedures.html | 링크 계층 제어 절차: instant와 충돌 | [Vol 6] Part C §4.3.1·§4.3.2 완전한 패킷(공중 비트), instant·충돌 규칙 사례 |
+| 05 | chapters/extadv.html | 광고 끝까지: 확장 광고, PAwR | §4.2.1 레거시 광고, §4.2.2 AUX_ADV_IND(샘플 CRC 불일치 기록), PAwR 규칙 |
 | 06 | chapters/encryption.html | 링크 계층 암호화: 세션 키와 AES-CCM | [Vol 6] Part C §1의 샘플 패킷 4개(B·X·A·S 블록까지) + OpenSSL AES-CCM |
 | 07 | chapters/smp.html | SMP 완전판: P-256에서 LTK까지 | [Vol 3] Part H 부록 D.1~D.12, c1·s1 예, 디버그 키, OpenSSL ECDH |
 | 08 | chapters/privacy.html | 프라이버시와 필터링 | 부록 D.7(ah), 해석·필터 규칙 사례, OpenSSL AES |

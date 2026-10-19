@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>HCI: 호스트와 컨트롤러 사이의 바이트 · BluetoothBook 심화</title>
+<meta name="description" content="HCI 패킷 다섯 가지와 UART 표시 바이트, 명령의 OGF·OCF와 Command Complete·Status, 명령 크레딧과 데이터 버퍼 크레딧(Number Of Completed Packets), 이벤트 마스크와 6.3의 비트 확장, 초기화 순서를 사양 샘플의 실제 HCI 바이트로 해독하며 익힌다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/hci.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="BluetoothBook 심화">
+<meta property="og:title" content="HCI: 호스트와 컨트롤러 사이의 바이트 · BluetoothBook 심화">
+<meta property="og:description" content="HCI 패킷 다섯 가지와 UART 표시 바이트, 명령의 OGF·OCF와 Command Complete·Status, 명령 크레딧과 데이터 버퍼 크레딧(Number Of Completed Packets), 이벤트 마스크와 6.3의 비트 확장, 초기화 순서를 사양 샘플의 실제 HCI 바이트로 해독하며 익힌다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/hci.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"HCI: 호스트와 컨트롤러 사이의 바이트","name":"HCI: 호스트와 컨트롤러 사이의 바이트 · BluetoothBook 심화","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/hci.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/hci.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":2,"image":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png","dateModified":"2026-10-19","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/#book","name":"BluetoothBook 심화 — 프로토콜 스택을 끝까지 따라가는 블루투스 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},"publisher":{"@type":"Organization","name":"BluetoothBook 심화","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},"description":"HCI 패킷 다섯 가지와 UART 표시 바이트, 명령의 OGF·OCF와 Command Complete·Status, 명령 크레딧과 데이터 버퍼 크레딧(Number Of Completed Packets), 이벤트 마스크와 6.3의 비트 확장, 초기화 순서를 사양 샘플의 실제 HCI 바이트로 해독하며 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook 심화","item":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},{"@type":"ListItem","position":2,"name":"02 HCI: 호스트와 컨트롤러 사이의 바이트","item":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/hci.html"}]}]}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<style>
+  .hexarea { width: 100%; min-height: 96px; font: 12.5px/1.6 var(--mono); padding: 9px 11px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); resize: vertical; box-sizing: border-box; }
+  .pk { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin: 8px 0; background: var(--bg-elev); }
+  .pk h4 { margin: 0 0 6px; font-size: 14px; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+  .pk h4 small { font: 12px var(--mono); color: var(--text-dim); font-weight: 400; }
+  .pk .ty { font: 700 11px var(--mono); padding: 2px 7px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+  .pk .ty.ev { background: var(--accent-2-soft); color: var(--accent-2); }
+  .pk .ty.acl { background: color-mix(in srgb, var(--warn) 15%, transparent); color: var(--warn); }
+  .pk table { margin: 0; } .pk td { font-size: 13px; padding: 3px 8px; } .pk td.m { font-family: var(--mono); font-size: 12.5px; overflow-wrap: anywhere; }
+  .err { color: var(--bad); font-weight: 600; }
+</style>
+</head>
+<body data-chapter="hci">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 02</div>
+    <h1>HCI: 호스트와 컨트롤러 사이의 바이트</h1>
+    <p class="lead">휴대폰의 블루투스는 두 칩, 혹은 한 칩 안의 두 세계다. 운영체제 쪽 <b>호스트</b>와 무선 쪽 <b>컨트롤러</b>(1권 1장). 둘 사이에 오가는 모든 것이 <span class="term">HCI</span> 패킷이고, 안드로이드의 btsnoop 로그나 리눅스의 btmon이 보여 주는 것도 이것이다. 이 장은 그 바이트를 읽는 법을 익힌다. 사양 6장 암호화 샘플(이 책 6장)에 실린 실제 HCI 바이트를 해독기로 하나씩 풀어 본다.</p>
+    <ul class="objectives">
+      <li>HCI 패킷 다섯 가지의 머리말과 UART(H4) 표시 바이트를 알아보고 바이트열을 패킷으로 나눌 수 있다.</li>
+      <li>opcode를 OGF·OCF로 나누고, Command Complete와 Command Status를 구별할 수 있다.</li>
+      <li>명령 크레딧과 데이터 버퍼 크레딧(Number Of Completed Packets)이 왜 필요하고, 모자라면 무엇이 멈추는지 설명할 수 있다.</li>
+      <li>이벤트 마스크와 [v2] 명령으로 6.3에서 비트를 늘린 이유, 흔한 초기화 순서를 안다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="packets">
+    <h2>패킷 다섯 가지와 표시 바이트</h2>
+    <p>HCI 패킷은 다섯 가지다. 호스트가 보내는 <b>명령</b>, 컨트롤러가 보내는 <b>이벤트</b>, 양방향의 <b>ACL 데이터</b>(L2CAP이 실린다), 클래식 음성용 <b>동기 데이터</b>, LE 오디오용 <b>ISO 데이터</b>. 모든 값은 작은 바이트부터(리틀 엔디언)다. UART 하나로 다섯 가지를 섞어 보내려면 패킷 앞에 1바이트 <b>표시 바이트</b>를 붙인다. 흔히 “<span class="term">H4</span>”라 부르는 방식이고, btsnoop 로그도 이 표시 바이트를 기록한다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>패킷</th><th>표시</th><th>머리말</th><th>최대 길이</th></tr></thead>
+      <tbody>
+        <tr><td>명령</td><td class="num">0x01</td><td>opcode 2바이트(OGF 6비트 ‖ OCF 10비트) + 길이 1바이트</td><td>매개변수 255바이트</td></tr>
+        <tr><td>ACL 데이터</td><td class="num">0x02</td><td>핸들 12비트 + PB 2비트 + BC 2비트, 길이 2바이트</td><td>컨트롤러 버퍼 크기(LE는 최소 27)</td></tr>
+        <tr><td>동기 데이터</td><td class="num">0x03</td><td>핸들 12비트 + 상태 비트, 길이 1바이트</td><td>—</td></tr>
+        <tr><td>이벤트</td><td class="num">0x04</td><td>이벤트 코드 1바이트 + 길이 1바이트</td><td>매개변수 255바이트</td></tr>
+        <tr><td>ISO 데이터</td><td class="num">0x05</td><td>핸들 12비트 + PB 2비트 + TS 1비트, 길이 14비트</td><td>ISO 버퍼 크기</td></tr>
+      </tbody>
+    </table></div>
+    <p>명령의 opcode는 위 6비트 <span class="term">OGF</span>(명령 묶음)와 아래 10비트 <span class="term">OCF</span>로 나뉜다. LE 명령은 모두 OGF 0x08이라 opcode가 0x20xx이고, 컨트롤러·기저대역 명령(OGF 0x03)은 0x0Cxx, 정보 명령(OGF 0x04)은 0x10xx다. 예를 들어 HCI_Reset = 0x0C03, HCI_LE_Encrypt = 0x2017. LE 이벤트는 모두 코드 <b>0x3E</b>(LE Meta) 하나에 첫 바이트 서브이벤트 코드로 구별한다.</p>
+    <div class="callout analogy"><strong>사장과 비서의 메모지</strong><p>호스트는 사장, 컨트롤러는 무전기를 쥔 비서다. 사장은 정해진 양식의 지시 메모(명령)를 건네고, 비서는 “받았습니다”(<span class="term">Command Status</span>)나 “다 했습니다, 결과는 이렇습니다”(<span class="term">Command Complete</span>)로 답하며, 무전으로 일어난 일은 따로 보고 메모(이벤트)로 올린다. 보낼 편지(ACL 데이터)는 비서의 책상 서랍 칸 수만큼만 맡길 수 있고, 비서가 “두 칸 비었습니다”(<span class="term">Number Of Completed Packets</span>)라고 알려야 더 맡긴다.</p></div>
+    <p class="spec-ref">UART 표시 바이트(Table 2.1): <b>[Vol 4] Part A §2</b> · 명령 패킷과 OGF·OCF: <b>[Vol 4] Part E §5.4.1</b> · ACL: <b>§5.4.2</b> · 이벤트: <b>§5.4.4</b> · ISO: <b>§5.4.5</b> · 리틀 엔디언: <b>§5.2</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="decode">
+    <h2>해독기: 사양 샘플의 HCI 바이트</h2>
+    <p>사양 [Vol 6] Part C §1은 암호화 시작 과정을 HCI 바이트까지 적어 두었다. 아래 해독기의 기본 입력은 그 바이트에 H4 표시와 머리말을 붙인 것이다. 센트럴 호스트가 LE_Enable_Encryption을 보내고, 페리페럴 컨트롤러가 LTK를 요청하고, 페리페럴 호스트가 LTK를 돌려주고, HCI_LE_Encrypt로 세션 키를 확인한 뒤, ACL 데이터를 보낸다. 자기 로그의 바이트를 붙여 넣어도 된다(공백·줄바꿈 무시, # 뒤는 주석).</p>
+    <div class="sim" id="sim-dec">
+      <div class="sim-head"><span class="sim-tag">WORKBENCH</span><h3>HCI(H4) 바이트 해독기</h3></div>
+      <div class="sim-view" style="padding:14px 16px">
+        <textarea class="hexarea" id="dc-in" spellcheck="false" aria-label="H4 바이트열"></textarea>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0"><button class="btn" id="dc-sample">사양 암호화 샘플</button><button class="btn" id="dc-init">흔한 초기화 순서</button><button class="btn" id="dc-cut">마지막 바이트 하나 잘라 보기</button></div>
+        <div id="dc-out"></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">패킷 수</span><span class="v" id="dc-n">—</span></div>
+        <div class="stat"><span class="k">사양 주석과 비교</span><span class="v" id="dc-ok" style="font-size:14px">—</span></div>
+      </div>
+      <div class="sim-note">해독기는 표시 바이트 → 머리말의 길이 → 다음 패킷 순서로 자른다. 매개변수를 아는 명령·이벤트(이 장과 6장에 나오는 것)는 칸별로 풀고, 모르는 것은 이름과 바이트만 보인다. 해볼 것: ① 첫 패킷의 opcode 19 20 → 0x2019 → OGF 0x08, OCF 0x019. ② LTK 매개변수가 리틀 엔디언이라 사양의 “MSO to LSO” 값과 순서가 거꾸로다. ③ “잘라 보기”를 누르면 마지막 패킷의 길이가 모자라 해독이 멈춘다. UART에서 바이트 하나를 잃으면 그 뒤 전부가 어긋나는 이유다.</div>
+    </div>
+    <p class="spec-ref">샘플 HCI 바이트와 필드 주석: <b>[Vol 6] Part C §1·§1.1</b> · 명령: LE_Enable_Encryption <b>[Vol 4] Part E §7.8.24</b> · LE_Long_Term_Key_Request_Reply <b>§7.8.25</b> · LE_Encrypt <b>§7.8.22</b> · 이벤트: LE_Long_Term_Key_Request <b>§7.7.65.5</b> · Command_Complete <b>§7.7.14</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="flow">
+    <h2>크레딧: 컨트롤러가 받을 수 있는 만큼만</h2>
+    <p>컨트롤러의 메모리는 작다. 그래서 HCI는 두 가지 크레딧으로 넘치지 않게 한다.</p>
+    <ul>
+      <li><b>명령 크레딧.</b> 전원을 켜거나 리셋한 뒤 호스트는 한 번에 명령 하나만 보낸다. Command Complete·Status의 <b>Num_HCI_Command_Packets</b>가 “이제 몇 개 더 보내도 된다”를 알려 준다. 0이면 멈추고, 컨트롤러는 opcode 0x0000으로 크레딧만 주는 이벤트를 보낼 수도 있다. 명령은 받은 순서대로 시작하지만 끝나는 순서는 다를 수 있다.</li>
+      <li><b>데이터 버퍼 크레딧.</b> 호스트는 데이터를 보내기 전에 <b>LE_Read_Buffer_Size</b>로 컨트롤러 버퍼 하나의 크기와 개수를 읽어야 한다. 보낸 만큼 크레딧이 줄고, 컨트롤러가 버퍼를 비우면(전송했거나 버렸을 때) <b>Number_Of_Completed_Packets</b> 이벤트(0x13)로 연결 핸들별 개수를 돌려준다. 이 이벤트가 늦으면 무선은 비어 있는데 호스트가 기다리는 일이 생긴다.</li>
+    </ul>
+    <div class="sim" id="sim-flow">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>버퍼 크레딧과 처리량</h3></div>
+      <div class="sim-view"><canvas id="cv-flow"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>컨트롤러 LE ACL 버퍼 수 <b id="fl-bv">4</b></span><input type="range" id="fl-b" min="1" max="16" value="4"></label>
+        <label class="ctrl"><span>연결 이벤트당 보낼 수 있는 패킷 <b id="fl-pv">4</b></span><input type="range" id="fl-p" min="1" max="8" value="4"></label>
+        <label class="ctrl"><span>Completed Packets 이벤트를 몇 연결 이벤트마다 <b id="fl-nv">1</b></span><input type="range" id="fl-n" min="1" max="6" value="1"></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">연결 이벤트당 실제 전송</span><span class="v" id="fl-tp">—</span></div>
+        <div class="stat"><span class="k">무선이 놀고 있는 비율</span><span class="v" id="fl-idle">—</span></div>
+        <div class="stat"><span class="k">호스트가 크레딧을 기다린 비율</span><span class="v" id="fl-wait">—</span></div>
+      </div>
+      <div class="sim-note">그래프: 연결 이벤트마다 컨트롤러가 보낸 패킷(막대)과 그때 호스트가 가진 크레딧(선). 호스트는 보낼 데이터가 늘 있다고 가정한다. 모델: 이벤트 시작 전 호스트가 크레딧만큼 버퍼를 채우고, 이벤트 동안 최대 n개를 보내며, 비운 버퍼는 정해진 주기의 Completed Packets 이벤트 때 한꺼번에 돌려받는다. 해볼 것: ① 버퍼 4, 이벤트당 4, 보고 1이면 매 이벤트 4개. ② 보고를 3 이벤트마다로 늦추면 버퍼가 적을 때 처리량이 3분의 1 가까이로 떨어진다. ③ 같은 상황에서 버퍼를 12로 늘리면 회복된다. 컨트롤러 보고 주기와 버퍼 수는 칩마다 다르다(사양은 “주기적으로”만 요구).</div>
+    </div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">호스트가 연결 하나에 크레딧을 모두 써 버렸는데 그 상대가 멀어져 패킷이 계속 재전송된다. 다른 연결(예: 키보드)의 데이터는?</p><p class="wi-hint">LE ACL 버퍼는 연결마다 따로인가, 함께 쓰는가?</p><div class="opts">
+      <button class="opt">영향 없다. 연결마다 버퍼가 따로다</button>
+      <button class="opt" data-correct>막힐 수 있다. 버퍼를 함께 쓰므로 크레딧이 돌아오지 않으면 다른 연결도 못 보낸다</button>
+      <button class="opt">컨트롤러가 자동으로 다른 연결 것을 먼저 보낸다</button>
+    </div><div class="quiz-exp">Total_Num_LE_ACL_Data_Packets는 모든 LE 연결이 함께 쓰는 개수다. 그래서 호스트 스택은 연결마다 크레딧을 나눠 주는 정책을 따로 둔다(한 연결이 전부 차지하지 못하게). 연결이 끊기면 그 연결이 쥐고 있던 버퍼는 모두 반환된 것으로 본다.</div></div>
+    <p class="spec-ref">명령 흐름 제어: <b>[Vol 4] Part E §4.4</b> · 데이터 흐름 제어·LE_Read_Buffer_Size를 먼저: <b>§4.1·§4.1.1·§7.8.2</b> · Number_Of_Completed_Packets: <b>§7.7.19</b> · 연결 끊김 때 버퍼: <b>§4.3</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="mask">
+    <h2>이벤트 마스크, 그리고 비트가 모자랄 때</h2>
+    <p>컨트롤러가 모든 이벤트를 다 올리면 호스트가 모르는 이벤트까지 쏟아진다. 그래서 호스트는 <b>Set_Event_Mask</b>(일반 이벤트)와 <b>LE_Set_Event_Mask</b>(LE 서브이벤트)로 받을 것만 고른다. 비트 하나가 이벤트 하나다. 같은 식으로 컨트롤러는 <b>Read_Local_Supported_Commands</b>로 자기가 아는 명령을 비트로 알려 준다.</p>
+    <p>문제는 비트 수가 고정이라는 것이다. LE 이벤트 마스크는 8바이트(64개), 지원 명령은 64바이트(512개)였는데, 기능이 늘며 거의 다 찼다. 6.3의 “Running Out of Bits”는 같은 일을 하는 <b>[v2] 명령</b>을 새 opcode로 만들어 길이를 늘렸다. LE_Set_Event_Mask [v2](0x20A4)는 255바이트, Read_Local_Supported_Commands [v2](0x1010)는 251바이트다. 한 명령에 여러 버전이 있으면 컨트롤러는 지원하고 켜져 있는 가장 새 버전의 이벤트를 쓴다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>명령</th><th>[v1]</th><th>[v2] (6.3)</th></tr></thead>
+      <tbody>
+        <tr><td>LE_Set_Event_Mask</td><td>0x2001, 8옥텟</td><td>0x20A4, 255옥텟</td></tr>
+        <tr><td>Read_Local_Supported_Commands</td><td>0x1002, 64옥텟</td><td>0x1010, 251옥텟</td></tr>
+      </tbody>
+    </table></div>
+    <h3>흔한 초기화 순서</h3>
+    <p>사양이 순서를 하나로 정하지는 않지만, 공개 스택들은 대체로 이렇게 시작한다. HCI_Reset → Read_Local_Version_Information(코어 버전) → Read_Local_Supported_Commands → LE_Read_Local_Supported_Features → Set_Event_Mask·LE_Set_Event_Mask → LE_Read_Buffer_Size(데이터를 보내기 전 필수) → Read_BD_ADDR. 해독기의 “흔한 초기화 순서”가 이 흐름의 바이트다. 리셋 직후 명령을 하나씩만 보내는 것도 위의 명령 크레딧 규칙 때문이다.</p>
+    <p class="spec-ref">Set_Event_Mask: <b>[Vol 4] Part E §7.3.1</b> · LE_Set_Event_Mask [v1]·[v2]: <b>§7.8.1</b> · Read_Local_Supported_Commands [v1]·[v2]: <b>§7.4.2</b> · 버전 있는 이벤트: <b>§4.8</b> · 6.3 새 기능: <b>[Vol 1] Part C §17.1</b> · 버전 정보: <b>§7.4.1</b></p>
+  </section>
+
+  <div class="callout related"><strong>다른 책에서</strong><ul><li><a href="../../bluetooth/chapters/intro.html">BluetoothBook 01장 · 블루투스란 무엇인가</a> — 호스트와 컨트롤러로 나뉜 스택</li></ul></div>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>HCI 패킷 다섯 가지: 명령 01, ACL 02, 동기 03, 이벤트 04, ISO 05(UART 표시 바이트). 값은 모두 리틀 엔디언.</li>
+      <li>opcode = OGF 6비트 ‖ OCF 10비트. LE 명령은 0x20xx, LE 이벤트는 0x3E + 서브이벤트 코드.</li>
+      <li>명령 크레딧(Num_HCI_Command_Packets), 데이터 크레딧(LE_Read_Buffer_Size → Number_Of_Completed_Packets). 크레딧 보고가 늦으면 무선이 비어도 호스트가 멈춘다.</li>
+      <li>LE ACL 버퍼는 연결들이 함께 쓴다. 한 연결이 크레딧을 붙잡으면 다른 연결도 막힌다.</li>
+      <li>6.3 Running Out of Bits: [v2] 명령으로 LE 이벤트 마스크 8 → 255옥텟, 지원 명령 64 → 251옥텟.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>opcode 0x0C03의 OGF와 OCF는?</p><div class="opts">
+        <button class="opt">OGF 0x0C, OCF 0x03</button><button class="opt" data-correct>OGF 0x03, OCF 0x003</button><button class="opt">OGF 0x01, OCF 0x0C3</button><button class="opt">OGF 0x08, OCF 0x003</button>
+      </div><div class="quiz-exp">0x0C03 = 0000 1100 0000 0011. 위 6비트 000011 = 0x03(컨트롤러·기저대역), 아래 10비트 = 0x003(Reset).</div></div>
+      <div class="quiz-q"><p>H4 바이트열이 “04 0E 04 01 03 0C 00”이다. 무엇인가?</p><div class="opts">
+        <button class="opt">Reset 명령</button><button class="opt" data-correct>Reset에 대한 Command Complete(크레딧 1, 성공)</button><button class="opt">Command Status</button><button class="opt">ACL 데이터</button>
+      </div><div class="quiz-exp">04 = 이벤트, 0E = Command Complete, 길이 4, Num_HCI_Command_Packets 1, opcode 03 0C(0x0C03, 리틀 엔디언), 상태 00.</div></div>
+      <div class="quiz-q"><p>호스트가 LE 데이터를 보내기 전에 반드시 해야 하는 일은?</p><div class="opts">
+        <button class="opt">Read_BD_ADDR</button><button class="opt" data-correct>LE_Read_Buffer_Size로 버퍼 크기와 개수 읽기</button><button class="opt">LE_Set_Event_Mask [v2]</button><button class="opt">HCI_Reset 두 번</button>
+      </div><div class="quiz-exp">[Vol 4] Part E §7.8.2: “shall be issued by the Host before it sends any data to an LE Controller.”</div></div>
+      <div class="quiz-q"><p>LE_Set_Event_Mask [v2]의 마스크 길이는?</p><div class="opts">
+        <button class="opt">8옥텟</button><button class="opt">64옥텟</button><button class="opt">251옥텟</button><button class="opt" data-correct>255옥텟</button>
+      </div><div class="quiz-exp">[v1]은 8옥텟, 6.3의 [v2]는 255옥텟. 지원 명령 비트는 [v2]에서 251옥텟.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  /* ================================================================ 계산 (검증 스크립트가 꺼내 쓴다) */
+  /** opcode → OGF(위 6비트), OCF(아래 10비트). [Vol 4] Part E §5.4.1 */
+  function splitOpcode(op) { return { ogf: (op >> 10) & 0x3f, ocf: op & 0x3ff }; }
+  const CMD = { 0x0c03: "HCI_Reset", 0x0c01: "HCI_Set_Event_Mask", 0x1001: "HCI_Read_Local_Version_Information", 0x1002: "HCI_Read_Local_Supported_Commands [v1]", 0x1010: "HCI_Read_Local_Supported_Commands [v2]", 0x1009: "HCI_Read_BD_ADDR", 0x0406: "HCI_Disconnect", 0x2001: "HCI_LE_Set_Event_Mask [v1]", 0x20a4: "HCI_LE_Set_Event_Mask [v2]", 0x2002: "HCI_LE_Read_Buffer_Size [v1]", 0x2060: "HCI_LE_Read_Buffer_Size [v2]", 0x2003: "HCI_LE_Read_Local_Supported_Features_Page_0", 0x2005: "HCI_LE_Set_Random_Address", 0x2006: "HCI_LE_Set_Advertising_Parameters", 0x2008: "HCI_LE_Set_Advertising_Data", 0x200a: "HCI_LE_Set_Advertising_Enable", 0x200b: "HCI_LE_Set_Scan_Parameters", 0x200c: "HCI_LE_Set_Scan_Enable", 0x200d: "HCI_LE_Create_Connection", 0x2017: "HCI_LE_Encrypt", 0x2019: "HCI_LE_Enable_Encryption", 0x201a: "HCI_LE_Long_Term_Key_Request_Reply", 0x2022: "HCI_LE_Set_Data_Length", 0x202f: "HCI_LE_Read_Maximum_Data_Length", 0x2039: "HCI_LE_Set_Extended_Advertising_Enable" };
+  const EVT = { 0x05: "HCI_Disconnection_Complete", 0x08: "HCI_Encryption_Change [v1]", 0x59: "HCI_Encryption_Change [v2]", 0x0e: "HCI_Command_Complete", 0x0f: "HCI_Command_Status", 0x13: "HCI_Number_Of_Completed_Packets", 0x3e: "HCI_LE_Meta" };
+  const LESUB = { 0x01: "LE_Connection_Complete", 0x02: "LE_Advertising_Report", 0x03: "LE_Connection_Update_Complete", 0x05: "LE_Long_Term_Key_Request", 0x07: "LE_Data_Length_Change", 0x0a: "LE_Enhanced_Connection_Complete [v1]", 0x29: "LE_Enhanced_Connection_Complete [v2]" };
+  const le = (b, i, n) => { let v = 0; for (let k = n - 1; k >= 0; k--) v = v * 256 + b[i + k]; return v; };
+  const hexLE = (b, i, n) => "0x" + b.slice(i, i + n).reverse().map((x) => x.toString(16).padStart(2, "0")).join("");
+  /** 매개변수를 아는 명령·이벤트의 칸 [이름, 시작, 길이, 형식("u"|"hex")] */
+  const CMD_FIELDS = { 0x2019: [["Connection_Handle", 0, 2, "u"], ["Random_Number", 2, 8, "hex"], ["Encrypted_Diversifier", 10, 2, "hex"], ["Long_Term_Key", 12, 16, "hex"]], 0x201a: [["Connection_Handle", 0, 2, "u"], ["Long_Term_Key", 2, 16, "hex"]], 0x2017: [["Key", 0, 16, "hex"], ["Plaintext_Data", 16, 16, "hex"]], 0x0406: [["Connection_Handle", 0, 2, "u"], ["Reason", 2, 1, "hex"]] };
+  /** H4 바이트열을 패킷으로 나누고 머리말을 푼다. 길이가 모자라면 그 자리에서 멈추고 error. [Vol 4] Part A §2, Part E §5.4 */
+  function parseH4(b) {
+    const out = []; let i = 0;
+    while (i < b.length) {
+      const t = b[i], start = i; let p = null;
+      if (t === 0x01) { if (i + 4 > b.length) return { packets: out, error: { at: start, why: "명령 머리말이 모자람" } }; const op = le(b, i + 1, 2), n = b[i + 3]; if (i + 4 + n > b.length) return { packets: out, error: { at: start, why: "명령 매개변수가 길이보다 짧음" } }; p = { type: "cmd", opcode: op, ...splitOpcode(op), name: CMD[op] || "알 수 없는 명령", params: b.slice(i + 4, i + 4 + n) }; i += 4 + n; }
+      else if (t === 0x04) { if (i + 3 > b.length) return { packets: out, error: { at: start, why: "이벤트 머리말이 모자람" } }; const c = b[i + 1], n = b[i + 2]; if (i + 3 + n > b.length) return { packets: out, error: { at: start, why: "이벤트 매개변수가 길이보다 짧음" } }; const prm = b.slice(i + 3, i + 3 + n); p = { type: "evt", code: c, name: EVT[c] || "알 수 없는 이벤트", params: prm }; if (c === 0x3e) { p.sub = prm[0]; p.subName = LESUB[prm[0]] || "알 수 없는 LE 서브이벤트"; } i += 3 + n; }
+      else if (t === 0x02 || t === 0x05) { if (i + 5 > b.length) return { packets: out, error: { at: start, why: "데이터 머리말이 모자람" } }; const h = le(b, i + 1, 2), n = t === 0x02 ? le(b, i + 3, 2) : le(b, i + 3, 2) & 0x3fff; if (i + 5 + n > b.length) return { packets: out, error: { at: start, why: "데이터가 길이보다 짧음" } }; p = { type: t === 0x02 ? "acl" : "iso", handle: h & 0xfff, pb: (h >> 12) & 3, bcOrTs: (h >> 14) & 3, length: n, data: b.slice(i + 5, i + 5 + n) }; i += 5 + n; }
+      else if (t === 0x03) { if (i + 4 > b.length) return { packets: out, error: { at: start, why: "동기 데이터 머리말이 모자람" } }; const h = le(b, i + 1, 2), n = b[i + 3]; if (i + 4 + n > b.length) return { packets: out, error: { at: start, why: "동기 데이터가 짧음" } }; p = { type: "sco", handle: h & 0xfff, length: n, data: b.slice(i + 4, i + 4 + n) }; i += 4 + n; }
+      else return { packets: out, error: { at: start, why: "알 수 없는 표시 바이트 0x" + t.toString(16).padStart(2, "0") } };
+      p.raw = b.slice(start, i); out.push(p);
+    }
+    return { packets: out, error: null };
+  }
+  /** 매개변수 칸 풀기 → [[이름, 값], …] */
+  function fields(p) {
+    const P = p.params || [], f = [];
+    if (p.type === "cmd" && CMD_FIELDS[p.opcode]) CMD_FIELDS[p.opcode].forEach(([n, s, l, k]) => f.push([n, k === "u" ? "0x" + le(P, s, l).toString(16).padStart(l * 2, "0") : hexLE(P, s, l)]));
+    else if (p.type === "evt" && p.code === 0x0e) { f.push(["Num_HCI_Command_Packets", P[0]], ["Command_Opcode", "0x" + le(P, 1, 2).toString(16).padStart(4, "0") + " (" + (CMD[le(P, 1, 2)] || "?") + ")"]); if (P.length > 3) f.push(["Status", "0x" + P[3].toString(16).padStart(2, "0")]); if (le(P, 1, 2) === 0x2017 && P.length >= 20) f.push(["Encrypted_Data", hexLE(P, 4, 16)]); else if (P.length > 4) f.push(["반환값 나머지", P.slice(4).map((x) => x.toString(16).padStart(2, "0")).join(" ")]); }
+    else if (p.type === "evt" && p.code === 0x0f) f.push(["Status", "0x" + P[0].toString(16).padStart(2, "0")], ["Num_HCI_Command_Packets", P[1]], ["Command_Opcode", "0x" + le(P, 2, 2).toString(16).padStart(4, "0") + " (" + (CMD[le(P, 2, 2)] || "?") + ")"]);
+    else if (p.type === "evt" && p.code === 0x13) { const n = P[0]; f.push(["Num_Handles", n]); for (let k = 0; k < n; k++) f.push([`Handle[${k}] / Completed[${k}]`, "0x" + le(P, 1 + 4 * k, 2).toString(16).padStart(4, "0") + " / " + le(P, 3 + 4 * k, 2)]); }
+    else if (p.type === "evt" && p.code === 0x08) f.push(["Status", "0x" + P[0].toString(16).padStart(2, "0")], ["Connection_Handle", "0x" + le(P, 1, 2).toString(16).padStart(4, "0")], ["Encryption_Enabled", P[3]]);
+    else if (p.type === "evt" && p.code === 0x05) f.push(["Status", "0x" + P[0].toString(16).padStart(2, "0")], ["Connection_Handle", "0x" + le(P, 1, 2).toString(16).padStart(4, "0")], ["Reason", "0x" + P[3].toString(16).padStart(2, "0")]);
+    else if (p.type === "evt" && p.code === 0x3e && p.sub === 0x05) f.push(["Subevent_Code", "0x05"], ["Connection_Handle", "0x" + le(P, 1, 2).toString(16).padStart(4, "0")], ["Random_Number", hexLE(P, 3, 8)], ["Encrypted_Diversifier", hexLE(P, 11, 2)]);
+    else if (p.type === "acl" && p.data.length >= 4) f.push(["L2CAP 길이", le(p.data, 0, 2)], ["L2CAP CID", "0x" + le(p.data, 2, 2).toString(16).padStart(4, "0")]);
+    return f;
+  }
+  /**
+   * 버퍼 크레딧 모델. 이벤트마다: 호스트가 크레딧만큼 버퍼를 채움 → 최대 perEvent개 전송 → nocpEvery 이벤트마다 비운 버퍼를 한꺼번에 반환.
+   * 돌려주는 값: { sent[], credit[], perEvent 평균, idle 비율, wait 비율 }
+   */
+  function simulateFlow(buffers, perEvent, nocpEvery, events) {
+    let credit = buffers, queued = 0, freed = 0; const sent = [], cr = []; let waitEv = 0;
+    for (let e = 0; e < events; e++) {
+      queued += credit; credit = 0; cr.push(queued);
+      const s = Math.min(perEvent, queued); queued -= s; freed += s; sent.push(s);
+      if (queued === 0 && s < perEvent) waitEv++;
+      if ((e + 1) % nocpEvery === 0) { credit += freed; freed = 0; }
+    }
+    const avg = sent.reduce((a, b) => a + b, 0) / events;
+    return { sent, credit: cr, avg, idle: 1 - avg / perEvent, wait: waitEv / events };
+  }
+
+  /* ================================================================ 1. 해독기 */
+  (function () {
+    const SAMPLE = [
+      "# 센트럴 호스트 → 컨트롤러: HCI_LE_Enable_Encryption (매개변수 0x1C)",
+      "01 19 20 1c 00 08 90 78 56 34 12 ef cd ab 74 24 bf 01 fb 9d 4e f3 bc 36 d8 74 f5 39 41 38 68 4c",
+      "# 페리페럴 컨트롤러 → 호스트: LE Meta / LE_Long_Term_Key_Request (0x0D)",
+      "04 3e 0d 05 01 08 90 78 56 34 12 ef cd ab 74 24",
+      "# 페리페럴 호스트 → 컨트롤러: HCI_LE_Long_Term_Key_Request_Reply (0x12)",
+      "01 1a 20 12 01 08 bf 01 fb 9d 4e f3 bc 36 d8 74 f5 39 41 38 68 4c",
+      "# 호스트가 세션 키를 확인: HCI_LE_Encrypt (0x20) → Command_Complete (0x14)",
+      "01 17 20 20 bf 01 fb 9d 4e f3 bc 36 d8 74 f5 39 41 38 68 4c 13 02 f1 e0 df ce bd ac 79 68 57 46 35 24 13 02",
+      "04 0e 14 02 17 20 00 66 c6 c2 27 8e 3b 8e 05 3e 7e a3 26 52 1b ad 99",
+      "# 센트럴 호스트 → 컨트롤러: ACL 데이터 (핸들 0x0800, 27바이트)",
+      "02 00 08 1b 00 17 00 63 64 65 66 67 68 69 6a 6b 6c 6d 6e 6f 70 71 31 32 33 34 35 36 37 38 39 30",
+    ].join("\n");
+    const INIT = ["# 흔한 초기화 순서 (값은 예시)", "01 03 0c 00", "04 0e 04 01 03 0c 00", "01 01 10 00", "04 0e 0c 01 01 10 00 0e 34 12 0e 5f 00 0e 34", "01 03 20 00", "04 0e 0c 01 03 20 00 ff ff ff ff ff ff ff ff", "01 01 20 08 ff ff ff ff ff ff ff 0f", "04 0e 04 01 01 20 00", "01 60 20 00", "04 0e 0a 01 60 20 00 fb 00 08 00 00 00", "01 09 10 00", "04 0e 0a 01 09 10 00 66 55 44 33 22 11"].join("\n");
+    const H = (s) => s.split("\n").map((l) => l.replace(/#.*/, "")).join(" ").replace(/[^0-9a-fA-F]/g, "").match(/../g)?.map((x) => parseInt(x, 16)) || [];
+    $("dc-in").value = SAMPLE;
+    $("dc-sample").addEventListener("click", () => { $("dc-in").value = SAMPLE; draw(); });
+    $("dc-init").addEventListener("click", () => { $("dc-in").value = INIT; draw(); });
+    $("dc-cut").addEventListener("click", () => { $("dc-in").value = $("dc-in").value.replace(/\s*\S+\s*$/, ""); draw(); });
+    $("dc-in").addEventListener("input", draw);
+    const hx = (a) => a.map((x) => x.toString(16).padStart(2, "0")).join(" ");
+    function draw() {
+      const b = H($("dc-in").value), r = parseH4(b);
+      $("dc-out").innerHTML = r.packets.map((p) => {
+        const f = fields(p), head = p.type === "cmd" ? `<span class="ty">명령</span>${p.name} <small>opcode 0x${p.opcode.toString(16).padStart(4, "0")} · OGF 0x${p.ogf.toString(16).padStart(2, "0")} · OCF 0x${p.ocf.toString(16).padStart(3, "0")} · ${p.params.length}바이트</small>`
+          : p.type === "evt" ? `<span class="ty ev">이벤트</span>${p.name}${p.subName ? " / " + p.subName : ""} <small>코드 0x${p.code.toString(16).padStart(2, "0")} · ${p.params.length}바이트</small>`
+          : `<span class="ty acl">${p.type.toUpperCase()}</span>핸들 0x${p.handle.toString(16).padStart(3, "0")} <small>PB ${p.pb.toString(2).padStart(2, "0")} · ${p.type === "iso" ? "TS" : "BC"} ${p.bcOrTs} · 길이 ${p.length}</small>`;
+        return `<div class="pk"><h4>${head}</h4>${f.length ? `<table><tbody>${f.map(([k, v]) => `<tr><td>${k}</td><td class="m">${v}</td></tr>`).join("")}</tbody></table>` : `<div class="m" style="font:12px var(--mono);color:var(--text-dim);overflow-wrap:anywhere">${hx(p.raw)}</div>`}</div>`;
+      }).join("") + (r.error ? `<div class="pk err">바이트 ${r.error.at}부터 해독 중단: ${r.error.why}</div>` : "");
+      BD.stat("dc-n", r.packets.length + (r.error ? " (중단)" : ""));
+      // 사양 주석: Handle 0x0800, Random 0xabcdef1234567890, EDIV 0x2474, LTK 0x4c68…, LTK 요청 Handle 0x0801, Command_Opcode 0x2017, Encrypted_Data 0x99ad…
+      const ok = $("dc-in").value === SAMPLE && r.packets.length === 6 && fields(r.packets[0])[1][1] === "0xabcdef1234567890" && fields(r.packets[1])[1][1] === "0x0801" && fields(r.packets[4])[3][1] === "0x99ad1b5226a37e3e058e3b8e27c2c666" && r.packets[5].handle === 0x800 && r.packets[5].length === 27;
+      BD.stat("dc-ok", $("dc-in").value === SAMPLE ? (ok ? "✓ 사양 주석과 같음" : "✗") : "직접 입력");
+    }
+    draw();
+  })();
+
+  /* ================================================================ 2. 크레딧 */
+  (function () {
+    const b = BD.range("fl-b", (v) => String(v), draw), p = BD.range("fl-p", (v) => String(v), draw), n = BD.range("fl-n", (v) => String(v), draw);
+    let R = null;
+    const cv = BD.canvas($("cv-flow"), (ctx, w, h) => {
+      if (!R) return; const P = BD.palette(), E = R.sent.length, L = 40, Rr = w - 12, T = 14, B = h - 26, X = (i) => L + ((Rr - L) * (i + 0.5)) / E, bw = Math.max(2, ((Rr - L) / E) * 0.6), top = Math.max(16, ...R.credit), Y = (v) => B - ((B - T) * v) / top;
+      ctx.strokeStyle = P.axis; ctx.beginPath(); ctx.moveTo(L, T); ctx.lineTo(L, B); ctx.lineTo(Rr, B); ctx.stroke();
+      R.sent.forEach((s, i) => { ctx.fillStyle = P.accent; ctx.globalAlpha = 0.75; ctx.fillRect(X(i) - bw / 2, Y(s), bw, B - Y(s)); ctx.globalAlpha = 1; });
+      ctx.strokeStyle = P.warn; ctx.lineWidth = 2; ctx.beginPath(); R.credit.forEach((c, i) => (i ? ctx.lineTo(X(i), Y(c)) : ctx.moveTo(X(i), Y(c)))); ctx.stroke();
+      ctx.strokeStyle = P.dim; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(L, Y(+p())); ctx.lineTo(Rr, Y(+p())); ctx.stroke(); ctx.setLineDash([]);
+      BD.text(ctx, "패킷", 4, T + 4, { size: 11, color: P.dim }); BD.text(ctx, "연결 이벤트 →", Rr, h - 8, { size: 11, color: P.dim, align: "right" });
+      BD.text(ctx, "막대: 보낸 패킷 · 선: 컨트롤러에 맡긴 패킷 · 점선: 이벤트당 한도", L + 4, h - 8, { size: 11, color: P.dim });
+    }, { aspect: 0.42, minHeight: 200, maxHeight: 300 });
+    function draw() { R = simulateFlow(+b(), +p(), +n(), 24); BD.stat("fl-tp", R.avg.toFixed(2) + " / " + p()); BD.stat("fl-idle", Math.round(R.idle * 100) + "%"); BD.stat("fl-wait", Math.round(R.wait * 100) + "%"); cv.redraw(); }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

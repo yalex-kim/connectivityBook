@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>링크 계층 상태 기계와 컨트롤러 스케줄링 · BluetoothBook 심화</title>
+<meta name="description" content="링크 계층의 일곱 상태와 여러 상태 기계, 반드시 함께 지원해야 하는 상태 조합, 연결 이벤트의 앵커 포인트와 connEventCounter, 서브레이팅·연속 이벤트·페리페럴 지연의 정확한 규칙, 무선 하나로 광고·스캔·연결 여럿을 돌리는 스케줄러와 건너뛴 이벤트를 다룬다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/scheduling.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="BluetoothBook 심화">
+<meta property="og:title" content="링크 계층 상태 기계와 컨트롤러 스케줄링 · BluetoothBook 심화">
+<meta property="og:description" content="링크 계층의 일곱 상태와 여러 상태 기계, 반드시 함께 지원해야 하는 상태 조합, 연결 이벤트의 앵커 포인트와 connEventCounter, 서브레이팅·연속 이벤트·페리페럴 지연의 정확한 규칙, 무선 하나로 광고·스캔·연결 여럿을 돌리는 스케줄러와 건너뛴 이벤트를 다룬다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/scheduling.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"링크 계층 상태 기계와 컨트롤러 스케줄링","name":"링크 계층 상태 기계와 컨트롤러 스케줄링 · BluetoothBook 심화","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/scheduling.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/scheduling.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":3,"image":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png","dateModified":"2026-10-19","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/#book","name":"BluetoothBook 심화 — 프로토콜 스택을 끝까지 따라가는 블루투스 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},"publisher":{"@type":"Organization","name":"BluetoothBook 심화","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},"description":"링크 계층의 일곱 상태와 여러 상태 기계, 반드시 함께 지원해야 하는 상태 조합, 연결 이벤트의 앵커 포인트와 connEventCounter, 서브레이팅·연속 이벤트·페리페럴 지연의 정확한 규칙, 무선 하나로 광고·스캔·연결 여럿을 돌리는 스케줄러와 건너뛴 이벤트를 다룬다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook 심화","item":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},{"@type":"ListItem","position":2,"name":"03 링크 계층 상태 기계와 컨트롤러 스케줄링","item":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/scheduling.html"}]}]}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<style>
+  .evrow { display: grid; grid-template-columns: repeat(auto-fill, minmax(26px, 1fr)); gap: 3px; }
+  .evrow span { font: 600 11px var(--mono); text-align: center; padding: 6px 0 4px; border-radius: 5px; border: 1px solid var(--border); background: var(--surface); color: var(--text-faint); line-height: 1.2; }
+  .evrow span small { display: block; font-size: 9px; font-weight: 400; color: var(--text-faint); }
+  .evrow span.S { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .evrow span.C { background: var(--accent-2); color: #fff; border-color: var(--accent-2); }
+  .evrow span.L { background: var(--surface); color: var(--accent); border: 2px dashed var(--accent); }
+  .evrow span.d::after { content: "•"; display: block; font-size: 10px; color: var(--warn); }
+</style>
+</head>
+<body data-chapter="scheduling">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 03</div>
+    <h1>링크 계층 상태 기계와 컨트롤러 스케줄링</h1>
+    <p class="lead">스마트워치 하나가 휴대폰과 연결을 유지하면서, 다른 휴대폰에게 광고하고, 체중계를 스캔하고, 이어폰 방송을 받는다. 그런데 무선은 하나다. 사양은 “무엇을 언제 해야 하는가”를 정하고, “겹치면 무엇을 먼저 하는가”는 컨트롤러 구현에 맡긴다. 이 장은 그 경계를 따라간다. 연결 이벤트를 어떻게 세고 건너뛰는지는 사양대로 정확히 계산하고, 스케줄러는 사양의 제약을 지키는 예시 모델로 만들어 본다.</p>
+    <ul class="objectives">
+      <li>링크 계층의 일곱 상태, 상태 기계 여러 개, 반드시 함께 지원해야 하는 조합(Table 1.1)을 안다.</li>
+      <li>앵커 포인트, connEventCounter, T_IFS·T_MCES로 연결 이벤트 하나의 시간을 설명할 수 있다.</li>
+      <li>서브레이팅·연속 이벤트·페리페럴 지연 규칙으로 어느 이벤트에서 누가 듣는지 계산할 수 있다.</li>
+      <li>스케줄링 충돌로 이벤트를 건너뛰어도 되는 한계(감독 타임아웃)와, 그 한계를 어기는 설정을 알아본다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="states">
+    <h2>일곱 상태, 여러 개의 상태 기계</h2>
+    <p>링크 계층 상태 기계 하나는 한 번에 한 상태에만 있다. 대기(Standby), 광고, 스캔, 연결 시작(Initiating), 연결(센트럴 또는 페리페럴 역할), 동기화(주기적 광고·BIG 받기), 등시성 방송. 모든 상태는 대기에서 들어가고, 연결 상태만 예외로 연결 시작(→ 센트럴)이나 광고(→ 페리페럴)에서 들어간다. 그리고 링크 계층은 <b>상태 기계를 여러 개</b> 가질 수 있다. 위의 스마트워치는 상태 기계 넷이 동시에 돌고 있는 것이다.</p>
+    <figure class="diagram">
+      <div style="overflow-x:auto">
+      <svg viewBox="0 0 720 280" role="img" aria-label="링크 계층 상태 기계" style="min-width:560px">
+        <defs><marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8z" fill="var(--text-dim)"/></marker></defs>
+        <rect x="300" y="120" width="120" height="40" rx="20" class="f-acc-soft"/><text x="360" y="145" text-anchor="middle" class="t-acc">대기</text>
+        <rect x="40" y="30" width="130" height="40" rx="10" class="f-elev" stroke="var(--border)"/><text x="105" y="55" text-anchor="middle" class="t">광고</text>
+        <rect x="40" y="210" width="130" height="40" rx="10" class="f-elev" stroke="var(--border)"/><text x="105" y="235" text-anchor="middle" class="t">연결 시작</text>
+        <rect x="550" y="120" width="140" height="40" rx="10" class="f-acc-soft"/><text x="620" y="145" text-anchor="middle" class="t-acc">연결</text>
+        <rect x="300" y="20" width="120" height="36" rx="10" class="f-elev" stroke="var(--border)"/><text x="360" y="43" text-anchor="middle" class="t">스캔</text>
+        <rect x="300" y="224" width="120" height="36" rx="10" class="f-elev" stroke="var(--border)"/><text x="360" y="247" text-anchor="middle" class="t">동기화</text>
+        <rect x="470" y="20" width="140" height="36" rx="10" class="f-elev" stroke="var(--border)"/><text x="540" y="43" text-anchor="middle" class="t">등시성 방송</text>
+        <path d="M300 130 L172 62" class="s-line" marker-end="url(#ar)"/><path d="M300 150 L172 218" class="s-line" marker-end="url(#ar)"/>
+        <path d="M360 120 L360 58" class="s-line" marker-end="url(#ar)"/><path d="M360 160 L360 222" class="s-line" marker-end="url(#ar)"/><path d="M400 120 L520 58" class="s-line" marker-end="url(#ar)"/>
+        <path d="M170 42 C 380 -10, 560 60, 610 118" class="s-acc" fill="none" marker-end="url(#ar)"/><text x="470" y="88" class="t-dim" font-size="12">CONNECT_IND 받음 → 페리페럴</text>
+        <path d="M170 238 C 380 290, 560 220, 610 162" class="s-acc" fill="none" marker-end="url(#ar)"/><text x="440" y="208" class="t-dim" font-size="12">CONNECT_IND 보냄 → 센트럴</text>
+        <path d="M550 140 L424 140" class="s-line" stroke-dasharray="4 4" marker-end="url(#ar)"/>
+      </svg>
+      </div>
+      <figcaption><b>그림 3-1.</b> 상태 기계 하나의 상태와 전이. 어느 상태에서든 대기로 돌아갈 수 있다(점선은 그 가운데 하나만 그림). 실제 컨트롤러는 이런 상태 기계를 여러 개 돌린다.</figcaption>
+    </figure>
+    <p>모든 조합을 지원할 의무는 없지만 짝을 이룬 의무가 있다. 연결 시작 상태(+ 다른 상태 C)를 지원하면 같은 C와 함께 센트럴 연결도 지원해야 하고, 센트럴 연결 + 연결 시작을 지원하면 페리페럴 여럿과의 센트럴 연결도 지원해야 한다. 광고 쪽도 대칭이다. 연결을 “만들 수 있는” 조합이면 만든 뒤의 조합도 감당해야 한다는 뜻이다.</p>
+    <p class="spec-ref">일곱 상태와 전이(그림 1.1): <b>[Vol 6] Part B §1.1</b> · 상태 기계 여러 개와 조합 의무(Table 1.1): <b>§1.1.1</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="event">
+    <h2>연결 이벤트 하나의 시간</h2>
+    <p>연결 이벤트의 시작이 <span class="term">앵커 포인트</span>다. 센트럴은 보낼 것이 있으면 앵커 포인트에 정확히 첫 PDU를 보내고, 페리페럴은 그 시각에 듣는다. 이벤트 안에서는 센트럴 → 페리페럴 사이에 T_IFS_ACL_CP, 페리페럴 → 센트럴 사이에 T_IFS_ACL_PC(기본 150 µs)를 두고 번갈아 보내며, 한 이벤트는 한 채널만 쓴다. 이벤트가 끝나는 조건(MD 비트, CRC 오류 연속)은 1권 6장에서 봤다. 센트럴은 마지막 패킷과 다음 앵커 포인트 사이에 최소 <b><span class="term">T_MCES</span></b>(기본 150 µs)를 남겨야 한다. 앵커 포인트는 connInterval마다 오고 서로 겹치지 않는다.</p>
+    <p>두 기기는 <b><span class="term">connEventCounter</span></b>(16비트)를 함께 센다. 첫 이벤트가 0이고, 이벤트마다 1씩 늘며 0xFFFF 다음 0으로 돌아간다. 중요한 것은 <b>건너뛴 이벤트도 센다</b>는 점이다. 센트럴이 아무것도 보내지 않았어도, 페리페럴이 듣지 않았어도 카운터는 오른다. 다음 장의 “<span class="term">instant</span>”가 이 카운터로 약속하기 때문에, 둘이 서로 다른 이벤트 수를 셌다면 절차가 어긋난다.</p>
+    <div class="callout analogy"><strong>매시 정각의 통화, 받지 않은 시각도 센다</strong><p>“매일 정각마다 통화하고, 오늘부터 23번째 통화에서 새 번호로 바꾸자”고 약속했다면, 내가 바빠서 받지 못한 정각도 세어야 둘의 23번째가 같은 시각이 된다. 그래서 링크 계층은 건너뛴 이벤트도 빠짐없이 센다.</p></div>
+    <p class="spec-ref">앵커 포인트·connEventCounter·T_MCES 규칙: <b>[Vol 6] Part B §4.5.1</b> · T_IFS: <b>§4.1.1</b> · T_MCES 기본 150 µs: <b>§4.1.5</b> · 이벤트 닫기: <b>§4.5.6</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="subrate">
+    <h2>누가 어느 이벤트에 나오나: 서브레이팅·연속 이벤트·지연</h2>
+    <p>connInterval이 짧으면 반응은 빠르지만 전력이 든다. 연결을 끊지 않고 이벤트를 줄이는 장치가 셋 있다.</p>
+    <ul>
+      <li><b><span class="term">서브레이팅</span></b>(5.3): (connEventCount − connSubrateBaseEvent)가 connSubrateFactor의 배수인 이벤트만 <b>서브레이트 이벤트</b>(S)다. 센트럴은 S 이벤트에만 보낸다(그리고 아래 C 이벤트, 절차가 정한 이벤트). factor는 1~500.</li>
+      <li><b><span class="term">연속 이벤트</span></b>(C): 데이터가 오가기 시작하면 다음 S까지 기다리지 않도록, 바로 앞 connContinuationNumber개의 이벤트(마지막 S 이후) 가운데 하나라도 길이가 0이 아닌 PDU가 오갔다면 그 이벤트도 쓴다. continuation은 0 ~ factor − 1.</li>
+      <li><b>페리페럴 지연</b>(L): 페리페럴은 connPeripheralLatency개의 연속된 S 이벤트를 듣지 않아도 된다. 단 S 이벤트에서 센트럴의 패킷을 받았다면 그다음 C 이벤트는 반드시 듣고, 센트럴에게 받지 못한 동안은 지연을 쓰지 않고 매 S를 듣는 것이 좋다.</li>
+    </ul>
+    <p>제약은 factor × (latency + 1) ≤ 500, connInterval × factor × (latency + 1) < 감독 타임아웃의 절반이다. 사양의 예: factor 3, continuation 0, latency 6이면 페리페럴은 21번째 이벤트마다(7번째 S마다) 들으면 된다.</p>
+    <div class="sim" id="sim-sub">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>이벤트 지도: S·C·L</h3></div>
+      <div class="sim-view" style="padding:14px 16px">
+        <div class="evrow" id="sb-row"></div>
+        <div style="font-size:12.5px;color:var(--text-dim);margin-top:8px">채움 = 서브레이트 이벤트(S) · 다른 색 = 연속 이벤트(C) · 점선 = 페리페럴이 지연을 써서 듣지 않는 S(L) · 아래 점 = 그 이벤트에 길이가 0이 아닌 PDU가 오감 · 회색 = 쓰지 않는 이벤트</div>
+      </div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>connSubrateFactor <b id="sb-fv">3</b></span><input type="range" id="sb-f" min="1" max="12" value="3"></label>
+        <label class="ctrl"><span>connSubrateBaseEvent <b id="sb-bv">0</b></span><input type="range" id="sb-b" min="0" max="11" value="0"></label>
+        <label class="ctrl"><span>connContinuationNumber <b id="sb-cv">0</b></span><input type="range" id="sb-c" min="0" max="11" value="0"></label>
+        <label class="ctrl"><span>connPeripheralLatency <b id="sb-lv">6</b></span><input type="range" id="sb-l" min="0" max="10" value="6"></label>
+        <div class="ctrl"><span>데이터</span><div class="seg" id="sb-d"><button data-value="none" class="on">없음</button><button data-value="burst">이벤트 9에 한 번</button><button data-value="every">S마다</button></div></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">센트럴이 쓰는 이벤트</span><span class="v" id="sb-c-n">—</span></div>
+        <div class="stat"><span class="k">페리페럴이 듣는 이벤트</span><span class="v" id="sb-p-n">—</span></div>
+        <div class="stat"><span class="k">factor × (latency + 1)</span><span class="v" id="sb-lim">—</span></div>
+      </div>
+      <div class="sim-note">이벤트 0~47을 보인다. 해볼 것: ① 처음 값(3, 0, 0, 6)은 사양의 예다. 페리페럴은 0, 21, 42번만 듣는다. ② base를 2로 바꾸면 S의 위치가 옮겨 간다(사양 그림 4.44). ③ latency 0, continuation 2, 데이터 “이벤트 9에 한 번”이면 9 뒤의 두 이벤트(10, 11)가 C가 되고 페리페럴은 그 C를 듣는다. latency를 다시 올려 9가 L(페리페럴이 듣지 않음)이 되면 데이터가 오가지 못해 C도 생기지 않는다. 센트럴은 다음 기회에 다시 보낸다. ④ factor 12, latency 10이면 12 × 11 = 132로 500 이하지만, connInterval × 132가 감독 타임아웃의 절반보다 작아야 한다는 조건도 따로 맞춰야 한다. 모델: 데이터는 그 이벤트에서 센트럴이 보냈고 페리페럴이 받았다고 가정한다.</div>
+    </div>
+    <p class="spec-ref">서브레이트·연속 이벤트·페리페럴 지연의 정의와 예(21번째 이벤트), 제약: <b>[Vol 6] Part B §4.5.1</b>(그림 4.43~4.47) · 카운터가 넘칠 때 base 조정: 같은 절 · 서브레이팅 절차: <b>§5.1.19·§5.1.20</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="sched">
+    <h2>무선 하나, 일 여럿: 스케줄러</h2>
+    <p>센트럴의 연결 이벤트, 광고 이벤트, 스캔 창, 다른 연결의 이벤트가 같은 시각에 겹치면 컨트롤러는 하나만 할 수 있다. 사양은 어떤 것을 고르라고 정하지 않는다. 대신 경계를 정한다. 센트럴은 “일정 충돌로” 한 이벤트에서 아무것도 보내지 않을 수 있지만, <b>감독 타임아웃 안에 적어도 한 번은 보내야</b> 한다. 페리페럴도 지연이나 충돌과 상관없이 감독 타임아웃 안에 적어도 한 번은 들어야 한다. 이 경계를 넘으면 상대 쪽 타이머가 끝나 연결이 끊기고 오류 코드 0x08(Connection Timeout)이 남는다.</p>
+    <p>그래서 실제 스케줄러는 대개 우선순위에 “굶은 정도”를 더한다. 오래 건너뛴 일일수록 다음 충돌에서 이기게 한다. 센트럴은 자기 연결들의 앵커 포인트를 처음부터 서로 엇갈리게 놓아 충돌 자체를 줄인다(연결 간격을 서로 배수로 맞추는 이유).</p>
+    <div class="sim" id="sim-sch">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>스케줄러 예시 모델: 1초 동안의 무선</h3></div>
+      <div class="sim-view"><canvas id="cv-sch"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>연결 A 간격 <b id="sc-av">30 ms</b></span><input type="range" id="sc-a" min="6" max="80" value="24"></label>
+        <label class="ctrl"><span>연결 B 간격 <b id="sc-bv">50 ms</b></span><input type="range" id="sc-b" min="6" max="80" value="40"></label>
+        <label class="ctrl"><span>스캔 창 / 스캔 간격 <b id="sc-sv">30 / 100 ms</b></span><input type="range" id="sc-s" min="0" max="100" value="30"></label>
+        <div class="ctrl"><span>충돌 규칙</span><div class="seg" id="sc-r"><button data-value="fixed">고정 우선순위</button><button data-value="starve" class="on">굶은 만큼 올림</button></div></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">A 건너뜀 / 가장 긴 공백</span><span class="v" id="sc-ra">—</span></div>
+        <div class="stat"><span class="k">B 건너뜀 / 가장 긴 공백</span><span class="v" id="sc-rb">—</span></div>
+        <div class="stat"><span class="k">광고 건너뜀</span><span class="v" id="sc-rv">—</span></div>
+      </div>
+      <div class="sim-note">행: 연결 A(이벤트 4 ms), 연결 B(이벤트 4 ms), 광고(100 ms마다 3 ms), 스캔(옅은 색, 다른 일에 밀려나는 배경 작업). 채움 = 실행, 빨간 테두리 = 건너뜀. 연결 간격은 1.25 ms 단위. 이것은 사양이 아니라 사양의 제약(겹치지 않음, 감독 타임아웃 안에 한 번)을 지키는 예시 모델이다. 고정 우선순위는 연결 A &gt; B &gt; 광고 &gt; 스캔. 해볼 것: ① 고정 우선순위에서 A와 B 간격을 같게(예: 30 ms) 하면 B가 계속 진다. 감독 타임아웃이 짧으면 끊긴다. ② “굶은 만큼 올림”으로 바꾸면 번갈아 이긴다. ③ 스캔은 다른 일을 막지 않고 빈 시간에만 듣는다. 실제 스캐너가 연결 이벤트에 자리를 내주는 방식이다.</div>
+    </div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">센트럴이 연결 여섯 개를 7.5 ms 간격으로 유지하고, 각 연결이 매 이벤트에 2.5 ms씩 쓴다. 무엇이 일어날까?</p><p class="wi-hint">이벤트 하나에 2.5 ms × 6 = ?</p><div class="opts">
+      <button class="opt">문제없다. 겹치지 않게 엇갈려 놓으면 된다</button>
+      <button class="opt" data-correct>시간이 모자라 매번 일부가 건너뛰어진다. 오래 굶는 연결이 생기면 끊긴다</button>
+      <button class="opt">컨트롤러가 간격을 자동으로 늘린다</button>
+    </div><div class="quiz-exp">7.5 ms 안에 15 ms 분량이 필요하다. 아무리 엇갈려도 절반은 건너뛴다. 공정한 스케줄러라면 각 연결이 대략 두 번에 한 번 서비스받아 버틸 수 있지만, 스캔이나 광고까지 더하면 더 굶는다. 연결 간격을 늘리거나(연결 갱신 절차, 4장), 이벤트 길이(데이터 양)를 줄여야 한다.</div></div>
+    <p class="spec-ref">일정 충돌로 이벤트에서 보내지 않음·감독 타임아웃 안에 한 번: <b>[Vol 6] Part B §4.5.1</b> · 감독 타임아웃: <b>§4.5.2</b> · 오류 코드 0x08: <b>[Vol 1] Part F §2</b></p>
+  </section>
+
+  <div class="callout related"><strong>다른 책에서</strong><ul><li><a href="../../bluetooth/chapters/connection.html">BluetoothBook 06장 · 연결</a> — 연결 이벤트·지연·감독 타임아웃의 기본</li><li><a href="../../bluetooth/chapters/power.html">BluetoothBook 09장 · 전력</a> — 지연과 서브레이팅이 배터리에 주는 효과</li></ul></div>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>상태는 일곱, 상태 기계는 여럿. 연결을 만들 수 있는 조합을 지원하면 만든 뒤의 조합도 지원해야 한다(Table 1.1).</li>
+      <li>앵커 포인트에 센트럴이 먼저 보내고, 이벤트 사이에 T_MCES(기본 150 µs)를 남긴다. connEventCounter는 건너뛴 이벤트도 센다.</li>
+      <li>S = (count − base)가 factor의 배수인 이벤트, C = 직전 continuation개 이벤트에 데이터가 있었던 이벤트, L = 페리페럴이 지연으로 건너뛰는 S. factor × (latency + 1) ≤ 500.</li>
+      <li>스케줄러는 구현의 몫이지만, 감독 타임아웃 안에 센트럴은 한 번 보내고 페리페럴은 한 번 들어야 한다. 어기면 0x08로 끊긴다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>센트럴이 충돌로 한 연결 이벤트에서 아무것도 보내지 않았다. connEventCounter는?</p><div class="opts">
+        <button class="opt">그대로 둔다</button><button class="opt" data-correct>하나 늘린다</button><button class="opt">0으로 되돌린다</button><button class="opt">페리페럴만 늘린다</button>
+      </div><div class="quiz-exp">[Vol 6] Part B §4.5.1: 보내지 않았거나 듣지 않은 이벤트도 양쪽 모두 센다.</div></div>
+      <div class="quiz-q"><p>factor 4, base 1이면 서브레이트 이벤트는?</p><div class="opts">
+        <button class="opt">0, 4, 8, …</button><button class="opt" data-correct>1, 5, 9, …</button><button class="opt">4, 8, 12, …</button><button class="opt">모든 이벤트</button>
+      </div><div class="quiz-exp">(count − 1)이 4의 배수인 이벤트.</div></div>
+      <div class="quiz-q"><p>factor 3, continuation 0, latency 6에서 페리페럴이 반드시 들어야 하는 간격은?</p><div class="opts">
+        <button class="opt">3번째마다</button><button class="opt">7번째마다</button><button class="opt" data-correct>21번째마다</button><button class="opt">18번째마다</button>
+      </div><div class="quiz-exp">3 × (6 + 1) = 21. 사양의 예 그대로다.</div></div>
+      <div class="quiz-q"><p>센트럴이 감독 타임아웃 동안 한 번도 보내지 못하면?</p><div class="opts">
+        <button class="opt">페리페럴이 센트럴이 된다</button><button class="opt" data-correct>연결이 끊긴 것으로 처리된다(0x08)</button><button class="opt">다음 이벤트에서 두 번 보낸다</button><button class="opt">아무 일도 없다</button>
+      </div><div class="quiz-exp">페리페럴의 감독 타이머가 끝나 연결을 잃은 것으로 본다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  /* ================================================================ 계산 (검증 스크립트가 꺼내 쓴다) */
+  /**
+   * 이벤트 0..n-1의 쓰임을 [Vol 6] Part B §4.5.1의 규칙으로 정한다.
+   * S: (e − base)가 factor의 배수. 페리페럴은 연속된 S를 latency개까지 건너뛴다(S 순번이 latency + 1의 배수일 때 듣는다).
+   * C: S가 아닌 이벤트 중, 직전 cont개 이벤트(마지막 S 이전은 빼고)에 길이가 0이 아닌 PDU가 오간 이벤트. C에서는 페리페럴이 반드시 듣는다.
+   * data(e): 센트럴이 그 이벤트에 보낼 데이터가 있는가. 페리페럴이 듣는 이벤트에서만 실제로 오간다.
+   */
+  function eventMap(n, factor, base, cont, latency, data) {
+    const out = []; let sIdx = -1, lastS = -1;
+    for (let e = 0; e < n; e++) {
+      const isS = (((e - base) % factor) + factor) % factor === 0;
+      let isC = false, prx = false;
+      if (isS) { sIdx++; lastS = e; prx = sIdx % (latency + 1) === 0; }
+      else if (cont > 0 && lastS >= 0) { for (let p = Math.max(lastS, e - cont); p < e; p++) if (out[p].exchanged) { isC = true; break; } prx = isC; }
+      out.push({ e, kind: isS ? "S" : isC ? "C" : "-", centralTx: isS || isC, peripheralRx: prx, latencySkip: isS && !prx, exchanged: (isS || isC) && prx && !!data(e) });
+    }
+    return out;
+  }
+  /** connEventCounter가 넘칠 때 base 다시 맞추기: base + K·factor − 65536 이 0..65535가 되게. [Vol 6] Part B §4.5.1 */
+  function rebaseOnWrap(base, factor) { let v = base - 65536; while (v < 0) v += factor; return v; }
+  /** 서브레이트·지연 제약: factor × (latency + 1) ≤ 500, interval × factor × (latency + 1) < timeout / 2 */
+  function latencyOk(intervalMs, factor, latency, timeoutMs) { return factor * (latency + 1) <= 500 && intervalMs * factor * (latency + 1) < timeoutMs / 2; }
+  /**
+   * 스케줄러 예시 모델(사양이 아니라 사양의 제약을 지키는 한 가지 방식). tasks: [{ name, period, dur, prio, offset, background }] (ms).
+   * 회차들을 시각순으로 놓고, 겹치는 두 회차는 점수(우선순위, rule이 "starve"면 + 10 × 연속으로 진 횟수)가 높은 쪽을 남긴다.
+   * background 일(스캔)은 다른 일을 막지 않고 빈 시간에만 돈다.
+   * 돌려주는 값: { runs: [{ task, t, dur, ok }], stats: { 이름: { skipped, maxGap } } }
+   */
+  function schedule(tasks, horizon, rule) {
+    const occ = [];
+    tasks.forEach((k) => { if (k.background || !(k.period > 0)) return; for (let t = (k.offset || 0) % k.period; t < horizon; t += k.period) occ.push({ task: k.name, t, dur: k.dur, prio: k.prio, ok: false }); });
+    occ.sort((x, y) => x.t - y.t || y.prio - x.prio);
+    const starve = {}; tasks.forEach((k) => (starve[k.name] = 0));
+    const score = (o) => o.prio + (rule === "starve" ? 10 * starve[o.task] : 0);
+    let last = null;
+    for (const o of occ) {
+      if (!last || o.t >= last.t + last.dur) { o.ok = true; o.prev = starve[o.task]; starve[o.task] = 0; last = o; continue; }
+      if (score(o) > (last.prio + (rule === "starve" ? 10 * last.prev : 0))) { last.ok = false; starve[last.task] = last.prev + 1; o.ok = true; o.prev = starve[o.task]; starve[o.task] = 0; last = o; }
+      else starve[o.task]++;
+    }
+    const runs = occ.slice(), stats = {};
+    tasks.forEach((k) => {
+      if (k.background) { // 빈 시간 표시용
+        for (let t = (k.offset || 0) % k.period; t < horizon; t += k.period) runs.push({ task: k.name, t, dur: k.dur, ok: true, background: true });
+        return;
+      }
+      const mine = occ.filter((o) => o.task === k.name), okT = mine.filter((o) => o.ok).map((o) => o.t);
+      let gap = 0, prev = 0; okT.forEach((t) => { gap = Math.max(gap, t - prev); prev = t; }); gap = Math.max(gap, horizon - prev);
+      stats[k.name] = { skipped: mine.filter((o) => !o.ok).length, maxGap: gap };
+    });
+    return { runs, stats };
+  }
+
+  /* ================================================================ 1. 이벤트 지도 */
+  (function () {
+    const f = BD.range("sb-f", (v) => String(v), draw), b = BD.range("sb-b", (v) => String(v), draw), c = BD.range("sb-c", (v) => String(v), draw), l = BD.range("sb-l", (v) => String(v), draw);
+    const d = BD.seg("sb-d", draw);
+    function draw() {
+      const F = +f(), B = Math.min(+b(), F - 1), C = Math.min(+c(), F - 1), mode = d();
+      const data = (e) => (mode === "burst" ? e === 9 : mode === "every" ? (((e - B) % F) + F) % F === 0 : false);
+      const m = eventMap(48, F, B, C, +l(), data);
+      $("sb-row").innerHTML = m.map((x) => `<span class="${x.kind === "S" ? (x.latencySkip ? "L" : "S") : x.kind === "C" ? "C" : ""}${data(x.e) && x.kind !== "-" ? " d" : ""}" title="이벤트 ${x.e}">${x.e}<small>${x.kind === "-" ? "" : x.peripheralRx ? "듣기" : "건너뜀"}</small></span>`).join("");
+      BD.stat("sb-c-n", m.filter((x) => x.centralTx).length + " / 48");
+      BD.stat("sb-p-n", m.filter((x) => x.peripheralRx).map((x) => x.e).slice(0, 8).join(", ") + (m.filter((x) => x.peripheralRx).length > 8 ? " …" : ""));
+      BD.stat("sb-lim", F * (+l() + 1) + (F * (+l() + 1) <= 500 ? " ≤ 500 ✓" : " > 500 ✗"));
+    }
+    draw();
+  })();
+
+  /* ================================================================ 2. 스케줄러 */
+  (function () {
+    const a = BD.range("sc-a", (v) => (v * 1.25).toFixed(2).replace(/\.?0+$/, "") + " ms", draw), b = BD.range("sc-b", (v) => (v * 1.25).toFixed(2).replace(/\.?0+$/, "") + " ms", draw);
+    const s = BD.range("sc-s", (v) => v + " / 100 ms", draw), r = BD.seg("sc-r", draw);
+    let R = null, T = null;
+    const cv = BD.canvas($("cv-sch"), (ctx, w, h) => {
+      if (!R) return; const P = BD.palette(), L = 64, Rr = w - 8, rows = ["A", "B", "광고", "스캔"], rh = (h - 26) / rows.length, X = (t) => L + ((Rr - L) * t) / 1000;
+      rows.forEach((n, i) => { BD.text(ctx, n === "A" ? "연결 A" : n === "B" ? "연결 B" : n, 6, 14 + i * rh + rh / 2, { size: 12, color: P.text }); ctx.strokeStyle = P.grid; ctx.beginPath(); ctx.moveTo(L, 10 + (i + 1) * rh); ctx.lineTo(Rr, 10 + (i + 1) * rh); ctx.stroke(); });
+      R.runs.forEach((x) => { const i = rows.indexOf(x.task), y = 14 + i * rh, ww = Math.max(1.5, X(x.t + x.dur) - X(x.t)); const col = [P.accent, P.accent2, P.warn, P.ok][i]; if (x.background) { ctx.fillStyle = col; ctx.globalAlpha = 0.3; ctx.fillRect(X(x.t), y, ww, rh - 10); ctx.globalAlpha = 1; } else if (x.ok) { ctx.fillStyle = col; ctx.fillRect(X(x.t), y, ww, rh - 10); } else { ctx.strokeStyle = P.bad; ctx.lineWidth = 1; ctx.strokeRect(X(x.t) + 0.5, y + 0.5, ww, rh - 11); } });
+      BD.text(ctx, "0", L, h - 6, { size: 11, color: P.dim }); BD.text(ctx, "1 s", Rr, h - 6, { size: 11, color: P.dim, align: "right" });
+    }, { aspect: 0.4, minHeight: 200, maxHeight: 300 });
+    function draw() {
+      const pa = +a() * 1.25, pb = +b() * 1.25, sw = +s();
+      // 1 ms 칸 모델이라 간격을 정수 ms로 반올림
+      T = [{ name: "A", period: Math.round(pa), dur: 4, prio: 4 }, { name: "B", period: Math.round(pb), dur: 4, prio: 3, offset: 1 }, { name: "광고", period: 100, dur: 3, prio: 2, offset: 2 }];
+      if (sw > 0) T.push({ name: "스캔", period: 100, dur: sw, prio: 1, offset: 5, background: true });
+      R = schedule(T, 1000, r());
+      const fmt = (k) => R.stats[k] ? R.stats[k].skipped + "회 / " + R.stats[k].maxGap + " ms" : "—";
+      BD.stat("sc-ra", fmt("A")); BD.stat("sc-rb", fmt("B")); BD.stat("sc-rv", R.stats["광고"].skipped + "회");
+      cv.redraw();
+    }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

@@ -203,6 +203,154 @@ const bitsStr = (s) => s.replace(/\s/g, '').split('').map(Number);
   eq(X(f.bisIv(H('0001020304050607'), 0x78E52493)), '000102037ce02294', 'BIS IV = GIV low 32 bits XOR AA');
 }
 
+// ---------------------------------------------------------------- 02 hci
+{
+  const src = read('hci'), line = (k) => src.slice(src.indexOf(k), src.indexOf('\n', src.indexOf(k)));
+  const prelude = ['  const CMD =', '  const EVT =', '  const LESUB =', '  const le =', '  const hexLE =', '  const CMD_FIELDS ='].map(line).join('\n');
+  const f = load('hci', ['splitOpcode', 'parseH4', 'fields', 'simulateFlow'], prelude);
+  const SB = (s) => H([...s.matchAll(/"([^"]*)"/g)].map((m) => m[1].replace(/#.*/, '')).join(' '));
+  // [Vol 6] Part C §1의 HCI 바이트(매개변수)에 머리말을 붙인 것 → 사양 주석의 값이 나오는가
+  const bytes = SB(src.slice(src.indexOf('const SAMPLE = [') + 16, src.indexOf('].join("\\n");', src.indexOf('const SAMPLE = ['))));
+  const r = f.parseH4(bytes);
+  ok(!r.error && r.packets.length === 6, 'sample stream splits into 6 packets');
+  const [enc, ltkReq, ltkRep, encr, cc, acl] = r.packets;
+  eq([enc.opcode, enc.ogf, enc.ocf, enc.params.length], [0x2019, 0x08, 0x019, 0x1c], 'LE_Enable_Encryption header (length 0x1C)');
+  eq(f.fields(enc).map((x) => x[1]), ['0x0800', '0xabcdef1234567890', '0x2474', '0x4c68384139f574d836bcf34e9dfb01bf'], 'LE_Enable_Encryption fields = spec annotations');
+  eq([ltkReq.code, ltkReq.sub, ltkReq.params.length], [0x3e, 0x05, 0x0d], 'LTK_Request event (length 0x0D, subevent 0x05)');
+  eq(f.fields(ltkReq).slice(1).map((x) => x[1]), ['0x0801', '0xabcdef1234567890', '0x2474'], 'LTK_Request fields');
+  eq([ltkRep.opcode, ltkRep.params.length, f.fields(ltkRep)[1][1]], [0x201a, 0x12, '0x4c68384139f574d836bcf34e9dfb01bf'], 'LTK_Request_Reply (length 0x12)');
+  eq([encr.opcode, encr.params.length], [0x2017, 0x20], 'LE_Encrypt (length 0x20)');
+  eq([cc.code, cc.params.length], [0x0e, 0x14], 'Command_Complete (length 0x14)');
+  eq(f.fields(cc).map((x) => x[1]), [2, '0x2017 (HCI_LE_Encrypt)', '0x00', '0x99ad1b5226a37e3e058e3b8e27c2c666'], 'Command_Complete fields = spec (Num 0x02, opcode 0x2017, SK)');
+  eq([acl.handle, acl.pb, acl.bcOrTs, acl.length], [0x800, 0, 0, 0x1b], 'ACL header: handle 0x0800, length 0x001B');
+  // opcode 분해와 이름 (사양에서 확인한 OCF와 OGF)
+  eq(f.splitOpcode(0x0c03), { ogf: 3, ocf: 3 }, 'Reset = OGF 0x03, OCF 0x003');
+  for (let op = 0; op < 65536; op += 97) { const s = f.splitOpcode(op); eq((s.ogf << 10) | s.ocf, op, 'opcode round trip ' + op); }
+  ok(src.includes('0x20a4: "HCI_LE_Set_Event_Mask [v2]"') && src.includes('0x1010: "HCI_Read_Local_Supported_Commands [v2]"') && src.includes('0x2060: "HCI_LE_Read_Buffer_Size [v2]"'), '[v2] opcodes ([Vol 4] Part E §7.8.1, §7.4.2, §7.8.2)');
+  // 잘린 스트림은 그 패킷에서 멈춘다
+  const cut = f.parseH4(bytes.slice(0, -1)); ok(cut.error && cut.packets.length === 5, 'truncated stream stops at last packet');
+  ok(f.parseH4([0x07, 1, 2]).error, 'unknown indicator rejected');
+  // 흔한 초기화 예시의 길이가 맞는가
+  const init = SB(src.slice(src.indexOf('const INIT = [') + 14, src.indexOf('].join("\\n");', src.indexOf('const INIT = [')))); 
+  const ri = f.parseH4(init); ok(!ri.error && ri.packets.length === 12, 'init example parses (12 packets)');
+  // 크레딧 모델: 보낸 수 ≤ 한도, 맡긴 수 ≤ 버퍼, 보고가 매 이벤트면 min(버퍼, 한도)
+  for (let b = 1; b <= 16; b++) for (let p = 1; p <= 8; p++) for (let n = 1; n <= 6; n++) {
+    const s = f.simulateFlow(b, p, n, 60);
+    ok(s.sent.every((x) => x <= p) && s.credit.every((c) => c <= b), `flow bounds b${b} p${p} n${n}`);
+    if (n === 1) close(s.avg, Math.min(b, p), 1e-9, `flow steady state b${b} p${p}`);
+    ok(s.avg <= Math.min(p, b / 1) + 1e-9 && s.avg >= Math.min(p, b / n) - 1e-9 - p / 60 * n, `flow between b/n and min(b,p) b${b} p${p} n${n}`);
+  }
+}
+
+// ---------------------------------------------------------------- 03 scheduling
+{
+  const f = load('scheduling', ['eventMap', 'rebaseOnWrap', 'latencyOk', 'schedule']);
+  // 사양 §4.5.1의 예: factor 3, continuation 0, latency 6 → 21번째 이벤트마다
+  const m = f.eventMap(64, 3, 0, 0, 6, () => false);
+  eq(m.filter((x) => x.peripheralRx).map((x) => x.e), [0, 21, 42, 63], 'spec example: listen every 21st event');
+  eq(m.filter((x) => x.kind === 'S').length, 22, 'S events every 3rd');
+  // 그림 4.43·4.44: factor 5, base 0 / base 2
+  eq(f.eventMap(15, 5, 0, 0, 0, () => false).filter((x) => x.kind === 'S').map((x) => x.e), [0, 5, 10], 'Fig 4.43 (base 0)');
+  eq(f.eventMap(15, 5, 2, 0, 0, () => false).filter((x) => x.kind === 'S').map((x) => x.e), [2, 7, 12], 'Fig 4.44 (base 2)');
+  // 사양의 base 동치 예: factor 100이면 base 42, 6942, 65442가 같은 S(이벤트 24242)
+  for (const b of [42, 6942, 65442]) ok((((24242 - b) % 100) + 100) % 100 === 0, 'base equivalence ' + b);
+  // 연속 이벤트: factor 5, cont 2, 데이터가 S(10)에서 오가면 11, 12가 C
+  const c = f.eventMap(20, 5, 0, 2, 0, (e) => e === 10);
+  eq(c.filter((x) => x.kind === 'C').map((x) => x.e), [11, 12], 'continuation after data at S');
+  ok(c.filter((x) => x.kind === 'C').every((x) => x.peripheralRx && x.centralTx), 'C events: both active');
+  // 지연으로 페리페럴이 듣지 않은 S에서는 데이터가 오가지 않고 C도 없다
+  const L = f.eventMap(20, 5, 0, 2, 1, (e) => e === 5);
+  ok(!L[5].peripheralRx && L.filter((x) => x.kind === 'C').length === 0, 'no exchange at latency-skipped S');
+  // 무작위로 규칙 성질: C는 cont 범위 안, 연속 L은 latency 이하
+  for (let t = 0; t < 300; t++) {
+    const F = 1 + (t % 12), B = t % F, C = (t * 7) % F, Lt = t % 9, mm = f.eventMap(200, F, B, C, Lt, (e) => (e * 31 + t) % 7 === 0);
+    let run = 0, worst = 0; mm.forEach((x) => { if (x.kind === 'S') { if (x.latencySkip) { run++; worst = Math.max(worst, run); } else run = 0; } });
+    ok(worst <= Lt, `consecutive skipped S ≤ latency (F${F} L${Lt})`);
+    ok(mm.every((x, i) => x.kind !== 'C' || mm.slice(Math.max(0, i - C), i).some((y) => y.exchanged)), `C only after exchange within cont (F${F} C${C})`);
+  }
+  // 카운터가 넘칠 때 base: base + K·factor − 65536 ∈ [0, 65535]이고 S 간격이 유지된다
+  for (const [b, F] of [[65530, 7], [42, 100], [65535, 500], [0, 1]]) { const nb = f.rebaseOnWrap(b, F); ok(nb >= 0 && nb < 65536 && (((nb - (b - 65536)) % F) + F) % F === 0, `rebase ${b}/${F} → ${nb}`); }
+  // 제약
+  ok(f.latencyOk(7.5, 3, 6, 1000) && !f.latencyOk(7.5, 100, 5, 32000) && !f.latencyOk(50, 3, 6, 2000), 'latency constraints (≤ 500 and < timeout/2)');
+  // 스케줄러 모델: 실행한 회차끼리 겹치지 않는다. 같은 간격이면 고정 우선순위에서 B가 굶고, 굶은 만큼 올리면 번갈아 이긴다
+  const tasks = (pa, pb) => [{ name: 'A', period: pa, dur: 4, prio: 4 }, { name: 'B', period: pb, dur: 4, prio: 3, offset: 1 }, { name: '광고', period: 100, dur: 3, prio: 2, offset: 2 }];
+  for (let pa = 6; pa <= 80; pa += 7) for (let pb = 6; pb <= 80; pb += 9) for (const rule of ['fixed', 'starve']) {
+    const r = f.schedule(tasks(pa, pb), 1000, rule), okRuns = r.runs.filter((x) => x.ok && !x.background).sort((x, y) => x.t - y.t);
+    ok(okRuns.every((x, i) => i === 0 || okRuns[i - 1].t + okRuns[i - 1].dur <= x.t), `no overlap ${pa}/${pb}/${rule}`);
+  }
+  const fx = f.schedule(tasks(30, 30), 1000, 'fixed'), sv = f.schedule(tasks(30, 30), 1000, 'starve');
+  ok(fx.stats.B.skipped > 30 && fx.stats.B.maxGap >= 900, 'fixed priority starves B at equal intervals');
+  ok(sv.stats.B.maxGap <= 60 && sv.stats.A.maxGap <= 60, 'starvation boost alternates (gap ≤ 2 intervals)');
+}
+
+// ---------------------------------------------------------------- 04 procedures
+{
+  const src = read('procedures'), line = (k) => src.slice(src.indexOf(k), src.indexOf('  };\n', src.indexOf(k)) + 5);
+  const f = load('procedures', ['instantState', 'instantRisk', 'windowOk', 'incompatible', 'collision', 'crc24', 'whiteningBits', 'buildCtrl', 'airBits'], line('  const PROC = {'));
+  // instant 비교 (mod 65536, 32767 경계) [Vol 6] Part B §5.5.1
+  eq([f.instantState(5, 0xfff0), f.instantState(0x1000, 0x1000), f.instantState(0x0ff0, 0x1000), f.instantState(0x1000 + 32766, 0x1000), f.instantState(0x1000 + 32767, 0x1000)], ['future', 'now', 'past', 'future', 'past'], 'instant mod 65536');
+  eq(f.instantRisk(12, 1, 0.3).chances, 12, 'chances k=1'); eq(f.instantRisk(12, 6, 0.3).chances, 2, 'chances k=6'); close(f.instantRisk(6, 1, 0.3).miss, 0.3 ** 6, 1e-12, 'miss = per^n');
+  // 전송 창 [Vol 6] Part B §5.1.1
+  ok(f.windowOk(0, 1.25, 30) && f.windowOk(30, 10, 30) && !f.windowOk(31.25, 1.25, 30) && !f.windowOk(0, 11.25, 30) && !f.windowOk(0, 7.5, 7.5) && f.windowOk(0, 6.25, 7.5) && !f.windowOk(1, 1.25, 30), 'transmit window ranges');
+  // 충돌 [Vol 6] Part B §5.3
+  eq(f.collision('C', 'phy', 'connParam', false), { action: 'rejectB', code: 0x2a }, 'central rejects (0x2A)');
+  eq(f.collision('P', 'phy', 'chMap', false), { action: 'yieldToB', code: 0x2a }, 'peripheral yields');
+  eq(f.collision('C', 'phy', 'phy', false).code, 0x23, 'same procedure → 0x23');
+  eq(f.collision('C', 'connUpdate', 'connParam', false).code, 0x23, 'conn update vs conn param request → 0x23');
+  eq(f.collision('P', 'phy', 'connUpdate', true).action, 'disconnect', 'peer already responded → disconnect');
+  eq(f.collision('C', 'dataLen', 'phy', false), { action: 'both', code: null }, 'data length is compatible');
+  ok(f.incompatible('frameSpace', 'cisCreate') && f.incompatible('subReq', 'rateUpdate') && !f.incompatible('subUpdate', 'feature'), 'other incompatible pairs');
+  // [Vol 6] Part C §4.3.2: LL_CHANNEL_MAP_IND 완전한 패킷
+  const pdu = f.buildCtrl({ op: 1, unused: [2, 5, 33, 34, 35, 36], instant: 0x4321, nesn: 0, sn: 1, md: 1, cteUs: 40 });
+  const bits = (a) => a.join('').replace(/(.{8})/g, '$1 ').trim();
+  const lsb = (by) => Array.from({ length: 8 }, (_, i) => (by >> i) & 1);
+  eq(bits([].concat(...pdu.map(lsb))), '11011100 00010000 10100001 10000000 11011011 11111111 11111111 11111111 10000000 10000100 11000010', 'CHANNEL_MAP_IND PDU bits (Part C §4.3.2)');
+  const a = f.airBits(0xAA173C42, pdu, 0xCD3F6C, 29, 40);
+  eq(bits(a.body.slice(-24)), '10011100 01000111 00101001', 'CRC (Part C §4.3.2)');
+  eq(bits(a.white), '01110010 10011100 00101001 10010010 10110010 00010001 11100000 00111000 11100010 00010011 00010111 10010111 00111110 11100011', 'whitened PDU+CRC');
+  eq(bits(a.pre.concat(a.aa, a.white, a.cte)), '01010101 01000010 00111100 11101000 01010101 01110010 10011100 00101001 10010010 10110010 00010001 11100000 00111000 11100010 00010011 00010111 10010111 00111110 11100011 11111111 11111111 11111111 11111111 11111111', 'complete packet (Part C §4.3.2)');
+  // [Vol 6] Part C §4.3.1: LL 데이터 PDU (LLID 2, NESN 1, SN 0, MD 1, 01..05)
+  const d = [0b10 | (1 << 2) | (1 << 4), 5, 1, 2, 3, 4, 5], b2 = f.airBits(0xAA08192B, d, 0xC4C181, 16, 0);
+  eq(bits(b2.pre.concat(b2.aa, b2.white)), '10101010 11010100 10011000 00010000 01010101 01100011 11011001 01001010 10001100 11011011 01111101 10111001 10110010 00101111 10011000', 'LL data PDU complete packet (Part C §4.3.1)');
+}
+
+// ---------------------------------------------------------------- 05 extadv
+{
+  const f = load('extadv', ['auxPtr', 'extPayload', 'advPdu', 'crc24', 'whiteningBits', 'advAir', 'airUs', 'chainPlan', 'pawrCheck']);
+  const bits = (a) => a.join('').replace(/(.{8})/g, '$1 ').trim(), lsb = (by) => Array.from({ length: 8 }, (_, i) => (by >> i) & 1);
+  // [Vol 6] Part C §4.2.2: AUX_ADV_IND (AdvA A9AAABACADAE, DID ABC, SID E, TxPower -42, 데이터 05 07 09 0B 0D, 채널 7)
+  const pl = f.extPayload({ advMode: 1, advA: H('AEADACABAAA9'), adi: { did: 0xabc, sid: 0xe }, txPower: -42, data: H('050709 0B0D') });
+  const pdu = f.advPdu(7, 0, 0, pl);
+  eq(bits([].concat(...pdu.map(lsb))), '11100000 00001000 01010010 10010010 01110101 10110101 00110101 11010101 01010101 10010101 00111101 01010111 01101011 10100000 11100000 10010000 11010000 10110000', 'AUX_ADV_IND PDU bits (Part C §4.2.2)');
+  // 4.2.2 샘플의 완전한 패킷: 프리앰블·AA·화이트닝된 PDU까지는 일치. 샘플의 CRC는 본문 규칙(0x555555, Part B §3.1.1)이 아니라 0x515555로 계산한 값과 같다(샘플 불일치를 기록)
+  const W422 = '01010101 01101011 01111101 10010001 01110001 00011100 01111110 01111011 11101111 00100101 00000010 10101001 01111001 10010100 00100000 11101100 11000110 01101001 11101101 11011101 01010011 00101000 01011100 01001001 00111110 11010100';
+  const mine = bits(f.advAir(pdu, 7)), n = 40 + pdu.length * 8, cut = (x) => x.replace(/ /g, '').slice(0, n);
+  eq(cut(mine), cut(W422), 'AUX_ADV_IND preamble, AA and whitened PDU (Part C §4.2.2)');
+  ok(mine !== W422 && bits(f.advAir(pdu, 7, 0x515555)) === W422, 'Part C §4.2.2 sample CRC matches CRCInit 0x515555, not 0x555555 (sample inconsistency)');
+  eq(f.crc24(pdu, 0x515555), 0b000110111100010001110101, 'sample CRC value');
+  // [Vol 6] Part C §4.2.1: 레거시 ADV_NONCONN_IND (TxAdd 1, AdvA C1A2A3A4A5A6, 01 02 03, 채널 38)
+  const leg = f.advPdu(2, 1, 0, H('A6A5A4A3A2C1').concat([1, 2, 3]));
+  eq(bits(f.advAir(leg, 38)), '01010101 01101011 01111101 10010001 01110001 00101001 00110011 01000111 10100001 10111111 10111110 11000010 01110010 01011000 11100101 00110101 11110111 11110011 10100101', 'ADV_NONCONN_IND complete packet (Part C §4.2.1)');
+  // AuxPtr: 245,700 µs 미만은 30 µs 단위
+  const ap = (b) => b[0] | (b[1] << 8) | (b[2] << 16);
+  const a1 = ap(f.auxPtr(12, 1500, 0, 0)); eq([a1 & 0x3f, (a1 >> 7) & 1, (a1 >> 8) & 0x1fff], [12, 0, 50], 'AuxPtr 1500 µs → 30 µs × 50');
+  const a2 = ap(f.auxPtr(3, 300000, 1, 2)); eq([a2 & 0x3f, (a2 >> 6) & 1, (a2 >> 7) & 1, (a2 >> 8) & 0x1fff, (a2 >> 21) & 7], [3, 1, 1, 1000, 2], 'AuxPtr 300 ms → 300 µs × 1000');
+  // 체인 계획: 1650바이트, 페이로드 ≤ 255, 데이터 합 = n
+  for (const n of [0, 1, 245, 246, 400, 1000, 1650]) {
+    const c = f.chainPlan(n, '1m'), data = c.aux.reduce((s, p, i) => s + p - (i ? 4 : 10) - (i < c.aux.length - 1 ? 3 : 0), 0);
+    ok(c.aux.every((p) => p <= 255) && data === n, 'chain carries all data within 255 ' + n);
+  }
+  eq(f.chainPlan(1650, '1m').aux.length, 7, '1650 bytes on 1M → 7 aux PDUs');
+  ok(f.chainPlan(1650, 's8').auxUs / f.chainPlan(1650, '1m').auxUs > 7 && f.chainPlan(1650, 's8').totalUs > 100000, 'Coded S=8 ~8x, >100 ms');
+  // PAwR 규칙 [Vol 6] Part B §4.4.2.2.4
+  const good = { interval: 1000, subevents: 50, subInterval: 20, slotDelay: 5, slotSpacing: 0.5, slots: 25 };
+  ok(f.pawrCheck(good).every((x) => x[1]), 'PAwR good design');
+  ok(!f.pawrCheck({ ...good, subevents: 129 })[1][1], '> 128 subevents');
+  ok(!f.pawrCheck({ ...good, slots: 40 })[6][1], 'slot spacing > (subInterval - delay)/slots');
+  ok(!f.pawrCheck({ ...good, subevents: 51 })[3][1], 'subevents overflow interval');
+  ok(!f.pawrCheck({ ...good, subInterval: 320 })[2][1] && !f.pawrCheck({ ...good, slotSpacing: 0.2 })[5][1], 'ranges');
+}
+
 // ---------------------------------------------------------------- 모든 인라인 스크립트가 문법 오류 없이 컴파일되는가, JSON-LD가 올바른가
 let scripts = 0;
 for (const f of ['../index.html', ...fs.readdirSync(path.join(root, 'chapters')).filter((x) => x.endsWith('.html'))]) {

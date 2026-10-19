@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>광고 끝까지: 확장 광고 체인, 주기적 광고와 PAwR · BluetoothBook 심화</title>
+<meta name="description" content="주 채널의 ADV_EXT_IND에서 보조 채널의 AUX_ADV_IND·AUX_CHAIN_IND로 이어지는 확장 광고, 공통 확장 페이로드와 확장 헤더(AdvA·ADI·AuxPtr·SyncInfo·TxPower), 1650바이트 체인과 T_MAFS, 주기적 광고와 PAST, PAwR의 서브이벤트와 응답 슬롯 규칙을 사양 샘플 패킷과 함께 다룬다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/extadv.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="BluetoothBook 심화">
+<meta property="og:title" content="광고 끝까지: 확장 광고 체인, 주기적 광고와 PAwR · BluetoothBook 심화">
+<meta property="og:description" content="주 채널의 ADV_EXT_IND에서 보조 채널의 AUX_ADV_IND·AUX_CHAIN_IND로 이어지는 확장 광고, 공통 확장 페이로드와 확장 헤더(AdvA·ADI·AuxPtr·SyncInfo·TxPower), 1650바이트 체인과 T_MAFS, 주기적 광고와 PAST, PAwR의 서브이벤트와 응답 슬롯 규칙을 사양 샘플 패킷과 함께 다룬다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/extadv.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"광고 끝까지: 확장 광고 체인, 주기적 광고와 PAwR","name":"광고 끝까지: 확장 광고 체인, 주기적 광고와 PAwR · BluetoothBook 심화","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/extadv.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/extadv.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":5,"image":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png","dateModified":"2026-10-19","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/#book","name":"BluetoothBook 심화 — 프로토콜 스택을 끝까지 따라가는 블루투스 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},"publisher":{"@type":"Organization","name":"BluetoothBook 심화","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},"description":"주 채널의 ADV_EXT_IND에서 보조 채널의 AUX_ADV_IND·AUX_CHAIN_IND로 이어지는 확장 광고, 공통 확장 페이로드와 확장 헤더(AdvA·ADI·AuxPtr·SyncInfo·TxPower), 1650바이트 체인과 T_MAFS, 주기적 광고와 PAST, PAwR의 서브이벤트와 응답 슬롯 규칙을 사양 샘플 패킷과 함께 다룬다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook 심화","item":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},{"@type":"ListItem","position":2,"name":"05 광고 끝까지: 확장 광고 체인, 주기적 광고와 PAwR","item":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/extadv.html"}]}]}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<style>
+  .hexin { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px 14px; }
+  .hexin label { display: grid; gap: 4px; font-size: 12.5px; color: var(--text-dim); }
+  .hexin input { font: 13px var(--mono); padding: 7px 9px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); min-width: 0; }
+  .blk { font: 12.5px/1.65 var(--mono); overflow-x: auto; white-space: pre; padding: 12px 14px; background: var(--surface); border-radius: 10px; color: var(--text); }
+  .blk .k { color: var(--text-dim); } .blk .a { color: var(--accent); font-weight: 600; } .blk .b { color: var(--accent-2); font-weight: 600; } .blk .ok { color: var(--ok); font-weight: 700; } .blk .bad { color: var(--bad); font-weight: 700; }
+  .chk { list-style: none; padding: 0; margin: 0; display: grid; gap: 4px; font-size: 14px; }
+  .chk li.ok::before { content: "✓ "; color: var(--ok); font-weight: 700; } .chk li.bad::before { content: "✗ "; color: var(--bad); font-weight: 700; }
+</style>
+</head>
+<body data-chapter="extadv">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 05</div>
+    <h1>광고 끝까지: 확장 광고 체인, 주기적 광고와 PAwR</h1>
+    <p class="lead">1권 5장의 광고는 세 채널에 31바이트를 외치는 것이었다. 5.0 이후의 광고는 다르다. 주 채널에는 “자세한 건 7번 채널 1.2 ms 뒤에”라는 짧은 안내만 두고, 본문은 데이터 채널로 옮겨 수백 바이트를 체인으로 잇는다. 같은 구조 위에 주기적 광고와 응답 있는 주기적 광고(PAwR)가 올라선다. 이 장은 그 공통 형식을 바이트로 익히고, 사양 샘플 AUX_ADV_IND 하나를 공중 비트까지 다시 만든다.</p>
+    <ul class="objectives">
+      <li>ADV_EXT_IND → AUX_ADV_IND → AUX_CHAIN_IND의 역할과, 주 채널·보조 채널의 쓰임을 설명할 수 있다.</li>
+      <li>공통 확장 페이로드(확장 헤더 길이·AdvMode·플래그·AdvA·ADI·AuxPtr·SyncInfo·TxPower)를 바이트로 만들고 읽을 수 있다.</li>
+      <li>AuxPtr의 오프셋 단위와 T_MAFS, 1650바이트 체인의 공중 시간을 계산할 수 있다.</li>
+      <li>주기적 광고 동기와 PAST, PAwR의 서브이벤트·응답 슬롯 제약을 안다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="chain">
+    <h2>주 채널은 안내판, 본문은 보조 채널로</h2>
+    <p><span class="term">확장 광고</span>는 광고를 두 층으로 나눈다. 주 채널(37·38·39)에는 <b>ADV_EXT_IND</b>를 보낸다. 데이터 없이 “이 광고 묶음(SID)의 몇 번째 데이터(DID)이고, 본문은 어느 채널에 몇 µs 뒤에 있다(<span class="term">AuxPtr</span>)”만 싣는다. 스캐너는 그 포인터를 따라가 보조 채널(0~36번 데이터 채널 중 하나)의 <b>AUX_ADV_IND</b>를 받는다. 본문이 길면 AUX_ADV_IND에도 AuxPtr을 달아 <b>AUX_CHAIN_IND</b>로 잇는다. 호스트 광고 데이터는 조각내기 전 최대 <b>1650바이트</b>다.</p>
+    <div class="callout analogy"><strong>역 게시판의 “○번 출구 안내 데스크로”</strong><p>붐비는 역 게시판(주 채널)에는 큰 공지를 다 붙이지 않는다. “○○ 행사 안내는 7번 출구 데스크, 지금부터 1분 뒤”만 붙인다. 관심 있는 사람만 7번 출구로 가서 자세한 안내문(AUX_ADV_IND)을 받고, 안내문이 길면 “다음 장은 옆 데스크에서”(AUX_CHAIN_IND)로 이어진다. 게시판이 덜 붐비고, 긴 안내도 가능하다.</p></div>
+    <p><b><span class="term">ADI</span></b>(AdvDataInfo, 2바이트)는 SID 4비트와 DID 12비트다. 한 기기가 광고 묶음 여럿을 동시에 돌릴 때 SID로 구별하고, 스캐너는 DID가 그대로면 같은 데이터라 보고 보조 채널을 다시 따라가지 않을 수 있다. 데이터를 바꾸면 DID를 바꿔야 한다.</p>
+    <p class="spec-ref">확장 광고 PDU와 공통 확장 페이로드(Figure 2.17, AdvMode Table 2.15): <b>[Vol 6] Part B §2.3.4</b> · ADI: <b>§2.3.4.4</b> · AuxPtr: <b>§2.3.4.5</b> · 1650바이트: <b>§2.3.4.9</b>(호스트 광고 데이터)</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="format">
+    <h2>공통 확장 페이로드를 바이트로</h2>
+    <p>ADV_EXT_IND, AUX_ADV_IND, AUX_CHAIN_IND, AUX_SYNC_IND 등은 모두 같은 페이로드 형식을 쓴다. 첫 바이트는 <b>확장 헤더 길이</b>(아래 6비트, 0~63)와 <b>AdvMode</b>(위 2비트: 00 연결·스캔 불가, 01 연결 가능, 10 스캔 가능). 그 뒤 확장 헤더가 오는데, 첫 바이트 <b>플래그</b>의 비트 0부터 차례로 AdvA(6), TargetA(6), CTEInfo(1), ADI(2), AuxPtr(3), <span class="term">SyncInfo</span>(18), TxPower(1) 칸이 있는지를 표시하고 그 순서대로 이어진다. 남은 자리가 AdvData다(길이 − 확장 헤더 길이 − 1).</p>
+    <p><b>AuxPtr</b> 3바이트: 채널 번호 6비트, 시계 정확도(CA) 1비트, 오프셋 단위 1비트(0 = 30 µs, 1 = 300 µs), Aux 오프셋 13비트, Aux PHY 3비트. 오프셋은 이 패킷의 시작에서 보조 패킷 시작까지이고, 적어도 이 패킷 길이 + <b><span class="term">T_MAFS</span></b>(300 µs)여야 한다. 245,700 µs 미만이면 30 µs 단위를 쓴다. 보조 패킷은 오프셋보다 이르지 않고, 오프셋 + 한 단위보다 늦지 않게 시작한다.</p>
+    <div class="sim" id="sim-pdu">
+      <div class="sim-head"><span class="sim-tag">WORKBENCH</span><h3>AUX_ADV_IND 만들기 (사양 4.2.2 샘플)</h3></div>
+      <div class="sim-view" style="padding:14px 16px">
+        <div class="hexin">
+          <label>AdvA (공개, 큰 바이트부터)<input id="pd-a" spellcheck="false" value="A9AAABACADAE"></label>
+          <label>DID · SID (hex)<input id="pd-adi" spellcheck="false" value="ABC E"></label>
+          <label>TxPower (dBm, 빈칸 = 없음)<input id="pd-tx" spellcheck="false" value="-42"></label>
+          <label>AuxPtr: 채널·오프셋(µs) (빈칸 = 없음)<input id="pd-aux" spellcheck="false" value=""></label>
+          <label>AdvData (hex)<input id="pd-d" spellcheck="false" value="05 07 09 0B 0D"></label>
+          <label>AdvMode · 채널<input id="pd-m" spellcheck="false" value="1 7"></label>
+        </div>
+        <div class="blk" id="pd-out" style="margin-top:12px"></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">확장 헤더 / 페이로드</span><span class="v" id="pd-len">—</span></div>
+        <div class="stat"><span class="k">AdvData에 남은 자리</span><span class="v" id="pd-room">—</span></div>
+        <div class="stat"><span class="k">사양 샘플과 비교</span><span class="v" id="pd-ok">—</span></div>
+      </div>
+      <div class="sim-note">광고 PDU는 접근 주소 0x8E89BED6, CRCInit 0x555555로 보낸다. 해볼 것: ① 처음 값은 사양 [Vol 6] Part C §4.2.2의 샘플이다. PDU와 화이트닝까지는 비트 하나까지 같지만 CRC는 다르다(아래 “사양 샘플의 불일치” 참고). ② AuxPtr에 “12 1500”을 넣으면 플래그 비트 4가 켜지고 3바이트가 붙어 AdvData 자리가 줄어든다. 1500 µs는 30 µs 단위로 50. ③ TxPower를 비우면 1바이트가 빠진다.</div>
+    </div>
+    <div class="callout warn"><strong>사양 샘플의 불일치: AUX_ADV_IND의 CRC</strong><p>이 작업대를 만들며 사양 [Vol 6] Part C §4.2.2 샘플의 CRC(00011011 11000100 01110101)가, 같은 절의 PDU 비트에 본문 규칙(광고 채널 PDU는 CRC 레지스터를 0x555555로 시작, [Vol 6] Part B §3.1.1)을 적용한 값과 다르다는 것을 확인했다. 같은 CRC 구현이 레거시 광고(§4.2.1), 데이터 PDU(§4.3.1), 제어 PDU(§4.3.2) 샘플은 모두 그대로 재현하고, 문제의 CRC는 초기값을 0x515555(비트 18 하나 다름)로 두었을 때만 나온다. 샘플을 만들 때의 실수로 보이며, 구현은 본문 규칙(0x555555)을 따라야 한다. 검증 스크립트는 이 불일치를 그대로 기록해 둔다.</p></div>
+    <p class="spec-ref">확장 헤더 필드 순서와 크기(Figure 2.18): <b>[Vol 6] Part B §2.3.4</b> · AuxPtr(Table 2.17, T_MAFS 조건, 245,700 µs): <b>§2.3.4.5</b> · TxPower: <b>§2.3.4.7</b> · T_MAFS 300 µs: <b>§4.1.2</b> · 샘플: <b>[Vol 6] Part C §4.2.2</b>(레거시는 §4.2.1)</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="time">
+    <h2>1650바이트를 보내는 데 걸리는 시간</h2>
+    <p>보조 채널 PDU 하나의 페이로드는 최대 255바이트지만, 확장 헤더가 그 안을 차지한다. 체인이 길수록 PDU마다 AuxPtr과 ADI가 반복되고, 사이마다 T_MAFS 이상을 띄운다. PHY도 크게 영향을 준다. 같은 데이터를 Coded S=8로 보내면 1M보다 약 8배 오래 걸리고, 그동안 다른 일(3장의 스케줄러)이 밀린다.</p>
+    <div class="sim" id="sim-chain">
+      <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>체인 계획: PDU 수와 공중 시간</h3></div>
+      <div class="sim-view"><canvas id="cv-chain"></canvas></div>
+      <div class="sim-controls">
+        <label class="ctrl"><span>AdvData <b id="ch-nv">400</b> 바이트</span><input type="range" id="ch-n" min="0" max="1650" step="10" value="400"></label>
+        <div class="ctrl"><span>보조 채널 PHY</span><div class="seg" id="ch-p"><button data-value="1m" class="on">LE 1M</button><button data-value="2m">LE 2M</button><button data-value="s8">Coded S=8</button></div></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">PDU 수 (주 + 보조)</span><span class="v" id="ch-pdus">—</span></div>
+        <div class="stat"><span class="k">보조 채널 공중 시간</span><span class="v" id="ch-air">—</span></div>
+        <div class="stat"><span class="k">ADV_EXT_IND부터 끝까지</span><span class="v" id="ch-tot">—</span></div>
+      </div>
+      <div class="sim-note">예시 구성: ADV_EXT_IND(1M, 주 채널 하나)는 ADI + AuxPtr, AUX_ADV_IND는 AdvA + ADI (+ 이어지면 AuxPtr), AUX_CHAIN_IND는 ADI (+ AuxPtr). 각 PDU 사이 간격은 T_MAFS 300 µs로 가장 촘촘하게 잡았다. 패킷 시간은 1권 3장의 식(LE 1M: (10 + 페이로드) × 8 µs, LE 2M: (11 + 페이로드) × 4 µs, Coded S=8: 376 + ((2 + 페이로드) × 8 + 27) × 8 µs). 해볼 것: ① 1650바이트를 1M으로 보내면 보조 PDU가 7개다. ② Coded S=8로 바꾸면 공중 시간이 약 8배로 늘어 100 ms를 넘는다.</div>
+    </div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">스캐너가 AUX_ADV_IND는 받았는데 AUX_CHAIN_IND 하나를 놓쳤다. 호스트에는 무엇이 올라갈까?</p><p class="wi-hint">체인 중간이 빠진 광고 데이터를 그대로 이어 붙여도 될까?</p><div class="opts">
+      <button class="opt">받은 조각만 이어서 완전한 것처럼 보고한다</button>
+      <button class="opt" data-correct>받은 데까지 보고하면서 “데이터가 잘림(incomplete)” 상태를 알린다</button>
+      <button class="opt">아무것도 보고하지 않고 다음 광고 이벤트를 기다릴 수밖에 없다</button>
+    </div><div class="quiz-exp">LE Extended Advertising Report 이벤트의 Event_Type에는 데이터 상태(완료, 더 올 것 있음, 잘림)가 있다. 체인을 놓치면 컨트롤러는 그때까지의 데이터를 “잘림”으로 올리고, 호스트는 DID가 같은 다음 광고를 다시 받아 맞춰야 한다. 체인이 길수록 한 조각이라도 놓칠 확률이 커지므로, 큰 데이터는 주기적 광고나 연결로 보내는 편이 낫다.</div></div>
+    <p class="spec-ref">보조 패킷 시작 시각과 T_MAFS: <b>[Vol 6] Part B §2.3.4.5·§4.1.2</b> · Extended Advertising Report의 데이터 상태: <b>[Vol 4] Part E §7.7.65.13</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="periodic">
+    <h2>주기적 광고, PAST, 그리고 PAwR</h2>
+    <p>AUX_ADV_IND에 <b>SyncInfo</b>(18바이트)를 넣으면 “이 광고 묶음에는 주기적 광고 열차가 있다”는 뜻이다. SyncInfo는 첫 AUX_SYNC_IND까지의 오프셋, 주기, 채널 맵, 접근 주소, CRC 초기값, 이벤트 카운터를 담는다. 스캐너는 이것으로 열차에 <b>동기화</b>하고, 그 뒤에는 광고 채널을 스캔하지 않고 정해진 시각에만 깨어 받는다. Auracast의 BIGInfo도 이 열차에 실려 온다(9장).</p>
+    <p>동기화하려면 처음 한 번은 스캔해야 하는데, 보청기처럼 전력이 빠듯한 기기에는 부담이다. <b><span class="term">PAST</span></b>(Periodic Advertising Sync Transfer)는 이미 동기화한 휴대폰이 연결을 통해 LL_PERIODIC_SYNC_IND(opcode 0x1C)로 SyncInfo를 건네주는 절차다. 보청기는 스캔 없이 열차에 바로 탄다.</p>
+    <p><b>PAwR</b>(5.4)은 주기적 광고에 응답 슬롯을 붙인 것이다. 한 주기 안에 서브이벤트를 최대 128개 두고, 서브이벤트마다 AUX_SYNC_SUBEVENT_IND 뒤에 응답 슬롯 여러 개를 연다. 수천 개의 전자 가격표가 각자 정해진 서브이벤트·슬롯에서만 깨어나 받고 답한다(1권 12장). 시간 규칙은 이렇다.</p>
+    <ul>
+      <li>주기(Periodic Advertising Interval): 1.25 ms 배수, 7.5 ms ~ 81.91875 s</li>
+      <li>서브이벤트 간격: 1.25 ms 배수, 7.5 ms ~ 318.75 ms, 서브이벤트끼리 겹치지 않음</li>
+      <li>응답 슬롯 지연(서브이벤트 시작 → 첫 슬롯): 1.25 ms 배수, 1.25 ms ~ 317.5 ms</li>
+      <li>응답 슬롯 간격: 0.125 ms 배수, 0.25 ms ~ 31.875 ms, 그리고 ≤ (서브이벤트 간격 − 슬롯 지연) ÷ 슬롯 수</li>
+      <li>응답은 받은 AUX_SYNC_SUBEVENT_IND 시작부터 한 주기 안에 보낸다. 한 기기는 한 서브이벤트에서 슬롯 하나만 쓴다.</li>
+    </ul>
+    <div class="sim" id="sim-pawr">
+      <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>PAwR 설계 점검기</h3></div>
+      <div class="sim-controls" style="border-top:0">
+        <label class="ctrl"><span>주기 <b id="pw-iv">1000 ms</b></span><input type="range" id="pw-i" min="6" max="1600" value="800"></label>
+        <label class="ctrl"><span>서브이벤트 수 <b id="pw-nv">50</b></span><input type="range" id="pw-n" min="1" max="140" value="50"></label>
+        <label class="ctrl"><span>서브이벤트 간격 <b id="pw-sv">20 ms</b></span><input type="range" id="pw-s" min="4" max="260" value="16"></label>
+        <label class="ctrl"><span>응답 슬롯 지연 <b id="pw-dv">5 ms</b></span><input type="range" id="pw-d" min="1" max="254" value="4"></label>
+        <label class="ctrl"><span>응답 슬롯 간격 <b id="pw-pv">0.5 ms</b></span><input type="range" id="pw-p" min="2" max="255" value="4"></label>
+        <label class="ctrl"><span>슬롯 수 <b id="pw-kv">25</b></span><input type="range" id="pw-k" min="0" max="255" value="25"></label>
+      </div>
+      <div class="sim-view" style="padding:12px 16px"><ul class="chk" id="pw-chk"></ul></div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">한 주기에 답할 수 있는 기기</span><span class="v" id="pw-cap">—</span></div>
+        <div class="stat"><span class="k">한 기기의 갱신 간격</span><span class="v" id="pw-lat">—</span></div>
+      </div>
+      <div class="sim-note">슬라이더 단위: 주기·서브이벤트 간격·슬롯 지연은 1.25 ms, 슬롯 간격은 0.125 ms. 해볼 것: ① 서브이벤트 128개 넘게 늘리면 위반이다. ② 슬롯 수를 늘리면 슬롯 간격 상한(남은 시간 ÷ 슬롯 수)에 걸린다. ③ 서브이벤트 수 × 간격이 주기보다 길면 다음 주기와 겹친다.</div>
+    </div>
+    <p class="spec-ref">SyncInfo: <b>[Vol 6] Part B §2.3.4.6</b> · 주기적 광고 이벤트: <b>§4.4.2.2.3</b> · PAwR 이벤트와 시간 규칙: <b>§4.4.2.2.4</b> · LL_PERIODIC_SYNC_IND(PAST): <b>§2.4.2.27·§5.1.13</b></p>
+  </section>
+
+  <div class="callout related"><strong>다른 책에서</strong><ul><li><a href="../../bluetooth/chapters/advertising.html">BluetoothBook 05장 · 광고와 스캔</a> — 레거시 광고와 31바이트</li><li><a href="../../bluetooth/chapters/mesh.html">BluetoothBook 12장 · 메시와 사물 인터넷</a> — PAwR로 전자 가격표 수천 개</li></ul></div>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>주 채널의 ADV_EXT_IND는 안내만(ADI + AuxPtr), 본문은 보조 채널의 AUX_ADV_IND와 AUX_CHAIN_IND. 호스트 데이터 최대 1650바이트.</li>
+      <li>공통 확장 페이로드: [확장 헤더 길이 6비트 · AdvMode 2비트] [플래그] AdvA · TargetA · CTEInfo · ADI · AuxPtr · SyncInfo · TxPower · ACAD · AdvData.</li>
+      <li>AuxPtr = 채널 6 · CA 1 · 단위 1(30/300 µs) · 오프셋 13 · PHY 3. 오프셋 ≥ 패킷 길이 + T_MAFS(300 µs).</li>
+      <li>ADI의 SID는 광고 묶음, DID는 데이터 판. 데이터를 바꾸면 DID를 바꾼다.</li>
+      <li>SyncInfo로 주기적 광고에 동기화하고, PAST로 연결을 통해 넘겨준다. PAwR: 서브이벤트 ≤ 128, 슬롯 간격 ≤ (서브이벤트 간격 − 슬롯 지연) ÷ 슬롯 수.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>확장 헤더 플래그가 0x49(0100 1001)이면 있는 칸은?</p><div class="opts">
+        <button class="opt">TargetA, AuxPtr, SyncInfo</button><button class="opt" data-correct>AdvA, ADI, TxPower</button><button class="opt">AdvA, CTEInfo, AuxPtr</button><button class="opt">ADI, SyncInfo</button>
+      </div><div class="quiz-exp">비트 0 AdvA, 비트 3 ADI, 비트 6 TxPower. 사양 4.2.2 샘플의 플래그가 이것이다.</div></div>
+      <div class="quiz-q"><p>Aux 오프셋 1,200 µs를 AuxPtr에 넣으면 단위와 값은?</p><div class="opts">
+        <button class="opt">300 µs × 4</button><button class="opt" data-correct>30 µs × 40</button><button class="opt">1 µs × 1200</button><button class="opt">아무 단위나</button>
+      </div><div class="quiz-exp">245,700 µs 미만이면 30 µs 단위를 써야 한다.</div></div>
+      <div class="quiz-q"><p>PAST가 해결하는 문제는?</p><div class="opts">
+        <button class="opt">광고 데이터가 1650바이트를 넘는 것</button><button class="opt" data-correct>주기적 광고에 동기화하려면 처음에 스캔해야 하는 부담</button><button class="opt">응답 슬롯 충돌</button><button class="opt">RPA 해석</button>
+      </div><div class="quiz-exp">이미 동기화한 기기가 연결로 SyncInfo를 넘겨주면, 받는 기기는 스캔 없이 열차에 탄다.</div></div>
+      <div class="quiz-q"><p>PAwR 한 주기에 둘 수 있는 서브이벤트의 최대 수는?</p><div class="opts">
+        <button class="opt">37</button><button class="opt">64</button><button class="opt" data-correct>128</button><button class="opt">255</button>
+      </div><div class="quiz-exp">[Vol 6] Part B §4.4.2.2.4: “Up to 128 subevents can be used in a Periodic Advertising Interval.”</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  /* ================================================================ 계산 (검증 스크립트가 꺼내 쓴다) */
+  /** AuxPtr 3바이트. offsetUs → 단위 선택(245,700 µs 미만 30 µs). [Vol 6] Part B §2.3.4.5 */
+  function auxPtr(channel, offsetUs, ca, phy) {
+    const unit = offsetUs < 245700 ? 0 : 1, off = Math.floor(offsetUs / (unit ? 300 : 30)) & 0x1fff;
+    const v = (channel & 0x3f) | ((ca & 1) << 6) | (unit << 7) | (off << 8) | ((phy & 7) << 21);
+    return [v & 255, (v >> 8) & 255, (v >> 16) & 255];
+  }
+  /** 공통 확장 페이로드. f: { advMode, advA?, targetA?, adi?: {did, sid}, aux?: [3], txPower?, data: [] } (주소는 작은 바이트부터). [Vol 6] Part B §2.3.4 */
+  function extPayload(f) {
+    let flags = 0; const hdr = [];
+    if (f.advA) { flags |= 1; hdr.push(...f.advA); }
+    if (f.targetA) { flags |= 2; hdr.push(...f.targetA); }
+    if (f.adi) { flags |= 8; const v = (f.adi.did & 0xfff) | ((f.adi.sid & 0xf) << 12); hdr.push(v & 255, v >> 8); }
+    if (f.aux) { flags |= 16; hdr.push(...f.aux); }
+    if (f.txPower != null) { flags |= 64; hdr.push(f.txPower & 255); }
+    const ext = hdr.length ? [flags].concat(hdr) : [];
+    return [(ext.length & 0x3f) | ((f.advMode & 3) << 6)].concat(ext, f.data);
+  }
+  /** 광고 PDU = 헤더(PDU Type 4비트 · ChSel · TxAdd · RxAdd) + 길이 + 페이로드. [Vol 6] Part B §2.3 */
+  function advPdu(type, txAdd, rxAdd, payload) { return [(type & 15) | (txAdd << 6) | (rxAdd << 7), payload.length].concat(payload); }
+  function crc24(bytes, init) { let r = init & 0xffffff; for (const by of bytes) for (let i = 0; i < 8; i++) { const fb = ((r >> 23) & 1) ^ ((by >> i) & 1); r = (r << 1) & 0xffffff; if (fb) r ^= 0x00065b; } return r; }
+  function whiteningBits(channel, n) { let s = [1]; for (let i = 5; i >= 0; i--) s.push((channel >> i) & 1); const out = []; for (let k = 0; k < n; k++) { const o = s[6]; out.push(o); s = [o, s[0], s[1], s[2], s[3] ^ o, s[4], s[5]]; } return out; }
+  /** LE 1M 광고 패킷의 공중 비트(프리앰블 · AA 0x8E89BED6 · whiten(PDU ‖ CRC)). CRC 초기값은 0x555555([Vol 6] Part B §3.1.1) */
+  function advAir(pdu, channel, crcInit = 0x555555) {
+    const lsb = (by) => Array.from({ length: 8 }, (_, i) => (by >> i) & 1), aa = 0x8e89bed6, aaB = [aa & 255, (aa >> 8) & 255, (aa >> 16) & 255, aa >>> 24];
+    const c = crc24(pdu, crcInit), body = [].concat(...pdu.map(lsb), Array.from({ length: 24 }, (_, i) => (c >> (23 - i)) & 1)), w = whiteningBits(channel, body.length);
+    return (aaB[0] & 1 ? [1, 0, 1, 0, 1, 0, 1, 0] : [0, 1, 0, 1, 0, 1, 0, 1]).concat(...aaB.map(lsb), body.map((b, i) => b ^ w[i]));
+  }
+  /** PDU 하나의 공중 시간(µs). payload = 페이로드 바이트 수 */
+  function airUs(phy, payload) { return phy === "1m" ? (10 + payload) * 8 : phy === "2m" ? (11 + payload) * 4 : 376 + ((2 + payload) * 8 + 27) * 8; }
+  /** 체인 계획(예시 구성). 돌려주는 값: { aux: [페이로드 길이…], auxUs, totalUs } */
+  function chainPlan(n, phy) {
+    const aux = []; let left = n, first = true;
+    do {
+      const base = first ? 1 + 1 + 6 + 2 : 1 + 1 + 2, roomNoPtr = 255 - base, more = left > roomNoPtr, take = more ? 255 - base - 3 : left;
+      aux.push(base + (more ? 3 : 0) + take); left -= take; first = false;
+    } while (left > 0);
+    const ext = airUs("1m", 1 + 1 + 2 + 3), auxUs = aux.reduce((s, p) => s + airUs(phy, p), 0);
+    return { aux, auxUs, totalUs: ext + 300 + auxUs + 300 * (aux.length - 1) };
+  }
+  /** PAwR 시간 규칙 점검(ms). [Vol 6] Part B §4.4.2.2.4 */
+  function pawrCheck(p) {
+    const m = (v, u) => Math.abs(v / u - Math.round(v / u)) < 1e-9, cap = p.slots ? (p.subInterval - p.slotDelay) / p.slots : Infinity;
+    return [
+      ["주기 7.5 ms ~ 81.91875 s, 1.25 ms 배수", m(p.interval, 1.25) && p.interval >= 7.5 && p.interval <= 81918.75],
+      ["서브이벤트 128개 이하", p.subevents >= 1 && p.subevents <= 128],
+      ["서브이벤트 간격 7.5 ~ 318.75 ms, 1.25 ms 배수", m(p.subInterval, 1.25) && p.subInterval >= 7.5 && p.subInterval <= 318.75],
+      ["서브이벤트들이 한 주기 안에 (겹치지 않음)", p.subevents * p.subInterval <= p.interval],
+      ["슬롯 지연 1.25 ~ 317.5 ms, 1.25 ms 배수", !p.slots || (m(p.slotDelay, 1.25) && p.slotDelay >= 1.25 && p.slotDelay <= 317.5)],
+      ["슬롯 간격 0.25 ~ 31.875 ms, 0.125 ms 배수", !p.slots || (m(p.slotSpacing, 0.125) && p.slotSpacing >= 0.25 && p.slotSpacing <= 31.875)],
+      ["슬롯 간격 ≤ (서브이벤트 간격 − 지연) ÷ 슬롯 수", !p.slots || p.slotSpacing <= cap + 1e-9],
+    ];
+  }
+
+  /* ================================================================ 1. PDU 작업대 */
+  (function () {
+    const WANT = "01010101 01101011 01111101 10010001 01110001 00011100 01111110 01111011 11101111 00100101 00000010 10101001 01111001 10010100 00100000 11101100 11000110 01101001 11101101 11011101 01010011 00101000 01011100 01001001 00111110 11010100";
+    const H = (s) => (s.replace(/[^0-9a-fA-F]/g, "").match(/../g) || []).map((x) => parseInt(x, 16));
+    ["pd-a", "pd-adi", "pd-tx", "pd-aux", "pd-d", "pd-m"].forEach((id) => $(id).addEventListener("input", draw));
+    const g8 = (b) => b.join("").replace(/(.{8})/g, "$1 ").trim();
+    function draw() {
+      const a = H($("pd-a").value).reverse(), adi = $("pd-adi").value.trim().split(/\s+/).map((x) => parseInt(x, 16)), tx = $("pd-tx").value.trim(), ax = $("pd-aux").value.trim().split(/\s+/).filter(Boolean).map(Number), m = $("pd-m").value.trim().split(/\s+/).map(Number);
+      const f = { advMode: m[0] || 0, advA: a.length === 6 ? a : null, adi: adi.length === 2 && !adi.some(isNaN) ? { did: adi[0], sid: adi[1] } : null, aux: ax.length === 2 ? auxPtr(ax[0], ax[1], 0, 0) : null, txPower: tx === "" ? null : +tx, data: H($("pd-d").value) };
+      const pl = extPayload(f), pdu = advPdu(7, 0, 0, pl), air = advAir(pdu, m[1] || 0), extLen = pl[0] & 0x3f;
+      const L = (k, v, c) => `<span class="k">${k.padEnd(9)}</span> <span class="${c || ""}">${v}</span>\n`;
+      $("pd-out").innerHTML = L("PDU", pdu.map((b) => BD.hex(b)).join(" "), "a") + L("확장헤더", `길이 ${extLen}, AdvMode ${f.advMode}, 플래그 0x${BD.hex(pl[1] || 0)}`) + (f.aux ? L("AuxPtr", f.aux.map((b) => BD.hex(b)).join(" ") + "  (단위 " + (ax[1] < 245700 ? "30 µs × " + Math.floor(ax[1] / 30) : "300 µs × " + Math.floor(ax[1] / 300)) + ")", "b") : "") + L("공중", g8(air), "a");
+      BD.stat("pd-len", extLen + " / " + pl.length + " 바이트"); BD.stat("pd-room", 255 - 1 - extLen - f.data.length + " 바이트");
+      const sample = $("pd-a").value.trim().toUpperCase() === "A9AAABACADAE" && $("pd-adi").value.trim().toUpperCase() === "ABC E" && tx === "-42" && !ax.length && $("pd-d").value.replace(/\s/g, "").toUpperCase() === "0507090B0D" && $("pd-m").value.trim() === "1 7";
+      if (sample) {
+        const pduPart = 40 + pdu.length * 8, same = g8(air.slice(0, pduPart)) === WANT.replace(/ /g, "").slice(0, pduPart).replace(/(.{8})/g, "$1 ").trim(), alt = g8(advAir(pdu, m[1] || 0, 0x515555)) === WANT;
+        $("pd-out").innerHTML += L("사양 샘플", WANT, "k") + L("비교", same ? "프리앰블·접근 주소·PDU ✓ 일치, CRC 24비트는 다름" : "✗ 다름", same ? "ok" : "bad") + (alt ? L("", "샘플의 CRC는 초기값 0x515555로 계산한 값과 같다 (본문 규칙은 0x555555)", "b") : "");
+        BD.stat("pd-ok", same ? "PDU ✓ · CRC 불일치" : "✗ 다름");
+      } else BD.stat("pd-ok", "직접 입력");
+    }
+    draw();
+  })();
+
+  /* ================================================================ 2. 체인 */
+  (function () {
+    const n = BD.range("ch-n", (v) => String(v), draw), p = BD.seg("ch-p", draw);
+    let R = null;
+    const cv = BD.canvas($("cv-chain"), (ctx, w, h) => {
+      if (!R) return; const P = BD.palette(), L = 10, Rr = w - 10, T = 20, Hh = 28, tot = R.totalUs, X = (t) => L + ((Rr - L) * t) / tot; let t = 0;
+      const box = (us, col, lab) => { ctx.fillStyle = col; ctx.fillRect(X(t), T, Math.max(1.5, X(t + us) - X(t)), Hh); if (X(t + us) - X(t) > 30) BD.text(ctx, lab, X(t) + 3, T + Hh / 2, { size: 10.5, color: "#fff" }); t += us; };
+      box(airUs("1m", 7), P.warn, "EXT"); t += 300;
+      R.aux.forEach((pl, i) => { box(airUs(p(), pl), i ? P.accent2 : P.accent, i ? "CHAIN" : "AUX_ADV"); if (i < R.aux.length - 1) t += 300; });
+      BD.text(ctx, "0", L, T + Hh + 16, { size: 11, color: P.dim }); BD.text(ctx, (tot / 1000).toFixed(2) + " ms", Rr, T + Hh + 16, { size: 11, color: P.dim, align: "right" });
+    }, { aspect: 0.18, minHeight: 80, maxHeight: 100 });
+    function draw() { R = chainPlan(+n(), p()); BD.stat("ch-pdus", "1 + " + R.aux.length); BD.stat("ch-air", (R.auxUs / 1000).toFixed(2) + " ms"); BD.stat("ch-tot", (R.totalUs / 1000).toFixed(2) + " ms"); cv.redraw(); }
+    draw();
+  })();
+
+  /* ================================================================ 3. PAwR */
+  (function () {
+    const ms = (v) => (v % 1 ? v.toFixed(3).replace(/0+$/, "") : String(v)) + " ms";
+    const iv = BD.range("pw-i", (v) => ms(v * 1.25), draw), nv = BD.range("pw-n", (v) => String(v), draw), sv = BD.range("pw-s", (v) => ms(v * 1.25), draw), dv = BD.range("pw-d", (v) => ms(v * 1.25), draw), pv = BD.range("pw-p", (v) => ms(v * 0.125), draw), kv = BD.range("pw-k", (v) => String(v), draw);
+    function draw() {
+      const prm = { interval: +iv() * 1.25, subevents: +nv(), subInterval: +sv() * 1.25, slotDelay: +dv() * 1.25, slotSpacing: +pv() * 0.125, slots: +kv() };
+      const c = pawrCheck(prm);
+      $("pw-chk").innerHTML = c.map(([t, ok]) => `<li class="${ok ? "ok" : "bad"}">${t}</li>`).join("");
+      BD.stat("pw-cap", c.every((x) => x[1]) ? (prm.subevents * prm.slots).toLocaleString() + "대" : "설계 위반");
+      BD.stat("pw-lat", ms(prm.interval));
+    }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>
