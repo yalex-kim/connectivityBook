@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>프라이버시와 필터링: 해석 목록과 필터 수용 목록 · BluetoothBook 심화</title>
+<meta name="description" content="주소 네 가지와 신원 주소, RPA를 만들고 푸는 ah, 컨트롤러의 해석 목록과 네트워크·기기 프라이버시 모드, 필터 수용 목록과 광고·스캔·연결 필터 정책, 지정 광고의 TargetA, RPA를 바꾸는 시점까지 Core 6.3의 규칙과 부록 D 샘플로 따라간다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/privacy.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="BluetoothBook 심화">
+<meta property="og:title" content="프라이버시와 필터링: 해석 목록과 필터 수용 목록 · BluetoothBook 심화">
+<meta property="og:description" content="주소 네 가지와 신원 주소, RPA를 만들고 푸는 ah, 컨트롤러의 해석 목록과 네트워크·기기 프라이버시 모드, 필터 수용 목록과 광고·스캔·연결 필터 정책, 지정 광고의 TargetA, RPA를 바꾸는 시점까지 Core 6.3의 규칙과 부록 D 샘플로 따라간다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/privacy.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"프라이버시와 필터링: 해석 목록과 필터 수용 목록","name":"프라이버시와 필터링: 해석 목록과 필터 수용 목록 · BluetoothBook 심화","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/privacy.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/privacy.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":8,"image":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png","dateModified":"2026-10-19","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/#book","name":"BluetoothBook 심화 — 프로토콜 스택을 끝까지 따라가는 블루투스 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},"publisher":{"@type":"Organization","name":"BluetoothBook 심화","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},"description":"주소 네 가지와 신원 주소, RPA를 만들고 푸는 ah, 컨트롤러의 해석 목록과 네트워크·기기 프라이버시 모드, 필터 수용 목록과 광고·스캔·연결 필터 정책, 지정 광고의 TargetA, RPA를 바꾸는 시점까지 Core 6.3의 규칙과 부록 D 샘플로 따라간다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook 심화","item":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},{"@type":"ListItem","position":2,"name":"08 프라이버시와 필터링: 해석 목록과 필터 수용 목록","item":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/privacy.html"}]}]}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<style>
+  .hexin { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px 14px; }
+  .hexin label { display: grid; gap: 4px; font-size: 12.5px; color: var(--text-dim); }
+  .hexin input { font: 13px var(--mono); padding: 7px 9px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); min-width: 0; }
+  .blk { font: 12.5px/1.65 var(--mono); overflow-x: auto; white-space: pre; padding: 12px 14px; background: var(--surface); border-radius: 10px; color: var(--text); }
+  .blk .k { color: var(--text-dim); } .blk .a { color: var(--accent); font-weight: 600; } .blk .ok { color: var(--ok); font-weight: 700; } .blk .bad { color: var(--bad); font-weight: 700; }
+  table.rx { min-width: 640px; }
+  table.rx td { font-size: 13.5px; vertical-align: top; }
+  table.rx td.m { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; }
+  .acc { color: var(--ok); font-weight: 700; } .ign { color: var(--bad); font-weight: 700; }
+</style>
+</head>
+<body data-chapter="privacy">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 08</div>
+    <h1>프라이버시와 필터링: 해석 목록과 필터 수용 목록</h1>
+    <p class="lead">1권 8장은 RPA가 “바뀌는 이름표”라는 것까지 다뤘다. 이 장은 그 이름표를 누가, 어디서, 어떻게 알아보는지 따라간다. 호스트를 깨우지 않고 컨트롤러가 주소를 풀어 걸러 내는 해석 목록, 아는 기기만 받는 필터 수용 목록, 그리고 둘이 겹칠 때의 규칙이다. 펌웨어에서 “본딩한 휴대폰이 다시 연결을 못 한다”는 문제의 대부분이 여기서 나온다.</p>
+    <ul class="objectives">
+      <li>공개·정적·RPA·NRPA 주소를 위 두 비트로 구별하고, 신원 주소와 IRK가 어떻게 짝지어지는지 설명할 수 있다.</li>
+      <li>ah로 RPA를 만들고 풀 수 있다(부록 D.7 샘플).</li>
+      <li>해석 목록 레코드, 네트워크·기기 프라이버시 모드, 해석 뒤 필터가 신원 주소에 적용된다는 규칙을 안다.</li>
+      <li>광고·스캔·연결 필터 정책과 지정 광고의 TargetA 규칙으로 패킷 하나의 운명을 판단할 수 있다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="addr">
+    <h2>주소 네 가지와 신원 주소</h2>
+    <p>LE 기기 주소는 48비트이고, 광고 PDU 헤더의 TxAdd/RxAdd 비트가 공개 주소인지 임의 주소인지 알려 준다. 임의 주소는 다시 <b>위 두 비트</b>로 세 가지로 나뉜다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>종류</th><th>위 두 비트 [47:46]</th><th>바뀌는가</th><th>누가 알아보나</th></tr></thead>
+      <tbody>
+        <tr><td>공개 주소</td><td>(IEEE 할당, 구별 비트 없음)</td><td>바뀌지 않음</td><td>누구나 같은 기기로 본다</td></tr>
+        <tr><td>정적 임의 주소</td><td class="num">0b11</td><td>전원을 켤 때나 바뀜</td><td>누구나 같은 기기로 본다</td></tr>
+        <tr><td><span class="term">RPA</span><span class="en">(Resolvable Private Address)</span></td><td class="num">0b01</td><td>주기적으로</td><td>IRK를 가진 기기만</td></tr>
+        <tr><td>NRPA (Non-resolvable)</td><td class="num">0b00</td><td>주기적으로</td><td>아무도</td></tr>
+      </tbody>
+    </table></div>
+    <p>공개 주소나 정적 주소 중 하나가 그 기기의 <span class="term">신원 주소</span><span class="en">(Identity Address)</span>다. 페어링 3단계에서 <b><span class="term">IRK</span></b>(Identity Resolving Key)와 함께 신원 주소를 나눠 주면(Identity Information, Identity Address Information), 상대는 앞으로 바뀌는 RPA를 그 신원 주소로 되돌릴 수 있다. 본딩 데이터베이스의 열쇠가 바로 이 신원 주소다.</p>
+    <div class="callout analogy"><strong>가면과 암구호</strong><p>RPA는 매번 바꿔 쓰는 가면이다. 가면 안쪽에는 작은 글씨로 “이 가면의 무늬(prand)를 내 암구호(IRK)로 계산하면 이 숫자(hash)가 나온다”가 적혀 있다. 암구호를 아는 친구만 그 계산을 해 보고 “아, 너구나” 하고 알아본다. 모르는 사람에게는 가면마다 다른 사람으로 보인다.</p></div>
+    <p class="spec-ref">임의 주소의 하위 종류(Table 1.2): <b>[Vol 6] Part B §1.3.2</b> · NRPA·RPA 생성 조건: <b>§1.3.2.2</b> · IRK·신원 주소 배포: <b>[Vol 3] Part H §3.6.4·§3.6.5</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="rpa">
+    <h2>RPA를 만들고 푼다: ah 한 번</h2>
+    <p>RPA는 위 24비트 <b>prand</b>와 아래 24비트 <b>hash</b>로 이뤄진다. prand는 위 두 비트가 0b01이고, 나머지 22비트는 무작위(모두 0이나 모두 1은 안 됨)다. hash = ah(IRK, prand)이고, ah는 AES-128 한 블록의 아래 24비트다.</p>
+    <div class="formula">ah(k, r) = e(k, 0¹⁰⁴ ‖ r) mod 2²⁴ · RPA = prand ‖ hash</div>
+    <p>푸는 쪽은 받은 주소에서 prand를 떼어 내, 알고 있는 IRK마다 ah를 계산해 아래 24비트와 비교한다. 맞는 IRK가 있으면 그 IRK에 짝지어진 신원 주소로 기기를 알아본다. IRK가 열 개면 AES가 최대 열 번이다. 그래서 해석은 사람이 많은 곳에서 빈번하게 돌아가는 계산이고, 컨트롤러가 하드웨어 AES로 대신하는 이유다.</p>
+    <div class="sim" id="sim-rpa">
+      <div class="sim-head"><span class="sim-tag">WORKBENCH</span><h3>RPA 만들기와 풀기</h3></div>
+      <div class="sim-view" style="padding:14px 16px">
+        <div class="hexin">
+          <label>내 IRK (큰 바이트부터)<input id="rp-irk" spellcheck="false" value="ec0234a357c8ad05341010a60a397d9b"></label>
+          <label>prand (24비트)<input id="rp-pr" spellcheck="false" value="708194"></label>
+          <label>받은 주소 (큰 바이트부터, 6바이트)<input id="rp-in" spellcheck="false"></label>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0"><button class="btn" id="rp-new">새 prand로 RPA 만들기</button><button class="btn" id="rp-use">만든 RPA를 받은 주소로</button><button class="btn" id="rp-other">남의 RPA 받기</button></div>
+        <div class="blk" id="rp-out"></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">만든 RPA</span><span class="v" id="rp-rpa" style="font-size:15px">—</span></div>
+        <div class="stat"><span class="k">받은 주소의 종류</span><span class="v" id="rp-type" style="font-size:14px">—</span></div>
+        <div class="stat"><span class="k">내 IRK로 해석</span><span class="v" id="rp-res">—</span></div>
+      </div>
+      <div class="sim-note">처음 값은 부록 D.7 샘플(IRK ec0234a3…, prand 708194 → hash 0dfbaa)이다. 해볼 것: ① prand의 위 두 비트가 01인지 보자(0x70 = 0111 0000). ② “새 prand” → “받은 주소로”를 누르면 해석된다. ③ “남의 RPA 받기”는 다른 IRK로 만든 RPA다. 종류는 RPA지만 내 IRK로는 풀리지 않는다. ④ 받은 주소의 첫 바이트를 C0 이상으로 바꾸면 정적 주소, 3F 이하면 NRPA로 분류된다.</div>
+    </div>
+    <p class="spec-ref">RPA 생성(prand 조건, prand ‖ hash): <b>[Vol 6] Part B §1.3.2.2</b> · 해석(localHash 비교): <b>§1.3.2.3</b> · ah: <b>[Vol 3] Part H §2.2.2</b> · 샘플: <b>Appendix D.7</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="rl">
+    <h2>컨트롤러의 해석 목록</h2>
+    <p>호스트가 RPA를 풀면 패킷마다 호스트를 깨워야 하고, 그 전에 컨트롤러가 걸러 버린 패킷은 아예 볼 수 없다(필터 수용 목록에는 신원 주소만 있으니까). 그래서 LL 프라이버시를 지원하는 컨트롤러는 <span class="term">해석 목록</span><span class="en">(Resolving List)</span>을 갖는다. 레코드 하나는 <b>{상대 신원 주소, 상대 IRK, 내 IRK}</b>다. 해석을 켜면 컨트롤러가 받은 RPA를 풀고, 풀린 패킷에는 필터 수용 목록과 필터 정책을 <b>신원 주소</b>로 적용하며, 호스트에도 신원 주소로 보고한다. 내 IRK가 있으면 컨트롤러가 내 RPA도 직접 만든다.</p>
+    <p>레코드마다 <b>프라이버시 모드</b>가 있다. 기본값인 <b><span class="term">네트워크 프라이버시 모드</span></b>에서는 그 상대가 RPA로 올 때만 받아들이고 신원 주소 그대로 오면 버린다(“이 기기는 늘 RPA를 쓰는데 신원 주소로 왔다면 흉내다”). <b><span class="term">기기 프라이버시 모드</span></b>는 신원 주소와 RPA를 모두 받는다. 상대 IRK를 모두 0으로 넣으면 그 상대는 RPA를 쓰지 않는 기기로 보고 신원 주소만 받는다. 해석은 됐는데 암호화가 실패하면(IRK가 틀렸다는 뜻) 컨트롤러는 지금 RPA를 버리고 새로 만든다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>HCI 명령</th><th>하는 일</th></tr></thead>
+      <tbody>
+        <tr><td><code>LE_Add_Device_To_Resolving_List</code></td><td>레코드 추가(상대 신원 주소, 상대 IRK, 내 IRK)</td></tr>
+        <tr><td><code>LE_Set_Address_Resolution_Enable</code></td><td>컨트롤러 해석 켜기·끄기(켠 채로는 목록을 바꿀 수 없는 때가 있다)</td></tr>
+        <tr><td><code>LE_Set_Privacy_Mode</code></td><td>레코드별 네트워크(0x00, 기본)·기기(0x01) 프라이버시 모드</td></tr>
+        <tr><td><code>LE_Set_Resolvable_Private_Address_Timeout</code></td><td>RPA를 바꾸는 주기. [v1] 하나의 값(기본 15분), [v2] 최소·최대 범위(기본 8~15분 사이 무작위). 1초~1시간</td></tr>
+      </tbody>
+    </table></div>
+    <p class="spec-ref">해석 목록·프라이버시 모드·주소 보고·암호화 실패 시 RPA 교체: <b>[Vol 6] Part B §4.7</b> · LL 프라이버시: <b>[Vol 6] Part B §6</b> · 명령: <b>[Vol 4] Part E §7.8.38·§7.8.44·§7.8.45·§7.8.77</b> · 기기·네트워크 프라이버시 모드 정의: <b>[Vol 3] Part C §10.7</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="filter">
+    <h2>필터 수용 목록과 세 가지 필터 정책</h2>
+    <p><span class="term">필터 수용 목록</span><span class="en">(Filter Accept List)</span>은 “아는 기기” 주소 목록이다(예전 이름 White List). 호스트가 정책으로 이 목록을 언제 쓸지 정한다.</p>
+    <ul>
+      <li><b>광고 필터 정책</b>(광고하는 쪽): 스캔 요청과 연결 요청을 각각 모두 받을지, 목록의 기기에서만 받을지. 네 조합. 지정 광고에는 적용하지 않는다.</li>
+      <li><b>스캔 필터 정책</b>(스캔하는 쪽): <b>필터 안 함</b>(기본)이거나 <b>목록의 기기만</b>. 어느 쪽이든 지정 광고는 TargetA가 내 주소이거나, 내 RPA로 해석될 때만 받는다. 확장 정책은 여기에 “풀 수 없는 RPA로 지정된 광고도 호스트에 넘긴다”가 더해진다.</li>
+      <li><b>연결 필터 정책</b>(연결을 시작하는 쪽): 호스트가 지정한 한 기기에만, 또는 목록의 아무 기기에나 연결한다. 본딩한 기기 여러 대 중 먼저 보이는 것에 다시 붙는 “자동 재연결”이 이것이다.</li>
+    </ul>
+    <div class="sim" id="sim-rl">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>스캐너 컨트롤러의 하루: 해석 목록과 스캔 필터</h3></div>
+      <div class="sim-controls" style="border-top:0">
+        <div class="ctrl"><span>스캔 필터 정책</span><div class="seg" id="rl-pol"><button data-value="0" class="on">필터 안 함</button><button data-value="1">목록의 기기만</button></div></div>
+        <div class="ctrl"><span>“이어폰”의 프라이버시 모드</span><div class="seg" id="rl-mode"><button data-value="net" class="on">네트워크</button><button data-value="dev">기기</button></div></div>
+        <label class="check"><input type="checkbox" id="rl-res" checked> 컨트롤러 주소 해석 켜기</label>
+      </div>
+      <div class="sim-view" style="padding:6px 12px 12px"><div class="table-wrap" style="margin:0"><table class="rx"><thead><tr><th>받은 광고</th><th>AdvA</th><th>해석</th><th>결과</th></tr></thead><tbody id="rl-tb"></tbody></table></div></div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">호스트로 올린 광고</span><span class="v" id="rl-up">—</span></div>
+        <div class="stat"><span class="k">해석에 쓴 AES</span><span class="v" id="rl-aes">—</span></div>
+      </div>
+      <div class="sim-note">해석 목록: 이어폰(IRK 있음), 시계(IRK 있음), 옛 키보드(IRK 0, 신원 주소만). 필터 수용 목록에는 셋의 신원 주소가 있다. 주소는 실제 ah로 만들고 푼다. 해볼 것: ① “목록의 기기만”으로 바꾸면 모르는 기기가 사라진다. ② “목록의 기기만”에서 해석까지 끄면 이어폰·시계의 RPA가 목록과 맞지 않아 버려진다. 신원 주소만 아는 필터는 RPA를 알아볼 수 없다. 나를 지정한 시계의 광고도 TargetA를 풀 수 없어 버려진다. ③ 네트워크 모드에서 이어폰이 신원 주소로 광고하면 버린다(해석을 꺼도 모드는 적용된다). 기기 모드로 바꾸면 받는다. ④ 나를 지정한 광고(TargetA = 내 RPA)는 필터 정책과 상관없이 TargetA가 풀릴 때만 받는다.</div>
+    </div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">스마트 태그가 RPA를 15분마다 바꾸지만, 광고 데이터에 고정된 일련번호 8바이트를 넣고 있다. 지나가는 사람이 이 태그를 하루 종일 따라다닐 수 있을까?</p><p class="wi-hint">추적하는 사람이 보는 것은 주소만이 아니다.</p><div class="opts">
+      <button class="opt">아니다. 주소가 바뀌니 알 수 없다</button>
+      <button class="opt" data-correct>그렇다. 바뀌지 않는 광고 데이터가 이름표가 된다</button>
+      <button class="opt">IRK가 있어야만 가능하다</button>
+    </div><div class="quiz-exp">RPA는 주소만 숨긴다. GAP은 광고 데이터나 스캔 응답이 바뀐다면 주소 변경과 시점을 맞추라고 권한다. 고정 식별자, 바뀌지 않는 이름, 주소를 바꾸는 순간 데이터만 그대로인 것 모두 추적의 단서다. 프라이버시는 컨트롤러 설정과 앱 데이터 설계가 함께 지켜야 한다.</div></div>
+    <p class="spec-ref">필터 수용 목록: <b>[Vol 6] Part B §4.3.1</b> · 광고 필터 정책: <b>§4.3.2</b> · 스캔 필터 정책과 TargetA 규칙: <b>§4.3.3·§4.3.3.1</b> · 연결 필터 정책: <b>§4.3.4</b> · 해석 뒤 신원 주소에 필터 적용: <b>§4.7</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="timing">
+    <h2>언제 바꾸나: 주소 변경 주기와 데이터</h2>
+    <p>GAP은 주소를 바꾸는 최대 간격 T<sub>GAP</sub>(private_addr_int)로 <b>15분</b>을 권한다. 바꾸는 시점이 정확히 15분마다면, 오래 지켜보는 관찰자는 “15분 전 사라진 주소와 지금 나타난 주소가 같은 기기”라고 짝지을 수 있다. 6.1부터는 HCI 명령 [v2]로 최소·최대를 주고 그 사이에서 매번 무작위로 고르게 했고, 기본값도 8~15분 사이 무작위다. 광고 데이터가 바뀐다면 주소 변경과 같은 순간에 바꿔야, 옛 주소와 새 주소를 데이터로 잇지 못한다.</p>
+    <div class="callout tip"><strong>펌웨어 점검표</strong><p>① 본딩한 상대를 해석 목록과 필터 수용 목록에 함께 넣었나(신원 주소로). ② 해석을 켜 둔 상태에서 목록을 바꾸려다 Command Disallowed가 나지 않나(광고·스캔·연결 시도 중에는 해석을 끄고 바꾼다). ③ RPA를 쓰지 않는 옛 기기는 IRK 0 레코드나 기기 프라이버시 모드로. ④ 광고 데이터의 식별자를 주소 변경에 맞춰 바꾸나.</p></div>
+    <p class="spec-ref">T<sub>GAP</sub>(private_addr_int) 15분, 데이터 변경과 주소 변경 맞추기: <b>[Vol 3] Part C §10.8.2·Appendix A</b> · RPA 시간 범위와 [v1]·[v2] 기본값: <b>[Vol 4] Part E §7.8.45</b> · 6.1 무작위 RPA 갱신: <b>[Vol 1] Part C §15.1</b></p>
+  </section>
+
+  <div class="callout related"><strong>다른 책에서</strong><ul><li><a href="../../bluetooth/chapters/security.html">BluetoothBook 08장 · 페어링과 보안</a> — RPA와 IRK의 기본</li><li><a href="../../bluetooth/chapters/advertising.html">BluetoothBook 05장 · 광고와 스캔</a> — 광고 PDU의 AdvA·TargetA</li></ul></div>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>임의 주소의 위 두 비트: 11 정적, 01 RPA, 00 NRPA. 공개·정적 주소가 신원 주소이고, IRK와 짝지어 배포한다.</li>
+      <li>RPA = prand ‖ ah(IRK, prand). 해석은 아는 IRK마다 ah를 계산해 비교하는 것.</li>
+      <li>해석 목록 = {상대 신원 주소, 상대 IRK, 내 IRK}. 해석 뒤 필터는 신원 주소로 적용되고 호스트에도 신원 주소로 보고한다.</li>
+      <li>네트워크 프라이버시 모드(기본)는 RPA만, 기기 프라이버시 모드는 신원 주소도 받는다. IRK 0 레코드는 신원 주소만.</li>
+      <li>스캔 필터와 무관하게 지정 광고는 TargetA가 내 주소이거나 내 RPA로 풀릴 때만 받는다. 주소 변경은 8~15분 무작위, 데이터 변경과 같은 순간에.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>임의 주소의 위 두 비트가 0b01이면?</p><div class="opts">
+        <button class="opt">정적 주소</button><button class="opt" data-correct>RPA</button><button class="opt">NRPA</button><button class="opt">공개 주소</button>
+      </div><div class="quiz-exp">[Vol 6] Part B Table 1.2.</div></div>
+      <div class="quiz-q"><p>컨트롤러가 RPA를 해석한 뒤 필터 수용 목록과 비교하는 주소는?</p><div class="opts">
+        <button class="opt">받은 RPA 그대로</button><button class="opt" data-correct>해석된 신원 주소</button><button class="opt">prand</button><button class="opt">내 RPA</button>
+      </div><div class="quiz-exp">[Vol 6] Part B §4.7: 필터 정책은 해석된 뒤 신원 주소에 적용된다.</div></div>
+      <div class="quiz-q"><p>네트워크 프라이버시 모드의 레코드가 신원 주소로 광고하면?</p><div class="opts">
+        <button class="opt">받는다</button><button class="opt" data-correct>버린다</button><button class="opt">호스트에 물어본다</button><button class="opt">IRK를 새로 만든다</button>
+      </div><div class="quiz-exp">네트워크 모드는 상대가 배포한 IRK로 만든 RPA만 받는다.</div></div>
+      <div class="quiz-q"><p>HCI_LE_Set_Resolvable_Private_Address_Timeout [v2]를 지원하는 컨트롤러의 기본 동작은?</p><div class="opts">
+        <button class="opt">항상 15분</button><button class="opt" data-correct>8~15분 사이 무작위</button><button class="opt">1시간</button><button class="opt">바꾸지 않음</button>
+      </div><div class="quiz-exp">[Vol 4] Part E §7.8.45.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  /* ================================================================ 계산 (검증 스크립트가 꺼내 쓴다) */
+  const SBOX = (() => { const s = new Array(256); let p = 1, q = 1; do { p = p ^ ((p << 1) & 0xff) ^ (p & 0x80 ? 0x1b : 0); q ^= q << 1; q ^= q << 2; q ^= q << 4; q &= 0xff; if (q & 0x80) q ^= 0x09; const x = q ^ ((q << 1) | (q >> 7)) ^ ((q << 2) | (q >> 6)) ^ ((q << 3) | (q >> 5)) ^ ((q << 4) | (q >> 4)); s[p] = (x ^ 0x63) & 0xff; } while (p !== 1); s[0] = 0x63; return s; })();
+  function aes128(key, block) {
+    const xt = (a) => ((a << 1) ^ (a & 0x80 ? 0x1b : 0)) & 0xff;
+    const w = key.slice(); let rc = 1;
+    for (let i = 16; i < 176; i += 4) { let t = w.slice(i - 4, i); if (i % 16 === 0) { t = [SBOX[t[1]] ^ rc, SBOX[t[2]], SBOX[t[3]], SBOX[t[0]]]; rc = xt(rc); } for (let j = 0; j < 4; j++) w[i + j] = w[i - 16 + j] ^ t[j]; }
+    let s = block.map((b, i) => b ^ w[i]);
+    for (let r = 1; r <= 10; r++) {
+      s = s.map((b) => SBOX[b]);
+      s = [0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12, 1, 6, 11].map((i) => s[i]);
+      if (r < 10) { const o = []; for (let c = 0; c < 4; c++) { const a = s.slice(4 * c, 4 * c + 4), x = a[0] ^ a[1] ^ a[2] ^ a[3]; for (let i = 0; i < 4; i++) o.push(a[i] ^ x ^ xt(a[i] ^ a[(i + 1) % 4])); } s = o; }
+      s = s.map((b, i) => b ^ w[16 * r + i]);
+    }
+    return s;
+  }
+  /** ah(k, r) = e(k, 0^104 ‖ r) mod 2^24. r = 24비트 정수. [Vol 3] Part H §2.2.2 */
+  function ah(k, r) { const e = aes128(k, new Array(13).fill(0).concat([(r >> 16) & 255, (r >> 8) & 255, r & 255])); return (e[13] << 16) | (e[14] << 8) | e[15]; }
+  /** prand가 RPA 조건을 만족하는가: 위 두 비트 01, 나머지 22비트가 모두 0도 모두 1도 아님. [Vol 6] Part B §1.3.2.2 */
+  function validPrand(p) { const rnd = p & 0x3fffff; return (p >>> 22) === 1 && rnd !== 0 && rnd !== 0x3fffff; }
+  /** RPA 6바이트(큰 바이트부터) = prand ‖ hash */
+  function makeRpa(irk, prand) { const h = ah(irk, prand); return [(prand >> 16) & 255, (prand >> 8) & 255, prand & 255, (h >> 16) & 255, (h >> 8) & 255, h & 255]; }
+  /** 해석: 이 IRK로 풀리는가 (localHash == hash). [Vol 6] Part B §1.3.2.3 */
+  function resolves(addr, irk) { return (addr[0] >> 6) === 1 && ah(irk, (addr[0] << 16) | (addr[1] << 8) | addr[2]) === ((addr[3] << 16) | (addr[4] << 8) | addr[5]); }
+  /** 임의 주소의 하위 종류(Table 1.2) */
+  function randomKind(addr) { return ["NRPA", "RPA", "예약됨", "정적"][addr[0] >> 6]; }
+  /**
+   * 스캐너 링크 계층이 광고 PDU 하나를 호스트로 올리는가. [Vol 6] Part B §4.3.3·§4.7
+   * pdu: { advA, advRandom, targetA? }, cfg: { policy: 0|1, resolution, rl: [{ id, peerIrk, mode: "net"|"dev" }], fal: [id], myIrk, myAddr }
+   * 돌려주는 값: { up, id, aes, why }
+   */
+  function scanDecision(pdu, cfg) {
+    let aes = 0, id = null, rec = null;
+    const eqA = (a, b) => a.length === b.length && a.every((v, i) => v === b[i]);
+    const isZero = (k) => k.every((b) => b === 0);
+    if (pdu.advRandom && (pdu.advA[0] >> 6) === 1 && cfg.resolution) {
+      for (const r of cfg.rl) { if (isZero(r.peerIrk)) continue; aes++; if (resolves(pdu.advA, r.peerIrk)) { rec = r; id = r.id; break; } }
+    } else {
+      rec = cfg.rl.find((r) => eqA(r.id, pdu.advA)) || null;
+      if (rec) {
+        if (!isZero(rec.peerIrk) && rec.mode === "net") return { up: false, id: null, aes, why: "네트워크 프라이버시: 이 기기는 신원 주소로 오면 안 된다" };
+        id = rec.id;
+      }
+    }
+    const shown = id || pdu.advA;
+    if (cfg.policy === 1 && !cfg.fal.some((a) => eqA(a, shown))) return { up: false, id, aes, why: id ? "목록에 없는 신원 주소" : "필터 수용 목록에 없음" };
+    if (pdu.targetA) {
+      const mine = eqA(pdu.targetA, cfg.myAddr) || (cfg.resolution && (pdu.targetA[0] >> 6) === 1 && (aes++, resolves(pdu.targetA, cfg.myIrk)));
+      if (!mine) return { up: false, id, aes, why: "지정 광고인데 TargetA가 내가 아님" };
+    }
+    return { up: true, id, aes, why: id ? "해석 → 신원 주소로 보고" : "그대로 보고" };
+  }
+
+  /* ================================================================ 공통 */
+  const H = (s) => (String(s).replace(/[^0-9a-fA-F]/g, "").match(/../g) || []).map((x) => parseInt(x, 16));
+  const A = (a) => a.map((b) => BD.hex(b)).join(":");
+  const randPrand = () => { for (;;) { const a = new Uint32Array(1); crypto.getRandomValues(a); const p = (1 << 22) | (a[0] & 0x3fffff); if (validPrand(p)) return p; } };
+  const randKey = () => { const a = new Uint8Array(16); crypto.getRandomValues(a); return Array.from(a); };
+
+  /* ================================================================ 1. RPA */
+  (function () {
+    let made = null;
+    const draw = () => {
+      const irk = H($("rp-irk").value), pr = parseInt($("rp-pr").value.replace(/[^0-9a-f]/gi, "") || "0", 16) & 0xffffff, inA = H($("rp-in").value);
+      if (irk.length !== 16) { $("rp-out").textContent = "IRK는 16바이트."; return; }
+      made = makeRpa(irk, pr);
+      const ok = validPrand(pr);
+      let o = `<span class="k">prand </span> ${pr.toString(16).padStart(6, "0")}  (위 두 비트 ${(pr >>> 22).toString(2).padStart(2, "0")}${ok ? "" : ' <span class="bad">← RPA 조건 아님</span>'})\n<span class="k">e 입력</span> ${"00".repeat(13)}${pr.toString(16).padStart(6, "0")}\n<span class="k">hash  </span> <span class="a">${ah(irk, pr).toString(16).padStart(6, "0")}</span>  (AES 결과의 아래 3바이트)\n<span class="k">RPA   </span> <span class="a">${A(made)}</span>`;
+      if (inA.length === 6) { const r = resolves(inA, irk); o += `\n<span class="k">받은  </span> ${A(inA)} → ${randomKind(inA)}${(inA[0] >> 6) === 1 ? ` · localHash ${ah(irk, (inA[0] << 16) | (inA[1] << 8) | inA[2]).toString(16).padStart(6, "0")} vs ${A(inA.slice(3)).replace(/:/g, "")}` : ""}`; BD.stat("rp-type", randomKind(inA)); BD.stat("rp-res", r ? "풀림 ✓ 내 기기" : "풀리지 않음"); }
+      else { BD.stat("rp-type", "—"); BD.stat("rp-res", "—"); }
+      $("rp-out").innerHTML = o; BD.stat("rp-rpa", A(made));
+    };
+    $("rp-new").addEventListener("click", () => { $("rp-pr").value = randPrand().toString(16).padStart(6, "0"); draw(); });
+    $("rp-use").addEventListener("click", () => { $("rp-in").value = A(made); draw(); });
+    $("rp-other").addEventListener("click", () => { $("rp-in").value = A(makeRpa(randKey(), randPrand())); draw(); });
+    ["rp-irk", "rp-pr", "rp-in"].forEach((id) => $(id).addEventListener("input", draw));
+    $("rp-in").value = "70:81:94:0D:FB:AA"; draw();
+  })();
+
+  /* ================================================================ 2. 해석 목록 */
+  (function () {
+    const ear = { name: "이어폰", id: H("C4 11 22 33 44 55"), irk: randKey() }, watch = { name: "시계", id: H("00 1B DC 0A 0B 0C"), irk: randKey() }, kb = { name: "옛 키보드", id: H("D2 77 66 55 44 33"), irk: new Array(16).fill(0) };
+    const myIrk = randKey(), myAddr = H("00 11 22 33 44 55"), stranger = randKey();
+    const fal = [ear.id, watch.id, kb.id];
+    const pol = BD.seg("rl-pol", draw), mode = BD.seg("rl-mode", draw);
+    $("rl-res").addEventListener("change", draw);
+    const PDUS = () => [
+      { what: "이어폰 (RPA)", advA: makeRpa(ear.irk, randPrand()), advRandom: true },
+      { what: "이어폰 (신원 주소로)", advA: ear.id, advRandom: true },
+      { what: "시계 (RPA)", advA: makeRpa(watch.irk, randPrand()), advRandom: true },
+      { what: "옛 키보드 (신원 주소)", advA: kb.id, advRandom: true },
+      { what: "모르는 기기 (RPA)", advA: makeRpa(stranger, randPrand()), advRandom: true },
+      { what: "모르는 비콘 (NRPA)", advA: H("12 34 56 78 9A BC"), advRandom: true },
+      { what: "시계가 나를 지정 (TargetA = 내 RPA)", advA: makeRpa(watch.irk, randPrand()), advRandom: true, targetA: makeRpa(myIrk, randPrand()) },
+      { what: "모르는 기기가 다른 기기를 지정", advA: makeRpa(stranger, randPrand()), advRandom: true, targetA: makeRpa(randKey(), randPrand()) },
+    ];
+    const list = PDUS();
+    function draw() {
+      const cfg = { policy: +pol(), resolution: $("rl-res").checked, myIrk, myAddr, fal, rl: [ear, watch, kb].map((d) => ({ id: d.id, peerIrk: d.irk, mode: d === ear ? mode() : "net" })) };
+      let up = 0, aes = 0;
+      $("rl-tb").innerHTML = list.map((p) => {
+        const r = scanDecision(p, cfg); up += r.up; aes += r.aes;
+        const who = r.id ? [ear, watch, kb].find((d) => d.id === r.id || A(d.id) === A(r.id)) : null;
+        return `<tr><td>${p.what}</td><td class="m">${A(p.advA)}</td><td>${who ? who.name + " (" + A(who.id) + ")" : "—"}</td><td><span class="${r.up ? "acc" : "ign"}">${r.up ? "올림" : "버림"}</span> · ${r.why}</td></tr>`;
+      }).join("");
+      BD.stat("rl-up", up + " / " + list.length); BD.stat("rl-aes", aes + "번");
+    }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

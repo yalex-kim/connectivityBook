@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<title>BluetoothBook 심화 · 프로토콜 스택을 끝까지 따라가는 블루투스 교과서</title>
+<meta name="description" content="BluetoothBook을 읽은 엔지니어를 위한 심화편. HCI와 링크 계층 절차, 패킷 암호화와 페어링 함수, 프라이버시, L2CAP·EATT, 클래식 베이스밴드, 등시성 채널과 LE 오디오, 채널 사운딩과 방향 찾기까지 Bluetooth Core 6.3의 시험 데이터로 계산을 맞춰 보며 배운다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/bluetooth-deep/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="BluetoothBook 심화">
+<meta property="og:title" content="BluetoothBook 심화 · 프로토콜 스택을 끝까지 따라가는 블루투스 교과서">
+<meta property="og:description" content="BluetoothBook을 읽은 엔지니어를 위한 심화편. HCI와 링크 계층 절차, 패킷 암호화와 페어링 함수, 프라이버시, L2CAP·EATT, 클래식 베이스밴드, 등시성 채널과 LE 오디오, 채널 사운딩과 방향 찾기까지 Bluetooth Core 6.3의 시험 데이터로 계산을 맞춰 보며 배운다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/#site","name":"BluetoothBook 심화","alternateName":"블루투스 심화 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/","inLanguage":"ko"},{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/#book","name":"BluetoothBook 심화 — 프로토콜 스택을 끝까지 따라가는 블루투스 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/","inLanguage":"ko","isAccessibleForFree":true,"educationalLevel":"심화 (BluetoothBook을 읽은 엔지니어)","about":["Bluetooth","Bluetooth Low Energy","HCI","링크 계층","AES-CCM","LE 오디오","채널 사운딩"],"image":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png","hasPart":[{"@type":"Chapter","position":6,"name":"링크 계층 암호화: 세션 키와 AES-CCM","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/encryption.html"},{"@type":"Chapter","position":7,"name":"SMP 완전판: P-256에서 LTK까지","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/smp.html"},{"@type":"Chapter","position":8,"name":"프라이버시와 필터링: 해석 목록과 필터 수용 목록","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/privacy.html"},{"@type":"Chapter","position":9,"name":"BIG 보안과 BIS: 방송 코드에서 그룹 세션 키까지","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/bigsec.html"}],"description":"BluetoothBook을 읽은 엔지니어를 위한 심화편. HCI와 링크 계층 절차, 패킷 암호화와 페어링 함수, 프라이버시, L2CAP·EATT, 클래식 베이스밴드, 등시성 채널과 LE 오디오, 채널 사운딩과 방향 찾기까지 Bluetooth Core 6.3의 시험 데이터로 계산을 맞춰 보며 배운다."}]}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="css/style.css">
+<script src="js/common.js"></script>
+<style>
+  .hero-3d { cursor: pointer; height: auto; touch-action: auto; padding-bottom: 46px; }
+  .hero-3d canvas { display: block; width: 100%; }
+  .paths { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .path { padding: 18px 20px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg-elev); }
+  .path h3 { margin: 0 0 6px; font-size: 17px; }
+  .path p { margin: 0 0 10px; color: var(--text-dim); font-size: 14.5px; }
+  .path .steps { display: flex; flex-wrap: wrap; gap: 6px; }
+  .path .steps a { font-family: var(--mono); font-size: 12px; padding: 3px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+  .path .steps a:hover { text-decoration: none; filter: brightness(1.1); }
+  .numbers { display: grid; gap: 1px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .numbers div { background: var(--bg-elev); padding: 18px 20px; }
+  .numbers b { display: block; font-family: var(--mono); font-size: 24px; letter-spacing: -0.02em; color: var(--text); }
+  .numbers span { color: var(--text-dim); font-size: 14px; }
+  .hero-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
+  .hero-badges span { font-size: 13px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border); color: var(--text-dim); background: var(--bg-elev); }
+  .hero-resume { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; justify-content: space-between; padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-elev); box-shadow: var(--shadow); }
+  .hero-resume[hidden] { display: none; }
+  .hero-resume small { display: block; font-size: 12px; color: var(--text-faint); letter-spacing: .05em; }
+  .hero-resume a { font-size: 16px; }
+  .hero-resume .hr-meta { font-size: 13.5px; color: var(--text-dim); }
+  .hero-resume button { font: inherit; border: 0; background: none; color: var(--text-faint); text-decoration: underline; cursor: pointer; padding: 0; }
+  .part-title { font-size: 13px; letter-spacing: .1em; font-weight: 700; color: var(--text-faint); margin: 28px 0 10px; text-transform: uppercase; }
+  .part-title:first-of-type { margin-top: 0; }
+  .stack-fig svg { display: block; width: 100%; height: auto; }
+  .stack-fig a:hover rect { stroke: var(--accent); stroke-width: 2; }
+  .howto { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .howto div { padding: 16px 18px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-elev); font-size: 14.5px; color: var(--text-dim); }
+  .howto b { display: block; color: var(--text); font-size: 16px; margin-bottom: 4px; }
+  .howto .sim-tag { display: inline-block; margin-bottom: 8px; }
+  .plan { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .plan li { display: flex; gap: 10px; align-items: baseline; font-size: 15px; }
+  .plan li b { font-family: var(--mono); color: var(--text-faint); min-width: 26px; }
+  .plan li.on b { color: var(--accent); }
+  .plan li .st { margin-left: auto; font-size: 12px; color: var(--text-faint); white-space: nowrap; }
+  .plan li.on .st { color: var(--ok); }
+</style>
+</head>
+<body data-root="">
+
+<section class="home-hero">
+  <div class="inner" style="grid-template-columns:minmax(0,1fr)">
+    <div>
+      <div class="eyebrow">Interactive Bluetooth Textbook · Advanced · Core 6.3</div>
+      <h1>프로토콜 스택을<br><span class="grad">끝까지 따라가는 블루투스</span></h1>
+      <p><a href="../bluetooth/">BluetoothBook</a>이 “무엇이 왜 그런가”를 넓게 보여 줬다면, 이 책은 그 아래로 내려갑니다. 호스트와 컨트롤러가 주고받는 HCI 바이트, 링크 계층 절차의 instant와 충돌 규칙, 패킷을 잠그는 AES-CCM과 페어링 함수 전부, 해석 목록과 프라이버시, L2CAP 크레딧과 EATT, 클래식 베이스밴드, 등시성 채널과 LE 오디오, 채널 사운딩과 방향 찾기까지. <b>Bluetooth Core 6.3에 실린 시험 데이터를 바이트 하나 틀리지 않게 다시 계산하며</b> 따라갑니다.</p>
+      <div class="hero-badges"><span>펌웨어·스택·칩 검증 엔지니어</span><span>BluetoothBook을 읽었다고 가정</span><span>사양 시험 데이터로 검증한 계산</span><span>hex를 붙여 넣는 작업대</span></div>
+      <div class="hero-resume" id="bd-resume" hidden></div>
+    </div>
+  </div>
+</section>
+
+<section class="home-section">
+  <h2>집필 계획</h2>
+  <p class="sub">이 책은 부(部) 단위로 나눠 쓰고 있습니다. 색이 칠해진 장부터 읽을 수 있습니다.</p>
+  <ul class="plan" id="plan"></ul>
+</section>
+
+<section class="home-section" style="padding-top:0">
+  <h2>이 책을 읽는 방법</h2>
+  <div class="howto">
+    <div><span class="pill acc">원문</span><b>사양 따라 읽기</b>각 장은 사양서의 절과 표를 직접 따라갑니다. 근거 위치는 [Vol·Part·§]로 달고, 1권에서 설명한 기초는 링크로 넘깁니다.</div>
+    <div><span class="sim-tag">WORKBENCH</span><b>작업대</b>시뮬레이터는 hex 바이트나 로그를 넣으면 한 단계씩 풀어 보여 주는 도구입니다. 사양의 샘플을 불러오면 같은 값이 나오는지 바로 확인합니다.</div>
+    <div><span class="pill" style="background:color-mix(in srgb, var(--ok) 14%, transparent);color:var(--ok);border:0">검증</span><b>시험 벡터로 확인</b>계산 함수는 사양의 샘플 데이터와, 가능하면 OpenSSL 같은 독립 구현과 자동으로 맞춰 봅니다(<code>scripts/verify-factcheck.cjs</code>).</div>
+  </div>
+</section>
+
+<section class="home-section" style="padding-top:0" id="chapters">
+  <h2>지금 읽을 수 있는 장</h2>
+  <div id="ch-parts"></div>
+  <p class="sub" style="margin-top:24px">이 책은 <a href="../index.html">yalexBook 서재</a>의 한 권이며, 입문편 <a href="../bluetooth/">BluetoothBook</a>의 다음 책입니다.</p>
+</section>
+
+<script>
+(function () {
+  "use strict";
+  const PLAN = [
+    ["01", "심화로 들어가며: 기능 비트·버전 협상, 실제 기록 읽기", "시작"],
+    ["02", "HCI: 패킷 4종, 흐름 제어, 이벤트 마스크, 초기화 순서", "컨트롤러"], ["03", "링크 계층 상태 기계와 컨트롤러 스케줄링", "컨트롤러"], ["04", "링크 계층 제어 절차: instant와 충돌 규칙", "컨트롤러"], ["05", "광고 끝까지: 확장 광고 체인, PAST, PAwR", "컨트롤러"],
+    ["06", "링크 계층 암호화: 세션 키와 AES-CCM", "보안"], ["07", "SMP 완전판: f4·f5·f6·g2·h6·h7과 CTKD", "보안"], ["08", "프라이버시와 필터링: 해석 목록과 필터 수용 목록", "보안"], ["09", "BIG 보안과 BIS: 그룹 키와 접근 주소", "보안"],
+    ["10", "L2CAP: 신호, 크레딧 기반 흐름 제어, ECFC", "호스트"], ["11", "ATT/GATT 심화: EATT, 큐 쓰기, Database Hash", "호스트"],
+    ["12", "클래식 베이스밴드: 피코넷, 도약 선택 커널, 접근 코드", "클래식"], ["13", "LMP·SSP·클래식 암호화", "클래식"],
+    ["14", "ISOAL과 등시성 타이밍", "오디오·위치"], ["15", "LE 오디오 프로파일: BAP·PACS·ASCS·CAP", "오디오·위치"], ["16", "채널 사운딩 끝까지", "오디오·위치"], ["17", "방향 찾기 끝까지: CTE와 IQ 샘플", "오디오·위치"],
+    ["18", "튜닝과 디버깅 사례", "실전"], ["19", "용어집 & 종합 퀴즈", "실전"],
+  ];
+  const have = Object.fromEntries(BD.CHAPTERS.map((c) => [c.num, c]));
+  document.getElementById("plan").innerHTML = PLAN.map(([n, t, p]) => { const c = have[n]; return `<li class="${c ? "on" : ""}"><b>${n}</b>${c ? `<a href="chapters/${c.slug}.html">${t}</a>` : t}<span class="st">${p} · ${c ? "읽기 가능" : "집필 예정"}</span></li>`; }).join("");
+  let html = "", last = "";
+  BD.CHAPTERS.forEach((c) => {
+    if (c.part !== last) { if (last) html += "</div>"; html += `<div class="part-title">${c.part}</div><div class="ch-grid">`; last = c.part; }
+    html += `<a class="ch-card" href="chapters/${c.slug}.html"><span class="num">CHAPTER ${c.num}</span><h3>${c.title}</h3><p>${c.desc}</p><div class="tags">${c.tags.map((t) => `<span class="${t === "sim" ? "is-sim" : ""}">${t === "sim" ? "시뮬레이터" : t}</span>`).join("")}</div></a>`;
+  });
+  document.getElementById("ch-parts").innerHTML = html + "</div>";
+  const lastRead = BD.progress.last(), rs = document.getElementById("bd-resume");
+  if (lastRead && BD.CHAPTERS.some((c) => c.slug === lastRead.slug)) {
+    const c = BD.CHAPTERS.find((x) => x.slug === lastRead.slug);
+    rs.hidden = false;
+    rs.innerHTML = `<div><small>이어 읽기</small><a href="chapters/${c.slug}.html${lastRead.sec ? "#" + lastRead.sec : ""}"><b>${c.num} ${c.title}</b> →</a></div>`;
+  }
+})();
+</script>
+</body>
+</html>

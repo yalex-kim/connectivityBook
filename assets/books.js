@@ -73,4 +73,22 @@ window.YB_BOOKS = [
     icon: "M16 12.5a4.5 4.5 0 1 1 0 9a4.5 4.5 0 1 1 0-9M7 9l4 3M25 9l-4 3M16 6v4", // 표지 아이콘(32×32 SVG path, 흰 선)
     topics: ["궤도·스카이 플롯", "L1·L2·L5", "C/A 코드", "신호 획득", "DLL·PLL", "항법 메시지·GPS 시간", "위성 위치 계산", "의사거리·DOP", "전리층·대류층", "도시·NLOS", "RTK·PPP", "휴대폰 GNSS"],
   },
+  {
+    id: "bluetoothdeep",
+    path: "bluetooth-deep/",
+    progressKey: "bd-progress-v1", // 책이 읽기 진도를 저장하는 localStorage 키
+    title: "BluetoothBook 심화",
+    subtitle: "프로토콜 스택을 끝까지 따라가는 블루투스 교과서",
+    headline: "HCI 바이트에서 AES-CCM까지",
+    description: "BluetoothBook의 다음 책. HCI와 링크 계층 절차, 패킷 암호화와 페어링 함수 전부, 프라이버시, L2CAP·EATT, 클래식 베이스밴드, 등시성 채널과 LE 오디오, 채널 사운딩과 방향 찾기를 Core 6.3의 시험 데이터로 계산을 맞춰 보며 따라간다.",
+    status: "draft",
+    chapters: 19,
+    simulators: 9,
+    level: "엔지니어 (1권 다음)",
+    reference: "Bluetooth Core 6.3 (시험 데이터로 검증)",
+    color: "#4338ca",
+    colorDark: "#a5b4fc",
+    icon: "M10.5 11.5 20.5 20.5 15.5 25V7l5 4.5-10 9M23.5 22.5h3M25 21v3",
+    topics: ["HCI", "링크 계층 절차", "AES-CCM", "SMP 함수", "해석 목록", "BIG 보안", "L2CAP·EATT", "클래식 베이스밴드", "ISOAL", "LE 오디오", "채널 사운딩", "방향 찾기"],
+  },
 ];

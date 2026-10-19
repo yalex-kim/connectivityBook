@@ -124,7 +124,7 @@
       <a class="book" href="${esc(b.path)}" style="--bk:${col}">
         <div class="cover"><i>${b.chapters}장</i><svg viewBox="0 0 32 32" aria-hidden="true"><path d="${esc(b.icon || "M8 7h16v18H8z")}" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><b>${esc(b.title)}</b></div>
         <div><h3>${esc(b.title)}</h3><div class="sub">${esc(b.subtitle)}</div><p>${esc(b.description)}</p>
-          <div class="meta"><span class="ref">기준 · ${esc(b.reference)}</span><span>${b.chapters}개 챕터</span><span>시뮬레이터 ${b.simulators}개</span><span>${esc(b.level)}</span></div>
+          <div class="meta"><span class="ref">기준 · ${esc(b.reference)}</span>${b.status === "draft" ? `<span>집필 중</span>` : ""}<span>${b.chapters}개 챕터</span><span>시뮬레이터 ${b.simulators}개</span><span>${esc(b.level)}</span></div>
           ${pg ? `<div class="prog"><i><b style="width:${Math.round((100 * pg.done) / b.chapters)}%"></b></i>${pg.done}/${b.chapters}장 다 읽음</div>` : ""}</div>
       </a>${pg && pg.last && pg.last.slug ? `<a class="resume" href="${esc(b.path)}chapters/${esc(pg.last.slug)}.html${pg.last.sec ? "#" + esc(pg.last.sec) : ""}">이어 읽기 →</a>` : ""}</div>`; }).join("");
   }

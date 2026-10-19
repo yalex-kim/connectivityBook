@@ -56,7 +56,7 @@ def main():
     for book in books():
         for rel, text in render(book).items():
             p = book / rel
-            if p.read_text() != text:
+            if not p.exists() or p.read_text() != text:
                 if check: bad.append(f'{book.name}/{rel}')
                 else: p.write_text(text); print('updated', f'{book.name}/{rel}')
     if bad:

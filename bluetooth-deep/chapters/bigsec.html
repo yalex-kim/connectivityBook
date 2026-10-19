@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>BIG 보안과 BIS: 방송 코드에서 그룹 세션 키까지 · BluetoothBook 심화</title>
+<meta name="description" content="연결도 페어링도 없는 방송을 어떻게 잠그나. 방송 코드의 UTF-8 표현, h7·h6·h8로 이어지는 IGLTK·GLTK·GSK 유도, BIGInfo의 GSKD와 GIV, BIS의 CCM nonce, 시드 접근 주소에서 BIS마다 접근 주소를 만드는 규칙을 Core 6.3의 샘플(Børne House, SAA 0x78E52493)로 재현한다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/bigsec.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="BluetoothBook 심화">
+<meta property="og:title" content="BIG 보안과 BIS: 방송 코드에서 그룹 세션 키까지 · BluetoothBook 심화">
+<meta property="og:description" content="연결도 페어링도 없는 방송을 어떻게 잠그나. 방송 코드의 UTF-8 표현, h7·h6·h8로 이어지는 IGLTK·GLTK·GSK 유도, BIGInfo의 GSKD와 GIV, BIS의 CCM nonce, 시드 접근 주소에서 BIS마다 접근 주소를 만드는 규칙을 Core 6.3의 샘플(Børne House, SAA 0x78E52493)로 재현한다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/bigsec.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"BIG 보안과 BIS: 방송 코드에서 그룹 세션 키까지","name":"BIG 보안과 BIS: 방송 코드에서 그룹 세션 키까지 · BluetoothBook 심화","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/bigsec.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/bigsec.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":9,"image":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png","dateModified":"2026-10-19","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/#book","name":"BluetoothBook 심화 — 프로토콜 스택을 끝까지 따라가는 블루투스 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},"publisher":{"@type":"Organization","name":"BluetoothBook 심화","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},"description":"연결도 페어링도 없는 방송을 어떻게 잠그나. 방송 코드의 UTF-8 표현, h7·h6·h8로 이어지는 IGLTK·GLTK·GSK 유도, BIGInfo의 GSKD와 GIV, BIS의 CCM nonce, 시드 접근 주소에서 BIS마다 접근 주소를 만드는 규칙을 Core 6.3의 샘플(Børne House, SAA 0x78E52493)로 재현한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook 심화","item":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},{"@type":"ListItem","position":2,"name":"09 BIG 보안과 BIS: 방송 코드에서 그룹 세션 키까지","item":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/bigsec.html"}]}]}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<style>
+  .hexin { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px 14px; }
+  .hexin label { display: grid; gap: 4px; font-size: 12.5px; color: var(--text-dim); }
+  .hexin input { font: 13px var(--mono); padding: 7px 9px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); min-width: 0; }
+  .blk { font: 12.5px/1.65 var(--mono); overflow-x: auto; white-space: pre; padding: 12px 14px; background: var(--surface); border-radius: 10px; color: var(--text); }
+  .blk .k { color: var(--text-dim); } .blk .a { color: var(--accent); font-weight: 600; } .blk .ok { color: var(--ok); font-weight: 700; } .blk .bad { color: var(--bad); font-weight: 700; }
+  table.aa { min-width: 420px; } table.aa td { font-family: var(--mono); font-size: 12.5px; }
+</style>
+</head>
+<body data-chapter="bigsec">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 09</div>
+    <h1>BIG 보안과 BIS: 방송 코드에서 그룹 세션 키까지</h1>
+    <p class="lead">Auracast 방송(1권 10장)은 연결도 페어링도 없다. 송신기 하나가 수백 개의 이어폰에 같은 소리를 뿌린다. 그런데 “우리 강의실 사람만 듣게” 하려면 어떻게 잠글까? 답은 사람이 아는 비밀 하나, <b>방송 코드</b>다. 이 장은 그 문자열이 128비트 키가 되고, 패킷마다 다른 nonce가 되기까지를 따라가고, BIS마다 접근 주소를 만드는 규칙도 함께 계산한다.</p>
+    <ul class="objectives">
+      <li>방송 코드 문자열을 128비트 값으로 바꾸는 규칙(UTF-8, 작은 쪽부터 채움)을 적용할 수 있다.</li>
+      <li>IGLTK = h7(“BIG1”, 코드) → GLTK = h6(IGLTK, “BIG2”) → GSK = h8(GLTK, GSKD, “BIG3”)를 계산하고, GSKD가 무엇을 바꾸는지 설명할 수 있다.</li>
+      <li>BIS의 CCM이 ACL과 무엇이 다른지(키, IV, 카운터, 방향 비트, 마스크) 안다.</li>
+      <li>시드 접근 주소와 다이버시파이어로 BIS 접근 주소를 만들 수 있다(사양 표 5.1).</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="code">
+    <h2>방송 코드: 모두가 아는 하나의 비밀</h2>
+    <p>연결이 있으면 두 기기가 키를 협상하지만(6·7장), 방송에는 돌아오는 신호가 없다. 그래서 키의 출발점을 사람이 미리 나눠 갖는다. 사양은 이것을 <span class="term">방송 코드</span><span class="en">(Broadcast_Code)</span>라 하고, 화면에서는 “Bluetooth Privacy Code”라 부르라고 권한다. 강의실 칠판에 적힌 문자열, 공항 게이트의 QR 코드, 휴대폰 앱이 이어폰에 대신 넣어 주는 값이 모두 이것이다.</p>
+    <div class="callout analogy"><strong>강의실 문의 번호 자물쇠</strong><p>강의실 문 번호 자물쇠는 수강생 모두가 같은 번호를 안다. 누가 들어왔는지 하나하나 확인하지는 못하지만, 번호를 모르는 사람은 막는다. 매 학기 번호를 바꾸면 지난 학기 수강생은 못 들어온다. BIG 암호화가 딱 이 수준이다. 코드를 아는 모두가 들을 수 있고, 코드를 모르는 사람만 막는다.</p></div>
+    <p>화면 단계에서 방송 코드는 UTF-8로 4~16옥텟의 문자열이다. 그 아래 모든 단계에서는 128비트 값이고, 변환 규칙은 이렇다. 문자열을 UTF-8 바이트로 바꾼 뒤 <b>가장 작은 바이트 자리부터</b> 차례로 채우고, 남는 큰 쪽은 0으로 채운다. 사양의 예 “Børne House”(ø가 2바이트라 12옥텟)는 0x00000000_6573756F_4820656E_72B8C342가 된다. 거꾸로 읽으면 B(42) ø(C3 B8) r(72)…다. 보안을 위해 16옥텟을 쓰라고 권한다.</p>
+    <p class="spec-ref">방송 코드의 정의·화면 용어·표현과 “Børne House” 예: <b>[Vol 3] Part C §3.2.6</b> · BIG의 Broadcast_Code·GIV·GSKD: <b>[Vol 6] Part B §4.4.6.10</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="gsk">
+    <h2>세 번 걸러 그룹 세션 키로</h2>
+    <p>방송 코드는 사람이 고른 값이라 그대로 키로 쓰기엔 고르지 않고, 다른 BIG에서도 같은 값이 나올 수 있다. 그래서 세 단계를 거친다. 7장의 h7·h6에, 링크 계층 보안 부분이 정의한 <b>h8</b>을 더한다.</p>
+    <div class="formula">IGLTK = h7(“BIG1”, Broadcast_Code) · GLTK = h6(IGLTK, “BIG2”) · <b>GSK = h8(GLTK, GSKD, “BIG3”)</b><br>h8(K, S, keyID): IK = AES-CMAC<sub>S</sub>(K), h8 = AES-CMAC<sub>IK</sub>(keyID)</div>
+    <p>GLTK까지는 방송 코드만으로 정해지는 값이다. 마지막 단계의 <b><span class="term">GSKD</span></b>(Group Session Key Diversifier, 128비트)는 송신기의 컨트롤러가 <b>암호화된 BIG를 만들 때마다 새로</b> 뽑아 BIGInfo에 실어 보낸다. 그래서 어제와 오늘 같은 방송 코드를 써도 그룹 세션 키는 다르다. 수신기는 주기적 광고의 BIGInfo에서 GSKD를 읽고, 호스트가 넣어 준 방송 코드와 합쳐 같은 <span class="term">GSK</span>를 만든다(이 과정은 수신기의 컨트롤러 안에서 일어난다).</p>
+    <div class="sim" id="sim-gsk">
+      <div class="sim-head"><span class="sim-tag">WORKBENCH</span><h3>방송 코드 → GSK, 사양 샘플 그대로</h3></div>
+      <div class="sim-view" style="padding:14px 16px">
+        <div class="hexin">
+          <label>방송 코드 (문자열, UTF-8)<input id="gs-code" spellcheck="false" value="Børne House"></label>
+          <label>GSKD (BIGInfo, 큰 바이트부터)<input id="gs-gskd" spellcheck="false" value="55188b3d 32f6bb9a 900afcfb eed4e72a"></label>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0"><button class="btn" id="gs-new">새 BIG (GSKD 새로)</button><button class="btn" id="gs-reset">사양 샘플로</button></div>
+        <div class="blk" id="gs-out"></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">코드 길이</span><span class="v" id="gs-len">—</span></div>
+        <div class="stat"><span class="k">GSK</span><span class="v" id="gs-gsk" style="font-size:12.5px;overflow-wrap:anywhere">—</span></div>
+        <div class="stat"><span class="k">사양 샘플과 비교</span><span class="v" id="gs-ok">—</span></div>
+      </div>
+      <div class="sim-note">처음 값은 [Vol 6] Part C §6의 샘플이다. 해볼 것: ① 결과가 GSK be2a16fc…와 같은지 보자. ② “새 BIG”을 누르면 같은 방송 코드에서 GLTK는 그대로이고 GSK만 바뀐다. ③ 코드를 “Børne Hous”로 한 글자 지우면 모든 단계가 바뀐다. ④ 17바이트 이상이면 화면 단계의 규칙 위반이다.</div>
+    </div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">학기 내내 같은 방송 코드를 쓰는 강의실 방송을 누군가 첫 주에 녹음해 두었다. 그는 코드를 모른다. 셋째 주에 코드를 알게 되었다면 첫 주 녹음을 풀 수 있을까?</p><p class="wi-hint">GSK를 만드는 데 필요한 값 중 첫 주 녹음에 들어 있는 것은?</p><div class="opts">
+      <button class="opt">아니다. GSK가 그때마다 달랐다</button>
+      <button class="opt" data-correct>그렇다. 첫 주 BIGInfo의 GSKD도 녹음되어 있으니까</button>
+      <button class="opt">GIV가 비밀이라 안 된다</button>
+    </div><div class="quiz-exp">GSKD와 GIV는 BIGInfo에 평문으로 실린다. 코드만 알게 되면 그때의 GSK를 다시 계산할 수 있다. GSKD가 막는 것은 “다른 BIG의 키를 재사용”이지, “코드가 새면 과거가 풀림”이 아니다. 앞의 녹음을 지키려면 코드 자체를 자주 바꿔야 한다.</div></div>
+    <p class="spec-ref">h8과 IGLTK·GLTK·GSK 유도, “BIG1~3”의 값: <b>[Vol 6] Part E §1.1.1·§1.1.2</b> · h6·h7: <b>[Vol 3] Part H §2.2.10·§2.2.11</b> · GSKD·GIV를 BIG마다 새로: <b>[Vol 6] Part B §4.4.6.10</b> · 샘플: <b>[Vol 6] Part C §6</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="ccm">
+    <h2>BIS의 CCM: 무엇이 다른가</h2>
+    <p>암호화 방식은 6장의 AES-CCM 그대로다. 달라지는 것은 재료뿐이다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th></th><th>ACL (6장)</th><th>BIS</th></tr></thead>
+      <tbody>
+        <tr><td>키</td><td>세션 키 SK = e(LTK, SKD)</td><td>GSK</td></tr>
+        <tr><td>IV</td><td>IV_P ‖ IV_C (암호화 시작 때 교환)</td><td>GIV의 아래 32비트를 그 BIS의 접근 주소와 XOR</td></tr>
+        <tr><td>packetCounter</td><td>새 PDU마다 +1</td><td>bisPayloadCounter (BIG 이벤트마다 정해진 값)</td></tr>
+        <tr><td>directionBit</td><td>센트럴 1, 페리페럴 0</td><td>항상 1 (방송자)</td></tr>
+        <tr><td>MIC에서 가리는 헤더 비트</td><td>NESN, SN, MD</td><td>CSSN, CSTF</td></tr>
+        <tr><td>MIC 실패</td><td>연결 끊김 (0x3D)</td><td>동기 상실, 그 BIS를 더 받지 않음 (0x3D)</td></tr>
+      </tbody>
+    </table></div>
+    <p>BIS마다 접근 주소가 다르므로 IV도 BIS마다 달라져, 같은 GSK와 같은 페이로드 카운터로도 nonce가 겹치지 않는다. 방송자가 하나뿐이니 방향 비트는 늘 1이다. BIG 제어 PDU(BIG 종료, 채널 맵 갱신)도 같은 방식으로, 자기 접근 주소로 IV를 만들어 암호화한다.</p>
+    <p class="spec-ref">BIS의 nonce·IV·방향 비트: <b>[Vol 6] Part E §2.1</b> · 가리는 비트(Table 2.3): <b>§2.2</b> · BIS 세션 키 = GSK: <b>§2.4</b> · BIS MIC 실패: <b>§1</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="aa">
+    <h2>시드 접근 주소에서 BIS마다 접근 주소를</h2>
+    <p>연결은 접근 주소를 CONNECT_IND로 알려 주지만, BIG는 BIGInfo에 <b><span class="term">시드 접근 주소</span></b>(SAA) 하나만 싣는다. 수신기는 BIS 번호 n마다 다이버시파이어 D = (35·n + 42) mod 128을 구해 7비트를 정해진 자리에 흩어 놓은 다이버시파이어 워드 DW와 SAA를 XOR한다. n = 0은 BIG 제어 링크다. 덕분에 BIS가 31개여도 BIGInfo에는 4바이트만 있으면 된다.</p>
+    <div class="formula">DW[31:16] = D₀ D₀ D₀ D₀ D₀ D₀ D₁ D₆ · D₁ 0 D₅ D₄ 0 D₃ D₂ 0 · DW[15:0] = 0 · AA = SAA ⊕ DW</div>
+    <p>SAA는 무작위지만 조건이 있다. 비트 19 = 비트 15, 비트 22 = 비트 16 ≠ 비트 15, 비트 25 = 0, 비트 23 = 1. 이 조건과 DW의 모양 덕분에, 만들어진 BIS 접근 주소들이 일반 접근 주소 규칙(연속 0·1이 6개 이하, 전환 수 등)을 지키기 쉬워진다. 그래도 어긋나면 SAA를 다시 뽑는다.</p>
+    <div class="sim" id="sim-aa">
+      <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>SAA → BIS 접근 주소 (사양 표 5.1)</h3></div>
+      <div class="sim-controls" style="border-top:0">
+        <label class="ctrl"><span>시드 접근 주소 SAA (hex)</span><input id="aa-saa" spellcheck="false" value="78E52493" style="font:13px var(--mono);padding:7px 9px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text)"></label>
+        <label class="ctrl"><span>BIS 수 <b id="aa-nv">6</b></span><input type="range" id="aa-n" min="1" max="31" value="6"></label>
+        <div style="align-self:end"><button class="btn" id="aa-rand">조건 맞는 SAA 무작위</button></div>
+      </div>
+      <div class="sim-view" style="padding:6px 12px 12px"><div class="table-wrap" style="margin:0"><table class="aa"><thead><tr><th>n</th><th>D</th><th>DW</th><th>접근 주소</th><th>사양 표 5.1</th></tr></thead><tbody id="aa-tb"></tbody></table></div></div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">SAA 조건</span><span class="v" id="aa-ok" style="font-size:14px">—</span></div>
+        <div class="stat"><span class="k">BIG 제어 링크 (n = 0)</span><span class="v" id="aa-ctl">—</span></div>
+      </div>
+      <div class="sim-note">사양 샘플 SAA 0x78E52493의 31개 값과 BIG 제어 링크 0x7A412493을 검증 스크립트가 모두 맞춰 본다. 해볼 것: ① BIS 수를 31까지 올려 사양 표와 모두 같은지 보자. ② SAA의 비트 23을 0으로 바꾸면(78E52493 → 78652493, 둘째 바이트 E5 → 65) 조건 위반이 표시된다.</div>
+    </div>
+    <p class="spec-ref">SAA 조건·D·DW 식(예: n = 1 → D = 77, DW = 0xFD060000): <b>[Vol 6] Part B §2.1.2</b> · BIGInfo의 SeedAccessAddress: <b>[Vol 6] Part B §4.4.6.10</b> · 샘플(31개 + 제어 링크): <b>[Vol 6] Part C §5</b></p>
+  </section>
+
+  <div class="callout related"><strong>다른 책에서</strong><ul><li><a href="../../bluetooth/chapters/audio.html">BluetoothBook 10장 · 블루투스 오디오</a> — BIG·BIS와 Auracast의 구조</li></ul></div>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>방송 코드: 화면에서는 UTF-8 4~16옥텟 문자열, 그 아래에서는 작은 바이트부터 채운 128비트 값.</li>
+      <li>IGLTK = h7(“BIG1”, 코드), GLTK = h6(IGLTK, “BIG2”), GSK = h8(GLTK, GSKD, “BIG3”). GSKD는 암호화된 BIG마다 새로 뽑아 BIGInfo에 싣는다.</li>
+      <li>코드가 같아도 BIG마다 GSK가 다르지만, 코드가 새면 녹음된 과거 방송도 풀린다. 코드 자체를 자주 바꾼다.</li>
+      <li>BIS의 CCM: 키 GSK, IV = GIV의 아래 32비트 ⊕ 접근 주소, 카운터 = bisPayloadCounter, 방향 비트 1, CSSN·CSTF 마스크.</li>
+      <li>BIS 접근 주소 = SAA ⊕ DW(n), D = (35n + 42) mod 128. n = 0은 BIG 제어 링크.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>방송 코드 문자열 “AB”의 128비트 값은?</p><div class="opts">
+        <button class="opt">0x41420000…0000</button><button class="opt" data-correct>0x0000…00004241</button><button class="opt">0x0000…00004142</button><button class="opt">AES로 바꾼 값</button>
+      </div><div class="quiz-exp">UTF-8 바이트(41, 42)를 가장 작은 바이트부터 채운다. 첫 글자 A(0x41)가 가장 작은 바이트다.</div></div>
+      <div class="quiz-q"><p>GSK 유도에서 BIG마다 달라지는 입력은?</p><div class="opts">
+        <button class="opt">“BIG3”</button><button class="opt" data-correct>GSKD</button><button class="opt">방송 코드</button><button class="opt">GLTK</button>
+      </div><div class="quiz-exp">GSKD는 컨트롤러가 암호화된 BIG마다 새로 만든다. 방송 코드는 사람이 정하고, GLTK는 코드만으로 정해진다.</div></div>
+      <div class="quiz-q"><p>BIS PDU의 CCM nonce에서 방향 비트는?</p><div class="opts">
+        <button class="opt">0</button><button class="opt" data-correct>1</button><button class="opt">BIS 번호의 홀짝</button><button class="opt">수신기가 정한다</button>
+      </div><div class="quiz-exp">[Vol 6] Part E §2.1: Isochronous Broadcaster가 보내는 PDU는 1.</div></div>
+      <div class="quiz-q"><p>n = 1일 때 다이버시파이어 D는?</p><div class="opts">
+        <button class="opt">35</button><button class="opt">42</button><button class="opt" data-correct>77</button><button class="opt">128</button>
+      </div><div class="quiz-exp">(35 × 1 + 42) mod 128 = 77 = 0b1001101. DW = 0xFD060000.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  /* ================================================================ 계산 (검증 스크립트가 꺼내 쓴다) */
+  const SBOX = (() => { const s = new Array(256); let p = 1, q = 1; do { p = p ^ ((p << 1) & 0xff) ^ (p & 0x80 ? 0x1b : 0); q ^= q << 1; q ^= q << 2; q ^= q << 4; q &= 0xff; if (q & 0x80) q ^= 0x09; const x = q ^ ((q << 1) | (q >> 7)) ^ ((q << 2) | (q >> 6)) ^ ((q << 3) | (q >> 5)) ^ ((q << 4) | (q >> 4)); s[p] = (x ^ 0x63) & 0xff; } while (p !== 1); s[0] = 0x63; return s; })();
+  function aes128(key, block) {
+    const xt = (a) => ((a << 1) ^ (a & 0x80 ? 0x1b : 0)) & 0xff;
+    const w = key.slice(); let rc = 1;
+    for (let i = 16; i < 176; i += 4) { let t = w.slice(i - 4, i); if (i % 16 === 0) { t = [SBOX[t[1]] ^ rc, SBOX[t[2]], SBOX[t[3]], SBOX[t[0]]]; rc = xt(rc); } for (let j = 0; j < 4; j++) w[i + j] = w[i - 16 + j] ^ t[j]; }
+    let s = block.map((b, i) => b ^ w[i]);
+    for (let r = 1; r <= 10; r++) {
+      s = s.map((b) => SBOX[b]);
+      s = [0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12, 1, 6, 11].map((i) => s[i]);
+      if (r < 10) { const o = []; for (let c = 0; c < 4; c++) { const a = s.slice(4 * c, 4 * c + 4), x = a[0] ^ a[1] ^ a[2] ^ a[3]; for (let i = 0; i < 4; i++) o.push(a[i] ^ x ^ xt(a[i] ^ a[(i + 1) % 4])); } s = o; }
+      s = s.map((b, i) => b ^ w[16 * r + i]);
+    }
+    return s;
+  }
+  function aesCmac(key, msg) {
+    const L = aes128(key, new Array(16).fill(0));
+    const dbl = (a) => { const o = a.map((b, i) => ((b << 1) | (i < 15 ? a[i + 1] >> 7 : 0)) & 0xff); if (a[0] & 0x80) o[15] ^= 0x87; return o; };
+    const K1 = dbl(L), K2 = dbl(K1), n = Math.max(1, Math.ceil(msg.length / 16)), full = msg.length > 0 && msg.length % 16 === 0;
+    let last = msg.slice((n - 1) * 16);
+    if (full) last = last.map((b, i) => b ^ K1[i]); else { last = last.concat([0x80]); while (last.length < 16) last.push(0); last = last.map((b, i) => b ^ K2[i]); }
+    let x = new Array(16).fill(0);
+    for (let i = 0; i < n - 1; i++) x = aes128(key, x.map((b, j) => b ^ msg[16 * i + j]));
+    return aes128(key, x.map((b, j) => b ^ last[j]));
+  }
+  const ascii = (s) => Array.from(s).map((c) => c.charCodeAt(0));
+  /** h6(W, keyID) = AES-CMAC_W(keyID). [Vol 3] Part H §2.2.10 */
+  function h6(W, keyId) { return aesCmac(W, ascii(keyId)); }
+  /** h7(SALT, W) = AES-CMAC_SALT(W), SALT = 0 × 12 ‖ 4글자. [Vol 3] Part H §2.2.11 */
+  function h7(salt, W) { return aesCmac(new Array(12).fill(0).concat(ascii(salt)), W); }
+  /** h8(K, S, keyID): IK = AES-CMAC_S(K), h8 = AES-CMAC_IK(keyID). [Vol 6] Part E §1.1.1 */
+  function h8(K, S, keyId) { const ik = aesCmac(S, K); return { ik, out: aesCmac(ik, typeof keyId === "string" ? ascii(keyId) : keyId) }; }
+  /** 방송 코드 문자열 → 128비트 값(큰 바이트부터 16바이트). UTF-8 바이트를 작은 쪽부터 채운다. [Vol 3] Part C §3.2.6.3 */
+  function broadcastCode(str) {
+    const u = Array.from(new TextEncoder().encode(str));
+    if (u.length > 16) return null;
+    return new Array(16 - u.length).fill(0).concat(u.reverse());
+  }
+  /** IGLTK·GLTK·GSK. [Vol 6] Part E §1.1.2 */
+  function bigKeys(code, gskd) { const igltk = h7("BIG1", code), gltk = h6(igltk, "BIG2"), r = h8(gltk, gskd, "BIG3"); return { igltk, gltk, ik: r.ik, gsk: r.out }; }
+  /** 다이버시파이어 D = (35n + 42) mod 128. [Vol 6] Part B §2.1.2 */
+  function bisD(n) { return (35 * n + 42) % 128; }
+  /** DW = D0 D0 D0 D0 D0 D0 D1 D6 | D1 0 D5 D4 0 D3 D2 0 | 0x0000 (위 16비트, 왼쪽이 비트 31) */
+  function bisDW(D) {
+    const b = (i) => (D >> i) & 1, bits = [b(0), b(0), b(0), b(0), b(0), b(0), b(1), b(6), b(1), 0, b(5), b(4), 0, b(3), b(2), 0];
+    return (bits.reduce((a, x) => a * 2 + x, 0) * 65536) >>> 0;
+  }
+  /** BIS n의 접근 주소 = SAA ⊕ DW(D(n)). n = 0은 BIG 제어 링크 */
+  function bisAA(saa, n) { return (saa ^ bisDW(bisD(n))) >>> 0; }
+  /** SAA 조건: 비트19 = 비트15, 비트22 = 비트16 ≠ 비트15, 비트25 = 0, 비트23 = 1 */
+  function saaValid(saa) { const b = (i) => (saa >>> i) & 1; return b(19) === b(15) && b(22) === b(16) && b(16) !== b(15) && b(25) === 0 && b(23) === 1; }
+  /** BIS의 IV: GIV 아래 32비트 ⊕ 접근 주소. giv = 큰 바이트부터 8바이트. [Vol 6] Part E §2.1 */
+  function bisIv(giv, aa) { const o = giv.slice(); for (let i = 0; i < 4; i++) o[7 - i] ^= (aa >>> (8 * i)) & 0xff; return o; }
+
+  /* ================================================================ 공통 */
+  const H = (s) => (String(s).replace(/[^0-9a-fA-F]/g, "").match(/../g) || []).map((x) => parseInt(x, 16));
+  const X = (a) => a.map((b) => BD.hex(b).toLowerCase()).join("");
+  const grp = (s) => s.replace(/(.{8})/g, "$1 ").trim();
+  const hex8 = (v) => "0x" + (v >>> 0).toString(16).toUpperCase().padStart(8, "0");
+
+  /* ================================================================ 1. GSK */
+  (function () {
+    const SAMPLE = { code: "Børne House", gskd: "55188b3d 32f6bb9a 900afcfb eed4e72a", gsk: "be2a16fc7ac464e752301bccc818812c" };
+    $("gs-new").addEventListener("click", () => { const a = new Uint8Array(16); crypto.getRandomValues(a); $("gs-gskd").value = grp(X(Array.from(a))); draw(); });
+    $("gs-reset").addEventListener("click", () => { $("gs-code").value = SAMPLE.code; $("gs-gskd").value = SAMPLE.gskd; draw(); });
+    ["gs-code", "gs-gskd"].forEach((id) => $(id).addEventListener("input", draw));
+    function draw() {
+      const str = $("gs-code").value, u = new TextEncoder().encode(str), code = broadcastCode(str), gskd = H($("gs-gskd").value);
+      BD.stat("gs-len", u.length + "옥텟" + (u.length < 4 ? " (4 미만)" : u.length > 16 ? " (16 초과)" : ""));
+      if (!code || gskd.length !== 16) { $("gs-out").innerHTML = '<span class="bad">방송 코드는 UTF-8로 16옥텟 이하, GSKD는 16바이트.</span>'; BD.stat("gs-gsk", "—"); BD.stat("gs-ok", "—"); return; }
+      const k = bigKeys(code, gskd), L = (a, b, c) => `<span class="k">${a.padEnd(7)}</span> <span class="${c || ""}">${b}</span>\n`;
+      $("gs-out").innerHTML = L("UTF-8", Array.from(u).map((b) => BD.hex(b)).join(" ")) + L("코드값", grp(X(code))) + L("IGLTK", grp(X(k.igltk))) + L("GLTK", grp(X(k.gltk))) + L("IK", grp(X(k.ik))) + L("GSK", grp(X(k.gsk)), "a");
+      BD.stat("gs-gsk", grp(X(k.gsk)));
+      const isSample = str === SAMPLE.code && X(gskd) === SAMPLE.gskd.replace(/\s/g, "");
+      BD.stat("gs-ok", isSample ? (X(k.gsk) === SAMPLE.gsk ? "✓ 일치" : "✗ 다름") : "직접 입력");
+    }
+    draw();
+  })();
+
+  /* ================================================================ 2. BIS 접근 주소 */
+  (function () {
+    const T51 = [0x85E32493, 0x79D52493, 0x86752493, 0x7A572493, 0x85F12493, 0x79D32493, 0x86732493, 0x7B652493, 0x85C72493, 0x78E12493, 0x86412493, 0x7B632493, 0x85D52493, 0x78F72493, 0x86572493, 0x7B712493, 0x85D32493, 0x78C52493, 0x87652493, 0x7B472493, 0x84E12493, 0x78C32493, 0x87632493, 0x7B552493, 0x84F72493, 0x78D12493, 0x87712493, 0x7B532493, 0x84C52493, 0x79E72493, 0x87472493];
+    const nG = BD.range("aa-n", (v) => String(v), draw);
+    $("aa-saa").addEventListener("input", draw);
+    $("aa-rand").addEventListener("click", () => { for (;;) { const a = new Uint32Array(1); crypto.getRandomValues(a); if (saaValid(a[0])) { $("aa-saa").value = a[0].toString(16).toUpperCase().padStart(8, "0"); break; } } draw(); });
+    function draw() {
+      const saa = parseInt($("aa-saa").value.replace(/[^0-9a-f]/gi, "") || "0", 16) >>> 0, sample = saa === 0x78E52493;
+      let rows = "";
+      for (let n = 1; n <= nG(); n++) { const D = bisD(n), aa = bisAA(saa, n); rows += `<tr><td>${n}</td><td>${D}</td><td>${hex8(bisDW(D))}</td><td>${hex8(aa)}</td><td>${sample ? (aa === T51[n - 1] ? "✓" : "✗ " + hex8(T51[n - 1])) : "—"}</td></tr>`; }
+      $("aa-tb").innerHTML = rows;
+      BD.stat("aa-ok", saaValid(saa) ? "만족 ✓" : "위반 ✗");
+      BD.stat("aa-ctl", hex8(bisAA(saa, 0)) + (sample ? (bisAA(saa, 0) === 0x7A412493 ? " ✓" : " ✗") : ""));
+    }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>
