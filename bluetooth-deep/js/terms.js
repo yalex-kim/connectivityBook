@@ -96,6 +96,13 @@ window.BD_TERMS = [
   ["AoA", "Angle of Arrival", "수신기가 안테나를 바꿔 가며 받아 도착 방향을 구하는 방식. CTEType 0", "direction"],
   ["AoD", "Angle of Departure", "송신기가 안테나를 바꿔 가며 보내고 수신기가 출발 방향을 구하는 방식. CTEType 1·2", "direction"],
   ["안테나 전환 패턴", "Antenna switching pattern", "호스트가 정한 안테나 순서. 첫 안테나는 기준 구간, 모자라면 처음부터 반복. [Vol 6] Part A §5.1", "direction"],
+  ["도약 선택 커널", "Hop selection kernel", "Central의 주소와 클록으로 79채널 중 다음 채널을 고르는 회로. 덧셈·XOR·PERM5·mod 79. [Vol 2] Part B §2.6.2", "baseband"],
+  ["AFH", "Adaptive Frequency Hopping", "쓰지 않는 채널을 쓰는 채널로 재매핑하는 Classic 적응 도약. Peripheral은 앞 Central 슬롯과 같은 채널. [Vol 2] Part B §2.6.3", "baseband"],
+  ["동기어", "Sync word", "LAP에서 (64,30) 부호와 PN 덮개로 만든 64비트 접근 코드 본체. [Vol 2] Part B §6.3.3", "baseband"],
+  ["LAP", "Lower Address Part", "BD_ADDR의 하위 24비트. 동기어와 도약 순서를 만든다", "baseband"],
+  ["UAP", "Upper Address Part", "BD_ADDR의 가운데 8비트. HEC·CRC 초기값, 도약 주소 A₂₇₋₂₄", "baseband"],
+  ["HEC", "Header Error Check", "패킷 헤더 10비트에 붙는 8비트 검사. UAP로 초기화. [Vol 2] Part B §7.1.1", "baseband"],
+  ["화이트닝", "Data whitening", "헤더·페이로드에 D⁷+D⁴+1 수열을 XOR해 같은 비트가 길게 이어지지 않게 함. FEC 전에 적용", "baseband"],
 ];
 
 /* 본문 표기 → 용어집 표제어 */

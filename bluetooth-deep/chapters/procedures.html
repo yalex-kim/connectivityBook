@@ -126,7 +126,7 @@
   <!-- ============================================================ -->
   <section id="air">
     <h2>제어 PDU 하나를 공중 비트까지</h2>
-    <p>사양 [Vol 6] Part C §4.3.2에는 LL_CHANNEL_MAP_IND 하나가 공중에 나가는 비트 그대로 실려 있다. 채널 2, 5, 33~36을 빼는 채널 맵, instant 0x4321, 그리고 40 µs짜리 <span class="term">AoD</span> 상수 톤 확장(<span class="term">CTE</span>, 17장)까지. 헤더 첫 바이트의 비트는 LLID(2) · NESN · SN · MD · CP(CTE 정보 있음) · RFU(2)이고, CP가 1이면 길이 바이트 뒤에 CTEInfo 바이트가 붙는다. CRC는 헤더(CTEInfo 포함)와 페이로드에 대해 계산하고, 화이트닝은 그 둘과 CRC에 걸고, CTE는 화이트닝하지 않은 1로 끝에 붙는다.</p>
+    <p>사양 [Vol 6] Part C §4.3.2에는 LL_CHANNEL_MAP_IND 하나가 공중에 나가는 비트 그대로 실려 있다. 채널 2, 5, 33~36을 빼는 채널 맵, instant 0x4321, 그리고 40 µs짜리 <span class="term">AoD</span> 상수 톤 확장(<span class="term">CTE</span>, 17장)까지. 헤더 첫 바이트의 비트는 LLID(2) · NESN · SN · MD · CP(CTE 정보 있음) · RFU(2)이고, CP가 1이면 길이 바이트 뒤에 CTEInfo 바이트가 붙는다. CRC는 헤더(CTEInfo 포함)와 페이로드에 대해 계산하고, <span class="term">화이트닝</span>은 그 둘과 CRC에 걸고, CTE는 화이트닝하지 않은 1로 끝에 붙는다.</p>
     <div class="sim" id="sim-air">
       <div class="sim-head"><span class="sim-tag">WORKBENCH</span><h3>LL 제어 PDU → 공중 비트 (사양 4.3.2 샘플)</h3></div>
       <div class="sim-view" style="padding:14px 16px">

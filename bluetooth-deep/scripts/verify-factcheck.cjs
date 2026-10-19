@@ -530,6 +530,51 @@ const bitsStr = (s) => s.replace(/\s/g, '').split('').map(Number);
   ok(Math.abs(Math.asin(0.5) * 180 / Math.PI - 30) < 1e-12, '퀴즈: Δψ 90°, λ/2 → 30°');
 }
 
+// ---------------------------------------------------------------- 12 baseband
+{
+  const f = load('baseband', ['perm5', 'hopInputs', 'basicHop', 'adaptedHop', 'syncWord', 'preamble', 'trailer', 'lsbBits', 'hec', 'crc16', 'whitening', 'fec23Parity', 'aclAir']);
+  const G = JSON.parse(fs.readFileSync(path.join(root, 'scripts', 'data', 'partg.json'), 'utf8'));
+  // [Vol 2] Part G §2: 세 주소 × (기본 + AFH 세 가지) × 512 슬롯
+  eq(G.hop.sets.length, 12, '도약 표 12개');
+  for (const t of G.hop.sets) {
+    const ul = parseInt(t.ulap, 16), addr = ((ul & 0xffffff) | (((ul >>> 24) & 15) << 24)) >>> 0, exp = t.seq.split(' ').map(Number);
+    const used = t.used ? Array.from({ length: 79 }, (_, i) => ((BigInt('0x' + t.used) >> BigInt(i)) & 1n) === 1n) : null;
+    let bad = 0;
+    exp.forEach((ch, k) => { const clk = 0x10 + 2 * k, got = used ? f.adaptedHop(addr, clk, used) : f.basicHop(addr, clk).ch; if (got !== ch) bad++; checks++; });
+    eq(bad, 0, `도약 ${t.ulap} ${t.map}: 512개 모두 일치`);
+  }
+  // §3: 130개 LAP의 프리앰블·동기어·트레일러
+  const hx = (b) => { let o = ''; for (let i = 0; i < b.length; i += 4) o += ((b[i] << 3) | (b[i + 1] << 2) | (b[i + 2] << 1) | b[i + 3]).toString(16); return o; };
+  eq(G.access.rows.length, 130, '접근 코드 130개');
+  for (const r of G.access.rows) {
+    const [lap, pre, sw, tr] = r.split(' '), s = f.syncWord(parseInt(lap, 16)).sync;
+    eq([f.preamble(s) === '1010' ? 'a' : '5', hx(s), f.trailer(s) === '1010' ? 'a' : '5'].join(' '), [pre, sw, tr].join(' '), `LAP ${lap}`);
+  }
+  eq(f.syncWord(0x9e8b33).sync.slice(34).join(''), f.lsbBits(0x9e8b33, 24).join('') + '110010', 'GIAC: 정보 부분 = LAP + Barker(MSB 1)');
+  // §4: HEC와 54비트 헤더(8진 = 비트 3번 반복)
+  const HEC = '00 123 e1 770007007070000777|47 123 06 770007007007700000|00 124 32 007007007007007700|47 124 d5 007007007070707077|00 125 5a 707007007007077070|47 125 bd 707007007070777707|00 126 e2 077007007007000777|47 126 05 077007007070700000|00 127 8a 777007007007070007|47 127 6d 777007007070770770|00 11b 9e 770770007007777007|47 11b 79 770770007070077770|00 11c 4d 007770007070770070|47 11c aa 007770007007070707|00 11d 25 707770007070700700|47 11d c2 707770007007000077|00 11e 9d 077770007070777007|47 11e 7a 077770007007077770|00 11f f5 777770007070707777|47 11f 12 777770007007007000';
+  for (const row of HEC.split('|')) {
+    const [u, dat, h, oct] = row.split(' '), bits = f.lsbBits(parseInt(dat, 16), 10), hb = f.hec(bits, parseInt(u, 16));
+    eq(hb.reduce((a, x, i) => a | (x << i), 0).toString(16).padStart(2, '0'), h, `HEC UAP ${u} 데이터 ${dat}`);
+    eq([...bits, ...hb].map((b) => (b ? '7' : '0')).join(''), oct, '헤더 8진 표기');
+  }
+  // §5: CRC
+  const crc = f.crc16([0x4e, 1, 2, 3, 4, 5, 6, 7, 8, 9].flatMap((x) => f.lsbBits(x, 8)), 0x47);
+  eq(X([0, 8].map((o) => crc.slice(o, o + 8).reduce((a, x, i) => a | (x << i), 0))), '6dd2', 'CRC = 6d d2 (§5)');
+  // §6: 완성 패킷 (화이트닝 없음)
+  const dh1 = f.aclAir('DH1', 3, 0, 1, 0, 2, 1, [1, 2, 3, 4, 5], 0x47, null), dm1 = f.aclAir('DM1', 3, 0, 1, 0, 2, 1, [1, 2, 3, 4, 5], 0x47, null), j = (a) => a.join('');
+  eq(j(dh1.header), '111111000000000111000000111000000111111000000000000000', 'DH1 헤더 (§6.1)');
+  eq(j(dh1.payload), '0111010010000000010000001100000000100000101000001110110000110110', 'DH1 페이로드 (§6.1)');
+  eq(j(dm1.header), '111111000111111000000000111000111000000111111111111000', 'DM1 헤더 (§6.2)');
+  eq(j(dm1.payload), '011101001011001000000010001011000011000011110000010000000111101000001101100101100001100010011000000010001', 'DM1 페이로드 2/3 FEC (§6.2)');
+  // §8: 화이트닝 수열 127비트(레지스터 1111111에서 시작)
+  eq(j(f.whitening(63, 127)), '1110001110110001010010111110101010000101101111001110010101100110000011011010111010001100100010000001001001101001111011100001111', '화이트닝 수열 (§8)');
+  eq(j(f.whitening(63, 254).slice(127)), j(f.whitening(63, 127)), '주기 127');
+  // §9: (15,10) 부호어
+  const FEC = '11010 01101 11100 01110 00111 11001 10110 01011 11111 10101'.split(' ');
+  FEC.forEach((p, i) => eq(j(f.fec23Parity(f.lsbBits(1 << i, 10))), p, `FEC 2/3 데이터 0x${(1 << i).toString(16)} (§9)`));
+}
+
 // ---------------------------------------------------------------- 모든 인라인 스크립트가 문법 오류 없이 컴파일되는가, JSON-LD가 올바른가
 let scripts = 0;
 for (const f of ['../index.html', ...fs.readdirSync(path.join(root, 'chapters')).filter((x) => x.endsWith('.html'))]) {
