@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>LE 오디오 프로파일: PACS·ASCS·BAP·CAP · BluetoothBook 심화</title>
+<meta name="description" content="Core 위의 LE 오디오. 능력을 알리는 PACS, 스트림 끝점의 상태 기계 ASCS(Idle에서 Streaming까지 일곱 상태와 여덟 동작), 코덱·QoS 설정 표를 정한 BAP(16_2_1부터 48_6_2까지), 여러 기기를 묶는 CAP과 방송 도우미 BASS를 공개 사양 원문으로 따라간다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/leaudio.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="BluetoothBook 심화">
+<meta property="og:title" content="LE 오디오 프로파일: PACS·ASCS·BAP·CAP · BluetoothBook 심화">
+<meta property="og:description" content="Core 위의 LE 오디오. 능력을 알리는 PACS, 스트림 끝점의 상태 기계 ASCS(Idle에서 Streaming까지 일곱 상태와 여덟 동작), 코덱·QoS 설정 표를 정한 BAP(16_2_1부터 48_6_2까지), 여러 기기를 묶는 CAP과 방송 도우미 BASS를 공개 사양 원문으로 따라간다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/leaudio.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"LE 오디오 프로파일: PACS·ASCS·BAP·CAP","name":"LE 오디오 프로파일: PACS·ASCS·BAP·CAP · BluetoothBook 심화","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/leaudio.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/leaudio.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":15,"image":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png","dateModified":"2026-10-19","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/#book","name":"BluetoothBook 심화 — 프로토콜 스택을 끝까지 따라가는 블루투스 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},"publisher":{"@type":"Organization","name":"BluetoothBook 심화","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},"description":"Core 위의 LE 오디오. 능력을 알리는 PACS, 스트림 끝점의 상태 기계 ASCS(Idle에서 Streaming까지 일곱 상태와 여덟 동작), 코덱·QoS 설정 표를 정한 BAP(16_2_1부터 48_6_2까지), 여러 기기를 묶는 CAP과 방송 도우미 BASS를 공개 사양 원문으로 따라간다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook 심화","item":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},{"@type":"ListItem","position":2,"name":"15 LE 오디오 프로파일: PACS·ASCS·BAP·CAP","item":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/leaudio.html"}]}]}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<style>
+  .asm { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 6px; }
+  .asm span { padding: 8px 6px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); text-align: center; font-size: 13px; color: var(--text-dim); }
+  .asm span.on { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
+  .ops { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .ops button { font: 13px var(--font); padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-elev); color: var(--text); cursor: pointer; }
+  .ops button:disabled { opacity: .4; cursor: not-allowed; }
+  .log { font: 12.5px/1.7 var(--mono); padding: 10px 12px; background: var(--surface); border-radius: 10px; max-height: 180px; overflow-y: auto; margin-top: 10px; }
+  .log .e { color: var(--bad); }
+  select.sel { font: 14px var(--font); padding: 7px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); }
+</style>
+</head>
+<body data-chapter="leaudio">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 15</div>
+    <h1>LE 오디오 프로파일: PACS·ASCS·BAP·CAP</h1>
+    <p class="lead">Core가 주는 것은 CIS·BIS라는 등시성 통로(14장)까지다. 그 위에서 “이어폰이 어떤 코덱을 할 수 있는지 묻고, 설정을 합의하고, 소리를 흘리기 시작하고, 멈추는” 약속은 GATT 기반의 프로파일·서비스 사양들이 정한다. 이 장은 <b>Core 밖</b>이다. 근거는 Bluetooth SIG가 공개한 <span class="term">PACS</span> 1.0.1, <span class="term">ASCS</span> 1.0, <span class="term">BAP</span> 1.0.1 원문이고, 각 사양의 표 번호를 달았다.</p>
+    <ul class="objectives">
+      <li>PACS·ASCS·BAP·CAP·BASS가 각각 무엇을 맡는지 구별할 수 있다.</li>
+      <li>ASE 상태 기계의 일곱 상태와 여덟 동작, 누가 어떤 전이를 시작할 수 있는지 따라갈 수 있다.</li>
+      <li>BAP의 코덱·QoS 설정 이름(예: 16_2_1, 48_4_2)을 읽고 비트레이트와 지연을 해석할 수 있다.</li>
+      <li>링크가 끊겼을 때 ASE가 어디로 돌아가는지 안다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="stack">
+    <h2>누가 무엇을: 사양 지도</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>사양</th><th>종류</th><th>맡는 일</th></tr></thead>
+      <tbody>
+        <tr><td><b>PACS</b></td><td>서비스</td><td>“나는 이런 코덱·샘플링 주파수·프레임 길이를 받고 보낼 수 있다”(PAC 레코드), 오디오 위치(왼쪽·오른쪽), 지금 쓸 수 있는 오디오 맥락(미디어, 대화 등)</td></tr>
+        <tr><td><b>ASCS</b></td><td>서비스</td><td>서버의 오디오 스트림 끝점(ASE)과 그 상태 기계, 클라이언트가 조작하는 ASE Control Point</td></tr>
+        <tr><td><b>BAP</b></td><td>프로파일</td><td>유니캐스트(ASCS로 CIS 설정)와 방송(BIG·BASE) 절차, 필수 코덱·QoS 설정 표</td></tr>
+        <tr><td><b>CAP</b></td><td>프로파일</td><td>좌우 이어폰처럼 여러 기기를 한 세트로 묶어(CSIP) 함께 시작·멈춤</td></tr>
+        <tr><td><b>BASS</b></td><td>서비스</td><td>방송 도우미(휴대폰)가 수신기(보청기)에게 “이 방송을 들어라”, 방송 코드(9장)를 대신 넣어 줌. PAST(5장)로 동기 정보도 건넴</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout analogy"><strong>공연장의 무대 감독</strong><p>PACS는 연주자의 이력서(“이 악기, 이 음역을 할 수 있다”)다. ASCS는 무대 하나하나(<span class="term">ASE</span>)의 준비 상태판이다. 비어 있음 → 악보 정함(코덱) → 자리 배치 정함(QoS) → 막 올리는 중 → 연주 중. BAP는 감독이 그 상태판을 어떤 순서로 넘겨야 하는지 정한 진행표이고, <span class="term">CAP</span>는 오케스트라 여러 무대를 한꺼번에 움직이는 총감독이다.</p></div>
+    <p class="spec-ref">PACS v1.0.1, ASCS v1.0, BAP v1.0.1(Bluetooth SIG, 공개 HTML 판) · CAP·CSIP·BASS는 같은 SIG 사양 목록 · 코덱 LC3과 LTV 형식의 값은 Assigned Numbers 문서</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="ase">
+    <h2>ASE 상태 기계</h2>
+    <p>서버(이어폰)는 방향마다 ASE를 가진다. 소리를 받는 Sink ASE, 마이크 소리를 내보내는 Source ASE. 각 ASE는 일곱 상태 중 하나다. Idle(0x00), Codec Configured(0x01), QoS Configured(0x02), Enabling(0x03), Streaming(0x04), Disabling(0x05, Source ASE만), Releasing(0x06). 클라이언트(휴대폰)는 ASE Control Point에 동작을 써서 상태를 옮긴다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>opcode</th><th>동작</th><th>할 수 있는 상태</th></tr></thead>
+      <tbody>
+        <tr><td class="num">0x01</td><td>Config Codec</td><td>Idle, Codec Configured, QoS Configured</td></tr>
+        <tr><td class="num">0x02</td><td>Config QoS</td><td>Codec Configured, QoS Configured</td></tr>
+        <tr><td class="num">0x03</td><td>Enable</td><td>QoS Configured</td></tr>
+        <tr><td class="num">0x04</td><td>Receiver Start Ready</td><td>Enabling. 오디오를 받는 쪽(Audio Sink)만: Sink ASE는 서버가 스스로, Source ASE는 클라이언트가</td></tr>
+        <tr><td class="num">0x05</td><td>Disable</td><td>Enabling, Streaming</td></tr>
+        <tr><td class="num">0x06</td><td>Receiver Stop Ready</td><td>Disabling (Source ASE만)</td></tr>
+        <tr><td class="num">0x07</td><td>Update Metadata</td><td>Enabling, Streaming</td></tr>
+        <tr><td class="num">0x08</td><td>Release</td><td>Codec Configured ~ Disabling</td></tr>
+      </tbody>
+    </table></div>
+    <p>Config QoS, Enable, Receiver Stop Ready는 클라이언트만 시작할 수 있고, Released(Releasing → Idle 또는 코덱 설정을 남겨 두는 Codec Configured)는 서버만 한다. 끊김 규칙이 중요하다. <b>CIS가 끊기면</b> Streaming·Disabling의 ASE는 곧바로 QoS Configured로 돌아가고(다시 Enable만 하면 된다), <b>LE-ACL이 끊기면</b> 어느 상태든 Releasing으로 간다.</p>
+    <div class="sim" id="sim-ase">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>ASE 하나 조작해 보기 (ASCS Table 3.2)</h3></div>
+      <div class="sim-controls" style="border-top:0">
+        <div class="ctrl"><span>ASE 종류</span><div class="seg" id="as-t"><button data-value="sink" class="on">Sink ASE (이어폰이 받음)</button><button data-value="source">Source ASE (이어폰 마이크)</button></div></div>
+        <div class="ctrl"><span>누가</span><div class="seg" id="as-w"><button data-value="client" class="on">클라이언트(휴대폰)</button><button data-value="server">서버(이어폰)</button></div></div>
+      </div>
+      <div class="sim-view" style="padding:14px 16px">
+        <div class="asm" id="as-st"></div>
+        <div class="ops" id="as-ops"></div>
+        <div class="log" id="as-log" aria-live="polite"></div>
+      </div>
+      <div class="sim-readout"><div class="stat"><span class="k">현재 상태</span><span class="v" id="as-cur">—</span></div></div>
+      <div class="sim-note">버튼은 지금 상태와 “누가”에서 허용되는 동작만 켜진다(ASCS v1.0 Table 3.2, Receiver Start Ready는 §5.4의 “Audio Sink인 쪽만” 규칙까지). 해볼 것: ① 휴대폰으로 Config Codec → Config QoS → Enable → Receiver Start Ready(Sink ASE에서는 오디오를 받는 쪽이 이어폰이므로 “서버”로 바꿔 누른다). ② Streaming에서 “CIS 끊김”을 누르면 QoS Configured로, “LE-ACL 끊김”이면 Releasing으로. ③ Source ASE에서 Disable을 누르면 Disabling을 거쳐, 휴대폰의 Receiver Stop Ready 뒤 QoS Configured로.</div>
+    </div>
+    <p class="spec-ref">ASE 상태(Table 3.1)·전이(Table 3.2)·끊김 규칙: <b>ASCS v1.0 §3.1·§3.2</b> · ASE Control Point 동작(Table 4.6): <b>§4.2</b> · 동작별 절차: <b>§5.1~§5.9</b> · BAP의 같은 규칙: <b>BAP §5.6.3.2</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="bap">
+    <h2>BAP 설정 이름 읽기</h2>
+    <p>BAP는 서로 다른 회사 기기가 반드시 맞출 수 있도록 코덱·QoS 설정에 이름을 붙였다. <b>16_2_1</b>은 “16 kHz, 설정 2(10 ms 프레임, 40옥텟), QoS 1(낮은 지연)”이다. 마지막 숫자 1은 낮은 지연(재전송 2~5, 최대 전송 지연 8~31 ms), 2는 높은 신뢰도(재전송 13, 75~100 ms)다. 16_2_1은 유니캐스트 클라이언트·서버 모두 필수다. 비트레이트는 SDU 크기 × 8 ÷ SDU 간격이다.</p>
+    <div class="sim" id="sim-qos">
+      <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>BAP QoS 설정 (BAP v1.0.1 Table 5.2)</h3></div>
+      <div class="sim-controls" style="border-top:0">
+        <label class="ctrl"><span>설정</span><select class="sel" id="qs-s"></select></label>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">SDU 간격 · 프레임</span><span class="v" id="qs-i">—</span></div>
+        <div class="stat"><span class="k">SDU 크기 → 비트레이트</span><span class="v" id="qs-b">—</span></div>
+        <div class="stat"><span class="k">재전송 · 최대 전송 지연</span><span class="v" id="qs-r">—</span></div>
+        <div class="stat"><span class="k">표시 지연 · 요구</span><span class="v" id="qs-p">—</span></div>
+      </div>
+      <div class="sim-note">44.1 kHz 설정(441_x_x)은 SDU 간격이 8,163 µs·10,884 µs라 ISO 간격의 정수배가 될 수 없어 프레임 있는 PDU를 쓴다(14장). 나머지는 7.5 ms·10 ms로 프레임 없는 PDU. 표의 비트레이트는 검증 스크립트가 SDU 크기와 간격으로 다시 계산해 맞춘다.</div>
+    </div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">이어폰과 휴대폰이 둘 다 BAP를 지원한다. 회사가 달라도 반드시 함께 쓸 수 있는 설정은?</p><p class="wi-hint">Table 5.2에서 클라이언트·서버 둘 다 M인 줄은?</p><div class="opts">
+      <button class="opt">48_2_1 (48 kHz 고음질)</button>
+      <button class="opt" data-correct>16_2_1 (16 kHz, 10 ms, 40옥텟, 낮은 지연)</button>
+      <button class="opt">441_1_1 (CD 음질)</button>
+    </div><div class="quiz-exp">16_2_1만 양쪽 필수(M)다. 나머지는 조건부(C)라 PACS로 서로의 능력을 확인한 뒤 고른다. 그래서 LE 오디오의 최소 공통분모는 16 kHz 음성 품질이고, 음악은 각 기기가 광고한 능력에 달려 있다.</div></div>
+    <p class="spec-ref">QoS 설정 표와 요구(M/C): <b>BAP v1.0.1 Table 5.2</b> · 코덱 설정 표: <b>BAP Table 3.5·3.11</b> · 유니캐스트 절차: <b>BAP §5</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="cap">
+    <h2>묶어서 다루기: CAP와 방송 도우미</h2>
+    <p>좌우 이어폰은 서로 다른 두 기기이고 각자 ASE를 가진다. CAP는 두 기기가 같은 <b>조정 세트</b>(CSIP로 서로를 알아봄)라는 것을 알고, 두 기기의 ASE를 같은 CIG 안의 두 CIS로 묶어 함께 Enable하게 한다. 그래야 왼쪽만 먼저 나오거나 한쪽만 멈추지 않는다. 등시성 그룹의 공통 동기점(CIG_Sync_Delay, 14장)이 두 귀의 소리를 같은 순간에 내게 한다.</p>
+    <p>방송(Auracast)에서는 휴대폰이 <b>방송 도우미</b>가 된다. 보청기 대신 스캔해서 방송을 찾고, <span class="term">BASS</span>로 보청기에 “이 방송 묶음(SID)을 들어라”를 쓰고, 필요하면 방송 코드를 넣어 주고, PAST로 주기적 광고 동기 정보를 넘긴다(5장). 보청기는 스캔 없이 BIG에 동기화해 BIS를 받는다(9장).</p>
+    <p class="spec-ref">CAP·CSIP·BASS(Bluetooth SIG 사양) · BIG 동기와 PAST: <b>[Vol 6] Part B §4.4.6, §5.1.13</b> · 방송 코드: <b>[Vol 3] Part C §3.2.6</b></p>
+  </section>
+
+  <div class="callout related"><strong>다른 책에서</strong><ul><li><a href="../../bluetooth/chapters/audio.html">BluetoothBook 10장 · 블루투스 오디오</a> — LC3, 지연 예산, Auracast의 큰 그림</li></ul></div>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>Core 밖: PACS(능력), ASCS(ASE 상태 기계), BAP(절차와 설정 표), CAP(세트 묶기), BASS(방송 도우미).</li>
+      <li>ASE 상태: Idle → Codec Configured → QoS Configured → Enabling → Streaming, Source ASE는 Disabling, 끝은 Releasing.</li>
+      <li>Config QoS·Enable·Receiver Stop Ready는 클라이언트만, Released는 서버만. Receiver Start Ready는 오디오를 받는 쪽(Sink ASE면 이어폰, Source ASE면 휴대폰)만 한다.</li>
+      <li>CIS가 끊기면 QoS Configured로, LE-ACL이 끊기면 Releasing으로.</li>
+      <li>BAP 이름 = 주파수_설정_QoS. 16_2_1(16 kHz, 10 ms, 40옥텟, 32 kbps)만 양쪽 필수. 44.1 kHz는 프레임 있는 PDU.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>Enable 동작을 쓸 수 있는 ASE 상태는?</p><div class="opts">
+        <button class="opt">Idle</button><button class="opt">Codec Configured</button><button class="opt" data-correct>QoS Configured</button><button class="opt">Streaming</button>
+      </div><div class="quiz-exp">ASCS Table 4.6: “Valid only if ASE_State = 0x02 (QoS Configured).”</div></div>
+      <div class="quiz-q"><p>Streaming 중 CIS가 끊기면 ASE는?</p><div class="opts">
+        <button class="opt">Idle</button><button class="opt" data-correct>QoS Configured</button><button class="opt">Releasing</button><button class="opt">그대로 Streaming</button>
+      </div><div class="quiz-exp">ASCS §3.2. LE-ACL이 끊겼다면 Releasing이다.</div></div>
+      <div class="quiz-q"><p>48_4_2의 SDU 간격과 크기는?</p><div class="opts">
+        <button class="opt">7.5 ms, 90옥텟</button><button class="opt" data-correct>10 ms, 120옥텟</button><button class="opt">10 ms, 100옥텟</button><button class="opt">8,163 µs, 97옥텟</button>
+      </div><div class="quiz-exp">48 kHz 설정 4 = 10 ms, 120옥텟(96 kbps). 끝의 2는 높은 신뢰도(재전송 13, 최대 지연 100 ms).</div></div>
+      <div class="quiz-q"><p>Disabling 상태가 있는 ASE는?</p><div class="opts">
+        <button class="opt">Sink ASE만</button><button class="opt" data-correct>Source ASE만</button><button class="opt">둘 다</button><button class="opt">없다</button>
+      </div><div class="quiz-exp">Sink ASE는 Disable하면 곧바로 QoS Configured로 간다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  /* ================================================================ 데이터 (사양 표 그대로) */
+  const STATES = ["Idle", "Codec Configured", "QoS Configured", "Enabling", "Streaming", "Disabling", "Releasing"];
+  /** ASCS v1.0 Table 3.2 (Receiver Start Ready는 §5.4대로 오디오를 받는 쪽만): [ASE 종류(all|sink|source), 현재, 동작, 시작(client|server|both), 다음] */
+  const ASE_T = [
+    ["all", "Idle", "Config Codec", "both", "Codec Configured"], ["all", "Codec Configured", "Config Codec", "both", "Codec Configured"], ["all", "Codec Configured", "Release", "both", "Releasing"], ["all", "Codec Configured", "Config QoS", "client", "QoS Configured"],
+    ["all", "QoS Configured", "Config Codec", "both", "Codec Configured"], ["all", "QoS Configured", "Config QoS", "client", "QoS Configured"], ["all", "QoS Configured", "Release", "both", "Releasing"], ["all", "QoS Configured", "Enable", "client", "Enabling"],
+    ["all", "Enabling", "Release", "both", "Releasing"], ["all", "Enabling", "Update Metadata", "both", "Enabling"], ["source", "Enabling", "Disable", "both", "Disabling"], ["sink", "Enabling", "Disable", "both", "QoS Configured"], ["sink", "Enabling", "Receiver Start Ready", "server", "Streaming"], ["source", "Enabling", "Receiver Start Ready", "client", "Streaming"],
+    ["all", "Streaming", "Update Metadata", "both", "Streaming"], ["source", "Streaming", "Disable", "both", "Disabling"], ["sink", "Streaming", "Disable", "both", "QoS Configured"], ["all", "Streaming", "Release", "both", "Releasing"],
+    ["source", "Disabling", "Receiver Stop Ready", "client", "QoS Configured"], ["source", "Disabling", "Release", "both", "Releasing"],
+    ["all", "Releasing", "Released (no caching)", "server", "Idle"], ["all", "Releasing", "Released (caching)", "server", "Codec Configured"],
+  ];
+  /** BAP v1.0.1 Table 5.2: [이름, SDU 간격 µs, 프레임, SDU 옥텟, 표의 kbps, 재전송, 최대 전송 지연 ms, 표시 지연 µs, 클라이언트, 서버] */
+  const BAP_QOS = [
+    ["8_1_1", 7500, "unframed", 26, 27.734, 2, 8, 40000, "C.1", "C.2"], ["8_2_1", 10000, "unframed", 30, 24, 2, 10, 40000, "C.1", "C.2"], ["16_1_1", 7500, "unframed", 30, 32, 2, 8, 40000, "C.1", "C.2"], ["16_2_1", 10000, "unframed", 40, 32, 2, 10, 40000, "M", "M"],
+    ["24_1_1", 7500, "unframed", 45, 48, 2, 8, 40000, "C.1", "C.2"], ["24_2_1", 10000, "unframed", 60, 48, 2, 10, 40000, "C.1", "C.2"], ["32_1_1", 7500, "unframed", 60, 64, 2, 8, 40000, "C.1", "C.2"], ["32_2_1", 10000, "unframed", 80, 64, 2, 10, 40000, "C.1", "C.2"],
+    ["441_1_1", 8163, "framed", 97, 95.06, 5, 24, 40000, "C.1", "C.2"], ["441_2_1", 10884, "framed", 130, 95.55, 5, 31, 40000, "C.1", "C.2"], ["48_1_1", 7500, "unframed", 75, 80, 5, 15, 40000, "C.1", "C.2"], ["48_2_1", 10000, "unframed", 100, 80, 5, 20, 40000, "C.1", "C.2"],
+    ["48_3_1", 7500, "unframed", 90, 96, 5, 15, 40000, "C.1", "C.2"], ["48_4_1", 10000, "unframed", 120, 96, 5, 20, 40000, "C.1", "C.2"], ["48_5_1", 7500, "unframed", 117, 124.8, 5, 15, 40000, "C.1", "C.2"], ["48_6_1", 10000, "unframed", 155, 124, 5, 20, 40000, "C.1", "C.2"],
+    ["8_1_2", 7500, "unframed", 26, 27.734, 13, 75, 40000, "C.1", "C.2"], ["8_2_2", 10000, "unframed", 30, 24, 13, 95, 40000, "C.1", "C.2"], ["16_1_2", 7500, "unframed", 30, 32, 13, 75, 40000, "C.1", "C.2"], ["16_2_2", 10000, "unframed", 40, 32, 13, 95, 40000, "C.1", "C.2"],
+    ["24_1_2", 7500, "unframed", 45, 48, 13, 75, 40000, "C.1", "C.2"], ["24_2_2", 10000, "unframed", 60, 48, 13, 95, 40000, "C.1", "C.2"], ["32_1_2", 7500, "unframed", 60, 64, 13, 75, 40000, "C.1", "C.2"], ["32_2_2", 10000, "unframed", 80, 64, 13, 95, 40000, "C.1", "C.2"],
+    ["441_1_2", 8163, "framed", 97, 95.06, 13, 80, 40000, "C.1", "C.2"], ["441_2_2", 10884, "framed", 130, 95.55, 13, 85, 40000, "C.1", "C.2"], ["48_1_2", 7500, "unframed", 75, 80, 13, 75, 40000, "C.1", "C.2"], ["48_2_2", 10000, "unframed", 100, 80, 13, 95, 40000, "C.1", "C.2"],
+    ["48_3_2", 7500, "unframed", 90, 96, 13, 75, 40000, "C.1", "C.2"], ["48_4_2", 10000, "unframed", 120, 96, 13, 100, 40000, "C.1", "C.2"], ["48_5_2", 7500, "unframed", 117, 124.8, 13, 75, 40000, "C.1", "C.2"], ["48_6_2", 10000, "unframed", 155, 124, 13, 100, 40000, "C.1", "C.2"],
+  ];
+  /* ================================================================ 계산 (검증 스크립트가 꺼내 쓴다) */
+  /** 동작 하나의 다음 상태. 허용되지 않으면 null. [ASCS Table 3.2] */
+  function aseNext(type, state, op, who) {
+    const r = ASE_T.find(([t, s, o, w]) => (t === "all" || t === type) && s === state && o === op && (w === "both" || w === who));
+    return r ? r[4] : null;
+  }
+  /** 끊김: CIS 끊김은 Streaming·Disabling → QoS Configured, LE-ACL 끊김은 모든 상태 → Releasing. [ASCS §3.2] */
+  function aseLinkLoss(state, link) { if (link === "acl") return "Releasing"; return state === "Streaming" || state === "Disabling" ? "QoS Configured" : state; }
+  /** 비트레이트(kbps) = SDU 옥텟 × 8 ÷ SDU 간격(ms) */
+  function bitrateKbps(octets, sduIntUs) { return (octets * 8) / (sduIntUs / 1000); }
+
+  /* ================================================================ 1. ASE */
+  (function () {
+    let st = "Idle";
+    const type = BD.seg("as-t", reset), who = BD.seg("as-w", draw);
+    const OPS = ["Config Codec", "Config QoS", "Enable", "Receiver Start Ready", "Update Metadata", "Disable", "Receiver Stop Ready", "Release", "Released (no caching)", "Released (caching)"];
+    const log = (t, c) => { $("as-log").insertAdjacentHTML("beforeend", `<div class="${c || ""}">${t}</div>`); $("as-log").scrollTop = 1e9; };
+    function reset() { st = "Idle"; $("as-log").innerHTML = ""; log("새 ASE: Idle"); draw(); }
+    function draw() {
+      $("as-st").innerHTML = STATES.filter((s) => s !== "Disabling" || type() === "source").map((s) => `<span class="${s === st ? "on" : ""}">${s}</span>`).join("");
+      $("as-ops").innerHTML = OPS.map((o) => `<button type="button" data-op="${o}" ${aseNext(type(), st, o, who()) ? "" : "disabled"}>${o}</button>`).join("") + `<button type="button" data-link="cis">CIS 끊김</button><button type="button" data-link="acl">LE-ACL 끊김</button>`;
+      BD.stat("as-cur", st);
+    }
+    $("as-ops").addEventListener("click", (e) => {
+      const b = e.target.closest("button"); if (!b || b.disabled) return;
+      if (b.dataset.link) { const n = aseLinkLoss(st, b.dataset.link); log(`${b.dataset.link === "cis" ? "CIS" : "LE-ACL"} 끊김: ${st} → ${n}`); st = n; }
+      else { const n = aseNext(type(), st, b.dataset.op, who()); log(`${who() === "client" ? "휴대폰" : "이어폰"}: ${b.dataset.op} — ${st} → ${n}`); st = n; }
+      draw();
+    });
+    reset();
+  })();
+
+  /* ================================================================ 2. BAP QoS */
+  (function () {
+    $("qs-s").innerHTML = BAP_QOS.map((r) => `<option value="${r[0]}"${r[0] === "16_2_1" ? " selected" : ""}>${r[0]}</option>`).join("");
+    $("qs-s").addEventListener("change", draw);
+    function draw() {
+      const r = BAP_QOS.find((x) => x[0] === $("qs-s").value);
+      BD.stat("qs-i", (r[1] / 1000).toLocaleString() + " ms · " + (r[2] === "framed" ? "프레임 있음" : "프레임 없음"));
+      BD.stat("qs-b", `${r[3]}옥텟 → ${bitrateKbps(r[3], r[1]).toFixed(2)} kbps`);
+      BD.stat("qs-r", `${r[5]}회 · ${r[6]} ms`);
+      BD.stat("qs-p", `${r[7] / 1000} ms · 클라이언트 ${r[8]} / 서버 ${r[9]}`);
+    }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

@@ -16,6 +16,8 @@
 | 09 | chapters/bigsec.html | BIG 보안과 BIS | [Vol 6] Part C §5(BIS 접근 주소 31개)·§6(h8, “Børne House” → GSK) |
 | 10 | chapters/l2cap.html | L2CAP: 채널, 신호, 크레딧 흐름 제어 | K-frame 분할·크레딧·재설정 규칙 사례(무작위 400개) |
 | 11 | chapters/gatt.html | ATT/GATT 심화: EATT, 큐 쓰기, Database Hash | Database Hash 붙이는 규칙(§7.3.1의 예), Robust Caching 전이, AES-CMAC 시험 벡터 |
+| 14 | chapters/isoal.html | ISOAL과 등시성 타이밍 | 프레임 없는·있는 PDU 분할, Max_PDU 조건(Part G §2.2의 예 45), CIG·BIG 전송 지연 |
+| 15 | chapters/leaudio.html | LE 오디오 프로파일: PACS·ASCS·BAP·CAP (Core 밖) | ASE 상태 전이(ASCS Table 3.2·§5.4), BAP Table 5.2 32개 설정의 비트레이트 재계산 |
 
 계획 전체(19장)는 책 홈(`index.html`)에 있습니다.
 

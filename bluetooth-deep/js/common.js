@@ -20,6 +20,8 @@
     { slug: "extadv",     num: "05", part: "컨트롤러", title: "광고 끝까지: 확장 광고 체인, 주기적 광고와 PAwR", desc: "ADV_EXT_IND·AUX_ADV_IND·AUX_CHAIN_IND, 공통 확장 페이로드와 AuxPtr·ADI, 1650바이트 체인과 T_MAFS, 주기적 광고와 PAST, PAwR 시간 규칙. 사양 샘플 AUX_ADV_IND를 공중 비트까지 재현한다.", tags: ["컨트롤러", "sim"] },
     { slug: "l2cap",      num: "10", part: "호스트", title: "L2CAP: 채널, 신호, 크레딧 기반 흐름 제어", desc: "LE 고정 채널과 동적 CID, 신호 명령, K-frame·MTU·MPS·크레딧 규칙, SDU가 K-frame·HCI 조각·LL PDU로 나뉘는 계산, 여러 채널을 한 번에 여는 ECFC와 재설정 규칙.", tags: ["호스트", "sim"] },
     { slug: "gatt",       num: "11", part: "호스트", title: "ATT/GATT 심화: EATT, 큐 쓰기, Database Hash", desc: "ATT opcode 구조와 순차 프로토콜·30초 트랜잭션, Read Blob과 큐 쓰기·신뢰성 있는 쓰기, EATT의 병렬 트랜잭션과 새 PDU, Database Hash 계산과 Robust Caching의 change-aware 규칙.", tags: ["호스트", "sim"] },
+    { slug: "isoal",      num: "14", part: "오디오·위치", title: "ISOAL과 등시성 타이밍", desc: "프레임 없는 PDU의 USPI·UPPS·BN과 LLID, 프레임 있는 PDU의 분할 헤더와 Time_Offset, 분할·비분할 모드의 Max_PDU 조건, CIG·BIG 전송 지연을 사양의 예로 계산한다.", tags: ["오디오", "sim"] },
+    { slug: "leaudio",    num: "15", part: "오디오·위치", title: "LE 오디오 프로파일: PACS·ASCS·BAP·CAP", desc: "Core 밖의 LE 오디오 사양. ASE 상태 기계의 일곱 상태와 여덟 동작, 끊김 규칙, BAP 코덱·QoS 설정 이름(16_2_1 등)과 비트레이트, CAP·BASS의 역할을 ASCS·BAP 원문 표로 따라간다.", tags: ["오디오", "sim"] },
   ];
   // @book-chapters-end
   const BD = (window.BD = {});

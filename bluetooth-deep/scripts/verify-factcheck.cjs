@@ -404,6 +404,70 @@ const bitsStr = (s) => s.replace(/\s/g, '').split('').map(Number);
   st = f.robust({ aware: true }, 'change').st; ok(f.robust(st, 'scCfm').st.aware, 'SC confirmation → aware (single bearer)');
 }
 
+// ---------------------------------------------------------------- 14 isoal
+{
+  const f = load('isoal', ['unframedParams', 'unframedPdus', 'segHeader', 'segmentableOk', 'unsegmentedMaxPdu', 'cisLatency', 'bigLatencyUnframed', 'segmentStream'], 'const MAX_DRIFT = 100e-6;');
+  eq(f.unframedParams(10, 20, 100, 60), { uspi: 2, upps: 2, bn: 4 }, 'USPI 2, UPPS 2, BN 4');
+  ok(f.unframedParams(7.5, 10, 40, 40) === null, '7.5 ms SDU into 10 ms ISO: unframed impossible');
+  eq(f.unframedPdus(100, 40, 4).map((p) => [p.llid, p.len]), [[1, 40], [1, 40], [0, 20], [1, 0]], 'fragments + LLID + padding (§2.1)');
+  eq(f.unframedPdus(0, 40, 1).map((p) => [p.llid, p.len]), [[0, 0]], 'zero-length SDU → LLID 0b00, length 0');
+  eq(f.segHeader(0, 1, 43), [0b10, 43], 'segmentation header SC=0 CMPLT=1');
+  // 사양 §2.2의 예: 10 ms마다 40바이트, ISO 7.5 ms, BN 1 → 비분할 Max_PDU 45
+  eq(f.unsegmentedMaxPdu(10, 7.5, 1, 40), 45, 'unsegmented Max_PDU example (45)');
+  ok(f.segmentableOk(1, 63, 40, 7.5, 10) && !f.segmentableOk(1, 60, 40, 7.5, 10), 'segmentable bandwidth condition (7.5 ms SDU into 10 ms needs Max_PDU ≥ 63)');
+  // 지연 예 (§3.2.1·§3.2.2): 프레임 있는 경우 추가 지연 = SDU + ISO(분할) / ISO(비분할), 프레임 없는 경우 10/20 → +10 ms
+  close(f.cisLatency('segmentable', 0, 1, 10, 10.6) - f.cisLatency('unframed', 0, 1, 10, 10) - 0, 20.6, 1e-9, 'segmentable adds 20.6 ms vs unframed equal-interval (10.6/10)');
+  close(f.cisLatency('unsegmented', 0, 1, 10, 10.6), 10, 1e-9, 'unsegmented adds ISO interval');
+  close(f.cisLatency('unframed', 0, 1, 20, 10), 10, 1e-9, 'unframed 10/20 adds 10 ms');
+  close(f.bigLatencyUnframed(5, 0, 2, 1, 2, 10, 10), 5 + 10 - 10, 1e-9, 'BIG unframed simplified formula');
+  // 묶기 모델: 모든 PDU ≤ Max_PDU, 대역 조건을 만족하면 밀림이 커지지 않는다, Time_Offset > 0
+  for (const [si, oi, len, mp, bn] of [[7500, 10000, 40, 64, 1], [10000, 7500, 40, 45, 1], [10000, 20000, 100, 120, 2], [7500, 10000, 80, 120, 1]]) {
+    const r = f.segmentStream(si, oi, len, mp, bn, 40);
+    ok(r.events.every((e) => e.length === bn && e.every((p) => p.length <= mp)), `PDU ≤ Max_PDU (${si}/${oi})`);
+    if (f.segmentableOk(bn, mp, len, si / 1000, oi / 1000)) ok(r.backlog <= len * 2, `no growing backlog when condition holds (${si}/${oi}): ${r.backlog}`);
+    let tosOk = true; r.events.forEach((e) => e.forEach((p) => { let x = 0; while (x < p.length) { const sc = p[x] & 1, l = p[x + 1]; if (!sc) { const to = p[x + 2] | (p[x + 3] << 8) | (p[x + 4] << 16); if (!(to > 0)) tosOk = false; } x += 2 + l; } }));
+    ok(tosOk, `Time_Offset positive (${si}/${oi})`);
+  }
+}
+
+// ---------------------------------------------------------------- 15 leaudio
+{
+  const src = read('leaudio'), cut = (a) => { const i = src.indexOf(a); return src.slice(i, src.indexOf('\n  ];', i) + 5); };
+  const f = load('leaudio', ['aseNext', 'aseLinkLoss', 'bitrateKbps'], cut('  const ASE_T =') + '\n' + cut('  const BAP_QOS ='));
+  const T = vm.runInContext(cut('  const BAP_QOS =') + ';BAP_QOS', vm.createContext({}));
+  // ASCS v1.0 Table 3.2: 정상 유니캐스트 시작 (Sink ASE)
+  eq(f.aseNext('sink', 'Idle', 'Config Codec', 'client'), 'Codec Configured', 'Idle + Config Codec → Codec Configured');
+  eq(f.aseNext('sink', 'Codec Configured', 'Config QoS', 'server'), null, 'Config QoS는 클라이언트만');
+  eq(f.aseNext('sink', 'Codec Configured', 'Config QoS', 'client'), 'QoS Configured', 'Config QoS → QoS Configured');
+  eq(f.aseNext('sink', 'QoS Configured', 'Enable', 'client'), 'Enabling', 'Enable → Enabling');
+  eq(f.aseNext('sink', 'Codec Configured', 'Enable', 'client'), null, 'Enable은 QoS Configured에서만 (Table 4.6)');
+  eq(f.aseNext('sink', 'Enabling', 'Receiver Start Ready', 'client'), null, 'Sink ASE의 Receiver Start Ready는 서버만 (§5.4)');
+  eq(f.aseNext('sink', 'Enabling', 'Receiver Start Ready', 'server'), 'Streaming', 'Sink ASE: 서버 Receiver Start Ready → Streaming');
+  eq(f.aseNext('source', 'Enabling', 'Receiver Start Ready', 'client'), 'Streaming', 'Source ASE: 클라이언트 Receiver Start Ready');
+  eq(f.aseNext('sink', 'Streaming', 'Disable', 'client'), 'QoS Configured', 'Sink Streaming + Disable → QoS Configured');
+  eq(f.aseNext('source', 'Streaming', 'Disable', 'server'), 'Disabling', 'Source Streaming + Disable → Disabling');
+  eq(f.aseNext('source', 'Disabling', 'Receiver Stop Ready', 'client'), 'QoS Configured', 'Receiver Stop Ready → QoS Configured');
+  eq(f.aseNext('source', 'Disabling', 'Receiver Stop Ready', 'server'), null, 'Receiver Stop Ready는 클라이언트만');
+  eq(f.aseNext('sink', 'Disabling', 'Release', 'client'), null, 'Sink ASE에는 Disabling이 없다');
+  eq(f.aseNext('sink', 'Releasing', 'Released (caching)', 'server'), 'Codec Configured', 'Released(캐시) → Codec Configured');
+  eq(f.aseNext('sink', 'Releasing', 'Released (no caching)', 'client'), null, 'Released는 서버만');
+  eq(f.aseNext('sink', 'Idle', 'Release', 'client'), null, 'Idle에서는 Release 불가');
+  eq(f.aseLinkLoss('Streaming', 'cis'), 'QoS Configured', 'CIS 끊김 → QoS Configured (§3.2)');
+  eq(f.aseLinkLoss('Disabling', 'cis'), 'QoS Configured', 'Disabling에서 CIS 끊김');
+  eq(f.aseLinkLoss('QoS Configured', 'acl'), 'Releasing', 'LE-ACL 끊김 → Releasing');
+  // BAP v1.0.1 Table 5.2: 32줄, 비트레이트를 SDU 크기·간격으로 다시 계산
+  eq(T.length, 32, 'BAP Table 5.2는 32개 설정');
+  for (const r of T) {
+    ok(Math.abs(f.bitrateKbps(r[3], r[1]) - r[4]) < 0.01, `${r[0]} 비트레이트 ${r[4]} kbps`);
+    eq(r[2], r[0].startsWith('441') ? 'framed' : 'unframed', `${r[0]} 프레임 방식`);
+    eq(r[5], r[0].endsWith('_1') ? (r[0].startsWith('441') || r[0].startsWith('48') ? 5 : 2) : 13, `${r[0]} 재전송 수`);
+  }
+  eq(T.filter((r) => r[8] === 'M' && r[9] === 'M').map((r) => r[0]).join(), '16_2_1', '양쪽 필수는 16_2_1뿐');
+  const q = Object.fromEntries(T.map((r) => [r[0], r]));
+  eq([q['48_4_2'][1], q['48_4_2'][3], q['48_4_2'][6]].join(), '10000,120,100', '48_4_2 = 10 ms, 120옥텟, 100 ms');
+  eq([q['441_1_2'][6], q['441_2_2'][6]].join(), '80,85', '44.1 kHz 높은 신뢰도 지연');
+}
+
 // ---------------------------------------------------------------- 모든 인라인 스크립트가 문법 오류 없이 컴파일되는가, JSON-LD가 올바른가
 let scripts = 0;
 for (const f of ['../index.html', ...fs.readdirSync(path.join(root, 'chapters')).filter((x) => x.endsWith('.html'))]) {

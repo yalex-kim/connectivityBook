@@ -73,6 +73,18 @@ window.BD_TERMS = [
   ["큐 쓰기", "Queued writes", "Prepare Write로 조각을 서버 대기열에 넣고 Execute Write로 한꺼번에 반영(또는 취소)하는 쓰기. [Vol 3] Part F §3.4.6", "gatt"],
   ["Database Hash", "Database Hash", "서비스 구조를 요약한 128비트 값(키 0의 AES-CMAC). 특성 값은 넣지 않는다. UUID 0x2B2A. [Vol 3] Part G §7.3", "gatt"],
   ["Robust Caching", "Robust Caching", "변경을 모르는(change-unaware) 클라이언트의 요청에 0x12 Database Out Of Sync로 답해 옛 캐시 사용을 막는 기능. [Vol 3] Part G §2.5.2.1", "gatt"],
+  // 14 isoal
+  ["ISOAL", "Isochronous Adaptation Layer", "SDU(코덱 프레임)를 등시성 PDU로 나누고 합치는 계층. 프레임 없는 방식과 프레임 있는 방식이 있다. [Vol 6] Part G", "isoal"],
+  ["USPI", "USPI", "ISO 간격 하나에 들어오는 SDU 수 = ISO_Interval ÷ SDU_Interval(정수여야 프레임 없음 가능). [Vol 6] Part G §2.1", "isoal"],
+  ["UPPS", "UPPS", "SDU 하나에 배정하는 프레임 없는 PDU 수. ⌈Max_SDU ÷ Max_PDU⌉ 이상, BN = UPPS × USPI. [Vol 6] Part G §2.1", "isoal"],
+  ["분할 헤더", "Segmentation Header", "프레임 있는 PDU의 세그먼트 앞 2바이트. SC(시작/이어짐), CMPLT(끝), 길이. [Vol 6] Part G §2.2", "isoal"],
+  ["Time_Offset", "Time_Offset", "새 SDU의 첫 세그먼트에 붙는 24비트(µs). SDU 기준 시각에서 CIG 기준점·BIG 앵커까지의 시간. [Vol 6] Part G §3.1", "isoal"],
+  ["ASE", "Audio Stream Endpoint", "서버의 오디오 스트림 끝점. Sink ASE·Source ASE가 있고 Idle~Releasing 상태를 가진다. ASCS v1.0 §3", "leaudio"],
+  ["ASCS", "Audio Stream Control Service", "ASE와 ASE Control Point를 노출하는 GATT 서비스. Core 밖 SIG 사양", "leaudio"],
+  ["PACS", "Published Audio Capabilities Service", "기기가 받고 보낼 수 있는 코덱 능력(PAC 레코드)·오디오 위치·맥락을 알리는 GATT 서비스", "leaudio"],
+  ["BAP", "Basic Audio Profile", "LE 오디오의 유니캐스트·방송 절차와 필수 코덱·QoS 설정 표를 정한 프로파일", "leaudio"],
+  ["CAP", "Common Audio Profile", "여러 기기(좌우 이어폰 등)를 조정 세트로 묶어 함께 다루는 프로파일", "leaudio"],
+  ["BASS", "Broadcast Audio Scan Service", "방송 도우미가 수신기에게 들을 방송과 방송 코드를 알려 주는 GATT 서비스", "leaudio"],
 ];
 
 /* 본문 표기 → 용어집 표제어 */
