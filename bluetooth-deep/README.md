@@ -17,7 +17,7 @@
 | 09 | chapters/bigsec.html | BIG 보안과 BIS | [Vol 6] Part C §5(BIS 접근 주소 31개)·§6(h8, “Børne House” → GSK) |
 | 10 | chapters/l2cap.html | L2CAP: 채널, 신호, 크레딧 흐름 제어 | K-frame 분할·크레딧·재설정 규칙 사례(무작위 400개) |
 | 11 | chapters/gatt.html | ATT/GATT 심화: EATT, 큐 쓰기, Database Hash | Database Hash 붙이는 규칙(§7.3.1의 예), Robust Caching 전이, AES-CMAC 시험 벡터 |
-| 12 | chapters/baseband.html | Classic 기저대역: 도약 커널, 접근 코드, HEC·CRC·FEC | 도약 6,144개(기본 + AFH 세 가지 × 세 주소), 동기어 130개, HEC 20개, CRC, DH1·DM1 공중 비트, 화이트닝, FEC (Part G §2~§9) |
+| 12 | chapters/baseband.html | Classic 기저대역: 도약 커널, 접근 코드, HEC·CRC·FEC | 도약 6,144개(기본 + AFH 세 가지 × 세 주소), 동기어 130개, HEC 20개, CRC, DH1·DM1 공중 비트, 화이트닝, FEC (Part G §2~§9), ACL 패킷 12종 처리량(Part B Table 6.2·6.8) |
 | 13 | chapters/classicsec.html | Classic 보안: 레거시 PIN에서 Secure Connections까지 | SAFER+ E1·E21·E22·E3 31개, P-192·P-256 ECDH 12개, f1·g·f2·f3·h3·h4·h5 51개, AES-CCM 14개 (Part G §1.2, §7, §10). g P-256 예의 불일치 기록 |
 | 14 | chapters/isoal.html | ISOAL과 등시성 타이밍 | 프레임 없는·있는 PDU 분할, Max_PDU 조건([Vol 6] Part G §2.2의 예 45), CIG·BIG 전송 지연 |
 | 15 | chapters/leaudio.html | LE 오디오 프로파일: PACS·ASCS·BAP·CAP (Core 밖) | ASE 상태 전이(ASCS Table 3.2·§5.4), BAP Table 5.2 32개 설정의 비트레이트 재계산 |

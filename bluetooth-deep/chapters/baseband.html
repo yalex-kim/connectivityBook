@@ -41,6 +41,7 @@
     <p class="lead">이어폰·자동차·키보드에서 아직 많이 쓰는 BR/EDR(Classic)은 LE와 뿌리가 다르다. 채널은 79개, 1초에 1,600번 뛰고, 어디로 뛸지는 Central의 주소와 클록을 섞는 하드웨어 회로가 정한다. 패킷의 앞머리는 <span class="term">LAP</span>에서 만든 64비트 부호어이고, 헤더는 세 번씩 반복해 보낸다. 이 장은 그 회로들을 사양 Part G의 예제 데이터와 한 비트도 다르지 않게 재현한다.</p>
     <ul class="objectives">
       <li>슬롯·클록·79채널의 관계와 Central/Peripheral 슬롯을 설명할 수 있다.</li>
+      <li>DM1·DH5·3-DH5 같은 패킷 이름을 풀고 최대 처리량을 계산할 수 있다.</li>
       <li>도약 선택 커널의 입력 X·Y·A~F와 덧셈·XOR·PERM5·mod 79 단계를 따라가고, AFH 재매핑을 적용할 수 있다.</li>
       <li>LAP에서 Barker 수열, PN 덮개, (64,30) 부호로 동기어를 만들 수 있다.</li>
       <li>패킷 헤더의 HEC와 1/3 반복, 페이로드 CRC, 2/3 FEC, 화이트닝 순서를 지켜 공중 비트를 만들 수 있다.</li>
@@ -89,6 +90,39 @@
       <div class="sim-note">칠한 칸은 Central 슬롯, 흰 칸은 Peripheral 슬롯이다(한 칸 = 한 슬롯 = CLK 2틱). 해볼 것: ① 시작 CLK를 0x10부터 0x20씩 올리면 X가 한 바퀴(32) 돌 때 구간이 바뀌어 채널 대역이 이동한다. ② 짝수만 쓰는 AFH에서 Central·Peripheral 쌍이 같은 채널이 된다. ③ 0~21 미사용에서 커널이 쓰는 채널을 낸 자리는 기본 도약과 같다. 첫 줄(CLK 0x10)은 사양 표와 직접 비교하고, 검증 스크립트는 12개 표의 6,144개 값을 모두 확인한다.</div>
     </div>
     <p class="spec-ref">선택 방식과 커널: <b>[Vol 2] Part B §2.6.1, §2.6.2</b>(PERM5 제어 Table 2.1) · AFH 재매핑: <b>§2.6.3.1</b> · 입력(Table 2.2)과 주소(Table 2.3): <b>§2.6.4</b> · 예제: <b>[Vol 2] Part G §2</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="types">
+    <h2>패킷 종류: DM1에서 3-DH5까지 이름 읽기</h2>
+    <p>BR/EDR 패킷 이름은 규칙만 알면 그대로 읽힌다. ACL(데이터) 패킷을 예로 들면 다음과 같다.</p>
+    <ul>
+      <li><b>D</b>: Data, ACL 논리 전송의 데이터 패킷.</li>
+      <li><b>M / H</b>: Medium rate(페이로드에 2/3 FEC를 씌움) / High rate(FEC 없이 그만큼 더 실음).</li>
+      <li><b>숫자 1·3·5</b>: 차지하는 슬롯 수(625 µs 단위). 5슬롯이면 3.125 ms 동안 한 패킷이다.</li>
+      <li><b>앞의 2- / 3-</b>: EDR. 페이로드를 π/4-DQPSK(2 Mb/s) 또는 8DPSK(3 Mb/s)로 보낸다. EDR 패킷에는 FEC가 없다(DH 계열만 있다).</li>
+    </ul>
+    <p>그래서 <b>3-DH5</b>는 “3 Mb/s EDR, FEC 없는 데이터, 5슬롯” 패킷이다. 음성 쪽은 SCO의 <b>HV1·HV2·HV3</b>(재전송과 CRC 없음, 각각 1/3 FEC·2/3 FEC·FEC 없음)와 eSCO의 <b>EV3·EV4·EV5</b>, <b>2-EV3…3-EV5</b>(CRC가 있고 재전송 창 안에서 다시 보냄)가 있다. NULL·POLL·FHS·ID는 데이터가 아니라 링크 제어용이다.</p>
+    <p>헤더의 TYPE은 4비트뿐이라 같은 코드가 여러 패킷을 뜻한다. 코드 구간이 곧 슬롯 수다(0000~1001은 1슬롯, 1010~1101은 3슬롯, 1110~1111은 5슬롯). ACL에서 1111이 DH5인지 3-DH5인지는 LMP로 정한 <b><span class="term">ptt</span></b>(packet_type_table)가 0인지 1인지에 달렸다. 즉 수신기는 이름이 아니라 (논리 전송, ptt, TYPE)으로 패킷을 알아본다.</p>
+    <div class="sim" id="sim-types">
+      <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>ACL 패킷 종류와 최대 처리량 ([Vol 2] Part B Table 6.2·6.8)</h3></div>
+      <div class="sim-controls" style="border-top:0">
+        <div class="ctrl"><span>패킷</span><div class="seg" id="ty-p"><button data-value="DM1">DM1</button><button data-value="DH1">DH1</button><button data-value="DM3">DM3</button><button data-value="DH3">DH3</button><button data-value="DM5">DM5</button><button data-value="DH5">DH5</button><button data-value="2-DH1">2-DH1</button><button data-value="2-DH3">2-DH3</button><button data-value="2-DH5">2-DH5</button><button data-value="3-DH1">3-DH1</button><button data-value="3-DH3">3-DH3</button><button data-value="3-DH5" class="on">3-DH5</button></div></div>
+      </div>
+      <div class="sim-view" style="padding:12px 16px"><div class="mono" id="ty-io"></div></div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">대칭 최대 속도</span><span class="v" id="ty-s">—</span></div>
+        <div class="stat"><span class="k">한쪽 방향 최대 (정방향 / 역방향)</span><span class="v" id="ty-a">—</span></div>
+        <div class="stat"><span class="k">사양 표와 비교</span><span class="v" id="ty-ok">—</span></div>
+      </div>
+      <div class="sim-note">속도는 계산으로 다시 구한다(사양 표에는 소수 둘째 자리를 버린 값도 있어 0.1 kb/s 안이면 같은 값으로 본다). 대칭은 양쪽이 같은 패킷을 번갈아 보낼 때로 페이로드 × 8 ÷ (2 × 슬롯 × 625 µs), 한쪽 방향은 한쪽이 이 패킷을, 상대가 같은 계열의 1슬롯 패킷으로 답할 때로 페이로드 × 8 ÷ ((슬롯 + 1) × 625 µs)다. 해볼 것: DM5와 DH5를 비교하면 FEC 하나로 실을 수 있는 양이 224 → 339바이트로 달라진다. 3-DH5의 2,178.1 kb/s가 입문편 3장 표의 그 값이다.</div>
+    </div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">TYPE 코드 1111을 받았다. 이 패킷은 무엇일까?</p><p class="wi-hint">Table 6.2에서 1111이 있는 칸을 모두 찾아보자.</p><div class="opts">
+      <button class="opt">항상 DH5</button>
+      <button class="opt" data-correct>ACL이면 ptt에 따라 DH5 또는 3-DH5, 어느 쪽이든 5슬롯</button>
+      <button class="opt">항상 3-DH5</button>
+    </div><div class="quiz-exp">4비트 TYPE은 논리 전송과 ptt에 따라 뜻이 달라진다. 다만 구간이 같아 슬롯 수(5)는 코드만 보고도 안다(§6.5).</div></div>
+    <p class="spec-ref">패킷 종류와 TYPE 코드(Table 6.2): <b>[Vol 2] Part B §6.5</b> · 링크 제어 패킷: <b>§6.5.1</b> · SCO·eSCO 패킷: <b>§6.5.2, §6.5.3</b> · ACL 패킷: <b>§6.5.4</b> · 요약 표(Table 6.7~6.9): <b>§6.7</b></p>
   </section>
 
   <!-- ============================================================ -->
@@ -154,6 +188,7 @@
     <h2>핵심 정리</h2>
     <ol>
       <li>79채널, 625 µs 슬롯 = CLK 2틱, CLK₁ = 0이 Central 슬롯. 연결 도약은 Central의 CLK와 LAP·UAP로 정한다.</li>
+      <li>패킷 이름: [2-/3- EDR] D(M = 2/3 FEC | H = FEC 없음)(슬롯 1·3·5). TYPE 4비트의 뜻은 논리 전송과 ptt로 정해진다.</li>
       <li>커널: (X + A) mod 32 → 하위 4비트 ⊕ B → PERM5(C⊕Y1, D) → (+E + F + Y2) mod 79 → 짝수·홀수 순 레지스터.</li>
       <li>AFH: 쓰지 않는 채널만 k′ = (PERM5 + E + F′ + Y2) mod N으로 재매핑, Peripheral은 앞 Central 슬롯 채널.</li>
       <li>동기어 = LAP + Barker → PN 덮개 → (64,30) 부호 → PN 다시. 프리앰블·트레일러는 경계를 0101/1010으로.</li>
@@ -215,6 +250,16 @@
     for (let i = 1; i < 79; i += 2) if (used[i]) map.push(i);
     return map[(r.po + r.q.E + ((16 * r.q.seg) % map.length) + 32 * r.q.Y1) % map.length];
   }
+  /** ACL 패킷 이름 풀기: [EDR 속도-]D(M|H)(슬롯) */
+  function packetName(name) {
+    const m = /^(?:([23])-)?D([MH])([135])$/.exec(name);
+    return m ? { mbps: m[1] ? +m[1] : 1, fec: m[2] === "M" ? "2/3" : "없음", slots: +m[3] } : null;
+  }
+  /** 최대 처리량(kb/s): 대칭, 한쪽 방향(정·역). 역방향은 같은 계열 1슬롯 패킷. [Vol 2] Part B §6.7 */
+  function aclRates(payload, slots, payload1) {
+    const T = 625e-6;
+    return { sym: (payload * 8) / (2 * slots * T) / 1000, fwd: (payload * 8) / ((slots + 1) * T) / 1000, rev: (payload1 * 8) / ((slots + 1) * T) / 1000 };
+  }
   /** 동기어 64비트(전송 순서 s₀…s₆₃). [Vol 2] Part B §6.3.3.1 */
   function syncWord(lap) {
     const P = [], G = [];
@@ -253,6 +298,21 @@
     if (type === "DM1") { const t = Pl.concat(new Array((10 - (Pl.length % 10)) % 10).fill(0)); payload = []; for (let i = 0; i < t.length; i += 10) payload.push(...t.slice(i, i + 10), ...fec23Parity(t.slice(i, i + 10))); }
     return { header, payload, hec: h, crc: c };
   }
+
+  /* ================================================================ 0. 패킷 종류 */
+  (function () {
+    /** Table 6.8: [페이로드 헤더, 최대 사용자 페이로드, 대칭, 정방향, 역방향] · Table 6.2: [ptt, TYPE] */
+    const T68 = { DM1: [1, 17, 108.8, 108.8, 108.8, 0, "0011"], DH1: [1, 27, 172.8, 172.8, 172.8, 0, "0100"], DM3: [2, 121, 258.1, 387.2, 54.4, 0, "1010"], DH3: [2, 183, 390.4, 585.6, 86.4, 0, "1011"], DM5: [2, 224, 286.7, 477.8, 36.3, 0, "1110"], DH5: [2, 339, 433.9, 723.2, 57.6, 0, "1111"], "2-DH1": [2, 54, 345.6, 345.6, 345.6, 1, "0100"], "2-DH3": [2, 367, 782.9, 1174.4, 172.8, 1, "1010"], "2-DH5": [2, 679, 869.1, 1448.5, 115.2, 1, "1110"], "3-DH1": [2, 83, 531.2, 531.2, 531.2, 1, "1000"], "3-DH3": [2, 552, 1177.6, 1766.4, 265.6, 1, "1011"], "3-DH5": [2, 1021, 1306.9, 2178.1, 177.1, 1, "1111"] };
+    const p = BD.seg("ty-p", draw), f = (x) => x.toFixed(1);
+    function draw() {
+      const nm = p(), n = packetName(nm), t = T68[nm], one = nm.replace(/[35]$/, "1"), r = aclRates(t[1], n.slots, T68[one][1]);
+      $("ty-io").innerHTML = `<span class="k">이름 풀이</span> ${n.mbps === 1 ? "기본 속도(GFSK)" : n.mbps + " Mb/s EDR(" + (n.mbps === 2 ? "π/4-DQPSK" : "8DPSK") + ")"} · ${nm.includes("DM") ? "M = 2/3 FEC" : "H = FEC 없음"} · <span class="hl">${n.slots}슬롯 (${n.slots * 625} µs)</span><br><span class="k">TYPE</span> ${t[6]} (ptt = ${t[5]}) · <span class="k">페이로드 헤더</span> ${t[0]}바이트 · <span class="k">사용자 페이로드</span> 0~${t[1]}바이트<br><span class="k">역방향 응답</span> ${one} (${T68[one][1]}바이트)`;
+      BD.stat("ty-s", f(r.sym) + " kb/s");
+      BD.stat("ty-a", `${f(r.fwd)} / ${f(r.rev)} kb/s`);
+      BD.stat("ty-ok", [r.sym, r.fwd, r.rev].every((v, i) => Math.abs(v - t[2 + i]) < 0.1) ? '<span class="badge-ok">일치</span> Table 6.8' : "다름");
+    }
+    draw();
+  })();
 
   /* ================================================================ 1. 도약 */
   (function () {

@@ -36,6 +36,7 @@ window.BT_TERMS = [
     ["심볼 간 간섭", "ISI, Inter-Symbol Interference", "필터 때문에 앞뒤 심볼이 번져 섞이는 현상. BT가 작을수록 심하다.", "phy"],
     ["비트 오류율", "BER, Bit Error Rate", "뒤집힌 비트의 비율. LE 감도는 BER 0.1%(긴 패킷은 더 엄격)로 정의한다. [Vol 6] Part A §4.1", "phy"],
     ["EDR", "Enhanced Data Rate", "2.0에서 추가된 클래식의 고속 모드. π/4-DQPSK 2 Mb/s, 8DPSK 3 Mb/s. 3-DH5 최대 2,178.1 kb/s. [Vol 2] Part B §6.7", "phy"],
+    ["DM·DH 패킷", "BR/EDR ACL packet types", "클래식 데이터 패킷 이름. D = 데이터, M = 2/3 FEC, H = FEC 없음, 숫자 = 슬롯 수(1·3·5), 앞의 2-·3- = EDR 2·3 Mb/s. 예: 3-DH5. [Vol 2] Part B §6.5", "phy"],
     ["LE 1M", "LE 1M PHY", "1 Msym/s GFSK, 1 Mb/s. 모든 LE 기기가 지원해야 하는 기본 PHY. [Vol 6] Part A §1", "phy"],
     ["LE 2M", "LE 2M PHY", "2 Msym/s, 2 Mb/s. 같은 데이터를 절반 시간에 보낸다. 5.0의 선택 기능.", "phy"],
     ["LE Coded", "LE Coded PHY", "1 Msym/s에 부호화를 더해 S=2(500 kb/s) 또는 S=8(125 kb/s). 감도를 높여 거리를 늘린다. 5.0의 선택 기능. [Vol 6] Part B §2.2·§3.3", "phy"],

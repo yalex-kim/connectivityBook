@@ -697,6 +697,25 @@ const bitsStr = (s) => s.replace(/\s/g, '').split('').map(Number);
   eq(nums.join(','), Array.from({ length: 19 }, (_, i) => i + 1).join(','), '장 목록이 01~19 순서');
 }
 
+// ---------------------------------------------------------------- 12b baseband packet types
+{
+  const src = read('baseband'), f = load('baseband', ['packetName', 'aclRates']);
+  const T68 = vm.runInContext(src.slice(src.indexOf('    const T68 ='), src.indexOf('\n', src.indexOf('    const T68 ='))) + ';T68', vm.createContext({}));
+  // [Vol 2] Part B Table 6.8: 12개 ACL 패킷의 처리량을 페이로드·슬롯에서 다시 계산
+  eq(Object.keys(T68).length, 12, 'ACL 패킷 12종 (§6.5.4)');
+  for (const [nm, t] of Object.entries(T68)) {
+    const n = f.packetName(nm), one = nm.replace(/[35]$/, '1'), r = f.aclRates(t[1], n.slots, T68[one][1]);
+    ok(Math.abs(r.sym - t[2]) < 0.1 && Math.abs(r.fwd - t[3]) < 0.1 && Math.abs(r.rev - t[4]) < 0.1, `${nm} 처리량 ${t[2]}/${t[3]}/${t[4]}`);
+    eq(n.fec === '2/3', nm.includes('DM'), `${nm} FEC`);
+    eq(t[5], n.mbps > 1 ? 1 : 0, `${nm} ptt`);
+    // Table 6.2: TYPE 구간 = 슬롯 수
+    const code = parseInt(t[6], 2); eq(code >= 14 ? 5 : code >= 10 ? 3 : 1, n.slots, `${nm} TYPE ${t[6]} 구간`);
+  }
+  eq(f.packetName('3-DH5').mbps + '/' + f.packetName('3-DH5').slots, '3/5', '3-DH5 = 3 Mb/s, 5슬롯');
+  eq(f.packetName('HV3'), null, 'HV3은 ACL 이름 규칙이 아님');
+  eq(T68.DH5[6] === T68['3-DH5'][6] && T68.DH1[6] === T68['2-DH1'][6], true, '같은 TYPE이 ptt에 따라 다른 패킷');
+}
+
 // ---------------------------------------------------------------- 모든 인라인 스크립트가 문법 오류 없이 컴파일되는가, JSON-LD가 올바른가
 let scripts = 0;
 for (const f of ['../index.html', ...fs.readdirSync(path.join(root, 'chapters')).filter((x) => x.endsWith('.html'))]) {
