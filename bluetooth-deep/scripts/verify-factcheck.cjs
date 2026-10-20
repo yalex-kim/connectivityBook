@@ -634,6 +634,41 @@ const bitsStr = (s) => s.replace(/\s/g, '').split('').map(Number);
   eq(X(f.shortenKey(H('123456789abcdef0123456789abcdef0'), 7)), '123456789abcde000000000000000000', '키 7바이트로 줄이기 (§9.4의 예)');
 }
 
+// ---------------------------------------------------------------- 18 debugging
+{
+  const src = read('debugging'), errLine = src.slice(src.indexOf('  const ERR ='), src.indexOf('\n', src.indexOf('  const ERR =')));
+  const f = load('debugging', ['decodeH4', 'supervisionOk', 'instantPassed', 'notifyMax'], errLine);
+  const ERR = vm.runInContext(errLine + ';ERR', vm.createContext({}));
+  // [Vol 1] Part F Table 1.1: 0x00~0x48 중 예약 3개와 이전 사용 1개를 뺀 69개
+  eq(Object.keys(ERR).length, 69, '오류 코드 69개');
+  eq([ERR[0x08], ERR[0x0c], ERR[0x06], ERR[0x28], ERR[0x3d], ERR[0x23], ERR[0x2a], ERR[0x1f], ERR[0x48]].join('|'), 'Connection Timeout|Command Disallowed|PIN or Key Missing|Instant Passed|Connection Terminated due to MIC Failure|LMP Error Transaction Collision / LL Procedure Collision|Different Transaction Collision|Unspecified Error|Insufficient Channels', 'Part F의 이름');
+  ok(!(0x2b in ERR) && !(0x31 in ERR) && !(0x33 in ERR) && !(0x3f in ERR), '예약·이전 사용 코드는 없음');
+  // 해석기
+  let d = f.decodeH4('04 05 04 00 40 00 13');
+  eq([d.name, d.fields[1][1], d.fields[2][1], d.err].join('|'), 'HCI_Disconnection_Complete|0x0040|0x13 Remote User Terminated Connection|19', '퀴즈 1의 이벤트');
+  d = f.decodeH4('04 3e 13 01 00 40 00 00 01 5d 4c 3b 2a 19 c8 28 00 00 00 14 00 00');
+  eq(d.fields.map((x) => x[1]).join('|'), '0x00 Success|0x0040|0 Central|50 ms|0|200 ms', 'LE Connection Complete 필드');
+  d = f.decodeH4('01 0a 20 01 01'); eq([d.name, d.fields[0][1]].join('|'), 'HCI_LE_Set_Advertising_Enable|0x200a (OGF 0x08, OCF 0x000a)', 'OGF·OCF 나누기');
+  d = f.decodeH4('04 0e 04 01 06 20 0c'); eq([d.name, d.fields[1][1], d.err].join('|'), 'HCI_Command_Complete|0x2006|12', 'Command Complete 0x0C');
+  d = f.decodeH4('04 3e 0d 05 40 00 00 00 00 00 00 00 00 00 00 00'); eq(d.name, 'HCI_LE_Long_Term_Key_Request', 'LTK 요청 하위 코드 0x05');
+  const cs = JSON.parse(src.match(/const CASES = (\{.*?\});/)[1]);
+  const lastErr = { timeout: 0x08, mic: 0x08, nokey: 0x06, instant: 0x08, disallowed: 0x0c };
+  for (const [k, lines] of Object.entries(cs)) {
+    for (const [, , hex] of lines) { const b = hex.split(' ').map((x) => parseInt(x, 16)), dd = f.decodeH4(hex); ok(!dd.name.startsWith('?') && !/^(명령|이벤트|LE 하위) /.test(dd.name), `${k}: ${dd.name}`); if (b[0] === 4) eq(b[2], b.length - 3, `${k}: 이벤트 길이 바이트`); if (b[0] === 1) eq(b[3], b.length - 4, `${k}: 명령 길이 바이트`); if (b[0] === 2) eq(b[3] | (b[4] << 8), b.length - 5, `${k}: ACL 길이`); }
+    if (k in lastErr) eq(f.decodeH4(lines[lines.length - 1][2]).err, lastErr[k], `${k}: 마지막 줄의 오류`);
+  }
+  eq(cs.mic.map((l) => f.decodeH4(l[2]).err).filter(Boolean).join(','), '61,8', 'MIC 사례: 알아챈 쪽 0x3D, 상대 0x08 (Part E §1)');
+  eq(cs.instant.map((l) => f.decodeH4(l[2]).err).filter(Boolean).join(','), '40,8', 'instant 사례: Peripheral 0x28, Central 0x08');
+  eq([f.decodeH4(cs.mtu[0][2]).valueLen, f.decodeH4(cs.mtu[3][2]).valueLen].join(), '20,40', 'MTU 사례: 20 → 40바이트');
+  eq(f.decodeH4(cs.mtu[0][2]).valueLen, f.notifyMax(23), 'ATT_MTU 23 → 20바이트');
+  // 규칙
+  ok(f.supervisionOk(50, 0, 200, 1) && !f.supervisionOk(50, 0, 100, 1), '사례 ①: 200 ms 합법, 100 ms는 하한과 같아 불법');
+  ok(!f.supervisionOk(50, 4, 500, 1) && f.supervisionOk(50, 4, 510, 1), '퀴즈: 510 ms가 최소');
+  ok(f.supervisionOk(30, 0, 720, 1) && !f.supervisionOk(10, 0, 95, 1) && !f.supervisionOk(1000, 0, 33000, 1), '범위 100 ms~32 s, 10 ms 배수');
+  ok(f.instantPassed(95, 100) && !f.instantPassed(106, 100) && !f.instantPassed(100, 100) && f.instantPassed(0, 32767) && !f.instantPassed(5, 65530), 'instant mod 65536 비교 (§5.5.1)');
+  eq(f.notifyMax(247), 244, '퀴즈: 247 → 244');
+}
+
 // ---------------------------------------------------------------- 모든 인라인 스크립트가 문법 오류 없이 컴파일되는가, JSON-LD가 올바른가
 let scripts = 0;
 for (const f of ['../index.html', ...fs.readdirSync(path.join(root, 'chapters')).filter((x) => x.endsWith('.html'))]) {

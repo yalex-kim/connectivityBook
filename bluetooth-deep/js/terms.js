@@ -109,6 +109,9 @@ window.BD_TERMS = [
   ["SRES", "Signed Response", "장치 인증에서 상대가 돌려주는 32비트 응답. E1 또는 h5의 앞부분", "classicsec"],
   ["IOcap", "IO capability data", "AuthReq·OOB 유무·IO 능력 3바이트. f3에 들어가 인증 방식 변조를 잡는다", "classicsec"],
   ["Secure Connections Only", "Secure Connections Only mode", "모든 서비스에 보안 모드 4 레벨 4(P-256 인증 키, AES-CCM)를 요구하는 GAP 모드. [Vol 3] Part C §5.2.2", "classicsec"],
+  ["오류 코드", "Error code", "HCI 이벤트의 Status·Reason과 LL·LMP 거절에 쓰는 1바이트 값. [Vol 1] Part F Table 1.1", "debugging"],
+  ["Command Status", "HCI_Command_Status", "오래 걸리는 명령을 받았다는 이벤트(0x0F). 0x00은 성공이 아니라 시작. [Vol 4] Part E §7.7.15", "debugging"],
+  ["Instant Passed", "Instant Passed (0x28)", "instant가 지난 뒤 절차 PDU를 받아 연결을 잃었을 때의 오류 코드. [Vol 6] Part B §5.5.1", "debugging"],
 ];
 
 /* 본문 표기 → 용어집 표제어 */

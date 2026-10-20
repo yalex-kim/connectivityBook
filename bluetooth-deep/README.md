@@ -22,6 +22,7 @@
 | 15 | chapters/leaudio.html | LE 오디오 프로파일: PACS·ASCS·BAP·CAP (Core 밖) | ASE 상태 전이(ASCS Table 3.2·§5.4), BAP Table 5.2 32개 설정의 비트레이트 재계산 |
 | 16 | chapters/cs.html | Channel Sounding: 위상과 왕복 시간으로 거리 재기 | CS DRBG(h9·f7·f8·f9) 블록 9개, cr1 채널 섞기, hr1 두 바이트 경우, 접근 주소 점수(Part C §8.1.1) |
 | 17 | chapters/direction.html | 방향 찾기: CTE, IQ 표본, 안테나 전환 | IQ 표본 9~82개 규칙, 패턴 반복, 이상적 신호에서 각도 복원 |
+| 18 | chapters/debugging.html | 사례로 배우는 디버깅: HCI 로그에서 원인까지 | 오류 코드 69개(Part F Table 1.1), H4 해석기, 여섯 사례 로그의 길이·오류, 감독 타임아웃·instant·ATT_MTU 규칙 |
 
 계획 전체(19장)는 책 홈(`index.html`)에 있습니다.
 

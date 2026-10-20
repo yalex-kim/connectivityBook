@@ -26,6 +26,7 @@
     { slug: "leaudio",    num: "15", part: "오디오·위치", title: "LE 오디오 프로파일: PACS·ASCS·BAP·CAP", desc: "Core 밖의 LE 오디오 사양. ASE 상태 기계의 일곱 상태와 여덟 동작, 끊김 규칙, BAP 코덱·QoS 설정 이름(16_2_1 등)과 비트레이트, CAP·BASS의 역할을 ASCS·BAP 원문 표로 따라간다.", tags: ["오디오", "sim"] },
     { slug: "cs",         num: "16", part: "오디오·위치", title: "Channel Sounding: 위상과 왕복 시간으로 거리 재기", desc: "CS 채널 72개와 스텝 모드 0~3, RTT·위상 기반 거리와 모호 거리, CS DRBG(h9·f7·f8·f9)와 채널 섞기 hr1·cr1, 접근 주소 자기상관 점수를 Core 6.3 예제 데이터로 재현한다.", tags: ["위치", "sim"] },
     { slug: "direction",  num: "17", part: "오디오·위치", title: "방향 찾기: CTE, IQ 표본, 안테나 전환", desc: "CTE의 보호·기준 구간과 전환·표본 슬롯, IQ 표본 9~82개 규칙, AoA·AoD의 안테나 전환 패턴, 기준 구간으로 톤 회전을 지우고 안테나 위상차로 각도를 구하는 계산.", tags: ["위치", "sim"] },
+    { slug: "debugging",  num: "18", part: "현장", title: "사례로 배우는 디버깅: HCI 로그에서 원인까지", desc: "끊김(0x08), MIC 실패(0x3D), 키 없음(0x06), instant 지남(0x28), 명령 거부(0x0C), 알림 잘림(ATT_MTU) 여섯 사례를 HCI 로그 바이트부터 읽고 원인 규칙과 해결책을 사양으로 짚는다.", tags: ["디버깅", "HCI", "sim"] },
   ];
   // @book-chapters-end
   const BD = (window.BD = {});
