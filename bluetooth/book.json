@@ -27,6 +27,19 @@
         "accent-2-soft": "rgba(63, 208, 220, 0.14)"
       }
     },
-    "logo": "<path d=\"M10.5 11.5 20.5 20.5 15.5 25V7l5 4.5-10 9\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>"
+    "logo": "<path d=\"M10.5 11.5 20.5 20.5 15.5 25V7l5 4.5-10 9\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "series": {
+      "name": "BluetoothBook 시리즈",
+      "items": [
+        {
+          "dir": "bluetooth",
+          "label": "입문편"
+        },
+        {
+          "dir": "bluetooth-deep",
+          "label": "심화편"
+        }
+      ]
+    }
   }
 }

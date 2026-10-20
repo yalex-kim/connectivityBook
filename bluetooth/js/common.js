@@ -520,6 +520,8 @@
   };
   /* ------------------------------------------------------------ layout build */
   const LOGO = `<svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="btg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--accent)"/><stop offset="1" stop-color="var(--accent-2)"/></linearGradient></defs><rect x="2" y="2" width="28" height="28" rx="8" fill="url(#btg)"/><path d="M10.5 11.5 20.5 20.5 15.5 25V7l5 4.5-10 9" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  /** 같은 시리즈의 책들(book.json ui.series). 없으면 null */
+  const SERIES = {"name": "BluetoothBook 시리즈", "items": [{"dir": "bluetooth", "label": "입문편"}, {"dir": "bluetooth-deep", "label": "심화편"}]};
   const ICON_MENU = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>`;
   const ICON_MOON = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>`;
   const ICON_SUN = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>`;
@@ -541,6 +543,15 @@
       <button class="sb-btn icon" id="sb-theme" aria-label="테마 전환"></button>
       <div class="sb-progress" id="sb-progress"></div>`;
     body.prepend(bar);
+    // series switch (입문편 | 심화편): 위쪽 막대와 장 목록 서랍 맨 위에 둔다
+    const seriesNav = () => {
+      if (!SERIES) return null;
+      const nav = document.createElement("nav");
+      nav.className = "sb-series";
+      nav.setAttribute("aria-label", SERIES.name);
+      nav.innerHTML = SERIES.items.map((it) => it.dir === "bluetooth" ? `<a href="${href("")}" class="on" aria-current="true">${it.label}</a>` : `<a href="${root}../${it.dir}/index.html">${it.label}</a>`).join("");
+      return nav;
+    };
 
     // Search chapter metadata immediately; load section and visual titles on demand.
     const progressBar = bar.querySelector("[id$='-progress']");
@@ -548,6 +559,8 @@
     const leftNav = document.createElement("div");
     leftNav.className = "book-nav-left";
     leftNav.append(bar.querySelector("[id$='-menu']"), bar.querySelector("a[class$='-logo']"));
+    const topSeries = seriesNav();
+    if (topSeries) { topSeries.classList.add("in-bar"); leftNav.append(topSeries); }
     const rightNav = document.createElement("div");
     rightNav.className = "book-nav-right";
     [...bar.children].filter((el) => el !== spacer && el !== progressBar).forEach((el) => rightNav.appendChild(el));
@@ -655,6 +668,8 @@
       <li><a href="${href("")}" class="${curSlug ? "" : "active"}"><span class="num">00</span><span>홈 · 로드맵</span></a></li>
       ${CHAPTERS.map((c) => { const head = c.part !== lastPart ? `<li class="part">${c.part}</li>` : ""; lastPart = c.part; return head + `<li><a href="${href(c.slug)}" data-slug="${c.slug}" class="${c.slug === curSlug ? "active" : ""}"><span class="num">${c.num}</span><span class="t">${c.title}</span><i class="sb-st"></i></a></li>`; }).join("")}
     </ul>`;
+    const drawerSeries = seriesNav();
+    if (drawerSeries) drawer.prepend(drawerSeries);
     const backdrop = document.createElement("div");
     backdrop.className = "sb-drawer-backdrop";
     body.append(backdrop, drawer);
