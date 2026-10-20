@@ -11,7 +11,7 @@ GPS와 Galileo의 신호 규격은 무료로 공개되어 있어 **원문 규격
 IS-GPS-200N(2022, 공개 배포), Galileo OS SIS ICD Issue 2.2(2025). 계산은 공개 구현 **RTKLIB**(BSD-2)의 함수와 맞춰 보고,
 휴대폰 부분은 Android의 `GnssStatus`·`GnssClock`·`GnssMeasurement` 정의를 따랐습니다. 규격의 표·그림·절 번호와 쪽수를 본문에 밝혔습니다.
 
-[yalexBook](../README.md) 서재의 한 권입니다. 구조·디자인 시스템·설명 방식(비유 → 그림 → 예측 → 시뮬레이터 → 수치 → 정리·퀴즈)은 [Books](https://books.euiyun.com/) 시리즈의 [NetworkBook](https://github.com/geniuskey/networkbook)을 따랐습니다.
+[ConnectivityBook](../README.md) 서재의 한 권입니다. 구조·디자인 시스템·설명 방식(비유 → 그림 → 예측 → 시뮬레이터 → 수치 → 정리·퀴즈)은 [Books](https://books.euiyun.com/) 시리즈의 [NetworkBook](https://github.com/geniuskey/networkbook)을 따랐습니다.
 
 ## 실행
 빌드 과정이 없는 정적 사이트입니다.

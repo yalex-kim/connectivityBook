@@ -6,18 +6,18 @@
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <title>연결: 약속된 시각의 짧은 만남 · BluetoothBook</title>
 <meta name="description" content="LE 연결의 시간표. 연결 이벤트와 앵커 포인트, 6.2의 짧은 연결 간격(375 µs~4 s), 페리페럴 지연·서브레이팅·감독 타임아웃 규칙, 데이터 PDU 헤더와 24비트 CRC·화이트닝을 사양 샘플로 검증하는 패킷 해부, SN/NESN 재전송, 처리량 계산을 다룬다.">
-<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/bluetooth/chapters/connection.html">
+<link rel="canonical" href="https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/connection.html">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="BluetoothBook">
 <meta property="og:title" content="연결: 약속된 시각의 짧은 만남 · BluetoothBook">
 <meta property="og:description" content="LE 연결의 시간표. 연결 이벤트와 앵커 포인트, 6.2의 짧은 연결 간격(375 µs~4 s), 페리페럴 지연·서브레이팅·감독 타임아웃 규칙, 데이터 PDU 헤더와 24비트 CRC·화이트닝을 사양 샘플로 검증하는 패킷 해부, SN/NESN 재전송, 처리량 계산을 다룬다.">
-<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/bluetooth/chapters/connection.html">
-<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/bluetooth/og.png">
+<meta property="og:url" content="https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/connection.html">
+<meta property="og:image" content="https://yalex-kim.github.io/connectivityBook/bluetooth/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"연결: 약속된 시각의 짧은 만남","name":"연결: 약속된 시각의 짧은 만남 · BluetoothBook","url":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/connection.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/connection.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":6,"image":"https://yalex-kim.github.io/yalexBook/bluetooth/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/bluetooth/#book","name":"BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth/"},"publisher":{"@type":"Organization","name":"BluetoothBook","url":"https://yalex-kim.github.io/yalexBook/bluetooth/"},"description":"LE 연결의 시간표. 연결 이벤트와 앵커 포인트, 6.2의 짧은 연결 간격(375 µs~4 s), 페리페럴 지연·서브레이팅·감독 타임아웃 규칙, 데이터 PDU 헤더와 24비트 CRC·화이트닝을 사양 샘플로 검증하는 패킷 해부, SN/NESN 재전송, 처리량 계산을 다룬다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook","item":"https://yalex-kim.github.io/yalexBook/bluetooth/"},{"@type":"ListItem","position":2,"name":"06 연결: 약속된 시각의 짧은 만남","item":"https://yalex-kim.github.io/yalexBook/bluetooth/chapters/connection.html"}]}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"연결: 약속된 시각의 짧은 만남","name":"연결: 약속된 시각의 짧은 만남 · BluetoothBook","url":"https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/connection.html","mainEntityOfPage":"https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/connection.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":6,"image":"https://yalex-kim.github.io/connectivityBook/bluetooth/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/connectivityBook/bluetooth/#book","name":"BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서","url":"https://yalex-kim.github.io/connectivityBook/bluetooth/"},"publisher":{"@type":"Organization","name":"BluetoothBook","url":"https://yalex-kim.github.io/connectivityBook/bluetooth/"},"description":"LE 연결의 시간표. 연결 이벤트와 앵커 포인트, 6.2의 짧은 연결 간격(375 µs~4 s), 페리페럴 지연·서브레이팅·감독 타임아웃 규칙, 데이터 PDU 헤더와 24비트 CRC·화이트닝을 사양 샘플로 검증하는 패킷 해부, SN/NESN 재전송, 처리량 계산을 다룬다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook","item":"https://yalex-kim.github.io/connectivityBook/bluetooth/"},{"@type":"ListItem","position":2,"name":"06 연결: 약속된 시각의 짧은 만남","item":"https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/connection.html"}]}]}</script>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

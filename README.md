@@ -1,7 +1,7 @@
-# yalexBook — 직접 만지며 배우는 인터랙티브 교과서 서재
+# ConnectivityBook — 직접 만지며 배우는 인터랙티브 교과서 서재
 
 시뮬레이터를 직접 만지며 배우는 한국어 웹 교과서를 모아 두는 저장소입니다. 책 한 권이 폴더 하나이고, 루트의 `index.html`이 전체 책장입니다.
-GitHub Pages 주소: https://yalex-kim.github.io/yalexBook/
+GitHub Pages 주소: https://yalex-kim.github.io/connectivityBook/
 
 | 폴더 | 책 | 기준 | 상태 |
 |---|---|---|---|

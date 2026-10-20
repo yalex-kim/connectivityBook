@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://yalex-kim.github.io/yalexBook/bluetooth/</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/bluetooth/chapters/intro.html</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/bluetooth/chapters/radio.html</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/bluetooth/chapters/phy.html</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/bluetooth/chapters/hopping.html</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/bluetooth/chapters/advertising.html</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/bluetooth/chapters/connection.html</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/bluetooth/chapters/gatt.html</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/bluetooth/chapters/security.html</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/bluetooth/chapters/power.html</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/bluetooth/chapters/audio.html</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/bluetooth/chapters/location.html</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/bluetooth/chapters/mesh.html</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/bluetooth/chapters/coexistence.html</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/bluetooth/chapters/design.html</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/bluetooth/chapters/glossary.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/bluetooth/</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/intro.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/radio.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/phy.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/hopping.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/advertising.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/connection.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/gatt.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/security.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/power.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/audio.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/location.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/mesh.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/coexistence.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/design.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/glossary.html</loc><lastmod>2026-10-18</lastmod></url>
 </urlset>

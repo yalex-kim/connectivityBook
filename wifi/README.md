@@ -10,7 +10,7 @@ Linux 커널 무선 스택(`net/wireless`, `net/mac80211`, `include/linux/ieee80
 본문에 `net/wireless/util.c`의 `ieee80211_channel_to_freq_khz()`처럼 출처를 밝혔고, 조항 번호는 소스 코드 주석이 인용한 경우에만 적었습니다.
 채널↔주파수, HT·VHT·HE·EHT 링크 속도, 전송 시간, 머리말 길이, TIM 인코딩, 펑처링 패턴, PBKDF2·PRF 같은 계산은 이 코드와 시험 벡터에 맞춰 자동으로 검증합니다.
 
-[yalexBook](../README.md) 서재의 한 권입니다. 구조·디자인 시스템·설명 방식(비유 → 그림 → 예측 → 시뮬레이터 → 수치 → 정리·퀴즈)은 [Books](https://books.euiyun.com/) 시리즈의 [NetworkBook](https://github.com/geniuskey/networkbook)을 따랐습니다.
+[ConnectivityBook](../README.md) 서재의 한 권입니다. 구조·디자인 시스템·설명 방식(비유 → 그림 → 예측 → 시뮬레이터 → 수치 → 정리·퀴즈)은 [Books](https://books.euiyun.com/) 시리즈의 [NetworkBook](https://github.com/geniuskey/networkbook)을 따랐습니다.
 
 ## 실행
 빌드 과정이 없는 정적 사이트입니다.

@@ -6,18 +6,18 @@
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <title>PRN 코드: 위성마다 다른 무늬 · GNSSBook</title>
 <meta name="description" content="모든 GPS 위성이 같은 주파수로 동시에 말해도 섞이지 않는 비결. 시프트 레지스터 두 개로 만드는 C/A 골드 코드를 직접 만들어 규격 표의 처음 10칩과 맞춰 보고, 자기 상관과 상호 상관, 코드 위상이 거리가 되는 원리를 시뮬레이터로 익힌다.">
-<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/gnss/chapters/prn.html">
+<link rel="canonical" href="https://yalex-kim.github.io/connectivityBook/gnss/chapters/prn.html">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="GNSSBook">
 <meta property="og:title" content="PRN 코드: 위성마다 다른 무늬 · GNSSBook">
 <meta property="og:description" content="모든 GPS 위성이 같은 주파수로 동시에 말해도 섞이지 않는 비결. 시프트 레지스터 두 개로 만드는 C/A 골드 코드를 직접 만들어 규격 표의 처음 10칩과 맞춰 보고, 자기 상관과 상호 상관, 코드 위상이 거리가 되는 원리를 시뮬레이터로 익힌다.">
-<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/gnss/chapters/prn.html">
-<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/gnss/og.png">
+<meta property="og:url" content="https://yalex-kim.github.io/connectivityBook/gnss/chapters/prn.html">
+<meta property="og:image" content="https://yalex-kim.github.io/connectivityBook/gnss/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"PRN 코드: 위성마다 다른 무늬","name":"PRN 코드: 위성마다 다른 무늬 · GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/prn.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/gnss/chapters/prn.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":4,"image":"https://yalex-kim.github.io/yalexBook/gnss/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/gnss/#book","name":"GNSSBook — 누구나 읽는 인터랙티브 GNSS 교과서","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"publisher":{"@type":"Organization","name":"GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"description":"모든 GPS 위성이 같은 주파수로 동시에 말해도 섞이지 않는 비결. 시프트 레지스터 두 개로 만드는 C/A 골드 코드를 직접 만들어 규격 표의 처음 10칩과 맞춰 보고, 자기 상관과 상호 상관, 코드 위상이 거리가 되는 원리를 시뮬레이터로 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"GNSSBook","item":"https://yalex-kim.github.io/yalexBook/gnss/"},{"@type":"ListItem","position":2,"name":"04 PRN 코드: 위성마다 다른 무늬","item":"https://yalex-kim.github.io/yalexBook/gnss/chapters/prn.html"}]}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"PRN 코드: 위성마다 다른 무늬","name":"PRN 코드: 위성마다 다른 무늬 · GNSSBook","url":"https://yalex-kim.github.io/connectivityBook/gnss/chapters/prn.html","mainEntityOfPage":"https://yalex-kim.github.io/connectivityBook/gnss/chapters/prn.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":4,"image":"https://yalex-kim.github.io/connectivityBook/gnss/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/connectivityBook/gnss/#book","name":"GNSSBook — 누구나 읽는 인터랙티브 GNSS 교과서","url":"https://yalex-kim.github.io/connectivityBook/gnss/"},"publisher":{"@type":"Organization","name":"GNSSBook","url":"https://yalex-kim.github.io/connectivityBook/gnss/"},"description":"모든 GPS 위성이 같은 주파수로 동시에 말해도 섞이지 않는 비결. 시프트 레지스터 두 개로 만드는 C/A 골드 코드를 직접 만들어 규격 표의 처음 10칩과 맞춰 보고, 자기 상관과 상호 상관, 코드 위상이 거리가 되는 원리를 시뮬레이터로 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"GNSSBook","item":"https://yalex-kim.github.io/connectivityBook/gnss/"},{"@type":"ListItem","position":2,"name":"04 PRN 코드: 위성마다 다른 무늬","item":"https://yalex-kim.github.io/connectivityBook/gnss/chapters/prn.html"}]}]}</script>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

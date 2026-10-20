@@ -1,4 +1,4 @@
-/* yalexBook 서재의 책 목록. 새 책을 추가하면 여기에 한 줄을 더한다.
+/* ConnectivityBook 서재의 책 목록. 새 책을 추가하면 여기에 한 줄을 더한다.
    file:// 로 열어도 동작하도록 JSON fetch 대신 classic script로 둔다. */
 window.YB_BOOKS = [
   {
