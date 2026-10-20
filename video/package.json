@@ -1,0 +1,21 @@
+{
+  "name": "connectivitybook-video",
+  "private": true,
+  "description": "ConnectivityBook 내용을 Remotion으로 만든 영상",
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render WifiLossShort out/wifi-loss-short.mp4",
+    "still": "remotion still WifiLossShort out/still.png --frame=360",
+    "check": "node scripts/check-book.mjs && tsc --noEmit"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.537",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.537"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.2",
+    "typescript": "5.9.3"
+  }
+}
