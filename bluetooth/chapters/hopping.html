@@ -111,10 +111,10 @@
     </div>
     <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">이웃 Wi-Fi 1·6·11번이 모두 시간의 50%씩 말한다. 무작위 도약하는 블루투스의 패킷 손실률은 대략 얼마일까?</p><p class="wi-hint">시뮬레이터에서 “무작위 도약”, “1·6·11번”, 50%로 맞추고 기대 손실률을 보자. 2장의 대역 지도에서 Wi-Fi 세 채널이 LE 채널을 몇 개나 덮는지도 떠올려 보자.</p><div class="opts">
       <button class="opt">약 3% — Wi-Fi 채널은 셋뿐이니까</button>
-      <button class="opt" data-correct>약 15% 안팎 — 37개 중 약 1/3이 Wi-Fi에 덮이고, 그중 절반의 시간만 막히므로</button>
-      <button class="opt">약 50% — Wi-Fi가 절반의 시간 동안 말하니까</button>
+      <button class="opt">약 15% — Wi-Fi 셋이 37개 중 1/3쯤 덮고, 그 절반의 시간만 막히므로</button>
+      <button class="opt" data-correct>약 40% — Wi-Fi 셋이 37개 중 30개 남짓(약 80%)을 덮고, 그 절반의 시간 동안 막히므로</button>
       <button class="opt">0% — 도약하면 간섭은 없다</button>
-    </div><div class="quiz-exp">20 MHz짜리 Wi-Fi 하나가 LE 채널(2 MHz) 9~10개를 덮는다. 세 개면 37개 중 약 1/3이다. 막힐 확률 ≈ 1/3 × 50% ≈ 15%. 적응형 도약은 그 채널을 빼서 이 손해를 없앤다.</div></div>
+    </div><div class="quiz-exp">Wi-Fi 하나(폭 약 20 MHz)는 2 MHz 간격의 LE 범용 채널 10개 안팎을 덮는다. 1·6·11번 세 개면 30개 안팎으로, 37개 중 약 80%다(LE 범용 채널이 쓰는 2,404~2,478 MHz의 대부분이 1·6·11번 띠 안에 있다). 그래서 막힐 확률 ≈ 0.8 × 50% ≈ 40%이고, 시뮬레이터의 기대 손실률은 31/37 × 50% = 41.9%다. “1/3쯤”은 Wi-Fi 채널이 셋뿐이라는 데서 오는 흔한 착각이다. 적응형 도약은 덮인 채널을 빼서 이 손해를 없앤다.</div></div>
   </section>
 
   <!-- ============================================================ -->
