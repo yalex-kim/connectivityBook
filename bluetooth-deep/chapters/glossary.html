@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>용어집 &amp; 종합 퀴즈 · BluetoothBook 심화</title>
+<meta name="description" content="HCI, 링크 계층 절차, 암호화와 페어링 함수, 프라이버시, L2CAP·GATT, Classic 기저대역과 보안, ISOAL·LE 오디오, Channel Sounding, 방향 찾기, 디버깅까지 이 책의 용어를 Core 6.3 근거 위치와 함께 검색하고, 장마다 두 문제씩 뽑은 종합 퀴즈로 점검한다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/glossary.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="BluetoothBook 심화">
+<meta property="og:title" content="용어집 &amp; 종합 퀴즈 · BluetoothBook 심화">
+<meta property="og:description" content="HCI, 링크 계층 절차, 암호화와 페어링 함수, 프라이버시, L2CAP·GATT, Classic 기저대역과 보안, ISOAL·LE 오디오, Channel Sounding, 방향 찾기, 디버깅까지 이 책의 용어를 Core 6.3 근거 위치와 함께 검색하고, 장마다 두 문제씩 뽑은 종합 퀴즈로 점검한다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/glossary.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"용어집 & 종합 퀴즈","name":"용어집 & 종합 퀴즈 · BluetoothBook 심화","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/glossary.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/glossary.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":19,"image":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png","dateModified":"2026-10-20","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/#book","name":"BluetoothBook 심화 — 프로토콜 스택을 끝까지 따라가는 블루투스 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},"publisher":{"@type":"Organization","name":"BluetoothBook 심화","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},"description":"HCI, 링크 계층 절차, 암호화와 페어링 함수, 프라이버시, L2CAP·GATT, Classic 기저대역과 보안, ISOAL·LE 오디오, Channel Sounding, 방향 찾기, 디버깅까지 이 책의 용어를 Core 6.3 근거 위치와 함께 검색하고, 장마다 두 문제씩 뽑은 종합 퀴즈로 점검한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook 심화","item":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},{"@type":"ListItem","position":2,"name":"19 용어집 & 종합 퀴즈","item":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/glossary.html"}]}]}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<script src="../js/terms.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  .gl-tools { display: grid; gap: 10px; margin-bottom: 18px; }
+  .gl-tools .row { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+  .gl-tools .seg button { font-size: 12.5px; padding: 4px 9px; }
+  .gl-search { margin-bottom: 0 !important; }
+  .gl-count { font-size: 13px; color: var(--text-faint); margin-left: auto; }
+  #gl-list { max-height: min(78vh, 980px); overflow-y: auto; overscroll-behavior: contain; padding: 2px 6px 2px 2px; }
+  .gl-group { position: sticky; top: 0; z-index: 1; background: var(--bg); font-family: var(--mono); font-weight: 700; font-size: 13px; color: var(--accent); letter-spacing: .04em; margin: 14px 0 6px; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
+  .gl-group:first-child { margin-top: 0; }
+  .gl-item { margin-bottom: 8px; }
+  .gl-item mark { background: color-mix(in srgb, var(--warn) 35%, transparent); color: inherit; border-radius: 3px; padding: 0 1px; }
+  .gl-empty { padding: 24px; text-align: center; color: var(--text-dim); border: 1px dashed var(--border); border-radius: 12px; }
+  .fq { background: var(--bg-elev); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .fq-top { display: flex; justify-content: space-between; gap: 10px; padding: 12px 18px 8px; font-size: 13px; color: var(--text-dim); font-family: var(--mono); }
+  .fq-bar { height: 6px; background: var(--surface-2); margin: 0 18px; border-radius: 3px; overflow: hidden; }
+  .fq-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .3s ease; }
+  .fq-card, .fq-result { padding: 18px 20px 20px; }
+  .fq-ch { font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 6px; }
+  .fq-q { font-weight: 700; font-size: 17px; margin: 0 0 14px !important; }
+  .fq-opts { display: grid; gap: 8px; }
+  .fq-opt { text-align: left; font: inherit; font-size: 15px; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; line-height: 1.5; }
+  .fq-opt:hover:not(:disabled) { border-color: var(--accent); }
+  .fq-opt:disabled { cursor: default; }
+  .fq-opt.right { border-color: var(--ok); background: color-mix(in srgb, var(--ok) 15%, transparent); font-weight: 600; }
+  .fq-opt.wrong { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 12%, transparent); }
+  .fq-exp { margin-top: 12px; font-size: 15px; color: var(--text-dim); padding: 12px 14px; border-radius: 8px; background: var(--surface); }
+  .fq-nav { display: flex; justify-content: flex-end; margin-top: 14px; }
+  .fq-result { text-align: center; }
+  .fq-title { font-size: clamp(24px, 5vw, 32px); font-weight: 800; margin: 4px 0; background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .fq-big { font-family: var(--mono); font-size: 40px; font-weight: 700; }
+  .fq-big small { font-size: 18px; color: var(--text-dim); }
+  .fq-rows { text-align: left; display: grid; gap: 6px; margin: 16px 0; }
+  .fq-rows div { display: grid; grid-template-columns: 170px 1fr 52px; gap: 10px; align-items: center; font-size: 13.5px; }
+  @media (max-width: 520px) { .fq-rows div { grid-template-columns: 110px 1fr 44px; font-size: 12.5px; } }
+  .fq-rows i { display: block; height: 10px; border-radius: 5px; background: var(--surface-2); overflow: hidden; }
+  .fq-rows i b { display: block; height: 100%; background: var(--accent); }
+  .fq-rows a { color: var(--text); }
+</style>
+</head>
+<body data-chapter="glossary">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 19</div>
+    <h1>용어집 &amp; 종합 퀴즈</h1>
+    <p class="lead">이 책에 나온 용어를 한곳에 모았다. 설명 끝의 [Vol·Part·§]는 Bluetooth Core Specification 6.3에서 근거를 찾을 위치이고, Core 밖 사양(LE 오디오 프로파일 등)은 그렇게 적었다. 모르는 말이 나오면 검색하고, 링크로 해당 장에 돌아가 계산기를 다시 돌려 보자. 마지막의 종합 퀴즈는 각 장의 확인 퀴즈에서 두 문제씩 뽑았다.</p>
+  </header>
+
+  <section id="glossary" data-nonum>
+    <h2>용어집</h2>
+    <div class="gl-tools">
+      <input class="gl-search" id="gl-q" type="search" placeholder="용어, 영어 이름, 설명으로 검색 (예: LTK, instant, ASE, §4.5.2)" aria-label="용어 검색">
+      <div class="row"><div class="seg" id="gl-part" aria-label="부(장 묶음)로 거르기"><button data-value="all" class="on">전체</button></div><span class="gl-count" id="gl-count"></span></div>
+    </div>
+    <div id="gl-list"></div>
+  </section>
+
+  <section id="final" data-nonum>
+    <h2>종합 퀴즈</h2>
+    <p>각 장의 확인 퀴즈에서 두 문제씩 뽑았다. 보기를 고르면 바로 해설이 나오고, 끝까지 풀면 장별 결과를 보여 준다.</p>
+    <div class="fq" id="fq"></div>
+  </section>
+
+  <section id="refs" data-nonum>
+    <h2>참고 문헌</h2>
+    <ul>
+      <li>Bluetooth SIG, <b>Bluetooth Core Specification v6.3</b>. <a href="https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Core_v6.3/out/en/index-en.html">HTML 판</a> — 이 책의 모든 [Vol·Part·§] 표기의 기준.</li>
+      <li>Core 사양의 예제 데이터: [Vol 2] Part G(Classic 도약·접근 코드·HEC·CRC·FEC, AES-CCM, SSP, SAFER+), [Vol 3] Part H 부록 D(SMP 함수), [Vol 6] Part C(LE 패킷·채널 선택·암호화, Channel Sounding DRBG). 이 책의 계산은 모두 이 값들로 검증했다(<code>scripts/verify-factcheck.cjs</code>, Classic 예제는 <code>scripts/data/partg.json</code>). 맞지 않은 두 곳은 5장과 13장의 경고 상자에 기록했다.</li>
+      <li>Core 밖의 사양: Published Audio Capabilities Service v1.0.1, Audio Stream Control Service v1.0, Basic Audio Profile v1.0.1(15장).</li>
+      <li>입문편: <a href="../../bluetooth/">BluetoothBook</a> — 이 책이 가정하는 기초.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const T = window.BD_TERMS || [];
+  const chOf = (slug) => BD.CHAPTERS.find((c) => c.slug === slug);
+  // part filter buttons
+  const parts = [...new Set(BD.CHAPTERS.filter((c) => c.slug !== "glossary").map((c) => c.part))];
+  $("gl-part").insertAdjacentHTML("beforeend", parts.map((p) => `<button data-value="${p}">${p}</button>`).join(""));
+  const part = BD.seg("gl-part", render);
+  const q = $("gl-q"); q.addEventListener("input", render);
+  try { const qq = new URLSearchParams(location.search).get("q"); if (qq) q.value = qq; } catch (e) {}
+  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  function hl(s, term) { if (!term) return esc(s); const i = s.toLowerCase().indexOf(term.toLowerCase()); if (i < 0) return esc(s); return esc(s.slice(0, i)) + "<mark>" + esc(s.slice(i, i + term.length)) + "</mark>" + esc(s.slice(i + term.length)); }
+  function render() {
+    const term = q.value.trim(), p = part();
+    const list = T.filter(([ko, en, def, ch]) => (p === "all" || chOf(ch).part === p) && (!term || (ko + " " + en + " " + def).toLowerCase().includes(term.toLowerCase())));
+    let html = "", last = "";
+    list.forEach(([ko, en, def, ch]) => {
+      const c = chOf(ch);
+      if (c.slug !== last) { html += `<div class="gl-group">${c.num} ${c.title}</div>`; last = c.slug; }
+      html += `<div class="gl-item"><h4>${hl(ko, term)}<span class="en">${hl(en, term)}</span></h4><p>${hl(def, term)}</p><a class="ch" href="${c.slug}.html">→ ${c.num}장에서 보기</a></div>`;
+    });
+    $("gl-list").innerHTML = html || `<div class="gl-empty">“${esc(term)}”에 맞는 용어가 없습니다.</div>`;
+    $("gl-count").textContent = `${list.length} / ${T.length}개`;
+  }
+  render();
+
+  /* ---------------- final quiz ---------------- */
+  const QZ = [
+/*QZ-BEGIN*/
+    ["intro", "사양에서 “should”의 뜻은?", ["반드시 구현해야 한다", "권장하지만 필수는 아니다", "금지한다", "언제나 참인 사실이다"], 1, "[Vol 1] Part E §1 Table 1.1: should·may·optional은 “not mandatory”, should는 권장."],
+    ["intro", "예제 데이터와 본문이 다를 때 사양의 지침은?", ["예제를 따른다", "정오표가 나올 때까지 예제가 틀렸다고 본다", "둘 다 허용된다", "구현이 선택한다"], 1, "[Vol 1] Part E §4: “implementers should assume that the data, rather than the specification, are erroneous.”"],
+    ["hci", "opcode 0x0C03의 OGF와 OCF는?", ["OGF 0x0C, OCF 0x03", "OGF 0x03, OCF 0x003", "OGF 0x01, OCF 0x0C3", "OGF 0x08, OCF 0x003"], 1, "0x0C03 = 0000 1100 0000 0011. 위 6비트 000011 = 0x03(컨트롤러·기저대역), 아래 10비트 = 0x003(Reset)."],
+    ["hci", "H4 바이트열이 “04 0E 04 01 03 0C 00”이다. 무엇인가?", ["Reset 명령", "Reset에 대한 Command Complete(크레딧 1, 성공)", "Command Status", "ACL 데이터"], 1, "04 = 이벤트, 0E = Command Complete, 길이 4, Num_HCI_Command_Packets 1, opcode 03 0C(0x0C03, 리틀 엔디언), 상태 00."],
+    ["scheduling", "센트럴이 충돌로 한 연결 이벤트에서 아무것도 보내지 않았다. connEventCounter는?", ["그대로 둔다", "하나 늘린다", "0으로 되돌린다", "페리페럴만 늘린다"], 1, "[Vol 6] Part B §4.5.1: 보내지 않았거나 듣지 않은 이벤트도 양쪽 모두 센다."],
+    ["scheduling", "factor 4, base 1이면 서브레이트 이벤트는?", ["0, 4, 8, …", "1, 5, 9, …", "4, 8, 12, …", "모든 이벤트"], 1, "(count − 1)이 4의 배수인 이벤트."],
+    ["procedures", "connEventCount가 0xFFF0일 때 Instant 0x0005인 PDU를 받았다. instant는?", ["과거 (65,515 이벤트 전)", "미래 (21 이벤트 뒤)", "지금", "무효"], 1, "(0x0005 − 0xFFF0) mod 65536 = 21 &lt; 32767 이므로 미래."],
+    ["procedures", "연결 갱신 PDU의 instant가 이미 지났다. 페리페럴은?", ["새 값을 바로 쓴다", "LL_REJECT_EXT_IND", "연결을 잃은 것으로 처리(0x28)", "무시한다"], 2, "[Vol 6] Part B §5.5.1: LL_CONNECTION_UPDATE_IND면 반드시, 그 밖의 PDU면 그래도 된다."],
+    ["extadv", "확장 헤더 플래그가 0x49(0100 1001)이면 있는 칸은?", ["TargetA, AuxPtr, SyncInfo", "AdvA, ADI, TxPower", "AdvA, CTEInfo, AuxPtr", "ADI, SyncInfo"], 1, "비트 0 AdvA, 비트 3 ADI, 비트 6 TxPower. 사양 4.2.2 샘플의 플래그가 이것이다."],
+    ["extadv", "Aux 오프셋 1,200 µs를 AuxPtr에 넣으면 단위와 값은?", ["300 µs × 4", "30 µs × 40", "1 µs × 1200", "아무 단위나"], 1, "245,700 µs 미만이면 30 µs 단위를 써야 한다."],
+    ["encryption", "SKD = SKD_P ‖ SKD_C에서 SKD의 가장 작은 바이트는?", ["SKD_P의 가장 작은 바이트", "SKD_C의 가장 작은 바이트", "IV_C의 첫 바이트", "LTK의 첫 바이트"], 1, "[Vol 6] Part B §5.1.3.1: SKD_C의 가장 작은 옥텟이 SKD의 가장 작은 옥텟, SKD_P의 가장 큰 옥텟이 SKD의 가장 큰 옥텟이다."],
+    ["encryption", "LL_START_ENC_REQ는 어떻게 보내는가?", ["페리페럴이 평문으로 보낸다", "센트럴이 암호문으로 보낸다", "페리페럴이 암호문으로 보낸다", "보내지 않는다"], 0, "페리페럴이 SK를 계산한 뒤 평문으로 보내고, 암호문을 받을 준비를 한다. 이어지는 두 LL_START_ENC_RSP는 모두 암호문이다."],
+    ["smp", "f5 출력 256비트 중 LTK는 어느 쪽인가?", ["카운터 0으로 만든 위쪽 128비트", "카운터 1로 만든 아래쪽 128비트", "T 자체", "DHKey의 아래 128비트"], 1, "[Vol 3] Part H §2.2.7: LTK는 f5의 least significant 128비트(Counter = 1), MacKey는 most significant 128비트(Counter = 0)."],
+    ["smp", "패스키 방식에서 f4의 Z는?", ["항상 0", "패스키 전체", "0x80 또는 0x81 (라운드의 패스키 비트)", "IOcap"], 2, "최상위 비트를 1로 하고 최하위 비트에 그 라운드의 패스키 비트를 넣는다. 20라운드."],
+    ["privacy", "임의 주소의 위 두 비트가 0b01이면?", ["정적 주소", "RPA", "NRPA", "공개 주소"], 1, "[Vol 6] Part B Table 1.2."],
+    ["privacy", "컨트롤러가 RPA를 해석한 뒤 필터 수용 목록과 비교하는 주소는?", ["받은 RPA 그대로", "해석된 신원 주소", "prand", "내 RPA"], 1, "[Vol 6] Part B §4.7: 필터 정책은 해석된 뒤 신원 주소에 적용된다."],
+    ["bigsec", "방송 코드 문자열 “AB”의 128비트 값은?", ["0x41420000…0000", "0x0000…00004241", "0x0000…00004142", "AES로 바꾼 값"], 1, "UTF-8 바이트(41, 42)를 가장 작은 바이트부터 채운다. 첫 글자 A(0x41)가 가장 작은 바이트다."],
+    ["bigsec", "GSK 유도에서 BIG마다 달라지는 입력은?", ["“BIG3”", "GSKD", "방송 코드", "GLTK"], 1, "GSKD는 컨트롤러가 암호화된 BIG마다 새로 만든다. 방송 코드는 사람이 정하고, GLTK는 코드만으로 정해진다."],
+    ["l2cap", "LE에서 SMP가 쓰는 L2CAP CID는?", ["0x0004", "0x0005", "0x0006", "0x0040"], 2, "[Vol 3] Part A Table 2.3."],
+    ["l2cap", "SDU 600바이트를 MPS 200으로 보내면 K-frame은 몇 개인가?", ["3", "4", "5", "6"], 1, "첫 K-frame은 SDU 길이 2바이트를 싣고 198바이트, 이후 200씩: 198 + 200 + 200 = 598, 남은 2바이트에 하나 더. 모두 4개."],
+    ["gatt", "opcode 0x52의 뜻은?", ["쓰기 요청", "쓰기 명령(명령 플래그 + 쓰기 방법)", "서명된 쓰기", "읽기 응답"], 1, "0x52 = 0x40(명령 플래그) | 0x12(쓰기). 응답이 없다."],
+    ["gatt", "ATT 트랜잭션이 30초 안에 끝나지 않으면?", ["자동으로 다시 보낸다", "실패로 처리하고 그 베어러로는 더 보내지 않는다", "다른 베어러로 이어 간다", "연결 간격을 늘린다"], 1, "[Vol 3] Part F §3.3.3. 트랜잭션은 베어러를 넘나들 수 없다."],
+    ["baseband", "연결 상태 도약 커널에서 Central→Peripheral과 Peripheral→Central을 가르는 입력은?", ["X", "Y1·Y2 (CLK₁)", "E", "F"], 1, "Y1 = CLK₁은 PERM5 제어 C와 XOR되고, Y2 = 32 × CLK₁은 둘째 덧셈에 들어간다."],
+    ["baseband", "LAP의 최상위 비트가 1이다. 동기어 정보 부분 끝 6비트(전송 순서)는?", ["001101", "110010", "101010", "LAP에 따라 다르다"], 1, "§6.3.3.1. LAP MSB와 붙여 1110010, 길이 7 Barker 수열이 된다."],
+    ["classicsec", "E1 출력 중 ACO는 어디에 쓰이나?", ["PIN 길이", "E3의 COF로 들어가 암호화 키를 만든다", "도약 순서", "버린다"], 1, "§6.1: ACO는 E3에 쓰는 Authenticated Ciphering Offset. Secure Connections에서는 h5의 ACO가 h3과 nonce의 IV에 쓰인다."],
+    ["classicsec", "PIN이 4바이트일 때 E22의 L′은?", ["4", "6", "10", "16"], 2, "L′ = min(16, L + 6) = 10. PIN 4바이트 뒤에 BD_ADDR 6바이트가 붙는다."],
+    ["isoal", "ISO 간격 20 ms, SDU 간격 10 ms, Max_SDU 100, Max_PDU 60이면 BN은?", ["1", "2", "4", "5"], 2, "USPI = 2, UPPS = ⌈100 ÷ 60⌉ = 2, BN = 4."],
+    ["isoal", "분할 헤더의 SC가 0이면?", ["이어지는 조각, Time_Offset 없음", "새 SDU의 시작, 헤더 뒤에 Time_Offset 3바이트", "채움 PDU", "SDU의 끝"], 1, "[Vol 6] Part G Table 2.3. 끝을 알리는 것은 CMPLT다."],
+    ["leaudio", "Enable 동작을 쓸 수 있는 ASE 상태는?", ["Idle", "Codec Configured", "QoS Configured", "Streaming"], 2, "ASCS Table 4.6: “Valid only if ASE_State = 0x02 (QoS Configured).”"],
+    ["leaudio", "Streaming 중 CIS가 끊기면 ASE는?", ["Idle", "QoS Configured", "Releasing", "그대로 Streaming"], 1, "ASCS §3.2. LE-ACL이 끊겼다면 Releasing이다."],
+    ["cs", "CS 채널 인덱스 24의 주파수와 사용 여부는?", ["2,424 MHz, 사용", "2,426 MHz, 사용 안 함", "2,426 MHz, 사용", "2,450 MHz, 사용"], 1, "2,402 + 24 = 2,426 MHz. 23~25는 Table 1.1에서 허용되지 않는다."],
+    ["cs", "왕복 시간이 비행만으로 20 ns다. 거리는 약?", ["6 m", "3 m", "1.5 m", "20 m"], 1, "c × 20 ns ÷ 2 ≈ 0.3 m/ns × 20 ÷ 2 = 3.0 m."],
+    ["direction", "CTETime이 10이고 1 µs 슬롯이면 IQ 표본은 모두 몇 개?", ["8", "34", "42", "80"], 2, "80 µs − 12 µs = 68 µs, 전환+표본 2 µs씩 34개 표본 슬롯, 기준 8개를 더해 42개."],
+    ["direction", "AoD CTE를 받는 수신기는?", ["안테나를 바꿔야 한다", "안테나를 바꿀 필요가 없다", "IQ 표본을 찍지 않는다", "CRC가 틀려야 받는다"], 1, "§2.5.4: AoD면 수신기는 안테나를 바꿀 필요가 없고, 전환은 송신기가 한다."],
+    ["debugging", "<code>04 05 04 00 40 00 13</code>의 뜻은?", ["연결 0x0040이 타임아웃으로 끊김", "연결 0x0040이 상대 사용자의 종료로 끊김(0x13)", "명령 0x0405 성공", "ACL 데이터 4바이트"], 1, "이벤트 0x05 Disconnection Complete, Status 0, Handle 0x0040, Reason 0x13 Remote User Terminated Connection."],
+    ["debugging", "간격 50 ms, 지연 4, subrate 1일 때 감독 타임아웃으로 쓸 수 있는 가장 작은 값은?", ["400 ms", "500 ms", "510 ms", "1,000 ms"], 2, "(1 + 4) × 1 × 50 × 2 = 500 ms보다 커야 하고 10 ms 배수이므로 510 ms."],
+/*QZ-END*/
+  ];
+  let qi = 0, results = [];
+  // shuffle options deterministically per load
+  function renderQ() {
+    const [ch, q, opts, ans, exp] = QZ[qi]; const c = chOf(ch);
+    $("fq").innerHTML = `<div class="fq-top"><span>${qi + 1} / ${QZ.length}</span><span>맞힌 문제 ${results.filter(Boolean).length}</span></div><div class="fq-bar"><i style="width:${(qi / QZ.length) * 100}%"></i></div>
+      <div class="fq-card"><div class="fq-ch">${c.num} · ${c.title}</div><p class="fq-q">${q}</p><div class="fq-opts">${opts.map((o, k) => `<button class="fq-opt" data-k="${k}">${o}</button>`).join("")}</div><div id="fq-after"></div></div>`;
+    $("fq").querySelectorAll(".fq-opt").forEach((b) => b.onclick = () => {
+      const k = Number(b.dataset.k), ok = k === ans; results[qi] = ok;
+      $("fq").querySelectorAll(".fq-opt").forEach((x) => { x.disabled = true; if (Number(x.dataset.k) === ans) x.classList.add("right"); });
+      if (!ok) b.classList.add("wrong");
+      $("fq-after").innerHTML = `<div class="fq-exp"><b style="color:${ok ? "var(--ok)" : "var(--bad)"}">${ok ? "정답!" : "아쉽다."}</b> ${exp}</div><div class="fq-nav"><button class="btn primary" id="fq-next">${qi < QZ.length - 1 ? "다음 문제 →" : "결과 보기"}</button></div>`;
+      $("fq-next").onclick = () => { qi++; qi < QZ.length ? renderQ() : renderResult(); };
+    });
+  }
+  function renderResult() {
+    const score = results.filter(Boolean).length, pct = score / QZ.length;
+    const title = pct >= 0.9 ? "사양 독해가" : pct >= 0.7 ? "든든한 이해자" : pct >= 0.5 ? "성장 중인 탐험가" : "이제 막 출발한 여행자";
+    const by = {}; QZ.forEach(([ch], k) => { by[ch] = by[ch] || [0, 0]; by[ch][1]++; if (results[k]) by[ch][0]++; });
+    $("fq").innerHTML = `<div class="fq-result"><div class="scale-note">결과</div><div class="fq-title">${title}</div><div class="fq-big">${score}<small> / ${QZ.length}</small></div>
+      <div class="fq-rows">${Object.keys(by).map((ch) => { const c = chOf(ch), [a, n] = by[ch]; return `<div><a href="${c.slug}.html">${c.num} ${c.title}</a><i><b style="width:${(a / n) * 100}%;background:${a === n ? "var(--ok)" : a === 0 ? "var(--bad)" : "var(--accent)"}"></b></i><span class="mono">${a}/${n}</span></div>`; }).join("")}</div>
+      <p class="scale-note">틀린 문제가 있는 장의 시뮬레이터를 다시 만져 보면 금방 감이 온다.</p><button class="btn primary" id="fq-again">다시 풀기</button></div>`;
+    $("fq-again").onclick = () => { qi = 0; results = []; renderQ(); };
+  }
+  renderQ();
+})();
+</script>
+</body>
+</html>

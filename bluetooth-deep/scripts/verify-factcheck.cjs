@@ -684,6 +684,19 @@ const bitsStr = (s) => s.replace(/\s/g, '').split('').map(Number);
   for (const [k, list] of Object.entries(PATHS)) for (const s of list) ok(slugs.has(s), `읽는 순서 ${k}: ${s} 장이 있음`);
 }
 
+// ---------------------------------------------------------------- 19 glossary
+{
+  const src = read('glossary'), QZ = vm.runInContext('[' + src.slice(src.indexOf('/*QZ-BEGIN*/') + 12, src.indexOf('/*QZ-END*/')) + ']', vm.createContext({}));
+  const slugs = fs.readFileSync(path.join(root, 'js', 'common.js'), 'utf8').match(/slug: "[\w-]+"/g).map((x) => x.slice(7, -1));
+  eq(QZ.length, 36, '종합 퀴즈 36문제 (18장 × 2)');
+  for (const [ch, q, opts, ans, exp] of QZ) { ok(slugs.includes(ch) && ch !== 'glossary', `퀴즈 장 ${ch}`); ok(Number.isInteger(ans) && ans >= 0 && ans < opts.length && q && exp, `퀴즈 형식: ${q.slice(0, 20)}`); }
+  for (const s of slugs.filter((x) => x !== 'glossary')) eq(QZ.filter((x) => x[0] === s).length, 2, `${s}에서 두 문제`);
+  // 각 장 확인 퀴즈에서 그대로 옮겼는지(정답 보기가 같은지)
+  for (const [ch, q, opts, ans] of QZ) { const t = read(ch); ok(t.includes(q) && t.includes(`<button class="opt" data-correct>${opts[ans]}</button>`), `${ch}: 원래 퀴즈와 같음`); }
+  const nums = [...fs.readFileSync(path.join(root, 'js', 'common.js'), 'utf8').matchAll(/num: "(\d+)"/g)].map((m) => +m[1]);
+  eq(nums.join(','), Array.from({ length: 19 }, (_, i) => i + 1).join(','), '장 목록이 01~19 순서');
+}
+
 // ---------------------------------------------------------------- 모든 인라인 스크립트가 문법 오류 없이 컴파일되는가, JSON-LD가 올바른가
 let scripts = 0;
 for (const f of ['../index.html', ...fs.readdirSync(path.join(root, 'chapters')).filter((x) => x.endsWith('.html'))]) {

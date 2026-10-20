@@ -81,7 +81,7 @@ window.YB_BOOKS = [
     subtitle: "프로토콜 스택을 끝까지 따라가는 블루투스 교과서",
     headline: "HCI 바이트에서 AES-CCM까지",
     description: "BluetoothBook의 다음 책. HCI와 링크 계층 절차, 패킷 암호화와 페어링 함수 전부, 프라이버시, L2CAP·EATT, 클래식 베이스밴드, 등시성 채널과 LE 오디오, 채널 사운딩과 방향 찾기를 Core 6.3의 시험 데이터로 계산을 맞춰 보며 따라간다.",
-    status: "draft",
+    status: "published",
     chapters: 19,
     simulators: 41,
     level: "엔지니어 (1권 다음)",

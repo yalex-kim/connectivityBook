@@ -11,14 +11,14 @@
   // @book-chapters-begin — 이 사이(장 목록)는 책마다 다르다. tools/sync_shared.py가 책의 것을 그대로 둔다.
   const CHAPTERS = [
     { slug: "intro",      num: "01", part: "시작", title: "들어가며: 사양을 직접 읽는 책", desc: "1권과의 관계, 목적별 읽는 순서, Core 6.3의 Vol·Part·§와 shall·should·may, 예제 데이터를 믿는 법, 값·HCI 바이트·공중 비트의 순서를 변환기로 익힌다.", tags: ["안내", "sim"] },
-    { slug: "encryption", num: "06", part: "보안 끝까지", title: "링크 계층 암호화: 세션 키와 AES-CCM", desc: "LTK에서 세션 키로, 13바이트 nonce와 MIC, 재전송과 위·변조, 암호화 일시 정지와 키 교체, CIS·BIS의 IV까지 사양의 암호화 샘플 패킷 네 개를 바이트 단위로 재현한다.", tags: ["보안", "sim"] },
-    { slug: "smp",        num: "07", part: "보안 끝까지", title: "SMP 완전판: P-256에서 LTK까지", desc: "P-256 공개 키 교환과 검증, 디버그 키, f4 약속값과 g2 숫자 비교, 패스키 20라운드, f5로 뽑는 MacKey와 LTK, f6 확인값, 레거시 c1·s1, CT2와 h6·h7로 하는 CTKD를 부록 D 샘플로 검증한다.", tags: ["보안", "sim"] },
-    { slug: "privacy",    num: "08", part: "보안 끝까지", title: "프라이버시와 필터링: 해석 목록과 필터 수용 목록", desc: "주소 네 가지와 신원 주소, ah로 만들고 푸는 RPA, 컨트롤러의 해석 목록과 네트워크·기기 프라이버시 모드, 광고·스캔·연결 필터 정책과 TargetA, RPA를 바꾸는 시점.", tags: ["보안", "sim"] },
-    { slug: "bigsec",     num: "09", part: "보안 끝까지", title: "BIG 보안과 BIS: 방송 코드에서 그룹 세션 키까지", desc: "방송 코드의 UTF-8 표현, h7·h6·h8로 이어지는 IGLTK·GLTK·GSK, BIGInfo의 GSKD와 GIV, BIS의 CCM, 시드 접근 주소에서 BIS 접근 주소를 만드는 규칙을 사양 샘플로 재현한다.", tags: ["보안", "sim"] },
     { slug: "hci",        num: "02", part: "컨트롤러", title: "HCI: 호스트와 컨트롤러 사이의 바이트", desc: "HCI 패킷 다섯 가지와 UART 표시 바이트, OGF·OCF, Command Complete·Status, 명령·데이터 크레딧과 Number Of Completed Packets, 이벤트 마스크와 6.3 비트 확장, 초기화 순서를 사양 샘플의 HCI 바이트로 해독한다.", tags: ["컨트롤러", "sim"] },
     { slug: "scheduling", num: "03", part: "컨트롤러", title: "링크 계층 상태 기계와 컨트롤러 스케줄링", desc: "일곱 상태와 여러 상태 기계, 반드시 함께 지원할 조합, 앵커 포인트와 connEventCounter, 서브레이팅·연속 이벤트·페리페럴 지연의 규칙, 무선 하나로 여러 일을 돌리는 스케줄러와 건너뛴 이벤트.", tags: ["컨트롤러", "sim"] },
     { slug: "procedures", num: "04", part: "컨트롤러", title: "링크 계층 제어 절차: instant와 충돌 규칙", desc: "LL 제어 PDU와 한 번에 하나의 절차, 40초 응답 타임아웃, instant 규칙과 Instant Passed, 연결 갱신의 전송 창, 절차 충돌 판정(0x23·0x2A), 제어 PDU를 CRC·화이트닝·CTE까지 공중 비트로 만들기.", tags: ["컨트롤러", "sim"] },
     { slug: "extadv",     num: "05", part: "컨트롤러", title: "광고 끝까지: 확장 광고 체인, 주기적 광고와 PAwR", desc: "ADV_EXT_IND·AUX_ADV_IND·AUX_CHAIN_IND, 공통 확장 페이로드와 AuxPtr·ADI, 1650바이트 체인과 T_MAFS, 주기적 광고와 PAST, PAwR 시간 규칙. 사양 샘플 AUX_ADV_IND를 공중 비트까지 재현한다.", tags: ["컨트롤러", "sim"] },
+    { slug: "encryption", num: "06", part: "보안 끝까지", title: "링크 계층 암호화: 세션 키와 AES-CCM", desc: "LTK에서 세션 키로, 13바이트 nonce와 MIC, 재전송과 위·변조, 암호화 일시 정지와 키 교체, CIS·BIS의 IV까지 사양의 암호화 샘플 패킷 네 개를 바이트 단위로 재현한다.", tags: ["보안", "sim"] },
+    { slug: "smp",        num: "07", part: "보안 끝까지", title: "SMP 완전판: P-256에서 LTK까지", desc: "P-256 공개 키 교환과 검증, 디버그 키, f4 약속값과 g2 숫자 비교, 패스키 20라운드, f5로 뽑는 MacKey와 LTK, f6 확인값, 레거시 c1·s1, CT2와 h6·h7로 하는 CTKD를 부록 D 샘플로 검증한다.", tags: ["보안", "sim"] },
+    { slug: "privacy",    num: "08", part: "보안 끝까지", title: "프라이버시와 필터링: 해석 목록과 필터 수용 목록", desc: "주소 네 가지와 신원 주소, ah로 만들고 푸는 RPA, 컨트롤러의 해석 목록과 네트워크·기기 프라이버시 모드, 광고·스캔·연결 필터 정책과 TargetA, RPA를 바꾸는 시점.", tags: ["보안", "sim"] },
+    { slug: "bigsec",     num: "09", part: "보안 끝까지", title: "BIG 보안과 BIS: 방송 코드에서 그룹 세션 키까지", desc: "방송 코드의 UTF-8 표현, h7·h6·h8로 이어지는 IGLTK·GLTK·GSK, BIGInfo의 GSKD와 GIV, BIS의 CCM, 시드 접근 주소에서 BIS 접근 주소를 만드는 규칙을 사양 샘플로 재현한다.", tags: ["보안", "sim"] },
     { slug: "l2cap",      num: "10", part: "호스트", title: "L2CAP: 채널, 신호, 크레딧 기반 흐름 제어", desc: "LE 고정 채널과 동적 CID, 신호 명령, K-frame·MTU·MPS·크레딧 규칙, SDU가 K-frame·HCI 조각·LL PDU로 나뉘는 계산, 여러 채널을 한 번에 여는 ECFC와 재설정 규칙.", tags: ["호스트", "sim"] },
     { slug: "gatt",       num: "11", part: "호스트", title: "ATT/GATT 심화: EATT, 큐 쓰기, Database Hash", desc: "ATT opcode 구조와 순차 프로토콜·30초 트랜잭션, Read Blob과 큐 쓰기·신뢰성 있는 쓰기, EATT의 병렬 트랜잭션과 새 PDU, Database Hash 계산과 Robust Caching의 change-aware 규칙.", tags: ["호스트", "sim"] },
     { slug: "baseband",   num: "12", part: "Classic (BR/EDR)", title: "Classic 기저대역: 도약 커널, 접근 코드, HEC·CRC·FEC", desc: "79채널 도약 선택 커널(PERM5, mod 79)과 AFH 재매핑, LAP에서 64비트 동기어를 만드는 (64,30) 부호와 PN 덮개, HEC·CRC·FEC·화이트닝을 Part G 예제 데이터로 재현한다.", tags: ["Classic", "sim"] },
@@ -28,6 +28,7 @@
     { slug: "cs",         num: "16", part: "오디오·위치", title: "Channel Sounding: 위상과 왕복 시간으로 거리 재기", desc: "CS 채널 72개와 스텝 모드 0~3, RTT·위상 기반 거리와 모호 거리, CS DRBG(h9·f7·f8·f9)와 채널 섞기 hr1·cr1, 접근 주소 자기상관 점수를 Core 6.3 예제 데이터로 재현한다.", tags: ["위치", "sim"] },
     { slug: "direction",  num: "17", part: "오디오·위치", title: "방향 찾기: CTE, IQ 표본, 안테나 전환", desc: "CTE의 보호·기준 구간과 전환·표본 슬롯, IQ 표본 9~82개 규칙, AoA·AoD의 안테나 전환 패턴, 기준 구간으로 톤 회전을 지우고 안테나 위상차로 각도를 구하는 계산.", tags: ["위치", "sim"] },
     { slug: "debugging",  num: "18", part: "현장", title: "사례로 배우는 디버깅: HCI 로그에서 원인까지", desc: "끊김(0x08), MIC 실패(0x3D), 키 없음(0x06), instant 지남(0x28), 명령 거부(0x0C), 알림 잘림(ATT_MTU) 여섯 사례를 HCI 로그 바이트부터 읽고 원인 규칙과 해결책을 사양으로 짚는다.", tags: ["디버깅", "HCI", "sim"] },
+    { slug: "glossary",   num: "19", part: "마무리", title: "용어집 & 종합 퀴즈", desc: "이 책의 용어를 Core 6.3 근거 위치와 함께 검색하고, 장마다 두 문제씩 뽑은 종합 퀴즈로 점검한다.", tags: ["정리"] },
   ];
   // @book-chapters-end
   const BD = (window.BD = {});

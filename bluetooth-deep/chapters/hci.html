@@ -71,7 +71,7 @@
   <!-- ============================================================ -->
   <section id="decode">
     <h2>해독기: 사양 샘플의 HCI 바이트</h2>
-    <p>사양 [Vol 6] Part C §1은 암호화 시작 과정을 HCI 바이트까지 적어 두었다. 아래 해독기의 기본 입력은 그 바이트에 H4 표시와 머리말을 붙인 것이다. 센트럴 호스트가 LE_Enable_Encryption을 보내고, 페리페럴 컨트롤러가 LTK를 요청하고, 페리페럴 호스트가 LTK를 돌려주고, HCI_LE_Encrypt로 세션 키를 확인한 뒤, ACL 데이터를 보낸다. 자기 로그의 바이트를 붙여 넣어도 된다(공백·줄바꿈 무시, # 뒤는 주석).</p>
+    <p>사양 [Vol 6] Part C §1은 암호화 시작 과정을 HCI 바이트까지 적어 두었다. 아래 해독기의 기본 입력은 그 바이트에 H4 표시와 머리말을 붙인 것이다. 센트럴 호스트가 LE_Enable_Encryption을 보내고, 페리페럴 컨트롤러가 <span class="term">LTK</span>를 요청하고, 페리페럴 호스트가 LTK를 돌려주고, HCI_LE_Encrypt로 <span class="term">세션 키</span>를 확인한 뒤, ACL 데이터를 보낸다. 자기 로그의 바이트를 붙여 넣어도 된다(공백·줄바꿈 무시, # 뒤는 주석).</p>
     <div class="sim" id="sim-dec">
       <div class="sim-head"><span class="sim-tag">WORKBENCH</span><h3>HCI(H4) 바이트 해독기</h3></div>
       <div class="sim-view" style="padding:14px 16px">
