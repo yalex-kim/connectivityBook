@@ -87,6 +87,11 @@ const bitsStr = (s) => s.replace(/\s/g, '').split('').map(Number);
   const s = f.csa1Sequence(10, m2, 37);
   ok(s.every((x) => m2[x.ch]), 'CSA#1 remaps to used channels only');
   ok(f.wifiBlocked([6]).size >= 9 && f.wifiBlocked([6]).size <= 10, 'Wi-Fi 20 MHz covers 9-10 LE channels');
+  // 예측해 보기: 1·6·11번이 덮는 범용 채널 수와 무작위 도약의 기대 손실률(퀴즈의 정답과 같아야 한다)
+  { const nb = f.wifiBlocked([1, 6, 11]).size, exp = (nb / 37) * 0.5, src = read('hopping');
+    eq(nb, 31, 'Wi-Fi 1·6·11 cover 31 of 37 LE data channels');
+    ok(exp > 0.35 && exp < 0.45, `random hopping loss at 50% duty ≈ 40% (${(exp * 100).toFixed(1)}%)`);
+    ok(/data-correct>약 40%/.test(src) && src.includes('31/37 × 50% = 41.9%'), 'hopping quiz answer matches the simulator'); }
 }
 
 // ---------------------------------------------------------------- 05 advertising
