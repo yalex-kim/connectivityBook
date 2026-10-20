@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>들어가며: 사양을 직접 읽는 책 · BluetoothBook 심화</title>
+<meta name="description" content="BluetoothBook 심화의 안내. 1권과 무엇이 다른지, Core 6.3의 Vol·Part·§ 구조와 shall·should·may, 예제 데이터(Part C·G·H 부록 D)를 믿는 법, 그리고 이 책 내내 나오는 바이트 순서·비트 전송 순서를 변환기로 익힌다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/intro.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="BluetoothBook 심화">
+<meta property="og:title" content="들어가며: 사양을 직접 읽는 책 · BluetoothBook 심화">
+<meta property="og:description" content="BluetoothBook 심화의 안내. 1권과 무엇이 다른지, Core 6.3의 Vol·Part·§ 구조와 shall·should·may, 예제 데이터(Part C·G·H 부록 D)를 믿는 법, 그리고 이 책 내내 나오는 바이트 순서·비트 전송 순서를 변환기로 익힌다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/intro.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"들어가며: 사양을 직접 읽는 책","name":"들어가며: 사양을 직접 읽는 책 · BluetoothBook 심화","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/intro.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/intro.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":1,"image":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png","dateModified":"2026-10-20","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/#book","name":"BluetoothBook 심화 — 프로토콜 스택을 끝까지 따라가는 블루투스 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},"publisher":{"@type":"Organization","name":"BluetoothBook 심화","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},"description":"BluetoothBook 심화의 안내. 1권과 무엇이 다른지, Core 6.3의 Vol·Part·§ 구조와 shall·should·may, 예제 데이터(Part C·G·H 부록 D)를 믿는 법, 그리고 이 책 내내 나오는 바이트 순서·비트 전송 순서를 변환기로 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook 심화","item":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},{"@type":"ListItem","position":2,"name":"01 들어가며: 사양을 직접 읽는 책","item":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/intro.html"}]}]}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<style>
+  .mono { font: 12.5px/1.8 var(--mono); word-break: break-all; }
+  .mono .k { color: var(--text-dim); }
+  .mono .hl { color: var(--accent); font-weight: 700; }
+  .path { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; counter-reset: p; }
+  .path li { counter-increment: p; padding: 8px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); font-size: 14px; }
+  .path li::before { content: counter(p) ". "; color: var(--text-dim); font-family: var(--mono); }
+  .path li small { display: block; color: var(--text-dim); margin-top: 2px; }
+</style>
+</head>
+<body data-chapter="intro">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 01</div>
+    <h1>들어가며: 사양을 직접 읽는 책</h1>
+    <p class="lead">BluetoothBook(1권)은 블루투스 전체를 한 번 훑어보는 책이었다. 이 책은 그다음 단계다. 같은 주제를 Bluetooth Core Specification 6.3의 원문 수준까지 내려가서, 사양에 적힌 대로 계산하고, 사양이 함께 실어 둔 <span class="term">예제 데이터</span>와 한 비트도 다르지 않은지 맞춰 본다. 이 장은 그 여정에 필요한 지도와 읽는 법, 그리고 내내 따라다닐 “바이트와 비트의 순서”를 먼저 정리한다.</p>
+    <ul class="objectives">
+      <li>이 책의 구성과 1권과의 관계, 내 목적에 맞는 읽는 순서를 고를 수 있다.</li>
+      <li>Core 사양의 Vol·Part·§ 표기와 shall·should·may·must·can의 뜻을 구별할 수 있다.</li>
+      <li>값·HCI 바이트열·공중 비트열 사이를 바꿔 읽고, 예제 데이터마다 다른 표기를 알아볼 수 있다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="map">
+    <h2>이 책의 지도</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>부</th><th>장</th><th>무엇을 끝까지 따라가나</th></tr></thead>
+      <tbody>
+        <tr><td>컨트롤러</td><td>02~05</td><td>HCI 바이트, 링크 계층 상태와 스케줄링, instant가 있는 절차, 확장·주기적 광고</td></tr>
+        <tr><td>보안 끝까지</td><td>06~09</td><td>세션 키와 AES-CCM, SMP의 P-256과 키 분배, 프라이버시와 해석 목록, BIG 보안</td></tr>
+        <tr><td>호스트</td><td>10~11</td><td>L2CAP 채널과 크레딧, ATT/GATT의 EATT·큐 쓰기·Database Hash</td></tr>
+        <tr><td>Classic (BR/EDR)</td><td>12~13</td><td>도약 커널·접근 코드·HEC·FEC, 레거시에서 Secure Connections까지</td></tr>
+        <tr><td>오디오·위치</td><td>14~17</td><td>ISOAL, LE 오디오 프로파일(Core 밖), Channel Sounding, 방향 찾기</td></tr>
+        <tr><td>현장</td><td>18</td><td>HCI 로그로 원인 찾기</td></tr>
+      </tbody>
+    </table></div>
+    <p>각 장은 같은 흐름이다. 개념 → 사양 원문의 규칙 → 그 규칙을 그대로 옮긴 계산기·시뮬레이터 → 예측해 보기 → 핵심 정리 → 퀴즈. 1권에서 같은 주제를 다룬 장이 있으면 “다른 책에서” 상자로 이어 두었다. 처음이라면 1권의 해당 장을 먼저 훑고 오는 것이 편하다.</p>
+    <div class="sim" id="sim-path">
+      <div class="sim-head"><span class="sim-tag">GUIDE</span><h3>목적에 맞는 읽는 순서</h3></div>
+      <div class="sim-controls" style="border-top:0">
+        <div class="ctrl"><span>무엇을 하려나</span><div class="seg" id="pa-g"><button data-value="fw" class="on">LE 펌웨어 개발</button><button data-value="sec">보안 검토</button><button data-value="audio">오디오 제품</button><button data-value="loc">위치·거리</button><button data-value="classic">Classic 유지보수</button><button data-value="debug">현장 문제 해결</button></div></div>
+      </div>
+      <div class="sim-view" style="padding:12px 16px"><ol class="path" id="pa-out"></ol></div>
+      <div class="sim-note">순서는 앞 장의 개념을 뒤 장이 쓰는 관계를 따랐다. 고른 길에 없는 장도 필요할 때 찾아 읽으면 된다. 장 제목을 누르면 바로 간다.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="spec">
+    <h2>사양 읽는 법</h2>
+    <p>Core 사양은 권(Vol)과 부(Part), 절(§)로 나뉜다. 이 책의 인용 <b>[Vol 6] Part B §4.5.2</b>는 “6권(LE 컨트롤러) B부(링크 계층) 4.5.2절”이다. 자주 가는 곳은 이렇다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>권</th><th>내용</th><th>이 책에서</th></tr></thead>
+      <tbody>
+        <tr><td>Vol 1</td><td>구조, 용어, 오류 코드(Part F)</td><td>18장</td></tr>
+        <tr><td>Vol 2</td><td>BR/EDR 컨트롤러(무선, 기저대역, LMP, 보안, 예제 Part G)</td><td>12·13장</td></tr>
+        <tr><td>Vol 3</td><td>호스트(L2CAP, ATT, GATT, GAP, SMP)</td><td>7·8·10·11장</td></tr>
+        <tr><td>Vol 4</td><td>HCI</td><td>2·18장</td></tr>
+        <tr><td>Vol 6</td><td>LE 컨트롤러(무선, 링크 계층, 예제 Part C, 보안, ISOAL, Channel Sounding)</td><td>3~6·9·14·16·17장</td></tr>
+      </tbody>
+    </table></div>
+    <p>요구의 세기는 낱말로 정해져 있다. <b><span class="term">shall</span></b>(= mandatory)은 그대로 구현해야 하는 것, <b>shall not</b>은 금지, <b>should</b>는 권장, <b>may</b>(= optional)는 허용이다. should와 may는 둘 다 “필수가 아니다”. <b>must</b>는 요구가 아니라 언제나 참인 사실이나 다른 요구의 당연한 결과를, <b>can</b>은 가능성을 말한다. 그래서 “should allow a minimum of 6 connection events”(4·18장)는 어겨도 규격 위반은 아니지만, 어기면 현장에서 끊김을 부른다.</p>
+    <p><b>예제 데이터</b>는 [Vol 2] Part G, [Vol 3] Part H 부록 D, [Vol 6] Part C에 있다. 사양은 이것을 “참고용”이라 하면서, 본문과 다르면 정오표가 나올 때까지 <b>예제 쪽이 틀렸다고 보라</b>고 한다. 이 책은 예제를 모두 다시 계산해 맞췄고, 맞지 않은 두 곳(5장의 AUX_ADV_IND CRC, 13장의 g() P-256)은 경고 상자와 검증 스크립트에 그대로 기록했다. LE 오디오 프로파일처럼 <b>Core 밖</b>의 사양은 본문에 그렇게 밝혔다.</p>
+    <div class="callout analogy"><strong>법전과 판례집</strong><p>사양 본문은 법전이다. shall은 “하여야 한다”, should는 “하는 것이 바람직하다”, may는 “할 수 있다”. 예제 데이터는 판례집과 비슷하지만 위계는 반대다. 둘이 어긋나면 법전(본문)이 이긴다. 그래서 계산이 예제와 다르면 먼저 내 구현을 의심하고, 그래도 본문대로라면 예제를 의심한다.</p></div>
+    <p class="spec-ref">낱말의 뜻(Table 1.1): <b>[Vol 1] Part E §1</b> · 2진·16진 표기: <b>§2.1</b> · 비트 번호와 필드: <b>§2.2</b> · 예약·이전 사용: <b>§2.4.1, §2.4.2</b> · 예제 데이터의 지위: <b>§4</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="order">
+    <h2>바이트와 비트의 순서</h2>
+    <p>이 책에서 가장 많이 헷갈리는 것은 “같은 값이 어디서는 앞뒤가 뒤집혀 보인다”는 점이다. 규칙은 세 가지뿐이다.</p>
+    <ol>
+      <li><b>값</b>을 적을 때는 사람처럼 큰 자리부터(MSO 먼저): 접근 주소 0x8E89BED6.</li>
+      <li><b><span class="term">HCI</span>와 대부분의 PDU 필드</b>는 <span class="term">리틀 엔디언</span>: 작은 바이트가 먼저. 0x8E89BED6은 D6 BE 89 8E 순서로 놓인다.</li>
+      <li><b>공중</b>에서는 필드마다 LSB가 먼저 나간다. 3비트 값 3은 1, 1, 0 순서로 보내고 사양은 이것을 “110”이라 적는다.</li>
+    </ol>
+    <p>예제 데이터의 표기는 곳마다 다르다. [Vol 2] Part G §10은 “가장 낮은 바이트가 왼쪽”, 같은 Part G의 §7과 [Vol 3] Part H 부록 D는 “큰 바이트가 왼쪽”, Part G §3의 <span class="term">동기어</span>는 전송 순서 그대로 4비트씩 끊은 16진이다. 각 장은 예제를 쓸 때 어느 표기인지 밝혀 두었다.</p>
+    <div class="sim" id="sim-order">
+      <div class="sim-head"><span class="sim-tag">CONVERTER</span><h3>값 → HCI 바이트 → 공중 비트</h3></div>
+      <div class="sim-controls" style="border-top:0">
+        <div class="ctrl"><span>필드</span><div class="seg" id="or-f"><button data-value="aa" class="on">광고 접근 주소 (32비트)</button><button data-value="handle">Connection_Handle (16비트)</button><button data-value="addr">BD_ADDR (48비트)</button><button data-value="x3">3비트 값 3</button></div></div>
+      </div>
+      <div class="sim-view" style="padding:12px 16px"><div class="mono" id="or-out"></div></div>
+      <div class="sim-readout"><div class="stat"><span class="k">공중에 먼저 나가는 비트</span><span class="v" id="or-first">—</span></div></div>
+      <div class="sim-note">공중 비트는 낮은 바이트부터, 각 바이트 안에서는 LSB부터다. 해볼 것: 접근 주소의 공중 비트열을 뒤집으면 사양 본문의 0b10001110_10001001_10111110_11010110(큰 비트부터 쓴 값)이 된다. 3비트 값 3은 사양 §1.2의 예 그대로 110이다.</div>
+    </div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">HCI 로그에 Connection_Handle 자리가 <code>40 00</code>으로 찍혀 있다. 핸들 값은?</p><p class="wi-hint">HCI는 리틀 엔디언이다.</p><div class="opts">
+      <button class="opt">0x4000</button>
+      <button class="opt" data-correct>0x0040</button>
+      <button class="opt">0x0400</button>
+    </div><div class="quiz-exp">작은 바이트(0x40)가 먼저 오므로 값은 0x0040이다([Vol 4] Part E §5.2). 18장의 로그도 모두 이렇게 읽는다.</div></div>
+    <p class="spec-ref">LE 비트 순서와 LSB 먼저: <b>[Vol 6] Part B §1.2</b> · 광고 접근 주소: <b>§2.1.2</b> · HCI 리틀 엔디언: <b>[Vol 4] Part E §5.2</b> · 예제 표기: <b>[Vol 2] Part G §3, §7.1, §10</b></p>
+  </section>
+
+  <div class="callout related"><strong>다른 책에서</strong><ul><li><a href="../../bluetooth/chapters/intro.html">BluetoothBook 1장 · 들어가며</a> — 블루투스 전체 지도와 버전 역사</li></ul></div>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>1권은 훑어보기, 이 책은 사양 원문 수준에서 계산하고 예제 데이터로 맞춰 보는 책이다.</li>
+      <li>인용은 [Vol·Part·§]. Vol 2 = BR/EDR, Vol 3 = 호스트, Vol 4 = HCI, Vol 6 = LE 컨트롤러.</li>
+      <li>shall = 필수, should = 권장, may = 허용(둘 다 필수 아님), must = 사실·결과, can = 가능성.</li>
+      <li>예제 데이터와 본문이 다르면 본문이 우선이다. 이 책은 불일치 두 곳을 기록해 두었다.</li>
+      <li>값은 MSO 먼저, HCI는 리틀 엔디언, 공중은 LSB 먼저. 예제마다 표기를 확인한다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>사양에서 “should”의 뜻은?</p><div class="opts">
+        <button class="opt">반드시 구현해야 한다</button><button class="opt" data-correct>권장하지만 필수는 아니다</button><button class="opt">금지한다</button><button class="opt">언제나 참인 사실이다</button>
+      </div><div class="quiz-exp">[Vol 1] Part E §1 Table 1.1: should·may·optional은 “not mandatory”, should는 권장.</div></div>
+      <div class="quiz-q"><p>예제 데이터와 본문이 다를 때 사양의 지침은?</p><div class="opts">
+        <button class="opt">예제를 따른다</button><button class="opt" data-correct>정오표가 나올 때까지 예제가 틀렸다고 본다</button><button class="opt">둘 다 허용된다</button><button class="opt">구현이 선택한다</button>
+      </div><div class="quiz-exp">[Vol 1] Part E §4: “implementers should assume that the data, rather than the specification, are erroneous.”</div></div>
+      <div class="quiz-q"><p>광고 접근 주소 0x8E89BED6이 공중에 나갈 때 처음 8비트는?</p><div class="opts">
+        <button class="opt">10001110</button><button class="opt">11010110</button><button class="opt" data-correct>01101011</button><button class="opt">01110001</button>
+      </div><div class="quiz-exp">낮은 바이트 0xD6 = 11010110을 LSB부터 보내므로 01101011.</div></div>
+      <div class="quiz-q"><p>“[Vol 3] Part H”는 무엇인가?</p><div class="opts">
+        <button class="opt">HCI</button><button class="opt">LE 링크 계층</button><button class="opt" data-correct>보안 관리자(SMP)</button><button class="opt">BR/EDR 기저대역</button>
+      </div><div class="quiz-exp">Vol 3(호스트)의 Part H가 Security Manager다. 예제 데이터는 그 부록 D에 있다(7장).</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  /* ================================================================ 계산 (검증 스크립트가 꺼내 쓴다) */
+  /** 값(BigInt) → 리틀 엔디언 바이트열. [Vol 4] Part E §5.2 */
+  function leBytes(v, n) { return Array.from({ length: n }, (_, i) => Number((BigInt(v) >> BigInt(8 * i)) & 255n)); }
+  /** 값 → 공중 비트열(LSB 먼저). [Vol 6] Part B §1.2 */
+  function airBits(v, nbits) { return Array.from({ length: nbits }, (_, i) => Number((BigInt(v) >> BigInt(i)) & 1n)).join(""); }
+  /** 목적별 읽는 순서(장 slug) */
+  const PATHS = {
+    fw: ["hci", "scheduling", "procedures", "extadv", "encryption", "l2cap", "gatt", "debugging"],
+    sec: ["encryption", "smp", "privacy", "bigsec", "classicsec", "debugging"],
+    audio: ["scheduling", "isoal", "leaudio", "bigsec", "extadv"],
+    loc: ["extadv", "direction", "cs"],
+    classic: ["baseband", "classicsec", "hci", "debugging"],
+    debug: ["hci", "debugging", "scheduling", "procedures", "encryption", "gatt"],
+  };
+
+  /* ================================================================ 1. 읽는 순서 */
+  (function () {
+    const g = BD.seg("pa-g", draw);
+    function draw() {
+      $("pa-out").innerHTML = PATHS[g()].map((s) => { const c = BD.CHAPTERS.find((x) => x.slug === s); return `<li><a href="${s}.html">${c.num} ${c.title}</a><small>${c.part}</small></li>`; }).join("");
+    }
+    draw();
+  })();
+
+  /* ================================================================ 2. 순서 변환 */
+  (function () {
+    const F = { aa: [0x8e89bed6n, 32, "접근 주소"], handle: [0x0040n, 16, "Connection_Handle"], addr: [0xc8192a3b4c5dn, 48, "BD_ADDR"], x3: [3n, 3, "3비트 필드"] };
+    const f = BD.seg("or-f", draw), H = (b) => b.map((x) => x.toString(16).padStart(2, "0").toUpperCase()).join(" ");
+    function draw() {
+      const [v, n, name] = F[f()], nb = Math.ceil(n / 8), bits = airBits(v, n);
+      const mso = v.toString(16).toUpperCase().padStart(Math.ceil(n / 4), "0");
+      $("or-out").innerHTML = `<span class="k">${name} 값 (MSO 먼저)</span> 0x${mso}<br><span class="k">HCI·메모리 바이트 (작은 바이트 먼저)</span> <span class="hl">${H(leBytes(v, nb))}</span><br><span class="k">공중 비트 (LSB 먼저)</span> ${bits.match(/.{1,8}/g).join(" ")}<br><span class="k">공중 비트를 뒤집으면 (사양의 0b 표기)</span> ${[...bits].reverse().join("").replace(/(.{8})(?=.)/g, "$1_")}`;
+      BD.stat("or-first", bits.slice(0, Math.min(8, n)));
+    }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

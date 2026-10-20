@@ -10,6 +10,7 @@
 
   // @book-chapters-begin — 이 사이(장 목록)는 책마다 다르다. tools/sync_shared.py가 책의 것을 그대로 둔다.
   const CHAPTERS = [
+    { slug: "intro",      num: "01", part: "시작", title: "들어가며: 사양을 직접 읽는 책", desc: "1권과의 관계, 목적별 읽는 순서, Core 6.3의 Vol·Part·§와 shall·should·may, 예제 데이터를 믿는 법, 값·HCI 바이트·공중 비트의 순서를 변환기로 익힌다.", tags: ["안내", "sim"] },
     { slug: "encryption", num: "06", part: "보안 끝까지", title: "링크 계층 암호화: 세션 키와 AES-CCM", desc: "LTK에서 세션 키로, 13바이트 nonce와 MIC, 재전송과 위·변조, 암호화 일시 정지와 키 교체, CIS·BIS의 IV까지 사양의 암호화 샘플 패킷 네 개를 바이트 단위로 재현한다.", tags: ["보안", "sim"] },
     { slug: "smp",        num: "07", part: "보안 끝까지", title: "SMP 완전판: P-256에서 LTK까지", desc: "P-256 공개 키 교환과 검증, 디버그 키, f4 약속값과 g2 숫자 비교, 패스키 20라운드, f5로 뽑는 MacKey와 LTK, f6 확인값, 레거시 c1·s1, CT2와 h6·h7로 하는 CTKD를 부록 D 샘플로 검증한다.", tags: ["보안", "sim"] },
     { slug: "privacy",    num: "08", part: "보안 끝까지", title: "프라이버시와 필터링: 해석 목록과 필터 수용 목록", desc: "주소 네 가지와 신원 주소, ah로 만들고 푸는 RPA, 컨트롤러의 해석 목록과 네트워크·기기 프라이버시 모드, 광고·스캔·연결 필터 정책과 TargetA, RPA를 바꾸는 시점.", tags: ["보안", "sim"] },

@@ -669,6 +669,21 @@ const bitsStr = (s) => s.replace(/\s/g, '').split('').map(Number);
   eq(f.notifyMax(247), 244, '퀴즈: 247 → 244');
 }
 
+// ---------------------------------------------------------------- 01 intro
+{
+  const src = read('intro'), f = load('intro', ['leBytes', 'airBits']);
+  const PATHS = vm.runInContext(src.slice(src.indexOf('  const PATHS ='), src.indexOf('\n  };', src.indexOf('  const PATHS =')) + 5) + ';PATHS', vm.createContext({}));
+  // [Vol 6] Part B §2.1.2: 0x8E89BED6 = 0b10001110_10001001_10111110_11010110, §1.2: LSB 먼저
+  eq(f.airBits(0x8e89bed6, 32).split('').reverse().join(''), '10001110100010011011111011010110', '광고 접근 주소의 0b 표기 (§2.1.2)');
+  eq(f.airBits(0x8e89bed6, 32).slice(0, 8), '01101011', '퀴즈: 처음 8비트');
+  eq(f.airBits(3, 3), '110', '3비트 값 3 → 110 (§1.2의 예)');
+  eq(X(f.leBytes(0x8e89bed6, 4)), 'd6be898e', '리틀 엔디언 바이트');
+  eq(X(f.leBytes(0x0040, 2)), '4000', '핸들 0x0040 → 40 00');
+  eq(X(f.leBytes(0xc8192a3b4c5dn, 6)), '5d4c3b2a19c8', 'BD_ADDR 6바이트');
+  const slugs = new Set(fs.readFileSync(path.join(root, 'js', 'common.js'), 'utf8').match(/slug: "[\w-]+"/g).map((x) => x.slice(7, -1)));
+  for (const [k, list] of Object.entries(PATHS)) for (const s of list) ok(slugs.has(s), `읽는 순서 ${k}: ${s} 장이 있음`);
+}
+
 // ---------------------------------------------------------------- 모든 인라인 스크립트가 문법 오류 없이 컴파일되는가, JSON-LD가 올바른가
 let scripts = 0;
 for (const f of ['../index.html', ...fs.readdirSync(path.join(root, 'chapters')).filter((x) => x.endsWith('.html'))]) {

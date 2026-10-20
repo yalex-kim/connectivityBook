@@ -112,6 +112,9 @@ window.BD_TERMS = [
   ["오류 코드", "Error code", "HCI 이벤트의 Status·Reason과 LL·LMP 거절에 쓰는 1바이트 값. [Vol 1] Part F Table 1.1", "debugging"],
   ["Command Status", "HCI_Command_Status", "오래 걸리는 명령을 받았다는 이벤트(0x0F). 0x00은 성공이 아니라 시작. [Vol 4] Part E §7.7.15", "debugging"],
   ["Instant Passed", "Instant Passed (0x28)", "instant가 지난 뒤 절차 PDU를 받아 연결을 잃었을 때의 오류 코드. [Vol 6] Part B §5.5.1", "debugging"],
+  ["shall", "shall / should / may", "사양의 요구 세기. shall = 필수, should = 권장, may = 허용(둘 다 필수 아님), must = 사실·결과, can = 가능성. [Vol 1] Part E §1", "intro"],
+  ["예제 데이터", "Sample data", "사양이 함께 실은 계산 예. [Vol 2] Part G, [Vol 3] Part H 부록 D, [Vol 6] Part C. 본문과 다르면 예제가 틀린 것으로 본다. [Vol 1] Part E §4", "intro"],
+  ["리틀 엔디언", "Little-endian", "작은 바이트를 먼저 놓는 순서. HCI 파라미터와 LE PDU 필드의 기본. [Vol 4] Part E §5.2", "intro"],
 ];
 
 /* 본문 표기 → 용어집 표제어 */
