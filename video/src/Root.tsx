@@ -1,6 +1,6 @@
 import { Composition } from "remotion";
-import { WifiLossShort, totalFrames } from "./wifi-loss/WifiLossShort";
+import { AfhExplainer, totalFrames } from "./afh/AfhExplainer";
 
 export const RemotionRoot: React.FC = () => (
-  <Composition id="WifiLossShort" component={WifiLossShort} durationInFrames={totalFrames} fps={30} width={1080} height={1920} />
+  <Composition id="AfhExplainer" component={AfhExplainer} durationInFrames={totalFrames} fps={30} width={1920} height={1080} />
 );

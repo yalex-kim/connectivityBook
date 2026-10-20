@@ -61,6 +61,11 @@ export const CH_ID = 0x305f + 13; // 책 시뮬레이터와 같은 채널 식별
 
 export type Event = { ch: number; busy: number[]; hit: boolean };
 
+/** 손실률 ≈ 덮인 채널 비율 × Wi-Fi가 말하는 시간 비율 */
+export function expectedLoss(wifi: number[], duty: number): number {
+  return (wifiBlocked(wifi).size / 37) * duty;
+}
+
 /** 연결 이벤트 n개: 채널, 그 순간 Wi-Fi가 막은 채널, 충돌 여부 */
 export function simulate(n: number, afh: boolean, seed = 42): Event[] {
   const blocked = wifiBlocked(WIFI), r = rng(seed);

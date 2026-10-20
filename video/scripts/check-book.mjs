@@ -13,7 +13,7 @@ const ts = fs.readFileSync(new URL("../src/book.ts", import.meta.url), "utf8")
   .replace(/^export /gm, "").replace(/: (number|boolean)\[\]|: Set<number>|: number|: \(\) => number|: Event\[\]|: boolean/g, "")
   .replace(/^type Event.*$/m, "").replace(/new Set<number>\(\)/, "new Set()").replace(/const used = \[\]/, "const used = []");
 const vctx = vm.createContext({ Math });
-vm.runInContext(ts + "\nthis.V = { dataChFreq, wifiBlocked, csa2Channel, simulate, WIFI, DUTY };", vctx);
+vm.runInContext(ts + "\nthis.V = { dataChFreq, wifiBlocked, csa2Channel, simulate, expectedLoss, WIFI, DUTY };", vctx);
 const V = vctx.V;
 
 let n = 0;
@@ -27,5 +27,10 @@ assert.equal(blocked, 31); assert.equal((blocked / 37 * V.DUTY * 100).toFixed(1)
 const big = V.simulate(20000, false), lossHop = big.filter((e) => e.hit).length / big.length;
 assert.ok(Math.abs(lossHop - 31 / 74) < 0.02, `무작위 도약 손실 ${lossHop}`);
 assert.equal(V.simulate(2000, true).filter((e) => e.hit).length, 0, "적응형 도약은 손실 0");
-assert.equal(V.simulate(60, false, 5).filter((e) => e.hit).length, 25, "영상의 표본(씨앗 5): 25/60 = 41.7%");
-console.log(`book check ok: ${n + 4} checks, 31/37 덮임, 긴 시뮬레이션 손실 ${(lossHop * 100).toFixed(1)}%`);
+// 조건별 예시(영상의 막대 셋): 책의 함수로 다시 계산
+const ex = (w, d) => (B.wifiBlocked(w).size / 37) * d * 100;
+for (const [w, d, v] of [[[6], 0.5, "13.5"], [[1, 6, 11], 0.5, "41.9"], [[1, 6, 11], 0.1, "8.4"]]) { assert.equal(ex(w, d).toFixed(1), v); assert.equal((V.expectedLoss(w, d) * 100).toFixed(1), v); n++; }
+// 영상의 누적 그래프(씨앗 42, 600번)는 고르지 않은 표본이다: 끝값이 계산값과 크게 어긋나지 않는지만 본다
+const run = V.simulate(600, false).filter((e) => e.hit).length / 600;
+assert.ok(Math.abs(run - 31 / 74) < 0.05, `누적 그래프 끝값 ${(run * 100).toFixed(1)}%`);
+console.log(`book check ok: ${n + 4} checks, 31/37 덮임, 긴 시뮬레이션 손실 ${(lossHop * 100).toFixed(1)}%, 영상 그래프 끝값 ${(run * 100).toFixed(1)}%`);

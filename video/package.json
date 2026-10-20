@@ -4,8 +4,8 @@
   "description": "ConnectivityBook 내용을 Remotion으로 만든 영상",
   "scripts": {
     "studio": "remotion studio",
-    "render": "remotion render WifiLossShort out/wifi-loss-short.mp4",
-    "still": "remotion still WifiLossShort out/still.png --frame=360",
+    "render": "remotion render AfhExplainer out/afh-explainer.mp4",
+    "still": "remotion still AfhExplainer out/still.png --frame=1500",
     "check": "node scripts/check-book.mjs && tsc --noEmit"
   },
   "dependencies": {
