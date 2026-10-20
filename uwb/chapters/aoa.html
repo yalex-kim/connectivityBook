@@ -6,18 +6,18 @@
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <title>방향 찾기: PDoA와 AoA · UWBBook</title>
 <meta name="description" content="안테나 두 개에 도착한 위상의 차이(PDoA)로 신호가 온 각도(AoA)를 구한다. 반 파장 간격의 이유, 간격이 넓으면 생기는 모호성, 옆쪽으로 갈수록 나빠지는 정확도, 방위각과 앙각, 앞뒤 구별을 공개 코드의 uwb_calc_aoa()로 계산한다.">
-<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/uwb/chapters/aoa.html">
+<link rel="canonical" href="https://yalex-kim.github.io/connectivityBook/uwb/chapters/aoa.html">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="UWBBook">
 <meta property="og:title" content="방향 찾기: PDoA와 AoA · UWBBook">
 <meta property="og:description" content="안테나 두 개에 도착한 위상의 차이(PDoA)로 신호가 온 각도(AoA)를 구한다. 반 파장 간격의 이유, 간격이 넓으면 생기는 모호성, 옆쪽으로 갈수록 나빠지는 정확도, 방위각과 앙각, 앞뒤 구별을 공개 코드의 uwb_calc_aoa()로 계산한다.">
-<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/uwb/chapters/aoa.html">
-<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/uwb/og.png">
+<meta property="og:url" content="https://yalex-kim.github.io/connectivityBook/uwb/chapters/aoa.html">
+<meta property="og:image" content="https://yalex-kim.github.io/connectivityBook/uwb/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"방향 찾기: PDoA와 AoA","name":"방향 찾기: PDoA와 AoA · UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/chapters/aoa.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/uwb/chapters/aoa.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":8,"image":"https://yalex-kim.github.io/yalexBook/uwb/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/uwb/#book","name":"UWBBook — 누구나 읽는 인터랙티브 UWB 교과서","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"publisher":{"@type":"Organization","name":"UWBBook","url":"https://yalex-kim.github.io/yalexBook/uwb/"},"description":"안테나 두 개에 도착한 위상의 차이(PDoA)로 신호가 온 각도(AoA)를 구한다. 반 파장 간격의 이유, 간격이 넓으면 생기는 모호성, 옆쪽으로 갈수록 나빠지는 정확도, 방위각과 앙각, 앞뒤 구별을 공개 코드의 uwb_calc_aoa()로 계산한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"UWBBook","item":"https://yalex-kim.github.io/yalexBook/uwb/"},{"@type":"ListItem","position":2,"name":"08 방향 찾기: PDoA와 AoA","item":"https://yalex-kim.github.io/yalexBook/uwb/chapters/aoa.html"}]}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"방향 찾기: PDoA와 AoA","name":"방향 찾기: PDoA와 AoA · UWBBook","url":"https://yalex-kim.github.io/connectivityBook/uwb/chapters/aoa.html","mainEntityOfPage":"https://yalex-kim.github.io/connectivityBook/uwb/chapters/aoa.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":8,"image":"https://yalex-kim.github.io/connectivityBook/uwb/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/connectivityBook/uwb/#book","name":"UWBBook — 누구나 읽는 인터랙티브 UWB 교과서","url":"https://yalex-kim.github.io/connectivityBook/uwb/"},"publisher":{"@type":"Organization","name":"UWBBook","url":"https://yalex-kim.github.io/connectivityBook/uwb/"},"description":"안테나 두 개에 도착한 위상의 차이(PDoA)로 신호가 온 각도(AoA)를 구한다. 반 파장 간격의 이유, 간격이 넓으면 생기는 모호성, 옆쪽으로 갈수록 나빠지는 정확도, 방위각과 앙각, 앞뒤 구별을 공개 코드의 uwb_calc_aoa()로 계산한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"UWBBook","item":"https://yalex-kim.github.io/connectivityBook/uwb/"},{"@type":"ListItem","position":2,"name":"08 방향 찾기: PDoA와 AoA","item":"https://yalex-kim.github.io/connectivityBook/uwb/chapters/aoa.html"}]}]}</script>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

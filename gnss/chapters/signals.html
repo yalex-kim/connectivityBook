@@ -6,18 +6,18 @@
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <title>신호와 주파수: 잡음 아래의 목소리 · GNSSBook</title>
 <meta name="description" content="모든 GPS 주파수는 10.23 MHz 한 시계에서 나온다. L1·L2·L5와 Galileo E1·E5·E6의 배수 관계, 상대론 때문에 일부러 늦춘 위성 시계, 잡음보다 약한 −158.5 dBW 신호를 받아 내는 확산 스펙트럼과 C/N0, BPSK와 BOC 스펙트럼을 공개 규격의 값으로 계산한다.">
-<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/gnss/chapters/signals.html">
+<link rel="canonical" href="https://yalex-kim.github.io/connectivityBook/gnss/chapters/signals.html">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="GNSSBook">
 <meta property="og:title" content="신호와 주파수: 잡음 아래의 목소리 · GNSSBook">
 <meta property="og:description" content="모든 GPS 주파수는 10.23 MHz 한 시계에서 나온다. L1·L2·L5와 Galileo E1·E5·E6의 배수 관계, 상대론 때문에 일부러 늦춘 위성 시계, 잡음보다 약한 −158.5 dBW 신호를 받아 내는 확산 스펙트럼과 C/N0, BPSK와 BOC 스펙트럼을 공개 규격의 값으로 계산한다.">
-<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/gnss/chapters/signals.html">
-<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/gnss/og.png">
+<meta property="og:url" content="https://yalex-kim.github.io/connectivityBook/gnss/chapters/signals.html">
+<meta property="og:image" content="https://yalex-kim.github.io/connectivityBook/gnss/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"신호와 주파수: 잡음 아래의 목소리","name":"신호와 주파수: 잡음 아래의 목소리 · GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/signals.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/gnss/chapters/signals.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":3,"image":"https://yalex-kim.github.io/yalexBook/gnss/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/gnss/#book","name":"GNSSBook — 누구나 읽는 인터랙티브 GNSS 교과서","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"publisher":{"@type":"Organization","name":"GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"description":"모든 GPS 주파수는 10.23 MHz 한 시계에서 나온다. L1·L2·L5와 Galileo E1·E5·E6의 배수 관계, 상대론 때문에 일부러 늦춘 위성 시계, 잡음보다 약한 −158.5 dBW 신호를 받아 내는 확산 스펙트럼과 C/N0, BPSK와 BOC 스펙트럼을 공개 규격의 값으로 계산한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"GNSSBook","item":"https://yalex-kim.github.io/yalexBook/gnss/"},{"@type":"ListItem","position":2,"name":"03 신호와 주파수: 잡음 아래의 목소리","item":"https://yalex-kim.github.io/yalexBook/gnss/chapters/signals.html"}]}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"신호와 주파수: 잡음 아래의 목소리","name":"신호와 주파수: 잡음 아래의 목소리 · GNSSBook","url":"https://yalex-kim.github.io/connectivityBook/gnss/chapters/signals.html","mainEntityOfPage":"https://yalex-kim.github.io/connectivityBook/gnss/chapters/signals.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":3,"image":"https://yalex-kim.github.io/connectivityBook/gnss/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/connectivityBook/gnss/#book","name":"GNSSBook — 누구나 읽는 인터랙티브 GNSS 교과서","url":"https://yalex-kim.github.io/connectivityBook/gnss/"},"publisher":{"@type":"Organization","name":"GNSSBook","url":"https://yalex-kim.github.io/connectivityBook/gnss/"},"description":"모든 GPS 주파수는 10.23 MHz 한 시계에서 나온다. L1·L2·L5와 Galileo E1·E5·E6의 배수 관계, 상대론 때문에 일부러 늦춘 위성 시계, 잡음보다 약한 −158.5 dBW 신호를 받아 내는 확산 스펙트럼과 C/N0, BPSK와 BOC 스펙트럼을 공개 규격의 값으로 계산한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"GNSSBook","item":"https://yalex-kim.github.io/connectivityBook/gnss/"},{"@type":"ListItem","position":2,"name":"03 신호와 주파수: 잡음 아래의 목소리","item":"https://yalex-kim.github.io/connectivityBook/gnss/chapters/signals.html"}]}]}</script>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

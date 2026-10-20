@@ -539,7 +539,7 @@
       <button class="sb-btn icon" id="sb-menu" aria-label="챕터 목록">${ICON_MENU}</button>
       <a class="sb-logo" href="${href("")}">${LOGO}<span>GNSSBook <small>GNSS 교과서</small></span></a>
       <span class="spacer"></span>
-      <a class="sb-btn series-link" href="${root}../index.html" aria-label="yalexBook 서재로" title="yalexBook 서재로"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5h6v14H4zM10 5.5h6v14h-6zM17 7l3-1 2 13-3 1z"/></svg><span>서재</span></a>
+      <a class="sb-btn series-link" href="${root}../index.html" aria-label="ConnectivityBook 서재로" title="ConnectivityBook 서재로"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5h6v14H4zM10 5.5h6v14h-6zM17 7l3-1 2 13-3 1z"/></svg><span>서재</span></a>
       <button class="sb-btn icon" id="sb-theme" aria-label="테마 전환"></button>
       <div class="sb-progress" id="sb-progress"></div>`;
     body.prepend(bar);
@@ -743,17 +743,17 @@
         const title = `[GNSSBook ${ch.num}장] `, bodyTxt = `페이지: ${location.href.split("#")[0]}\n위치(절 제목이나 문장):\n\n무엇이 틀렸나요:\n\n근거(사양서 절, 링크 등, 있으면):\n`;
         const rep = document.createElement("aside");
         rep.className = "sb-report";
-        rep.innerHTML = `틀린 곳이나 헷갈리는 설명을 찾았나요? <a href="https://github.com/yalex-kim/yalexBook/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(bodyTxt)}&labels=${encodeURIComponent("오류 제보")}" target="_blank" rel="noopener">이 장의 오류 제보하기</a> (GitHub 이슈)`;
+        rep.innerHTML = `틀린 곳이나 헷갈리는 설명을 찾았나요? <a href="https://github.com/yalex-kim/connectivityBook/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(bodyTxt)}&labels=${encodeURIComponent("오류 제보")}" target="_blank" rel="noopener">이 장의 오류 제보하기</a> (GitHub 이슈)`;
         main.appendChild(rep);
       }
     }
     const foot = document.createElement("footer");
     foot.className = "sb-foot";
     foot.innerHTML = `GNSSBook — 누구나 읽는 인터랙티브 GNSS 교과서 · 공개 규격(IS-GPS-200, Galileo OS SIS ICD)과 공개 구현(RTKLIB)으로 확인한 값을 씁니다 · 시뮬레이터는 이해를 돕기 위해 단순화한 모델입니다.
-      <br>© 2026 <a href="https://github.com/yalex-kim">Yalex Kim</a> · <a href="${root}../index.html">yalexBook 서재</a> ·
+      <br>© 2026 <a href="https://github.com/yalex-kim">Yalex Kim</a> · <a href="${root}../index.html">ConnectivityBook 서재</a> ·
       콘텐츠 <a href="https://creativecommons.org/licenses/by/4.0/deed.ko" rel="license">CC BY 4.0</a> ·
-      코드 <a href="https://github.com/yalex-kim/yalexBook/blob/main/gnss/LICENSE-MIT">MIT</a> ·
-      <a href="https://github.com/yalex-kim/yalexBook/blob/main/gnss/LICENSE.md">라이선스 안내</a>`;
+      코드 <a href="https://github.com/yalex-kim/connectivityBook/blob/main/gnss/LICENSE-MIT">MIT</a> ·
+      <a href="https://github.com/yalex-kim/connectivityBook/blob/main/gnss/LICENSE.md">라이선스 안내</a>`;
     body.appendChild(foot);
 
     // quiz

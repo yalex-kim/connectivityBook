@@ -1,5 +1,5 @@
 import io, re, json, os, html, datetime
-BASE = 'https://yalex-kim.github.io/yalexBook/wifi/'
+BASE = 'https://yalex-kim.github.io/connectivityBook/wifi/'
 SITE = 'WiFiBook'
 TODAY = datetime.date.today().isoformat()
 js = io.open('js/common.js', encoding='utf-8').read()

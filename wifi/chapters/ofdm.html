@@ -6,18 +6,18 @@
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <title>OFDM: 수천 개의 부반송파 · WiFiBook</title>
 <meta name="description" content="와이파이가 채널 하나를 수십~수천 개의 좁은 부반송파로 나눠 보내는 이유. 반사파와 심볼 간 간섭, 직교성과 부반송파 간격, 보호 구간(GI), 802.11a의 312.5 kHz·3.2 µs에서 Wi-Fi 6의 78.125 kHz·12.8 µs로 바뀐 숫자를 시뮬레이터로 익힌다.">
-<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/wifi/chapters/ofdm.html">
+<link rel="canonical" href="https://yalex-kim.github.io/connectivityBook/wifi/chapters/ofdm.html">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="WiFiBook">
 <meta property="og:title" content="OFDM: 수천 개의 부반송파 · WiFiBook">
 <meta property="og:description" content="와이파이가 채널 하나를 수십~수천 개의 좁은 부반송파로 나눠 보내는 이유. 반사파와 심볼 간 간섭, 직교성과 부반송파 간격, 보호 구간(GI), 802.11a의 312.5 kHz·3.2 µs에서 Wi-Fi 6의 78.125 kHz·12.8 µs로 바뀐 숫자를 시뮬레이터로 익힌다.">
-<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/wifi/chapters/ofdm.html">
-<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/wifi/og.png">
+<meta property="og:url" content="https://yalex-kim.github.io/connectivityBook/wifi/chapters/ofdm.html">
+<meta property="og:image" content="https://yalex-kim.github.io/connectivityBook/wifi/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"OFDM: 수천 개의 부반송파","name":"OFDM: 수천 개의 부반송파 · WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/chapters/ofdm.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/wifi/chapters/ofdm.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":3,"image":"https://yalex-kim.github.io/yalexBook/wifi/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/wifi/#book","name":"WiFiBook — 누구나 읽는 인터랙티브 와이파이 교과서","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"publisher":{"@type":"Organization","name":"WiFiBook","url":"https://yalex-kim.github.io/yalexBook/wifi/"},"description":"와이파이가 채널 하나를 수십~수천 개의 좁은 부반송파로 나눠 보내는 이유. 반사파와 심볼 간 간섭, 직교성과 부반송파 간격, 보호 구간(GI), 802.11a의 312.5 kHz·3.2 µs에서 Wi-Fi 6의 78.125 kHz·12.8 µs로 바뀐 숫자를 시뮬레이터로 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"WiFiBook","item":"https://yalex-kim.github.io/yalexBook/wifi/"},{"@type":"ListItem","position":2,"name":"03 OFDM: 수천 개의 부반송파","item":"https://yalex-kim.github.io/yalexBook/wifi/chapters/ofdm.html"}]}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"OFDM: 수천 개의 부반송파","name":"OFDM: 수천 개의 부반송파 · WiFiBook","url":"https://yalex-kim.github.io/connectivityBook/wifi/chapters/ofdm.html","mainEntityOfPage":"https://yalex-kim.github.io/connectivityBook/wifi/chapters/ofdm.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":3,"image":"https://yalex-kim.github.io/connectivityBook/wifi/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/connectivityBook/wifi/#book","name":"WiFiBook — 누구나 읽는 인터랙티브 와이파이 교과서","url":"https://yalex-kim.github.io/connectivityBook/wifi/"},"publisher":{"@type":"Organization","name":"WiFiBook","url":"https://yalex-kim.github.io/connectivityBook/wifi/"},"description":"와이파이가 채널 하나를 수십~수천 개의 좁은 부반송파로 나눠 보내는 이유. 반사파와 심볼 간 간섭, 직교성과 부반송파 간격, 보호 구간(GI), 802.11a의 312.5 kHz·3.2 µs에서 Wi-Fi 6의 78.125 kHz·12.8 µs로 바뀐 숫자를 시뮬레이터로 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"WiFiBook","item":"https://yalex-kim.github.io/connectivityBook/wifi/"},{"@type":"ListItem","position":2,"name":"03 OFDM: 수천 개의 부반송파","item":"https://yalex-kim.github.io/connectivityBook/wifi/chapters/ofdm.html"}]}]}</script>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

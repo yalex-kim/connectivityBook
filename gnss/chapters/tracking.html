@@ -6,18 +6,18 @@
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <title>추적: 코드와 반송파 붙잡기 · GNSSBook</title>
 <meta name="description" content="한 번 찾은 신호를 놓치지 않고 따라가는 일. 얼리·프롬프트·레이트 상관기로 코드를 붙잡는 DLL, 반송파 위상을 붙잡는 PLL, 그 둘이 내놓는 의사거리와 반송파 위상 측정, 상관기 간격과 다중 경로 오차, C/N0에 따른 추적 잡음을 시뮬레이터로 익힌다.">
-<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/gnss/chapters/tracking.html">
+<link rel="canonical" href="https://yalex-kim.github.io/connectivityBook/gnss/chapters/tracking.html">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="GNSSBook">
 <meta property="og:title" content="추적: 코드와 반송파 붙잡기 · GNSSBook">
 <meta property="og:description" content="한 번 찾은 신호를 놓치지 않고 따라가는 일. 얼리·프롬프트·레이트 상관기로 코드를 붙잡는 DLL, 반송파 위상을 붙잡는 PLL, 그 둘이 내놓는 의사거리와 반송파 위상 측정, 상관기 간격과 다중 경로 오차, C/N0에 따른 추적 잡음을 시뮬레이터로 익힌다.">
-<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/gnss/chapters/tracking.html">
-<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/gnss/og.png">
+<meta property="og:url" content="https://yalex-kim.github.io/connectivityBook/gnss/chapters/tracking.html">
+<meta property="og:image" content="https://yalex-kim.github.io/connectivityBook/gnss/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"추적: 코드와 반송파 붙잡기","name":"추적: 코드와 반송파 붙잡기 · GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/chapters/tracking.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/gnss/chapters/tracking.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":6,"image":"https://yalex-kim.github.io/yalexBook/gnss/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/gnss/#book","name":"GNSSBook — 누구나 읽는 인터랙티브 GNSS 교과서","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"publisher":{"@type":"Organization","name":"GNSSBook","url":"https://yalex-kim.github.io/yalexBook/gnss/"},"description":"한 번 찾은 신호를 놓치지 않고 따라가는 일. 얼리·프롬프트·레이트 상관기로 코드를 붙잡는 DLL, 반송파 위상을 붙잡는 PLL, 그 둘이 내놓는 의사거리와 반송파 위상 측정, 상관기 간격과 다중 경로 오차, C/N0에 따른 추적 잡음을 시뮬레이터로 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"GNSSBook","item":"https://yalex-kim.github.io/yalexBook/gnss/"},{"@type":"ListItem","position":2,"name":"06 추적: 코드와 반송파 붙잡기","item":"https://yalex-kim.github.io/yalexBook/gnss/chapters/tracking.html"}]}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"추적: 코드와 반송파 붙잡기","name":"추적: 코드와 반송파 붙잡기 · GNSSBook","url":"https://yalex-kim.github.io/connectivityBook/gnss/chapters/tracking.html","mainEntityOfPage":"https://yalex-kim.github.io/connectivityBook/gnss/chapters/tracking.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":6,"image":"https://yalex-kim.github.io/connectivityBook/gnss/og.png","dateModified":"2026-10-18","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/connectivityBook/gnss/#book","name":"GNSSBook — 누구나 읽는 인터랙티브 GNSS 교과서","url":"https://yalex-kim.github.io/connectivityBook/gnss/"},"publisher":{"@type":"Organization","name":"GNSSBook","url":"https://yalex-kim.github.io/connectivityBook/gnss/"},"description":"한 번 찾은 신호를 놓치지 않고 따라가는 일. 얼리·프롬프트·레이트 상관기로 코드를 붙잡는 DLL, 반송파 위상을 붙잡는 PLL, 그 둘이 내놓는 의사거리와 반송파 위상 측정, 상관기 간격과 다중 경로 오차, C/N0에 따른 추적 잡음을 시뮬레이터로 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"GNSSBook","item":"https://yalex-kim.github.io/connectivityBook/gnss/"},{"@type":"ListItem","position":2,"name":"06 추적: 코드와 반송파 붙잡기","item":"https://yalex-kim.github.io/connectivityBook/gnss/chapters/tracking.html"}]}]}</script>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

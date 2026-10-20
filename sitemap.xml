@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <sitemap><loc>https://yalex-kim.github.io/yalexBook/bluetooth/sitemap.xml</loc></sitemap>
-  <sitemap><loc>https://yalex-kim.github.io/yalexBook/wifi/sitemap.xml</loc></sitemap>
-  <sitemap><loc>https://yalex-kim.github.io/yalexBook/uwb/sitemap.xml</loc></sitemap>
-  <sitemap><loc>https://yalex-kim.github.io/yalexBook/gnss/sitemap.xml</loc></sitemap>
-  <sitemap><loc>https://yalex-kim.github.io/yalexBook/bluetooth-deep/sitemap.xml</loc></sitemap>
+  <sitemap><loc>https://yalex-kim.github.io/connectivityBook/bluetooth/sitemap.xml</loc></sitemap>
+  <sitemap><loc>https://yalex-kim.github.io/connectivityBook/wifi/sitemap.xml</loc></sitemap>
+  <sitemap><loc>https://yalex-kim.github.io/connectivityBook/uwb/sitemap.xml</loc></sitemap>
+  <sitemap><loc>https://yalex-kim.github.io/connectivityBook/gnss/sitemap.xml</loc></sitemap>
+  <sitemap><loc>https://yalex-kim.github.io/connectivityBook/bluetooth-deep/sitemap.xml</loc></sitemap>
 </sitemapindex>

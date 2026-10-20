@@ -10,7 +10,7 @@ IEEE 802.15.4z·FiRa·CCC 원문은 유료이거나 회원 전용이라 직접 �
 Android UWB 스택(`packages/modules/Uwb`, `external/uwb`), Decawave(Qorvo)의 `uwb-core`·`uwb-dw1000`, Zephyr RTOS의 IEEE 802.15.4 헤더와 DW1000 드라이버,
 미국 연방 규정 47 CFR Part 15 Subpart F. 조항 번호는 소스 코드 주석이 인용한 경우에만 적었고, 공개 구현끼리 값이 다르면(예: `uwb-core`의 4번 채널 주파수) 근거를 비교해 밝혔습니다.
 
-[yalexBook](../README.md) 서재의 한 권입니다. 구조·디자인 시스템·설명 방식(비유 → 그림 → 예측 → 시뮬레이터 → 수치 → 정리·퀴즈)은 [Books](https://books.euiyun.com/) 시리즈의 [NetworkBook](https://github.com/geniuskey/networkbook)을 따랐습니다.
+[ConnectivityBook](../README.md) 서재의 한 권입니다. 구조·디자인 시스템·설명 방식(비유 → 그림 → 예측 → 시뮬레이터 → 수치 → 정리·퀴즈)은 [Books](https://books.euiyun.com/) 시리즈의 [NetworkBook](https://github.com/geniuskey/networkbook)을 따랐습니다.
 
 ## 실행
 빌드 과정이 없는 정적 사이트입니다.

@@ -1,5 +1,5 @@
 import io, re, json, os, html, datetime
-BASE = 'https://yalex-kim.github.io/yalexBook/bluetooth-deep/'
+BASE = 'https://yalex-kim.github.io/connectivityBook/bluetooth-deep/'
 SITE = 'BluetoothBook 심화'
 TODAY = datetime.date.today().isoformat()
 js = io.open('js/common.js', encoding='utf-8').read()

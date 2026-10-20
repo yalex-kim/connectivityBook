@@ -8,7 +8,7 @@ GATT, 페어링과 보안, 코인 전지로 몇 년 가는 전력 설계, LE 오
 모든 수치와 규칙의 기준은 **Bluetooth Core Specification 6.3**(2026-05-05 채택)이며, 본문에 `[Vol 6] Part B §4.5.1`처럼 근거 위치를 밝혔습니다.
 CRC·화이트닝, 채널 선택 알고리즘 #2, LE Coded 부호기, AES-CMAC·g2·ah 같은 계산은 사양서의 샘플 데이터와 비트 단위로 맞춰 검증합니다.
 
-[yalexBook](../README.md) 서재의 한 권입니다. 구조·디자인 시스템·설명 방식(비유 → 그림 → 예측 → 시뮬레이터 → 수치 → 정리·퀴즈)은 [Books](https://books.euiyun.com/) 시리즈의 [NetworkBook](https://github.com/geniuskey/networkbook)을 따랐습니다.
+[ConnectivityBook](../README.md) 서재의 한 권입니다. 구조·디자인 시스템·설명 방식(비유 → 그림 → 예측 → 시뮬레이터 → 수치 → 정리·퀴즈)은 [Books](https://books.euiyun.com/) 시리즈의 [NetworkBook](https://github.com/geniuskey/networkbook)을 따랐습니다.
 
 ## 실행
 빌드 과정이 없는 정적 사이트입니다.

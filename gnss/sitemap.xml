@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://yalex-kim.github.io/yalexBook/gnss/</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/gnss/chapters/intro.html</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/gnss/chapters/orbits.html</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/gnss/chapters/signals.html</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/gnss/chapters/prn.html</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/gnss/chapters/acquisition.html</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/gnss/chapters/tracking.html</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/gnss/chapters/navmsg.html</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/gnss/chapters/satpos.html</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/gnss/chapters/position.html</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/gnss/chapters/errors.html</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/gnss/chapters/urban.html</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/gnss/chapters/precise.html</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/gnss/chapters/phone.html</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/gnss/chapters/design.html</loc><lastmod>2026-10-18</lastmod></url>
-  <url><loc>https://yalex-kim.github.io/yalexBook/gnss/chapters/glossary.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/gnss/</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/gnss/chapters/intro.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/gnss/chapters/orbits.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/gnss/chapters/signals.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/gnss/chapters/prn.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/gnss/chapters/acquisition.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/gnss/chapters/tracking.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/gnss/chapters/navmsg.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/gnss/chapters/satpos.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/gnss/chapters/position.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/gnss/chapters/errors.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/gnss/chapters/urban.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/gnss/chapters/precise.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/gnss/chapters/phone.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/gnss/chapters/design.html</loc><lastmod>2026-10-18</lastmod></url>
+  <url><loc>https://yalex-kim.github.io/connectivityBook/gnss/chapters/glossary.html</loc><lastmod>2026-10-18</lastmod></url>
 </urlset>

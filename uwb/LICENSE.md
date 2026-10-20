@@ -18,7 +18,7 @@ UWBBook은 실행 코드와 교재 콘텐츠에 서로 다른 라이선스를 �
 
 콘텐츠 출처 표시 예시:
 
-> UWBBook — Yalex Kim, https://yalex-kim.github.io/yalexBook/uwb/ (원본: https://github.com/yalex-kim/yalexBook/tree/main/uwb). CC BY 4.0: https://creativecommons.org/licenses/by/4.0/ . 자료는 현 상태로 제공되며 보증하지 않습니다. 변경 사항: 한국어 본문 일부를 번역하고 그림을 수정함.
+> UWBBook — Yalex Kim, https://yalex-kim.github.io/connectivityBook/uwb/ (원본: https://github.com/yalex-kim/connectivityBook/tree/main/uwb). CC BY 4.0: https://creativecommons.org/licenses/by/4.0/ . 자료는 현 상태로 제공되며 보증하지 않습니다. 변경 사항: 한국어 본문 일부를 번역하고 그림을 수정함.
 
 수정하지 않은 자료에는 변경 사항을 “변경 없음”으로 표시할 수 있습니다. 특정 챕터를 사용할 때는 해당 챕터의 출처 URL을 함께 표시하세요.
 

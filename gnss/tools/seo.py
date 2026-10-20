@@ -1,5 +1,5 @@
 import io, re, json, os, html, datetime
-BASE = 'https://yalex-kim.github.io/yalexBook/gnss/'
+BASE = 'https://yalex-kim.github.io/connectivityBook/gnss/'
 SITE = 'GNSSBook'
 TODAY = datetime.date.today().isoformat()
 js = io.open('js/common.js', encoding='utf-8').read()
