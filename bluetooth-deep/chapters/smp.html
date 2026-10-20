@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>SMP 완전판: P-256에서 LTK까지 · BluetoothBook 심화</title>
+<meta name="description" content="LE Secure Connections 페어링을 함수 하나하나 따라간다. P-256 ECDH와 공개 키 검증, f4 약속값, g2 숫자 비교와 패스키 20라운드, f5로 만드는 MacKey와 LTK, f6 확인값, 레거시 c1·s1, 클래식과 키를 넘겨 쓰는 h6·h7(CTKD)까지 Core 6.3 부록 D의 샘플로 검증한다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/smp.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="BluetoothBook 심화">
+<meta property="og:title" content="SMP 완전판: P-256에서 LTK까지 · BluetoothBook 심화">
+<meta property="og:description" content="LE Secure Connections 페어링을 함수 하나하나 따라간다. P-256 ECDH와 공개 키 검증, f4 약속값, g2 숫자 비교와 패스키 20라운드, f5로 만드는 MacKey와 LTK, f6 확인값, 레거시 c1·s1, 클래식과 키를 넘겨 쓰는 h6·h7(CTKD)까지 Core 6.3 부록 D의 샘플로 검증한다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/smp.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"SMP 완전판: P-256에서 LTK까지","name":"SMP 완전판: P-256에서 LTK까지 · BluetoothBook 심화","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/smp.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/smp.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":7,"image":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png","dateModified":"2026-10-20","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/#book","name":"BluetoothBook 심화 — 프로토콜 스택을 끝까지 따라가는 블루투스 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},"publisher":{"@type":"Organization","name":"BluetoothBook 심화","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},"description":"LE Secure Connections 페어링을 함수 하나하나 따라간다. P-256 ECDH와 공개 키 검증, f4 약속값, g2 숫자 비교와 패스키 20라운드, f5로 만드는 MacKey와 LTK, f6 확인값, 레거시 c1·s1, 클래식과 키를 넘겨 쓰는 h6·h7(CTKD)까지 Core 6.3 부록 D의 샘플로 검증한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook 심화","item":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},{"@type":"ListItem","position":2,"name":"07 SMP 완전판: P-256에서 LTK까지","item":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/smp.html"}]}]}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<style>
+  .hexin { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px 14px; }
+  .hexin label { display: grid; gap: 4px; font-size: 12.5px; color: var(--text-dim); }
+  .hexin input { font: 13px var(--mono); padding: 7px 9px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); min-width: 0; }
+  .blk { font: 12.5px/1.65 var(--mono); overflow-x: auto; white-space: pre; padding: 12px 14px; background: var(--surface); border-radius: 10px; color: var(--text); }
+  .blk .k { color: var(--text-dim); }
+  .blk .a { color: var(--accent); font-weight: 600; }
+  .blk .ok { color: var(--ok); font-weight: 700; }
+  .blk .bad { color: var(--bad); font-weight: 700; }
+  .duo { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+  .phone { border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; background: var(--bg-elev); }
+  .phone h4 { margin: 0 0 6px; font-size: 14px; }
+  .phone .num { font: 700 30px var(--mono); letter-spacing: .08em; }
+</style>
+</head>
+<body data-chapter="smp">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 07</div>
+    <h1>SMP 완전판: P-256에서 LTK까지</h1>
+    <p class="lead">1권 8장은 “숫자 비교로 중간자를 막는다”까지 보여 줬다. 이 장은 LE Secure Connections 페어링에 쓰이는 함수를 하나도 빼지 않고 계산한다. 타원곡선 위의 공개 키 교환, <span class="term">약속값</span> f4, 화면의 여섯 자리 g2, 열쇠를 뽑는 f5, 확인값 f6, 클래식과 키를 나눠 쓰는 h6·h7까지. 사양 부록 D의 샘플이 모두 <span class="term">디버그 키</span>로 만들어졌다는 것도 확인한다.</p>
+    <ul class="objectives">
+      <li>Secure Connections의 2단계(공개 키 교환 → 인증 1단계 → 인증 2단계)에서 어떤 값이 언제 오가는지 설명할 수 있다.</li>
+      <li>f4·f5·f6·g2·h6·h7의 입력 순서와 바이트 순서를 지켜 직접 계산하고 사양 샘플과 맞출 수 있다.</li>
+      <li>공개 키 검증과 디버그 키가 왜 필요한지, 무엇을 열어 두는지 안다.</li>
+      <li>CTKD로 LE의 LTK와 클래식 링크 키를 오가는 규칙(CT2)과 암호화 키 길이의 의미를 안다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="flow">
+    <h2>세 단계와 그 안의 함수들</h2>
+    <p>SMP 페어링은 세 단계다. <b>1단계</b>에서 Pairing Request/Response로 입출력 능력, OOB 유무, 인증 요구(MITM, 본딩, SC, <span class="term">CT2</span>), 최대 키 길이, 나눠 줄 키를 주고받는다(1권 8장). <b>2단계</b>가 이 장의 대부분이다. Secure Connections라면 양쪽이 P-256 공개 키를 주고받아 공유 비밀 <b><span class="term">DHKey</span></b>를 만들고(공개 키 교환), 그 교환이 중간자에게 바꿔치기되지 않았는지 사람이나 OOB로 확인하고(인증 1단계), DHKey로 <b><span class="term">MacKey</span>와 LTK</b>를 뽑은 뒤 서로 그 키를 가졌다는 확인값을 교환한다(인증 2단계). <b>3단계</b>에서 암호화된 링크 위로 <span class="term">IRK</span>, <span class="term">신원 주소</span> 등을 나눈다.</p>
+    <div class="callout analogy"><strong>공개된 자리에서 섞는 물감</strong><p>둘이 각자 비밀 물감(개인 키)을 갖고, 모두가 아는 기본 물감(곡선의 기준점 G)에 섞어 만든 색(공개 키)을 바꿔 든다. 받은 색에 다시 자기 비밀 물감을 섞으면 둘 다 같은 색(DHKey)이 나오지만, 구경꾼은 섞인 색만 보고 비밀 물감을 뽑아낼 수 없다. 다만 가운데서 물감을 바꿔치기하는 사람이 있으면 둘은 각자 그 사람과 같은 색을 만들게 된다. 그래서 마지막에 “우리 둘이 같은 색인가”를 사람의 눈(숫자 비교)으로 확인한다.</p></div>
+    <figure class="diagram">
+      <div style="overflow-x:auto">
+      <svg viewBox="0 0 760 360" role="img" aria-label="LE Secure Connections 2단계의 값 흐름" style="min-width:600px">
+        <defs><marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8z" class="f-acc"/></marker></defs>
+        <text x="150" y="22" text-anchor="middle" class="t">개시자 A</text><text x="610" y="22" text-anchor="middle" class="t">응답자 B</text>
+        <path d="M150 32V350M610 32V350" class="s-axis" stroke-dasharray="3 5"/>
+        <text x="380" y="46" text-anchor="middle" class="t-dim">공개 키 교환</text>
+        <path d="M150 62H606" class="s-acc" marker-end="url(#ar)"/><text x="380" y="58" text-anchor="middle" class="t-mono" font-size="11">Pairing Public Key: PKa (X, Y)</text>
+        <path d="M610 88H154" class="s-acc" marker-end="url(#ar)"/><text x="380" y="84" text-anchor="middle" class="t-mono" font-size="11">Pairing Public Key: PKb</text>
+        <text x="40" y="112" class="t-mono" font-size="11">DHKey = P256(SKa, PKb)</text><text x="720" y="112" text-anchor="end" class="t-mono" font-size="11">DHKey = P256(SKb, PKa)</text>
+        <text x="380" y="136" text-anchor="middle" class="t-dim">인증 1단계 (숫자 비교)</text>
+        <path d="M610 152H154" class="s-acc" marker-end="url(#ar)"/><text x="380" y="148" text-anchor="middle" class="t-mono" font-size="11">Pairing Confirm: Cb = f4(PKbx, PKax, Nb, 0)</text>
+        <path d="M150 178H606" class="s-acc" marker-end="url(#ar)"/><text x="380" y="174" text-anchor="middle" class="t-mono" font-size="11">Pairing Random: Na</text>
+        <path d="M610 204H154" class="s-acc" marker-end="url(#ar)"/><text x="380" y="200" text-anchor="middle" class="t-mono" font-size="11">Pairing Random: Nb (A가 Cb를 검사)</text>
+        <text x="40" y="228" class="t-mono" font-size="11">Va = g2(PKax, PKbx, Na, Nb)</text><text x="720" y="228" text-anchor="end" class="t-mono" font-size="11">Vb = 같은 값 → 사람이 비교</text>
+        <text x="380" y="252" text-anchor="middle" class="t-dim">인증 2단계</text>
+        <rect x="220" y="260" width="320" height="28" rx="8" class="f-acc-soft"/><text x="380" y="279" text-anchor="middle" class="t-acc" font-size="12.5">MacKey ‖ LTK = f5(DHKey, Na, Nb, A, B)</text>
+        <path d="M150 314H606" class="s-acc" marker-end="url(#ar)"/><text x="380" y="310" text-anchor="middle" class="t-mono" font-size="11">DHKey Check: Ea = f6(MacKey, Na, Nb, 0, IOcapA, A, B)</text>
+        <path d="M610 340H154" class="s-acc" marker-end="url(#ar)"/><text x="380" y="336" text-anchor="middle" class="t-mono" font-size="11">DHKey Check: Eb = f6(MacKey, Nb, Na, 0, IOcapB, B, A)</text>
+      </svg>
+      </div>
+      <figcaption><b>그림 7-1.</b> 숫자 비교 방식의 2단계. 공개 키·nonce·약속값·확인값은 모두 공중에 나가지만, DHKey·MacKey·LTK는 나가지 않는다.</figcaption>
+    </figure>
+    <p class="spec-ref">2단계 전체: <b>[Vol 3] Part H §2.3.5.6</b>(공개 키 교환 §2.3.5.6.1, 숫자 비교 §2.3.5.6.2, 패스키 §2.3.5.6.3, OOB §2.3.5.6.4, 인증 2단계 §2.3.5.6.5) · 함수 정의: <b>§2.2</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="ecdh">
+    <h2>P-256: 공개 키를 받으면 먼저 곡선 위인지 본다</h2>
+    <p>Secure Connections는 NIST P-256 곡선(y² = x³ − 3x + b, 소수 p 위)을 쓴다. 개인 키는 256비트 정수 d, 공개 키는 기준점 G를 d번 더한 점 Q = d·G의 (x, y), DHKey는 상대 공개 키에 내 개인 키를 곱한 점의 <b>x 좌표</b> 32바이트다. Pairing Public Key PDU는 X와 Y를 32바이트씩, 작은 바이트부터 싣는다.</p>
+    <p>받은 공개 키는 <b>반드시 곡선 위의 점인지 검사</b>해야 한다(x, y가 0~p−1이고 곡선 식을 만족하는지). 검사하지 않으면 공격자가 곡선 밖의 점을 보내 상대 개인 키에 대한 정보를 조금씩 얻어 낼 수 있다는 것이 알려져 있고(2018년 공개된 취약점), 사양은 이후 이 검사를 의무로 바꿨다. 검사에 실패하거나, 두 공개 키의 X가 같으면(디버그 키 제외) “DHKey Check Failed”로 페어링을 끝낸다.</p>
+    <div class="callout warn"><strong>디버그 키: 누구나 아는 개인 키</strong><p>사양에는 시험 장비가 암호화된 연결을 들여다볼 수 있도록 <b>공개된 고정 개인 키</b>가 있다. 한쪽만 이 키를 써도 스니퍼가 DHKey를 계산할 수 있어 LTK와 모든 트래픽이 드러난다. 그래서 디버그 키를 받았는데 디버그 모드가 아니면 페어링을 거부할 수 있다(Invalid Parameters). 아래 부록 D 샘플의 U = 20b003d2…는 바로 이 디버그 공개 키의 X다. 양산 펌웨어에서 디버그 모드가 켜져 있지 않은지 점검 항목에 넣자.</p></div>
+    <div class="sim" id="sim-ecdh">
+      <div class="sim-head"><span class="sim-tag">WORKBENCH</span><h3>P-256 공개 키 검사와 DHKey</h3></div>
+      <div class="sim-view" style="padding:14px 16px">
+        <div class="hexin">
+          <label>내 개인 키 d (큰 바이트부터)<input id="ec-d" spellcheck="false"></label>
+          <label>상대 공개 키 X (큰 바이트부터)<input id="ec-x" spellcheck="false"></label>
+          <label>상대 공개 키 Y (큰 바이트부터)<input id="ec-y" spellcheck="false"></label>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0"><button class="btn" id="ec-debug">내 키 = 디버그 키</button><button class="btn" id="ec-rand">상대 키 무작위로 새로</button><button class="btn" id="ec-bad">상대 Y를 1 바꾸기</button></div>
+        <div class="blk" id="ec-out"></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">상대 공개 키</span><span class="v" id="ec-ok">—</span></div>
+        <div class="stat"><span class="k">DHKey (x 좌표)</span><span class="v" id="ec-dh" style="font-size:12px;overflow-wrap:anywhere">—</span></div>
+      </div>
+      <div class="sim-note">곡선 연산은 페이지 안에서 BigInt로 직접 계산한다(검증 스크립트가 OpenSSL의 ECDH와 무작위 키 수백 쌍으로 맞춰 본다). 해볼 것: ① “내 키 = 디버그 키”를 누르면 내 공개 키 X가 20b003d2…로, 부록 D 샘플의 U와 같다. ② “상대 Y를 1 바꾸기”를 누르면 곡선 밖의 점이 되어 검사가 실패한다. 실제 기기는 여기서 페어링을 끝낸다.</div>
+    </div>
+    <p class="spec-ref">공개 키 검증 의무와 X가 같은 경우의 실패: <b>[Vol 3] Part H §2.3.5.6.1</b> · 곡선 파라미터: <b>[Vol 2] Part H §7.6</b> · 디버그 키 쌍과 거부: <b>[Vol 3] Part H §2.3.5.6.1</b> · 공개 키 PDU 형식: <b>[Vol 3] Part H §3.5.6</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="stage1">
+    <h2>인증 1단계: f4로 약속하고, g2로 보여 준다</h2>
+    <p>응답자 B는 nonce Nb를 정한 뒤 바로 보내지 않고, 먼저 <b>약속값</b> Cb = f4(PKbx, PKax, Nb, 0)를 보낸다. 그다음 A가 Na를 보내고, B가 Nb를 공개하면 A는 f4를 다시 계산해 Cb와 같은지 본다. 중간자가 Na를 본 뒤에 자기에게 유리한 Nb를 고르는 것을 막는 장치다. 숫자 비교라면 양쪽 화면에 Va = g2(PKax, PKbx, Na, Nb) mod 10⁶을 여섯 자리로 띄운다.</p>
+    <div class="formula">f4(U, V, X, Z) = AES-CMAC<sub>X</sub>(U ‖ V ‖ Z) · g2(U, V, X, Y) = AES-CMAC<sub>X</sub>(U ‖ V ‖ Y) mod 2³² → 화면에는 mod 10⁶</div>
+    <p><b>패스키</b> 방식은 20라운드다. 여섯 자리 패스키(20비트)의 비트 하나를 라운드마다 약속값에 넣는다. Z = 0x80 | 그 비트. 라운드마다 새 nonce를 쓰고, 한 라운드라도 어긋나면 그 자리에서 실패한다. 중간자는 라운드마다 비트 하나만 짐작할 기회가 있고, 틀리면 들킨다. 한 번 쓴 패스키를 다시 쓰면 이전 페어링을 엿들은 사람이 비트를 이미 알 수 있으므로, 페어링마다 새 패스키를 써야 한다.</p>
+    <p class="spec-ref">f4와 입력(Table 2.1)·Z 값: <b>[Vol 3] Part H §2.2.6</b> · g2: <b>§2.2.9</b> · 숫자 비교 절차: <b>§2.3.5.6.2</b> · 패스키 20라운드: <b>§2.3.5.6.3</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="stage2">
+    <h2>인증 2단계: f5가 열쇠를 뽑고, f6이 확인한다</h2>
+    <p>DHKey는 곡선 위 점의 좌표라서 그대로 쓰기엔 고르지 않다. f5가 이것을 두 번 걸러 쓸 수 있는 키 두 개로 만든다. 먼저 고정된 SALT로 T = AES-CMAC<sub>SALT</sub>(DHKey)를 만들고, T를 키로 카운터만 다른 두 블록을 만든다. 카운터 0이 <b>MacKey</b>, 카운터 1이 <b>LTK</b>다. 주소에는 공개/임의 주소 여부가 앞 바이트로 붙는다(A1 = 00 + 6바이트 주소, 임의 주소면 01).</p>
+    <div class="formula">T = AES-CMAC<sub>SALT</sub>(W) · f5 = AES-CMAC<sub>T</sub>(0 ‖ “btle” ‖ N1 ‖ N2 ‖ A1 ‖ A2 ‖ 256) ‖ AES-CMAC<sub>T</sub>(1 ‖ …) = MacKey ‖ LTK</div>
+    <p>마지막으로 서로 Ea = f6(MacKey, Na, Nb, rb, IOcapA, A, B), Eb = f6(MacKey, Nb, Na, ra, IOcapB, B, A)를 교환한다. MacKey를 모르면 맞는 Ea·Eb를 만들 수 없으니 “같은 DHKey를 가졌다”를 증명하고, <span class="term">IOcap</span>를 넣어 1단계에서 주고받은 능력값을 중간자가 바꾸지 않았음도 함께 확인한다(능력값을 깎아 Just Works로 끌어내리는 것을 막는다). 숫자 비교에서는 r = 0, 패스키에서는 r = 패스키 값, OOB에서는 r = 상대의 OOB 난수다.</p>
+    <div class="sim" id="sim-fn">
+      <div class="sim-head"><span class="sim-tag">WORKBENCH</span><h3>SMP 함수 계산기: 부록 D 샘플을 블록까지</h3></div>
+      <div class="sim-controls" style="border-top:0">
+        <div class="ctrl"><span>함수</span><div class="seg" id="fn-k"><button data-value="f4" class="on">f4</button><button data-value="f5">f5</button><button data-value="f6">f6</button><button data-value="g2">g2</button><button data-value="h6">h6</button><button data-value="h7">h7</button><button data-value="c1">c1</button><button data-value="s1">s1</button><button data-value="ctkd">CTKD</button></div></div>
+      </div>
+      <div class="sim-view" style="padding:14px 16px">
+        <div class="hexin" id="fn-in"></div>
+        <div class="blk" id="fn-out" style="margin-top:12px"></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">결과</span><span class="v" id="fn-r" style="font-size:12.5px;overflow-wrap:anywhere">—</span></div>
+        <div class="stat"><span class="k">사양 샘플과 비교</span><span class="v" id="fn-ok">—</span></div>
+      </div>
+      <div class="sim-note">입력은 모두 큰 바이트부터(사양 부록 D의 표기 그대로). 칸을 고치면 바로 다시 계산하고, 샘플에서 바뀌면 “직접 입력”이 된다. 해볼 것: ① f4의 Z를 00 → 80으로 바꾸면(패스키 비트 0) 약속값이 완전히 달라진다. ② f5에서 A1의 첫 바이트를 00 → 01(임의 주소)로 바꾸면 LTK가 달라진다. 주소 형식까지 키에 섞인다. ③ g2의 마지막 네 바이트 2f9ed5ba = 798,938,554이고, 화면에는 그 mod 10⁶인 938554가 뜬다.</div>
+    </div>
+    <p class="spec-ref">f5(SALT, keyID “btle”, Length 256, 주소 형식): <b>[Vol 3] Part H §2.2.7</b> · f6과 입력(Table 2.2), IOcap 순서, 패스키를 r로 쓰는 법: <b>§2.2.8</b> · 인증 2단계: <b>§2.3.5.6.5</b> · 샘플: <b>Appendix D.2~D.8</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="nc">
+    <h2>숫자 비교 한 번을 처음부터 끝까지</h2>
+    <p>아래 시뮬레이터는 A와 B가 각자 키 쌍과 nonce를 만들고, 위의 함수들로 Cb 검사 → 여섯 자리 → LTK → Ea·Eb 검사를 실제로 계산한다. 중간자를 켜면 M이 양쪽과 따로 키를 교환한다. A 화면의 숫자는 A와 M의 공개 키로, B 화면의 숫자는 M과 B의 공개 키로 계산되므로, M이 각 구간을 아무리 정상적으로 처리해도 두 숫자는 달라진다.</p>
+    <div class="sim" id="sim-nc">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>숫자 비교: P-256부터 DHKey Check까지</h3></div>
+      <div class="sim-view" style="padding:14px 16px">
+        <div class="duo">
+          <div class="phone"><h4>A (개시자) 화면</h4><div class="num" id="nc-va">——————</div></div>
+          <div class="phone"><h4>B (응답자) 화면</h4><div class="num" id="nc-vb">——————</div></div>
+        </div>
+        <div class="blk" id="nc-out" style="margin-top:12px"></div>
+      </div>
+      <div class="sim-controls">
+        <label class="check"><input type="checkbox" id="nc-mitm"> 가운데에 중간자 M</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="nc-go">새로 페어링</button></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">Cb 검사 · Ea·Eb 검사</span><span class="v" id="nc-cb">—</span></div>
+        <div class="stat"><span class="k">두 화면</span><span class="v" id="nc-eq">—</span></div>
+        <div class="stat"><span class="k">A와 B의 LTK</span><span class="v" id="nc-ltk">—</span></div>
+      </div>
+      <div class="sim-note">주소는 A = 00:56:12:37:37:bf:ce(공개), B = 00:a7:13:70:2d:cf:c1(공개, 부록 D와 같은 값). IOcap는 둘 다 DisplayYesNo + MITM + SC. 해볼 것: ① 중간자 없이 여러 번 눌러 보자. 숫자는 매번 다르지만 두 화면은 늘 같고 LTK도 같다. ② 중간자를 켜면 Cb 검사와 Ea·Eb 검사는 통과한다(중간자는 양쪽과 각자 정상 페어링을 하니까). 그런데 두 화면의 숫자가 다르다. 사람이 “아니요”를 누르는 것만이 이 공격을 막는다. 같은 숫자가 나올 확률은 약 백만분의 1이다.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="legacy">
+    <h2>비교를 위해: 레거시 c1과 s1</h2>
+    <p>레거시 페어링은 타원곡선 없이 TK(0이나 6자리 패스키)를 키로 쓴다. c1으로 약속값을 만들고, s1으로 두 난수의 아래 8바이트씩을 이어 STK를 만든다. 공개 키가 없으니, 교환을 녹음한 사람은 TK 후보 백만 개(Just Works면 0 하나)를 차례로 넣어 c1이 맞는 값을 찾을 수 있다. 1권 8장의 결론이 이 구조에서 나온다. Secure Connections를 요구하는 설정(SC Only 모드, GAP의 LE 보안 모드 1 레벨 4)이 방어다.</p>
+    <div class="formula">c1(k, r, preq, pres, iat, rat, ia, ra) = e(k, e(k, r ⊕ p1) ⊕ p2) · s1(k, r1, r2) = e(k, r1′ ‖ r2′)</div>
+    <p class="spec-ref">c1과 예제 값: <b>[Vol 3] Part H §2.2.3</b> · s1과 예제 값: <b>§2.2.4</b> · LE 보안 모드 1 레벨 4: <b>[Vol 3] Part C §10.2.1</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="ctkd">
+    <h2>CTKD: 한 번 페어링으로 두 전송 모두</h2>
+    <p>클래식과 LE를 함께 쓰는 기기(이어폰, 차량)는 한쪽에서 Secure Connections 페어링을 하면 다른 쪽 키를 같은 강도로 유도할 수 있다. 이것이 <b>교차 전송 키 유도</b><span class="en">(Cross-Transport Key Derivation, CTKD)</span>다. LE의 LTK에서 클래식 링크 키를 만들 때는 중간 키 ILK를 거치고, 양쪽 모두 Pairing Request/Response의 <b>CT2</b> 비트를 1로 했으면 h7을, 한쪽이라도 0이면 옛 방식 h6을 쓴다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>방향</th><th>CT2 = 1 (양쪽)</th><th>CT2 = 0 (한쪽이라도)</th></tr></thead>
+      <tbody>
+        <tr><td>LTK → 링크 키</td><td>ILK = h7(“tmp1”, LTK) → h6(ILK, “lebr”)</td><td>ILK = h6(LTK, “tmp1”) → h6(ILK, “lebr”)</td></tr>
+        <tr><td>링크 키 → LTK</td><td>ILTK = h7(“tmp2”, LK) → h6(ILTK, “brle”)</td><td>ILTK = h6(LK, “tmp2”) → h6(ILTK, “brle”)</td></tr>
+      </tbody>
+    </table></div>
+    <p>키 길이도 함께 다룬다. 1단계에서 정한 암호화 키 길이(7~16바이트)가 16보다 짧으면 LTK의 위쪽을 0으로 가린다. 링크 키는 <b>가리기 전</b> LTK에서 유도한다. 키 길이는 줄일수록 무차별 대입에 약해지므로, 제품은 16바이트를 요구하도록 설정하는 것이 좋다(이 책 13장의 클래식 키 길이와 함께).</p>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">이어폰이 LE에서 숫자 비교로 페어링하고 CTKD로 클래식 링크 키를 만들었다. 공격자가 클래식 쪽 연결만 엿들었다면, 클래식 링크 키의 안전성은 무엇에 달려 있을까?</p><p class="wi-hint">링크 키는 어디에서 유도했나?</p><div class="opts">
+      <button class="opt">클래식 PIN 네 자리</button>
+      <button class="opt" data-correct>LE 페어링이 만든 LTK의 안전성</button>
+      <button class="opt">h6의 keyID가 비밀이라서</button>
+    </div><div class="quiz-exp">h6·h7의 keyID(“lebr”, “tmp1”)는 공개 상수다. 링크 키는 LTK에서 결정적으로 나오므로 LTK만큼 안전하다. 반대로 LE 페어링이 Just Works였다면 클래식 키도 중간자에 대해 인증되지 않은 키다. CTKD로 나눈 키는 원래 키의 보안 속성(인증 여부)을 그대로 물려받는다.</div></div>
+    <p class="spec-ref">h6·h7: <b>[Vol 3] Part H §2.2.10·§2.2.11</b> · LTK → 링크 키: <b>§2.4.2.4</b> · 링크 키 → LTK: <b>§2.4.2.5</b> · CTKD 개요: <b>§2.3.5.7</b> · 샘플: <b>Appendix D.6, D.8~D.12</b></p>
+  </section>
+
+  <div class="callout related"><strong>다른 책에서</strong><ul><li><a href="../../bluetooth/chapters/security.html">BluetoothBook 08장 · 페어링과 보안</a> — 입출력 능력 표와 숫자 비교의 원리</li></ul></div>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>SC 2단계 = P-256 공개 키 교환(받으면 곡선 검사) → 인증 1단계(f4 약속 + g2 숫자 / 패스키 20라운드 / OOB) → 인증 2단계(f5로 MacKey‖LTK, f6 확인값).</li>
+      <li>f4 = CMAC<sub>X</sub>(U‖V‖Z), g2 = CMAC<sub>X</sub>(U‖V‖Y) mod 2³²(화면은 mod 10⁶), f5는 SALT로 T를 만든 뒤 카운터 0·1로 두 키, f6은 IOcap와 주소까지 묶는다.</li>
+      <li>디버그 키는 개인 키가 공개되어 있어 한쪽만 써도 LTK가 드러난다. 양산 기기에서 꺼 두고, 받으면 거부할 수 있다.</li>
+      <li>레거시 c1·s1은 TK만 알면 다시 계산된다. 방어는 SC Only·보안 모드 1 레벨 4.</li>
+      <li>CTKD: CT2 = 1이면 h7, 아니면 h6로 중간 키를 거쳐 LTK ↔ 링크 키. 유도한 키는 원래 키의 보안 속성을 물려받는다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>f5 출력 256비트 중 LTK는 어느 쪽인가?</p><div class="opts">
+        <button class="opt">카운터 0으로 만든 위쪽 128비트</button><button class="opt" data-correct>카운터 1로 만든 아래쪽 128비트</button><button class="opt">T 자체</button><button class="opt">DHKey의 아래 128비트</button>
+      </div><div class="quiz-exp">[Vol 3] Part H §2.2.7: LTK는 f5의 least significant 128비트(Counter = 1), MacKey는 most significant 128비트(Counter = 0).</div></div>
+      <div class="quiz-q"><p>패스키 방식에서 f4의 Z는?</p><div class="opts">
+        <button class="opt">항상 0</button><button class="opt">패스키 전체</button><button class="opt" data-correct>0x80 또는 0x81 (라운드의 패스키 비트)</button><button class="opt">IOcap</button>
+      </div><div class="quiz-exp">최상위 비트를 1로 하고 최하위 비트에 그 라운드의 패스키 비트를 넣는다. 20라운드.</div></div>
+      <div class="quiz-q"><p>받은 공개 키가 곡선 위에 있지 않으면?</p><div class="opts">
+        <button class="opt">DHKey를 그대로 계산한다</button><button class="opt" data-correct>“DHKey Check Failed”로 페어링을 끝낸다</button><button class="opt">레거시 페어링으로 바꾼다</button><button class="opt">디버그 키로 바꾼다</button>
+      </div><div class="quiz-exp">[Vol 3] Part H §2.3.5.6.1. 공개 키 검증은 의무다.</div></div>
+      <div class="quiz-q"><p>f6에 IOcap를 넣는 이유는?</p><div class="opts">
+        <button class="opt">키를 길게 만들려고</button><button class="opt" data-correct>1단계에서 교환한 능력값이 바뀌지 않았음을 확인하려고</button><button class="opt">화면에 표시하려고</button><button class="opt">CT2를 정하려고</button>
+      </div><div class="quiz-exp">중간자가 능력값을 바꿔 Just Works로 끌어내리면, 양쪽이 계산한 Ea·Eb가 맞지 않게 된다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  /* ================================================================ 계산 (검증 스크립트가 꺼내 쓴다) */
+  const SBOX = (() => { const s = new Array(256); let p = 1, q = 1; do { p = p ^ ((p << 1) & 0xff) ^ (p & 0x80 ? 0x1b : 0); q ^= q << 1; q ^= q << 2; q ^= q << 4; q &= 0xff; if (q & 0x80) q ^= 0x09; const x = q ^ ((q << 1) | (q >> 7)) ^ ((q << 2) | (q >> 6)) ^ ((q << 3) | (q >> 5)) ^ ((q << 4) | (q >> 4)); s[p] = (x ^ 0x63) & 0xff; } while (p !== 1); s[0] = 0x63; return s; })();
+  /** AES-128 한 블록(e). 첫 바이트 = 가장 큰 바이트. [Vol 3] Part H §2.2.1 */
+  function aes128(key, block) {
+    const xt = (a) => ((a << 1) ^ (a & 0x80 ? 0x1b : 0)) & 0xff;
+    const w = key.slice(); let rc = 1;
+    for (let i = 16; i < 176; i += 4) { let t = w.slice(i - 4, i); if (i % 16 === 0) { t = [SBOX[t[1]] ^ rc, SBOX[t[2]], SBOX[t[3]], SBOX[t[0]]]; rc = xt(rc); } for (let j = 0; j < 4; j++) w[i + j] = w[i - 16 + j] ^ t[j]; }
+    let s = block.map((b, i) => b ^ w[i]);
+    for (let r = 1; r <= 10; r++) {
+      s = s.map((b) => SBOX[b]);
+      s = [0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12, 1, 6, 11].map((i) => s[i]);
+      if (r < 10) { const o = []; for (let c = 0; c < 4; c++) { const a = s.slice(4 * c, 4 * c + 4), x = a[0] ^ a[1] ^ a[2] ^ a[3]; for (let i = 0; i < 4; i++) o.push(a[i] ^ x ^ xt(a[i] ^ a[(i + 1) % 4])); } s = o; }
+      s = s.map((b, i) => b ^ w[16 * r + i]);
+    }
+    return s;
+  }
+  /** AES-CMAC (RFC 4493). [Vol 3] Part H §2.2.5 */
+  function aesCmac(key, msg) {
+    const L = aes128(key, new Array(16).fill(0));
+    const dbl = (a) => { const o = a.map((b, i) => ((b << 1) | (i < 15 ? a[i + 1] >> 7 : 0)) & 0xff); if (a[0] & 0x80) o[15] ^= 0x87; return o; };
+    const K1 = dbl(L), K2 = dbl(K1), n = Math.max(1, Math.ceil(msg.length / 16)), full = msg.length > 0 && msg.length % 16 === 0;
+    let last = msg.slice((n - 1) * 16);
+    if (full) last = last.map((b, i) => b ^ K1[i]); else { last = last.concat([0x80]); while (last.length < 16) last.push(0); last = last.map((b, i) => b ^ K2[i]); }
+    let x = new Array(16).fill(0);
+    for (let i = 0; i < n - 1; i++) x = aes128(key, x.map((b, j) => b ^ msg[16 * i + j]));
+    return aes128(key, x.map((b, j) => b ^ last[j]));
+  }
+  const ascii = (s) => Array.from(s).map((c) => c.charCodeAt(0));
+  /** f4(U, V, X, Z) = AES-CMAC_X(U ‖ V ‖ Z). [Vol 3] Part H §2.2.6 */
+  function f4(U, V, X, Z) { return aesCmac(X, U.concat(V, [Z])); }
+  /** f5(W, N1, N2, A1, A2) → T, MacKey(카운터 0), LTK(카운터 1). A1·A2 = 7바이트(주소 형식 + 주소). [Vol 3] Part H §2.2.7 */
+  function f5(W, N1, N2, A1, A2) {
+    const SALT = [0x6c, 0x88, 0x83, 0x91, 0xaa, 0xf5, 0xa5, 0x38, 0x60, 0x37, 0x0b, 0xdb, 0x5a, 0x60, 0x83, 0xbe];
+    const T = aesCmac(SALT, W), m = (c) => [c].concat(ascii("btle"), N1, N2, A1, A2, [0x01, 0x00]);
+    return { T, macKey: aesCmac(T, m(0)), ltk: aesCmac(T, m(1)) };
+  }
+  /** f6(W, N1, N2, R, IOcap, A1, A2) = AES-CMAC_W(N1 ‖ N2 ‖ R ‖ IOcap ‖ A1 ‖ A2). [Vol 3] Part H §2.2.8 */
+  function f6(W, N1, N2, R, IOcap, A1, A2) { return aesCmac(W, N1.concat(N2, R, IOcap, A1, A2)); }
+  /** g2(U, V, X, Y) = AES-CMAC_X(U ‖ V ‖ Y) mod 2^32. [Vol 3] Part H §2.2.9 */
+  function g2(U, V, X, Y) { const m = aesCmac(X, U.concat(V, Y)); return ((m[12] << 24) | (m[13] << 16) | (m[14] << 8) | m[15]) >>> 0; }
+  /** h6(W, keyID) = AES-CMAC_W(keyID). [Vol 3] Part H §2.2.10 */
+  function h6(W, keyId) { return aesCmac(W, ascii(keyId)); }
+  /** h7(SALT, W) = AES-CMAC_SALT(W). SALT = 0 × 12 ‖ 4글자. [Vol 3] Part H §2.2.11 */
+  function h7(salt, W) { return aesCmac(new Array(12).fill(0).concat(ascii(salt)), W); }
+  /** LTK → BR/EDR 링크 키. [Vol 3] Part H §2.4.2.4 */
+  function ltkToLinkKey(ltk, ct2) { return h6(ct2 ? h7("tmp1", ltk) : h6(ltk, "tmp1"), "lebr"); }
+  /** BR/EDR 링크 키 → LTK. [Vol 3] Part H §2.4.2.5 */
+  function linkKeyToLtk(lk, ct2) { return h6(ct2 ? h7("tmp2", lk) : h6(lk, "tmp2"), "brle"); }
+  /** 레거시 c1. preq·pres 7바이트, ia·ra 6바이트, iat·rat 0/1. [Vol 3] Part H §2.2.3 */
+  function c1(k, r, preq, pres, iat, rat, ia, ra) {
+    const p1 = pres.concat(preq, [rat & 1, iat & 1]), p2 = [0, 0, 0, 0].concat(ia, ra);
+    const e1 = aes128(k, r.map((b, i) => b ^ p1[i]));
+    return aes128(k, e1.map((b, i) => b ^ p2[i]));
+  }
+  /** 레거시 s1 = e(k, r1의 아래 8바이트 ‖ r2의 아래 8바이트). [Vol 3] Part H §2.2.4 */
+  function s1(k, r1, r2) { return aes128(k, r1.slice(8).concat(r2.slice(8))); }
+
+  /* ---- P-256 (BigInt). 곡선: y² = x³ − 3x + b (mod p). [Vol 2] Part H §7.6 */
+  const P256 = { p: 0xffffffff00000001000000000000000000000000ffffffffffffffffffffffffn, b: 0x5ac635d8aa3a93e7b3ebbd55769886bc651d06b0cc53b0f63bce3c3e27d2604bn, n: 0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551n, gx: 0x6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296n, gy: 0x4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5n };
+  /** 점이 곡선 위에 있는가(0 ≤ x, y < p). [Vol 3] Part H §2.3.5.6.1 */
+  function onCurve(x, y) { const { p, b } = P256, md = (v) => ((v % p) + p) % p; return x >= 0n && x < p && y >= 0n && y < p && md(y * y) === md(x * x * x - 3n * x + b); }
+  /** 스칼라 곱 k·(x, y). 무한원점은 null. 아핀 좌표, 왼쪽부터 두 배-더하기 */
+  function ecMul(k, x, y) {
+    const { p } = P256, md = (v) => ((v % p) + p) % p;
+    const inv = (a) => { let [r0, r1, s0, s1] = [md(a), p, 1n, 0n]; while (r1) { const q = r0 / r1; [r0, r1] = [r1, r0 - q * r1]; [s0, s1] = [s1, s0 - q * s1]; } return md(s0); };
+    const add = (P, Q) => {
+      if (!P) return Q; if (!Q) return P;
+      if (P[0] === Q[0] && md(P[1] + Q[1]) === 0n) return null;
+      const l = P[0] === Q[0] ? md((3n * P[0] * P[0] - 3n) * inv(2n * P[1])) : md((Q[1] - P[1]) * inv(Q[0] - P[0]));
+      const x3 = md(l * l - P[0] - Q[0]); return [x3, md(l * (P[0] - x3) - P[1])];
+    };
+    let R = null; const G = [x, y];
+    for (let i = BigInt(k.toString(2).length) - 1n; i >= 0n; i--) { R = add(R, R); if ((k >> i) & 1n) R = add(R, G); }
+    return R;
+  }
+  const big = (a) => BigInt("0x" + (a.map((b) => b.toString(16).padStart(2, "0")).join("") || "0"));
+  const bytes32 = (v) => { const h = v.toString(16).padStart(64, "0"); return h.match(/../g).map((x) => parseInt(x, 16)); };
+  /** 공개 키 = d·G (x, y 32바이트씩, 큰 바이트부터) */
+  function publicKey(d) { const Q = ecMul(big(d), P256.gx, P256.gy); return { x: bytes32(Q[0]), y: bytes32(Q[1]) }; }
+  /** DHKey = (d·Q)의 x. Q가 곡선 밖이면 null. [Vol 3] Part H §2.3.5.6.1 */
+  function dhKey(d, qx, qy) { const X = big(qx), Y = big(qy); if (!onCurve(X, Y)) return null; const R = ecMul(big(d), X, Y); return R ? bytes32(R[0]) : null; }
+
+  /* ================================================================ 공통 */
+  const H = (s) => (String(s).replace(/[^0-9a-fA-F]/g, "").match(/../g) || []).map((x) => parseInt(x, 16));
+  const X = (a) => a.map((b) => BD.hex(b).toLowerCase()).join("");
+  const DEBUG_D = "3f49f6d4a3c55f3874c9b3e3d2103f504aff607beb40b7995899b8a6cd3c1abd";
+  const rand = (n) => { const a = new Uint8Array(n); crypto.getRandomValues(a); return Array.from(a); };
+  const randScalar = () => { for (;;) { const d = rand(32), v = big(d); if (v > 0n && v < P256.n) return d; } };
+  const grp = (s) => s.replace(/(.{8})/g, "$1 ").trim();
+
+  /* ================================================================ 1. ECDH */
+  (function () {
+    let peer = null;
+    const setPeer = () => { peer = publicKey(randScalar()); $("ec-x").value = X(peer.x); $("ec-y").value = X(peer.y); };
+    $("ec-d").value = X(randScalar()); setPeer();
+    $("ec-debug").addEventListener("click", () => { $("ec-d").value = DEBUG_D; draw(); });
+    $("ec-rand").addEventListener("click", () => { setPeer(); draw(); });
+    $("ec-bad").addEventListener("click", () => { const y = H($("ec-y").value); y[31] ^= 1; $("ec-y").value = X(y); draw(); });
+    ["ec-d", "ec-x", "ec-y"].forEach((id) => $(id).addEventListener("input", draw));
+    function draw() {
+      const d = H($("ec-d").value), qx = H($("ec-x").value), qy = H($("ec-y").value);
+      if (d.length !== 32 || qx.length !== 32 || qy.length !== 32 || big(d) === 0n || big(d) >= P256.n) { $("ec-out").textContent = "개인 키 1 ≤ d < n, 공개 키 X·Y는 32바이트씩."; BD.stat("ec-ok", "—"); BD.stat("ec-dh", "—"); return; }
+      const me = publicKey(d), on = onCurve(big(qx), big(qy)), dh = on ? dhKey(d, qx, qy) : null;
+      $("ec-out").innerHTML = `<span class="k">내 공개 키 X</span> ${grp(X(me.x))}${X(d) === DEBUG_D ? '  <span class="a">← 디버그 공개 키(부록 D의 U)</span>' : ""}\n<span class="k">내 공개 키 Y</span> ${grp(X(me.y))}\n<span class="k">상대 점 검사</span> ${on ? '<span class="ok">y² = x³ − 3x + b (mod p) 성립</span>' : '<span class="bad">곡선 밖의 점 → DHKey Check Failed</span>'}`;
+      BD.stat("ec-ok", on ? "곡선 위 ✓" : "곡선 밖 ✗");
+      BD.stat("ec-dh", dh ? X(dh) : "계산하지 않음");
+    }
+    draw();
+  })();
+
+  /* ================================================================ 2. 함수 계산기 (부록 D) */
+  (function () {
+    const D = {
+      f4: { f: ["U", "V", "X", "Z"], v: ["20b003d2 f297be2c 5e2c83a7 e9f9a5b9 eff49111 acf4fddb cc030148 0e359de6", "55188b3d 32f6bb9a 900afcfb eed4e72a 59cb9ac2 f19d7cfb 6b4fdd49 f47fc5fd", "d5cb8454 d177733e ffffb2ec 712baeab", "00"], want: "f2c916f107a9bd1cf1eda1bea974872d", ref: "D.2" },
+      f5: { f: ["W (DHKey)", "N1", "N2", "A1", "A2"], v: ["ec0234a3 57c8ad05 341010a6 0a397d9b 99796b13 b4f866f1 868d34f3 73bfa698", "d5cb8454 d177733e ffffb2ec 712baeab", "a6e8e7cc 25a75f6e 216583f7 ff3dc4cf", "00561237 37bfce", "00a71370 2dcfc1"], want: "2965f176a1084a02fd3f6a20ce636e20 69867911 69d7cd23 980522b5 94750a38", ref: "D.3" },
+      f6: { f: ["W (MacKey)", "N1", "N2", "R", "IOcap", "A1", "A2"], v: ["2965f176 a1084a02 fd3f6a20 ce636e20", "d5cb8454 d177733e ffffb2ec 712baeab", "a6e8e7cc 25a75f6e 216583f7 ff3dc4cf", "12a3343b b453bb54 08da42d2 0c2d0fc8", "010102", "00561237 37bfce", "00a71370 2dcfc1"], want: "e3c473989cd0e8c5d26c0b09da958f61", ref: "D.4" },
+      g2: { f: ["U", "V", "X", "Y"], v: ["20b003d2 f297be2c 5e2c83a7 e9f9a5b9 eff49111 acf4fddb cc030148 0e359de6", "55188b3d 32f6bb9a 900afcfb eed4e72a 59cb9ac2 f19d7cfb 6b4fdd49 f47fc5fd", "d5cb8454 d177733e ffffb2ec 712baeab", "a6e8e7cc 25a75f6e 216583f7 ff3dc4cf"], want: "2f9ed5ba", ref: "D.5" },
+      h6: { f: ["W (Key)", "keyID (4글자)"], v: ["ec0234a3 57c8ad05 341010a6 0a397d9b", "lebr"], want: "2d9ae102e76dc91ce8d3a9e280b16399", ref: "D.6" },
+      h7: { f: ["SALT (4글자)", "W (Key)"], v: ["tmp1", "ec0234a3 57c8ad05 341010a6 0a397d9b"], want: "fb173597c6a3c0ecd2998c2a75a57011", ref: "D.8" },
+      c1: { f: ["k (TK)", "r", "preq", "pres", "iat rat", "ia", "ra"], v: ["00000000000000000000000000000000", "5783D52156AD6F0E6388274EC6702EE0", "07071000000101", "05000800000302", "1 0", "A1A2A3A4A5A6", "B1B2B3B4B5B6"], want: "1e1e3fef878988ead2a74dc5bef13b86", ref: "§2.2.3 예" },
+      s1: { f: ["k (TK)", "r1", "r2"], v: ["00000000000000000000000000000000", "000F0E0D0C0B0A091122334455667788", "010203040506070899AABBCCDDEEFF00"], want: "9a1fe1f0e8b0f49b5b4216ae796da062", ref: "§2.2.4 예" },
+      ctkd: { f: ["LTK", "링크 키", "CT2 (1 또는 0)"], v: ["368df9bc e3264b58 bd066c33 334fbf64", "05040302 01000908 07060504 03020100", "1"], want: "", ref: "D.9~D.12" },
+    };
+    const CTKD = { 1: ["287ad379dca402530a39f1f43047b835", "e85e09eb5eccb3e269418a133211bc79"], 0: ["bc1ca4ef633fc1bd0d8230afee388fb0", "a813fb72f1a3dfa18a2c9a43f10d0a30"] };
+    let k = "f4";
+    BD.seg("fn-k", (v) => { k = v; build(); });
+    function build() { const d = D[k]; $("fn-in").innerHTML = d.f.map((n, i) => `<label>${n}<input data-i="${i}" spellcheck="false" value="${d.v[i]}"></label>`).join(""); $("fn-in").querySelectorAll("input").forEach((el) => el.addEventListener("input", draw)); draw(); }
+    const val = () => [...$("fn-in").querySelectorAll("input")].map((el) => el.value);
+    function draw() {
+      const v = val(), d = D[k], h = v.map(H); let out = "", res = "", want = d.want.replace(/\s/g, "");
+      const L = (a, b, c) => `<span class="k">${a.padEnd(8)}</span> <span class="${c || ""}">${b}</span>\n`;
+      try {
+        if (k === "f4") { out += L("m", grp(X(h[0].concat(h[1], [h[3][0] || 0])))) + L("key X", grp(X(h[2]))); res = X(f4(h[0], h[1], h[2], h[3][0] || 0)); }
+        else if (k === "f5") { const r = f5(h[0], h[1], h[2], h[3], h[4]); out += L("T", grp(X(r.T))) + L("m (c=0)", grp(X([0].concat(ascii("btle"), h[1], h[2], h[3], h[4], [1, 0])))) + L("MacKey", grp(X(r.macKey)), "a") + L("LTK", grp(X(r.ltk)), "a"); res = X(r.macKey) + X(r.ltk); }
+        else if (k === "f6") { res = X(f6(h[0], h[1], h[2], h[3], h[4], h[5], h[6])); out += L("m", grp(X(h[1].concat(h[2], h[3], h[4], h[5], h[6])))); }
+        else if (k === "g2") { const g = g2(h[0], h[1], h[2], h[3]); res = g.toString(16).padStart(8, "0"); out += L("g2", res + " = " + g.toLocaleString("en-US"), "a") + L("화면", String(g % 1000000).padStart(6, "0"), "a"); }
+        else if (k === "h6") { res = X(h6(h[0], v[1].trim())); out += L("keyID", X(ascii(v[1].trim()))); }
+        else if (k === "h7") { res = X(h7(v[0].trim(), h[1])); out += L("SALT", X(new Array(12).fill(0).concat(ascii(v[0].trim())))); }
+        else if (k === "c1") { const [iat, rat] = v[4].trim().split(/\s+/).map(Number); const p1 = h[3].concat(h[2], [rat & 1, iat & 1]); out += L("p1", X(p1)) + L("p2", X([0, 0, 0, 0].concat(h[5], h[6]))); res = X(c1(h[0], h[1], h[2], h[3], iat, rat, h[5], h[6])); }
+        else if (k === "s1") { out += L("r'", X(h[1].slice(8).concat(h[2].slice(8)))); res = X(s1(h[0], h[1], h[2])); }
+        else { const ct2 = v[2].trim() === "1" ? 1 : 0, lk = X(ltkToLinkKey(h[0], ct2)), lt = X(linkKeyToLtk(h[1], ct2)); out += L("LTK→LK", grp(lk), "a") + L("LK→LTK", grp(lt), "a"); res = lk + lt; want = CTKD[ct2].join(""); }
+      } catch (e) { out = "입력을 확인하자: " + e.message; res = ""; }
+      const same = !!want && res === want.toLowerCase(), edited = v.some((x, i) => x !== D[k].v[i]) && !(k === "ctkd" && v[0] === D.ctkd.v[0] && v[1] === D.ctkd.v[1]);
+      out += L("결과", grp(res), "a") + (edited ? L("샘플", "직접 입력", "k") : L("사양 " + d.ref, same ? "✓ 일치" : "✗ 다름", same ? "ok" : "bad"));
+      $("fn-out").innerHTML = out; BD.stat("fn-r", grp(res)); BD.stat("fn-ok", edited ? "직접 입력" : same ? "✓ 일치" : "✗ 다름");
+    }
+    build();
+  })();
+
+  /* ================================================================ 3. 숫자 비교 */
+  (function () {
+    const A = H("00 56 12 37 37 bf ce"), B = H("00 a7 13 70 2d cf c1"), IO = H("0d 00 01"), R0 = new Array(16).fill(0); // IOcap = AuthReq(본딩|MITM|SC) ‖ OOB 없음 ‖ DisplayYesNo
+    function pair(skA, skB, pkAseenByB, pkBseenByA, na, nb) {
+      // 각자 받은 상대 공개 키로 DHKey를 만들고 1·2단계 값을 계산한다
+      const pkA = publicKey(skA), pkB = publicKey(skB);
+      const dhA = dhKey(skA, pkBseenByA.x, pkBseenByA.y), dhB = dhKey(skB, pkAseenByB.x, pkAseenByB.y);
+      const cb = f4(pkB.x, pkAseenByB.x, nb, 0), cbCheck = X(f4(pkBseenByA.x, pkA.x, nb, 0)) === X(cb);
+      const va = g2(pkA.x, pkBseenByA.x, na, nb) % 1000000, vb = g2(pkAseenByB.x, pkB.x, na, nb) % 1000000;
+      const kA = f5(dhA, na, nb, A, B), kB = f5(dhB, na, nb, A, B);
+      // 인증 2단계: 각자 자기 MacKey로 상대 확인값을 다시 계산해 비교
+      const ea = f6(kA.macKey, na, nb, R0, IO, A, B), eb = f6(kB.macKey, nb, na, R0, IO, B, A);
+      const eaOk = X(f6(kB.macKey, na, nb, R0, IO, A, B)) === X(ea), ebOk = X(f6(kA.macKey, nb, na, R0, IO, B, A)) === X(eb);
+      return { pkA, pkB, cbCheck, va, vb, kA, kB, checks: eaOk && ebOk };
+    }
+    function go() {
+      const mitm = $("nc-mitm").checked, skA = randScalar(), skB = randScalar(), na = rand(16), nb = rand(16);
+      let r, txt;
+      if (!mitm) { const pa = publicKey(skA), pb = publicKey(skB); r = pair(skA, skB, pa, pb, na, nb); txt = "A ↔ B가 직접 공개 키를 교환"; }
+      else {
+        // M은 A에게는 자기 키 PKm1을, B에게는 PKm2를 B·A 인 것처럼 전달하고 양쪽과 각자 정상 페어링을 한다
+        const m1 = randScalar(), m2 = randScalar(), pm1 = publicKey(m1), pm2 = publicKey(m2);
+        const ra = pair(skA, m1, publicKey(skA), pm1, na, nb), rb = pair(m2, skB, pm2, publicKey(skB), na, nb);
+        r = { cbCheck: ra.cbCheck && rb.cbCheck, checks: ra.checks && rb.checks, va: ra.va, vb: rb.vb, kA: ra.kA, kB: rb.kB, pkA: ra.pkA, pkB: rb.pkB };
+        txt = "A ↔ M(키 m1) · M(키 m2) ↔ B. 각 구간은 정상 페어링";
+      }
+      const sameLtk = X(r.kA.ltk) === X(r.kB.ltk);
+      $("nc-va").textContent = String(r.va).padStart(6, "0"); $("nc-vb").textContent = String(r.vb).padStart(6, "0");
+      $("nc-out").innerHTML = `<span class="k">경로   </span> ${txt}\n<span class="k">PKa.x  </span> ${grp(X(r.pkA.x)).slice(0, 44)}…\n<span class="k">PKb.x  </span> ${grp(X(r.pkB.x)).slice(0, 44)}…\n<span class="k">Na, Nb </span> ${X(na).slice(0, 16)}…, ${X(nb).slice(0, 16)}…\n<span class="k">A의 LTK</span> ${grp(X(r.kA.ltk))}\n<span class="k">B의 LTK</span> ${grp(X(r.kB.ltk))}`;
+      BD.stat("nc-cb", (r.cbCheck ? "통과 ✓" : "실패 ✗") + " · Ea·Eb " + (r.checks ? "통과 ✓" : "실패 ✗"));
+      BD.stat("nc-eq", r.va === r.vb ? "같음 → 사용자가 “예”" : "다름 → 사용자가 “아니요”");
+      BD.stat("nc-ltk", sameLtk ? "같음" : "다름 (각자 M과 공유)");
+    }
+    $("nc-go").addEventListener("click", go); $("nc-mitm").addEventListener("change", go);
+    go();
+  })();
+})();
+</script>
+</body>
+</html>

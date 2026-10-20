@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>ATT/GATT 심화: EATT, 큐 쓰기, Database Hash · BluetoothBook 심화</title>
+<meta name="description" content="ATT PDU의 opcode 구조와 여섯 종류, 순차 프로토콜과 30초 트랜잭션, 긴 값의 Read Blob과 Prepare/Execute 큐 쓰기, 여러 베어러를 쓰는 EATT와 Read Multiple Variable·Multiple Handle Value Notification, Database Hash 계산과 Robust Caching의 change-aware 규칙을 계산하며 익힌다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/gatt.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="BluetoothBook 심화">
+<meta property="og:title" content="ATT/GATT 심화: EATT, 큐 쓰기, Database Hash · BluetoothBook 심화">
+<meta property="og:description" content="ATT PDU의 opcode 구조와 여섯 종류, 순차 프로토콜과 30초 트랜잭션, 긴 값의 Read Blob과 Prepare/Execute 큐 쓰기, 여러 베어러를 쓰는 EATT와 Read Multiple Variable·Multiple Handle Value Notification, Database Hash 계산과 Robust Caching의 change-aware 규칙을 계산하며 익힌다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/gatt.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"ATT/GATT 심화: EATT, 큐 쓰기, Database Hash","name":"ATT/GATT 심화: EATT, 큐 쓰기, Database Hash · BluetoothBook 심화","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/gatt.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/gatt.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":11,"image":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png","dateModified":"2026-10-20","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/#book","name":"BluetoothBook 심화 — 프로토콜 스택을 끝까지 따라가는 블루투스 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},"publisher":{"@type":"Organization","name":"BluetoothBook 심화","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},"description":"ATT PDU의 opcode 구조와 여섯 종류, 순차 프로토콜과 30초 트랜잭션, 긴 값의 Read Blob과 Prepare/Execute 큐 쓰기, 여러 베어러를 쓰는 EATT와 Read Multiple Variable·Multiple Handle Value Notification, Database Hash 계산과 Robust Caching의 change-aware 규칙을 계산하며 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook 심화","item":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},{"@type":"ListItem","position":2,"name":"11 ATT/GATT 심화: EATT, 큐 쓰기, Database Hash","item":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/gatt.html"}]}]}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<style>
+  .blk { font: 12.5px/1.65 var(--mono); overflow-x: auto; white-space: pre; padding: 12px 14px; background: var(--surface); border-radius: 10px; color: var(--text); }
+  .blk .k { color: var(--text-dim); } .blk .a { color: var(--accent); font-weight: 600; } .blk .b { color: var(--accent-2); font-weight: 600; } .blk .bad { color: var(--bad); font-weight: 700; } .blk .ok { color: var(--ok); font-weight: 700; }
+  table.db td { font-size: 13px; } table.db td.m { font-family: var(--mono); font-size: 12.5px; } table.db tr.in td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+  .log { font: 12.5px/1.7 var(--mono); padding: 10px 12px; background: var(--surface); border-radius: 10px; max-height: 220px; overflow-y: auto; }
+  .log div.c { color: var(--accent); } .log div.s { color: var(--accent-2); } .log div.e { color: var(--bad); }
+</style>
+</head>
+<body data-chapter="gatt">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 11</div>
+    <h1>ATT/GATT 심화: EATT, 큐 쓰기, Database Hash</h1>
+    <p class="lead">1권 7장은 속성과 서비스·특성, 읽기·쓰기·알림을 다뤘다. 이 장은 현장에서 부딪히는 세부로 내려간다. 요청 하나가 끝나야 다음을 보낼 수 있는 순차 규칙과 30초 타임아웃, 긴 값을 나눠 쓰는 <span class="term">큐 쓰기</span>, 여러 요청을 동시에 흘리는 <span class="term">EATT</span>, 그리고 펌웨어를 올린 뒤 휴대폰이 옛 핸들을 계속 쓰는 문제를 막는 <span class="term">Database Hash</span>와 <span class="term">Robust Caching</span>이다.</p>
+    <ul class="objectives">
+      <li>ATT opcode의 비트 구조와 여섯 PDU 종류, 순차 프로토콜과 30초 트랜잭션 규칙을 안다.</li>
+      <li>Read Blob과 Prepare/Execute Write로 긴 값을 읽고 쓰는 과정을 따라갈 수 있다.</li>
+      <li>EATT가 무엇을 바꾸는지(병렬 트랜잭션, 알림 신뢰성, 새 PDU)를 설명할 수 있다.</li>
+      <li>Database Hash를 직접 계산하고, Robust Caching에서 서버가 0x12를 보내는 때를 판단할 수 있다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="pdu">
+    <h2>ATT PDU와 순차 프로토콜</h2>
+    <p>ATT PDU의 첫 바이트 opcode는 아래 6비트가 <b>방법</b>(Method), 비트 6이 <b>명령 플래그</b>(1이면 응답이 없는 명령), 비트 7은 6.3에서 “이전에 쓰던 값”이 되었다(서명된 쓰기의 인증 서명 플래그. 데이터 서명 삭제와 함께 0xD2 Signed Write Command도 사라졌다). 그래서 ATT_WRITE_CMD는 0x52 = 0x12(쓰기 방법) | 0x40이다. 나머지 바이트는 매개변수이고 ATT_MTU − 1까지 들어간다. 여러 바이트 값은 리틀 엔디언이지만, 속성 값 자체의 바이트 순서는 상위 사양이 정한다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>종류</th><th>방향</th><th>흐름 제어</th><th>예</th></tr></thead>
+      <tbody>
+        <tr><td>요청(REQ) → 응답(RSP)</td><td>클라이언트 → 서버 → 클라이언트</td><td>베어러마다 한 번에 하나</td><td>READ 0x0A/0x0B, WRITE 0x12/0x13</td></tr>
+        <tr><td>명령(CMD)</td><td>클라이언트 → 서버</td><td>없음, 처리 못 하면 버림</td><td>WRITE_CMD 0x52</td></tr>
+        <tr><td>표시(IND) → 확인(CFM)</td><td>서버 → 클라이언트 → 서버</td><td>베어러마다 한 번에 하나</td><td>0x1D / 0x1E</td></tr>
+        <tr><td>알림(NTF)</td><td>서버 → 클라이언트</td><td>없음</td><td>0x1B, MULTIPLE 0x23</td></tr>
+      </tbody>
+    </table></div>
+    <p>요청-응답과 표시-확인 한 쌍이 <b>트랜잭션</b>이다. 트랜잭션은 한 베어러에서 끝나야 하고, <b>30초</b> 안에 끝나지 않으면 실패로 처리하며 그 베어러로는 더 아무것도 보내지 않는다. 다시 쓰려면 베어러를 새로 맺어야 하는데, 고정 채널 0x0004 베어러라면 사실상 연결을 끊고 다시 맺는 것이다. 응답이 늦는 서버 하나가 휴대폰 앱 전체를 멈추게 하는 흔한 원인이다.</p>
+    <div class="callout analogy"><strong>창구 하나짜리 민원실</strong><p>일반 <span class="term">ATT 베어러</span>는 창구가 하나인 민원실이다. 앞사람 민원(요청)이 끝나야 다음 민원을 받는다. 서류 넣기(명령)와 안내 방송(알림)은 창구를 거치지 않지만, 손이 모자라면 버려질 수 있다. EATT는 창구를 여러 개 여는 것이다. 한 창구에서 긴 서류를 처리하는 동안 옆 창구에서 다른 민원을 본다.</p></div>
+    <p class="spec-ref">PDU 종류(Table 3.1)·opcode 형식(Table 3.2): <b>[Vol 3] Part F §3.3·§3.3.1</b> · 순차 프로토콜: <b>§3.3.2</b> · 트랜잭션과 30초: <b>§3.3.3</b> · opcode 요약과 0xD2: <b>§3.4.8</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="long">
+    <h2>긴 값: Read Blob과 큐 쓰기</h2>
+    <p>ATT_MTU − 1보다 긴 값은 한 번에 오가지 못한다. 읽을 때는 ATT_READ_REQ로 앞부분을 받고, 이어서 <b>ATT_READ_BLOB_REQ</b>(0x0C)에 오프셋을 주어 나머지를 차례로 받는다(1권 7장의 왕복 계산). 쓸 때는 <b>큐 쓰기</b>를 쓴다. ATT_PREPARE_WRITE_REQ(0x16)로 (핸들, 오프셋, 조각)을 서버의 대기열에 넣고, 서버는 받은 내용을 그대로 되돌려 준다. 마지막에 ATT_EXECUTE_WRITE_REQ(0x18)에 플래그 1을 주면 대기열 전체를 한꺼번에 반영하고, 0을 주면 모두 버린다.</p>
+    <p>이 되돌려 받기를 이용한 것이 <b>신뢰성 있는 쓰기</b>(Reliable Writes)다. 클라이언트는 서버가 돌려준 조각이 보낸 것과 같은지 확인하고, 하나라도 다르면 실행 대신 취소(플래그 0)를 보낸다. 서버의 대기열이 가득 차면 Prepare Queue Full(0x09)이 온다. 대기열은 여러 특성의 조각을 함께 담을 수 있어 “여러 값을 원자적으로 바꾸기”에도 쓴다.</p>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">ATT_MTU가 23일 때 ATT_PREPARE_WRITE_REQ 하나에 실을 수 있는 값 조각은 최대 몇 바이트일까?</p><p class="wi-hint">opcode 1 + 핸들 2 + 오프셋 2.</p><div class="opts">
+      <button class="opt">22바이트</button>
+      <button class="opt">20바이트</button>
+      <button class="opt" data-correct>18바이트</button>
+      <button class="opt">16바이트</button>
+    </div><div class="quiz-exp">23 − 1 − 2 − 2 = 18바이트. 100바이트 값을 쓰려면 Prepare가 6번, Execute 1번, 응답까지 합쳐 왕복 7번이다. ATT_MTU를 247로 올리면 Prepare 하나로 끝난다(242바이트). 긴 값을 자주 쓰는 제품은 연결 직후 MTU 교환부터 한다.</div></div>
+    <p class="spec-ref">Read Blob: <b>[Vol 3] Part F §3.4.4.5</b> · 큐 쓰기: <b>§3.4.6</b> · 오류 코드(Table 3.4): <b>§3.4.1.1</b> · GATT의 긴 값 쓰기·신뢰성 있는 쓰기: <b>[Vol 3] Part G §4.9.4·§4.9.5</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="eatt">
+    <h2>EATT: 창구 여러 개</h2>
+    <p>EATT(5.2)는 ATT를 10장의 ECFC 채널 여럿 위에 올린다. 순차 규칙은 <b>베어러마다</b>이므로, 채널이 셋이면 요청 셋을 동시에 진행할 수 있다. 덧붙여 바뀌는 것이 있다.</p>
+    <ul>
+      <li><b>ATT_MTU</b>는 양쪽 ECFC MTU 중 작은 값이고 최소 64바이트다. MTU 교환 PDU는 쓰지 않는다.</li>
+      <li><b>알림의 신뢰성</b>: 일반 베어러에서는 버퍼가 넘치면 알림을 버릴 수 있지만, EATT 베어러에서는 받은 알림을 반드시 처리해야 한다. ECFC의 크레딧이 흐름 제어를 대신하기 때문이다.</li>
+      <li><b>새 PDU</b>: ATT_READ_MULTIPLE_VARIABLE_REQ/RSP(0x20/0x21)는 길이가 다른 값 여러 개를 길이와 함께 한 번에 읽고, ATT_MULTIPLE_HANDLE_VALUE_NTF(0x23)는 알림 여러 개를 PDU 하나에 묶는다.</li>
+      <li>EATT 채널은 암호화된 연결 위에서만 연다. 트랜잭션은 한 베어러를 넘나들 수 없다.</li>
+    </ul>
+    <p class="spec-ref">EATT 베어러의 ATT_MTU와 채널 요구: <b>[Vol 3] Part G §5.3</b> · ATT 베어러: <b>[Vol 3] Part F §3.2.11</b> · 알림 처리 규칙: <b>§3.3.2</b> · 새 PDU: <b>§3.4.4.11·§3.4.4.12·§3.4.7.4</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="hash">
+    <h2>Database Hash: 데이터베이스의 지문</h2>
+    <p>휴대폰은 한 번 찾은 핸들을 기억해 두고(1권 7장의 캐싱) 다음 연결에서 바로 쓴다. 그런데 펌웨어를 올려 서비스가 바뀌면 옛 핸들이 엉뚱한 특성을 가리킨다. 이를 알아채는 수단이 GATT 서비스의 <b>Database Hash</b> 특성(UUID 0x2B2A)이다. 서버의 서비스 구조를 요약한 128비트 값이라, 클라이언트는 연결할 때 이것만 읽어 보고 기억해 둔 값과 같으면 다시 찾지 않는다.</p>
+    <p>계산 규칙: 키가 모두 0인 AES-CMAC에, 핸들 순서대로 다음을 이어 붙인 메시지를 넣는다. 서비스·포함·특성 선언과 확장 속성 디스크립터는 <b>(핸들, 타입, 값)</b>, 사용자 설명·CCCD·SCCD·표현 형식·집합 형식 디스크립터는 <b>(핸들, 타입)</b>만, 그 밖(특성 값 등)은 넣지 않는다. 모두 리틀 엔디언이다. 사양의 예: 특성 선언 값 {0x02, 0x0005, 0x2A00}은 02 05 00 00 2A로 붙는다. 그래서 장치 이름 같은 <b>특성 값이 바뀌어도 해시는 그대로</b>이고, 특성을 추가하거나 속성(properties)을 바꾸면 해시가 바뀐다.</p>
+    <div class="sim" id="sim-hash">
+      <div class="sim-head"><span class="sim-tag">WORKBENCH</span><h3>GATT 데이터베이스와 Database Hash</h3></div>
+      <div class="sim-controls" style="border-top:0">
+        <label class="check"><input type="checkbox" id="hs-bat"> 배터리 서비스 추가(펌웨어 업데이트)</label>
+        <label class="check"><input type="checkbox" id="hs-prop"> 심박 측정 특성에 Read 속성 추가</label>
+        <label class="check"><input type="checkbox" id="hs-name"> 장치 이름 값을 바꾸기</label>
+      </div>
+      <div class="sim-view" style="padding:6px 12px 12px">
+        <div class="table-wrap" style="margin:0"><table class="db"><thead><tr><th>핸들</th><th>타입</th><th>값</th><th>해시에 넣는 바이트</th></tr></thead><tbody id="hs-tb"></tbody></table></div>
+        <div class="blk" id="hs-out" style="margin-top:10px"></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">Database Hash</span><span class="v" id="hs-h" style="font-size:12.5px;overflow-wrap:anywhere">—</span></div>
+        <div class="stat"><span class="k">처음 상태와 비교</span><span class="v" id="hs-c">—</span></div>
+      </div>
+      <div class="sim-note">왼쪽 줄 표시 = 해시 입력에 들어가는 속성. 해볼 것: ① 장치 이름 값을 바꿔도 해시는 그대로다. ② 배터리 서비스를 추가하면 새 핸들이 붙어 해시가 바뀐다. ③ 특성 속성 하나만 바꿔도 바뀐다. 계산은 이 책 7장의 AES-CMAC(RFC 4493 시험 벡터로 검증)이고, 검증 스크립트는 붙이는 규칙을 사양의 예(02 05 00 00 2A)로 확인한다.</div>
+    </div>
+    <p class="spec-ref">Database Hash 특성(0x2B2A)과 읽는 방법: <b>[Vol 3] Part G §7.3</b> · 계산 규칙과 예: <b>§7.3.1</b> · 선언 형식: <b>§3.1·§3.3.1</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="robust">
+    <h2>Robust Caching: change-aware와 0x12</h2>
+    <p>해시와 Service Changed를 둘 다 가진 서버는 <b>Robust Caching</b>을 지원해야 한다. 서버는 연결된 클라이언트마다 “변경을 아는가(change-aware)”를 기억한다. 데이터베이스가 바뀌는 순간 모두 change-unaware가 된다. 본딩한 클라이언트는 연결이 끊긴 사이 바뀌었다면 다시 연결할 때 unaware로 시작한다. Robust Caching을 지원한다고 알린 클라이언트가 unaware인 동안,</p>
+    <ul>
+      <li>핸들을 지정한 <b>요청</b>을 보내면 서버는 실행하지 않고 <b>ATT_ERROR_RSP(Database Out Of Sync, 0x12)</b>로 답한다. 베어러마다 한 번만 보낸다.</li>
+      <li><b>명령</b>은 무시한다. 알림·표시는 Service Changed 표시를 빼고 보내지 않는다.</li>
+      <li>Database Hash를 읽고(Read By Type, 핸들 범위 0x0001~0xFFFF) 그다음 요청을 보내거나, 0x12를 받은 뒤 다음 요청을 보내거나, (베어러가 하나라면) Service Changed 표시를 확인하면 change-aware가 된다.</li>
+    </ul>
+    <div class="sim" id="sim-rob">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>서버가 보는 클라이언트 상태</h3></div>
+      <div class="sim-view" style="padding:14px 16px"><div class="log" id="rb-log" aria-live="polite"></div></div>
+      <div class="sim-controls">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn" data-ev="change">서버: 데이터베이스 변경</button>
+          <button class="btn" data-ev="req">클라이언트: 핸들 0x0010 읽기 요청</button>
+          <button class="btn" data-ev="cmd">클라이언트: 쓰기 명령</button>
+          <button class="btn" data-ev="hash">클라이언트: Database Hash 읽기</button>
+          <button class="btn" data-ev="scCfm">클라이언트: Service Changed 표시 확인</button>
+          <button class="btn" data-ev="reset">처음부터</button>
+        </div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">클라이언트 상태</span><span class="v" id="rb-st">—</span></div>
+      </div>
+      <div class="sim-note">클라이언트는 Robust Caching 비트를 켠 상태, ATT 베어러 하나로 연결되어 있다. 해볼 것: ① “데이터베이스 변경” → “읽기 요청”이면 0x12. 같은 요청을 한 번 더 보내면 aware가 되어 정상 응답(클라이언트는 그 사이 캐시를 버리고 다시 찾아야 한다). ② 변경 뒤 “Database Hash 읽기”는 오류 없이 답하고, 그다음 요청에서 aware가 된다. ③ unaware 동안 쓰기 명령은 조용히 버려진다. 앱 입장에서는 “썼는데 반영이 안 된” 버그로 보인다.</div>
+    </div>
+    <p class="spec-ref">Robust Caching과 change-aware 전이(그림 2.5~2.7), 0x12를 보내는 조건, 명령 무시: <b>[Vol 3] Part G §2.5.2.1</b> · 0x12 Database Out Of Sync: <b>[Vol 3] Part F §3.4.1.1</b></p>
+  </section>
+
+  <div class="callout related"><strong>다른 책에서</strong><ul><li><a href="../../bluetooth/chapters/gatt.html">BluetoothBook 07장 · GATT</a> — 속성·서비스·특성과 캐싱의 기본</li></ul></div>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>opcode = 방법 6비트 + 명령 플래그(비트 6) + 비트 7(6.3에서 이전에 쓰던 값, 0xD2 사라짐). 요청·표시는 베어러마다 하나씩, 30초 넘으면 그 베어러는 끝.</li>
+      <li>긴 값: Read Blob으로 읽고 Prepare/Execute로 쓴다. 되돌아온 조각을 비교하면 신뢰성 있는 쓰기.</li>
+      <li>EATT: ECFC 채널 여럿 = 병렬 트랜잭션, ATT_MTU ≥ 64, 알림을 버리지 않음, Read Multiple Variable·Multiple Handle Value NTF.</li>
+      <li>Database Hash = AES-CMAC(0, 선언·확장 속성의 핸들·타입·값 + 몇몇 디스크립터의 핸들·타입). 특성 값은 넣지 않는다.</li>
+      <li>Robust Caching: unaware 클라이언트의 요청엔 0x12(베어러당 한 번), 명령은 무시. 해시 읽기나 0x12 뒤 다음 요청, SC 확인으로 aware.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>opcode 0x52의 뜻은?</p><div class="opts">
+        <button class="opt">쓰기 요청</button><button class="opt" data-correct>쓰기 명령(명령 플래그 + 쓰기 방법)</button><button class="opt">서명된 쓰기</button><button class="opt">읽기 응답</button>
+      </div><div class="quiz-exp">0x52 = 0x40(명령 플래그) | 0x12(쓰기). 응답이 없다.</div></div>
+      <div class="quiz-q"><p>ATT 트랜잭션이 30초 안에 끝나지 않으면?</p><div class="opts">
+        <button class="opt">자동으로 다시 보낸다</button><button class="opt" data-correct>실패로 처리하고 그 베어러로는 더 보내지 않는다</button><button class="opt">다른 베어러로 이어 간다</button><button class="opt">연결 간격을 늘린다</button>
+      </div><div class="quiz-exp">[Vol 3] Part F §3.3.3. 트랜잭션은 베어러를 넘나들 수 없다.</div></div>
+      <div class="quiz-q"><p>Database Hash 계산에 들어가지 않는 것은?</p><div class="opts">
+        <button class="opt">특성 선언의 값</button><button class="opt">CCCD의 핸들과 타입</button><button class="opt" data-correct>장치 이름 특성의 값</button><button class="opt">주 서비스 선언</button>
+      </div><div class="quiz-exp">특성 값은 넣지 않는다. 그래서 이름을 바꿔도 해시는 그대로다.</div></div>
+      <div class="quiz-q"><p>change-unaware 클라이언트가 쓰기 명령을 보내면?</p><div class="opts">
+        <button class="opt">0x12 오류</button><button class="opt" data-correct>서버가 무시한다</button><button class="opt">정상 처리</button><button class="opt">연결을 끊는다</button>
+      </div><div class="quiz-exp">명령에는 응답이 없으므로 오류도 보낼 수 없다. 그냥 버린다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  /* ================================================================ 계산 (검증 스크립트가 꺼내 쓴다) */
+  const SBOX = (() => { const s = new Array(256); let p = 1, q = 1; do { p = p ^ ((p << 1) & 0xff) ^ (p & 0x80 ? 0x1b : 0); q ^= q << 1; q ^= q << 2; q ^= q << 4; q &= 0xff; if (q & 0x80) q ^= 0x09; const x = q ^ ((q << 1) | (q >> 7)) ^ ((q << 2) | (q >> 6)) ^ ((q << 3) | (q >> 5)) ^ ((q << 4) | (q >> 4)); s[p] = (x ^ 0x63) & 0xff; } while (p !== 1); s[0] = 0x63; return s; })();
+  function aes128(key, block) {
+    const xt = (a) => ((a << 1) ^ (a & 0x80 ? 0x1b : 0)) & 0xff;
+    const w = key.slice(); let rc = 1;
+    for (let i = 16; i < 176; i += 4) { let t = w.slice(i - 4, i); if (i % 16 === 0) { t = [SBOX[t[1]] ^ rc, SBOX[t[2]], SBOX[t[3]], SBOX[t[0]]]; rc = xt(rc); } for (let j = 0; j < 4; j++) w[i + j] = w[i - 16 + j] ^ t[j]; }
+    let s = block.map((b, i) => b ^ w[i]);
+    for (let r = 1; r <= 10; r++) {
+      s = s.map((b) => SBOX[b]);
+      s = [0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12, 1, 6, 11].map((i) => s[i]);
+      if (r < 10) { const o = []; for (let c = 0; c < 4; c++) { const a = s.slice(4 * c, 4 * c + 4), x = a[0] ^ a[1] ^ a[2] ^ a[3]; for (let i = 0; i < 4; i++) o.push(a[i] ^ x ^ xt(a[i] ^ a[(i + 1) % 4])); } s = o; }
+      s = s.map((b, i) => b ^ w[16 * r + i]);
+    }
+    return s;
+  }
+  function aesCmac(key, msg) {
+    const L = aes128(key, new Array(16).fill(0));
+    const dbl = (a) => { const o = a.map((b, i) => ((b << 1) | (i < 15 ? a[i + 1] >> 7 : 0)) & 0xff); if (a[0] & 0x80) o[15] ^= 0x87; return o; };
+    const K1 = dbl(L), K2 = dbl(K1), n = Math.max(1, Math.ceil(msg.length / 16)), full = msg.length > 0 && msg.length % 16 === 0;
+    let last = msg.slice((n - 1) * 16);
+    if (full) last = last.map((b, i) => b ^ K1[i]); else { last = last.concat([0x80]); while (last.length < 16) last.push(0); last = last.map((b, i) => b ^ K2[i]); }
+    let x = new Array(16).fill(0);
+    for (let i = 0; i < n - 1; i++) x = aes128(key, x.map((b, j) => b ^ msg[16 * i + j]));
+    return aes128(key, x.map((b, j) => b ^ last[j]));
+  }
+  /** ATT opcode 분해. [Vol 3] Part F Table 3.2 */
+  function splitAttOpcode(op) { return { method: op & 0x3f, command: (op >> 6) & 1, bit7: (op >> 7) & 1 }; }
+  /** 한 PDU에 실을 수 있는 값 바이트: Prepare Write = MTU − 5, Write/Notify = MTU − 3, Read 응답 = MTU − 1 */
+  function attRoom(kind, mtu) { return { prepare: mtu - 5, write: mtu - 3, ntf: mtu - 3, readRsp: mtu - 1 }[kind]; }
+  const FULL = [0x2800, 0x2801, 0x2802, 0x2803, 0x2900], TYPE_ONLY = [0x2901, 0x2902, 0x2903, 0x2904, 0x2905];
+  /** 속성 하나가 Database Hash 입력에 넣는 바이트. attr: { handle, type, value: [] (리틀 엔디언 바이트) }. [Vol 3] Part G §7.3.1 */
+  function hashBytes(attr) {
+    const le = (v) => [v & 255, v >> 8];
+    if (FULL.includes(attr.type)) return le(attr.handle).concat(le(attr.type), attr.value);
+    if (TYPE_ONLY.includes(attr.type)) return le(attr.handle).concat(le(attr.type));
+    return [];
+  }
+  /** Database Hash = AES-CMAC(0, 핸들 오름차순으로 이어 붙인 바이트) */
+  function databaseHash(db) { const m = [].concat(...db.slice().sort((a, b) => a.handle - b.handle).map(hashBytes)); return { m, hash: aesCmac(new Array(16).fill(0), m) }; }
+  /** 특성 선언 값: 속성 1 · 값 핸들 2 · UUID(16비트 2) */
+  function charDecl(props, valueHandle, uuid) { return [props, valueHandle & 255, valueHandle >> 8, uuid & 255, uuid >> 8]; }
+  /**
+   * Robust Caching(베어러 하나). st: { aware, errSent, hashRead } , ev: change|req|cmd|hash|scCfm → { st, rsp }
+   * [Vol 3] Part G §2.5.2.1
+   */
+  function robust(st, ev) {
+    if (ev === "change") return { st: { aware: false, errSent: false, hashRead: false }, rsp: "Service Changed 표시를 보냄" };
+    if (ev === "scCfm") return { st: st.aware ? st : { aware: true, errSent: false, hashRead: false }, rsp: st.aware ? "—" : "change-aware가 됨" };
+    if (ev === "hash") return { st: st.aware ? st : { ...st, hashRead: true }, rsp: "Database Hash 응답" };
+    if (ev === "cmd") return { st, rsp: st.aware ? "쓰기 실행" : "무시(응답 없음)" };
+    // req
+    if (st.aware) return { st, rsp: "정상 응답" };
+    if (st.hashRead || st.errSent) return { st: { aware: true, errSent: false, hashRead: false }, rsp: "change-aware가 되어 정상 응답" };
+    return { st: { ...st, errSent: true }, rsp: "ATT_ERROR_RSP 0x12 Database Out Of Sync" };
+  }
+
+  /* ================================================================ 1. Database Hash */
+  (function () {
+    const X = (a) => a.map((b) => BD.hex(b)).join("");
+    const NAME = { 0x2800: "Primary Service", 0x2803: "Characteristic", 0x2902: "CCCD", 0x2a00: "Device Name", 0x2a01: "Appearance", 0x2a05: "Service Changed", 0x2b2a: "Database Hash", 0x2b29: "Client Supported Features", 0x2a37: "Heart Rate Measurement", 0x2a38: "Body Sensor Location", 0x2a19: "Battery Level" };
+    function build() {
+      const db = [], u = (v) => [v & 255, v >> 8]; let h = 1;
+      const svc = (uuid) => db.push({ handle: h++, type: 0x2800, value: u(uuid) });
+      const chr = (props, uuid, val, cccd) => { const d = h++; db.push({ handle: d, type: 0x2803, value: charDecl(props, d + 1, uuid) }); db.push({ handle: h++, type: uuid, value: val }); if (cccd) db.push({ handle: h++, type: 0x2902, value: [0, 0] }); };
+      svc(0x1800); chr(0x02, 0x2a00, Array.from(new TextEncoder().encode($("hs-name").checked ? "My Band 2" : "My Band"))); chr(0x02, 0x2a01, [0xc1, 0x03]);
+      svc(0x1801); chr(0x20, 0x2a05, [0, 0, 0, 0], true); chr(0x02, 0x2b2a, new Array(16).fill(0)); chr(0x0a, 0x2b29, [1]);
+      svc(0x180d); chr($("hs-prop").checked ? 0x12 : 0x10, 0x2a37, [0, 72], true); chr(0x02, 0x2a38, [1]);
+      if ($("hs-bat").checked) { svc(0x180f); chr(0x12, 0x2a19, [87], true); }
+      return db;
+    }
+    let first = null;
+    ["hs-bat", "hs-prop", "hs-name"].forEach((id) => $(id).addEventListener("change", draw));
+    function draw() {
+      const db = build(), r = databaseHash(db);
+      if (!first) first = X(r.hash);
+      $("hs-tb").innerHTML = db.map((a) => { const hb = hashBytes(a); return `<tr class="${hb.length ? "in" : ""}"><td class="m">0x${a.handle.toString(16).padStart(4, "0")}</td><td>${NAME[a.type] || "0x" + a.type.toString(16)}</td><td class="m">${a.value.map((b) => BD.hex(b)).join(" ")}</td><td class="m">${hb.map((b) => BD.hex(b)).join(" ") || "—"}</td></tr>`; }).join("");
+      $("hs-out").innerHTML = `<span class="k">m (${r.m.length}바이트)</span> ${r.m.map((b) => BD.hex(b)).join(" ")}`;
+      BD.stat("hs-h", X(r.hash)); BD.stat("hs-c", X(r.hash) === first ? "같음" : "바뀜");
+    }
+    draw();
+  })();
+
+  /* ================================================================ 2. Robust Caching */
+  (function () {
+    let st = { aware: true, errSent: false, hashRead: false };
+    const LBL = { change: ["s", "서버: 데이터베이스 변경"], req: ["c", "클라이언트 → ATT_READ_REQ 0x0010"], cmd: ["c", "클라이언트 → ATT_WRITE_CMD"], hash: ["c", "클라이언트 → ATT_READ_BY_TYPE_REQ 0x0001–0xFFFF, 0x2B2A"], scCfm: ["c", "클라이언트 → ATT_HANDLE_VALUE_CFM (Service Changed)"] };
+    const log = $("rb-log"), add = (cls, t) => { log.insertAdjacentHTML("beforeend", `<div class="${cls}">${t}</div>`); log.scrollTop = log.scrollHeight; };
+    document.querySelectorAll("#sim-rob [data-ev]").forEach((b) => b.addEventListener("click", () => {
+      const ev = b.dataset.ev;
+      if (ev === "reset") { st = { aware: true, errSent: false, hashRead: false }; log.innerHTML = ""; show(); return; }
+      const r = robust(st, ev); st = r.st; add(LBL[ev][0], LBL[ev][1]); add(r.rsp.includes("0x12") ? "e" : "s", "  서버: " + r.rsp); show();
+    }));
+    function show() { BD.stat("rb-st", st.aware ? "change-aware" : "change-unaware" + (st.errSent ? " (0x12 보냄)" : st.hashRead ? " (해시 읽음)" : "")); }
+    add("s", "연결됨. 클라이언트는 change-aware."); show();
+  })();
+})();
+</script>
+</body>
+</html>

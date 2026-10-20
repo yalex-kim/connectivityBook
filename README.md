@@ -9,6 +9,7 @@ GitHub Pages 주소: https://yalex-kim.github.io/yalexBook/
 | [`wifi/`](wifi/) | **WiFiBook** — 누구나 읽는 와이파이 교과서 (15장, 시뮬레이터 36개) | IEEE 802.11 (Linux·hostapd 공개 구현으로 확인) | 출간 |
 | [`uwb/`](uwb/) | **UWBBook** — 누구나 읽는 UWB 교과서 (15장, 시뮬레이터 33개) | IEEE 802.15.4z·FiRa (Android·Decawave·Zephyr 공개 구현과 공개 법령으로 확인) | 출간 |
 | [`gnss/`](gnss/) | **GNSSBook** — 누구나 읽는 GNSS 교과서 (15장, 시뮬레이터 32개) | IS-GPS-200N·Galileo OS SIS ICD (공개 규격, RTKLIB으로 계산 확인) | 출간 |
+| [`bluetooth-deep/`](bluetooth-deep/) | **BluetoothBook 심화** — 프로토콜 스택을 끝까지 따라가는 블루투스 교과서 (19장, 시뮬레이터 41개) | Bluetooth Core 6.3 (사양 시험 데이터로 검증) | 출간 |
 
 책의 구성과 설명 방식(일상의 장면 → 비유 → 그림 → 예측해 보기 → 시뮬레이터 → 수치·근거 → 핵심 정리 → 퀴즈)은 [Books · 인터랙티브 교과서 시리즈](https://books.euiyun.com/)를 따릅니다.
 
@@ -26,6 +27,7 @@ bluetooth/              BluetoothBook (자체 css·js·chapters·scripts·tools�
 wifi/                   WiFiBook (같은 구조, 전역 이름 WF)
 uwb/                    UWBBook (같은 구조, 전역 이름 UW)
 gnss/                   GNSSBook (같은 구조, 전역 이름 GN)
+bluetooth-deep/         BluetoothBook 심화 (같은 구조, 전역 이름 BD)
 ```
 실행할 때 각 책 폴더는 다른 책의 파일을 불러오지 않습니다(장 끝의 “함께 읽기” 링크만 다른 책으로 이어집니다). 책의 상단바 “서재” 버튼과 푸터가 `../index.html`(이 책장)으로 돌아옵니다.
 

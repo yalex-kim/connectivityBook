@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>링크 계층 암호화: 세션 키와 AES-CCM · BluetoothBook 심화</title>
+<meta name="description" content="LTK가 실제 패킷을 잠그기까지. 암호화 시작 절차와 세션 키 유도, 13바이트 nonce, AES-CCM의 MIC와 키스트림, 재전송과 위·변조, 암호화 일시 정지와 CIS·BIS의 IV를 Core 6.3의 암호화 샘플 패킷 네 개로 바이트 단위까지 재현한다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/encryption.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="BluetoothBook 심화">
+<meta property="og:title" content="링크 계층 암호화: 세션 키와 AES-CCM · BluetoothBook 심화">
+<meta property="og:description" content="LTK가 실제 패킷을 잠그기까지. 암호화 시작 절차와 세션 키 유도, 13바이트 nonce, AES-CCM의 MIC와 키스트림, 재전송과 위·변조, 암호화 일시 정지와 CIS·BIS의 IV를 Core 6.3의 암호화 샘플 패킷 네 개로 바이트 단위까지 재현한다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/encryption.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"링크 계층 암호화: 세션 키와 AES-CCM","name":"링크 계층 암호화: 세션 키와 AES-CCM · BluetoothBook 심화","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/encryption.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/encryption.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":6,"image":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png","dateModified":"2026-10-20","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/#book","name":"BluetoothBook 심화 — 프로토콜 스택을 끝까지 따라가는 블루투스 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},"publisher":{"@type":"Organization","name":"BluetoothBook 심화","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},"description":"LTK가 실제 패킷을 잠그기까지. 암호화 시작 절차와 세션 키 유도, 13바이트 nonce, AES-CCM의 MIC와 키스트림, 재전송과 위·변조, 암호화 일시 정지와 CIS·BIS의 IV를 Core 6.3의 암호화 샘플 패킷 네 개로 바이트 단위까지 재현한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook 심화","item":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},{"@type":"ListItem","position":2,"name":"06 링크 계층 암호화: 세션 키와 AES-CCM","item":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/encryption.html"}]}]}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<style>
+  .hexin { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px 14px; }
+  .hexin label { display: grid; gap: 4px; font-size: 12.5px; color: var(--text-dim); }
+  .hexin input { font: 13px var(--mono); padding: 7px 9px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); min-width: 0; }
+  .blk { font: 12.5px/1.65 var(--mono); overflow-x: auto; white-space: pre; padding: 12px 14px; background: var(--surface); border-radius: 10px; color: var(--text); }
+  .blk .k { color: var(--text-dim); }
+  .blk .a { color: var(--accent); font-weight: 600; }
+  .blk .b { color: var(--accent-2); font-weight: 600; }
+  .blk .ok { color: var(--ok); font-weight: 700; }
+  .blk .bad { color: var(--bad); font-weight: 700; }
+  .bytes { display: flex; flex-wrap: wrap; gap: 3px; }
+  .bytes button { font: 600 12px var(--mono); width: 30px; padding: 5px 0; border-radius: 5px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; }
+  .bytes button.h { border-color: var(--accent-2); }
+  .bytes button.m { border-color: var(--warn); }
+  .bytes button.x { background: var(--bad); color: #fff; border-color: var(--bad); }
+</style>
+</head>
+<body data-chapter="encryption">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 06</div>
+    <h1>링크 계층 암호화: 세션 키와 AES-CCM</h1>
+    <p class="lead">1권 8장은 페어링으로 LTK를 만드는 데서 멈췄다. 이 장은 그 키가 실제로 패킷을 잠그는 과정을 끝까지 따라간다. 연결마다 새로 만드는 세션 키, 패킷마다 바뀌는 13바이트 nonce, 4바이트 MIC와 키스트림까지. 사양에 실린 암호화 샘플 패킷 네 개를 바이트 하나 틀리지 않게 다시 만들어 본다.</p>
+    <ul class="objectives">
+      <li>암호화 시작 절차에서 오가는 PDU와 HCI 명령·이벤트, 세션 키 SK = e(LTK, SKD)를 설명할 수 있다.</li>
+      <li>CCM nonce(packetCounter·directionBit·IV)와 B·A 블록을 직접 만들고 MIC와 암호문을 계산할 수 있다.</li>
+      <li>헤더의 어느 비트가 MIC에서 빠지는지, 재전송이 왜 같은 nonce를 쓰는지, MIC 실패가 무엇을 끊는지 안다.</li>
+      <li>암호화 일시 정지로 키를 바꾸는 법과 CIS·BIS가 IV를 만드는 법을 안다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="start">
+    <h2>세션 키: LTK는 한 번도 공중에 나가지 않는다</h2>
+    <p>페어링이 끝나면 두 기기는 같은 <span class="term">LTK</span><span class="en">(Long Term Key)</span>를 저장해 둔다. 하지만 링크 계층은 LTK로 패킷을 직접 잠그지 않는다. 연결할 때마다 양쪽이 무작위 값을 반씩 내놓아 새 <span class="term">세션 키</span><span class="en">(Session Key, SK)</span>를 만들고 그것으로 잠근다. 같은 LTK로 백 번 연결해도 세션 키는 백 번 다르다.</p>
+    <div class="callout analogy"><strong>금고 열쇠와 오늘의 출입증</strong><p>금고 열쇠(LTK)는 금고에만 두고 들고 다니지 않는다. 매일 아침 두 사람이 각자 주사위를 던져 나온 숫자(SKD_C, SKD_P)를 금고 열쇠로 찍어 그날의 출입증(SK)을 만든다. 출입증을 잃어버려도 그날 하루뿐이고, 한 사람이 주사위를 조작해도 다른 사람의 숫자가 섞이니 혼자서는 출입증을 정할 수 없다.</p></div>
+    <p>절차는 센트럴이 시작한다. 센트럴의 호스트가 <code>HCI_LE_Enable_Encryption</code>으로 LTK와 함께 그 LTK를 찾을 단서(EDIV, Rand)를 건네면, 링크 계층이 자기 몫의 무작위 값 <b>SKD_C</b>(8바이트)와 <b>IV_C</b>(4바이트)를 만들어 <code>LL_ENC_REQ</code>로 보낸다. 페리페럴은 자기 몫 <b>SKD_P</b>·<b>IV_P</b>를 <code>LL_ENC_RSP</code>로 돌려주고, 호스트에 <code>HCI_LE_Long_Term_Key_Request</code> 이벤트로 EDIV와 Rand를 넘겨 맞는 LTK를 달라고 한다. LTK가 있으면 양쪽 모두</p>
+    <div class="formula">SKD = SKD_P ‖ SKD_C (SKD_C가 아래쪽 8바이트) · IV = IV_P ‖ IV_C · <b>SK = e(LTK, SKD)</b></div>
+    <p>를 계산한다. e는 AES-128 한 블록 암호화다(1권 8장). 그다음 세 번 악수한다. 페리페럴이 <b>암호화하지 않은</b> <code>LL_START_ENC_REQ</code>를 보내고, 센트럴이 <b>암호화한</b> <code>LL_START_ENC_RSP</code>로 답하고, 페리페럴도 암호화한 <code>LL_START_ENC_RSP</code>로 답하면 연결이 암호화된다. 마지막 두 PDU는 내용이 아니라 “같은 키로 잠그고 풀 수 있다”를 확인하는 용도다. 키가 틀렸다면 MIC가 맞지 않아 여기서 끊긴다.</p>
+    <figure class="diagram">
+      <div style="overflow-x:auto">
+      <svg viewBox="0 0 760 420" role="img" aria-label="암호화 시작 절차의 메시지 순서" style="min-width:600px">
+        <defs><marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8z" class="f-acc"/></marker><marker id="ar2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8z" fill="var(--text-dim)"/></marker></defs>
+        <text x="70" y="22" text-anchor="middle" class="t-dim">센트럴 호스트</text><text x="270" y="22" text-anchor="middle" class="t">센트럴 LL</text><text x="490" y="22" text-anchor="middle" class="t">페리페럴 LL</text><text x="690" y="22" text-anchor="middle" class="t-dim">페리페럴 호스트</text>
+        <path d="M70 32V410M270 32V410M490 32V410M690 32V410" class="s-axis" stroke-dasharray="3 5"/>
+        <path d="M70 58H266" class="s-line" marker-end="url(#ar2)"/><text x="168" y="52" text-anchor="middle" class="t-mono" font-size="11">LE_Enable_Encryption(LTK, EDIV, Rand)</text>
+        <path d="M270 92H486" class="s-acc" marker-end="url(#ar)"/><text x="380" y="86" text-anchor="middle" class="t-mono" font-size="11">LL_ENC_REQ(Rand, EDIV, SKD_C, IV_C)</text>
+        <path d="M490 126H274" class="s-acc" marker-end="url(#ar)"/><text x="380" y="120" text-anchor="middle" class="t-mono" font-size="11">LL_ENC_RSP(SKD_P, IV_P)</text>
+        <path d="M490 150H686" class="s-line" marker-end="url(#ar2)"/><text x="590" y="144" text-anchor="middle" class="t-mono" font-size="11">LTK_Request(EDIV, Rand)</text>
+        <path d="M690 180H494" class="s-line" marker-end="url(#ar2)"/><text x="590" y="174" text-anchor="middle" class="t-mono" font-size="11">LTK_Request_Reply(LTK)</text>
+        <rect x="210" y="196" width="340" height="34" rx="8" class="f-acc-soft"/><text x="380" y="218" text-anchor="middle" class="t-acc">양쪽: SK = e(LTK, SKD_P ‖ SKD_C)</text>
+        <path d="M490 262H274" class="s-acc" marker-end="url(#ar)"/><text x="380" y="256" text-anchor="middle" class="t-mono" font-size="11">LL_START_ENC_REQ (평문)</text>
+        <path d="M270 300H486" class="s-acc" marker-end="url(#ar)"/><text x="380" y="294" text-anchor="middle" class="t-mono" font-size="11">LL_START_ENC_RSP (암호문, packetCounter 0)</text>
+        <path d="M490 338H274" class="s-acc" marker-end="url(#ar)"/><text x="380" y="332" text-anchor="middle" class="t-mono" font-size="11">LL_START_ENC_RSP (암호문, packetCounter 0)</text>
+        <path d="M270 372H74" class="s-line" marker-end="url(#ar2)"/><text x="170" y="366" text-anchor="middle" class="t-mono" font-size="11">Encryption_Change</text>
+        <path d="M490 400H686" class="s-line" marker-end="url(#ar2)"/><text x="590" y="394" text-anchor="middle" class="t-mono" font-size="11">Encryption_Change</text>
+      </svg>
+      </div>
+      <figcaption><b>그림 6-1.</b> 암호화 시작 절차. 회색 화살표는 HCI(호스트↔컨트롤러), 색 화살표는 공중의 LL PDU다. LTK는 공중에 한 번도 나가지 않는다.</figcaption>
+    </figure>
+    <p>페리페럴의 호스트가 LTK를 주지 못하면(EDIV·Rand에 맞는 키를 잃었거나 본딩을 지웠을 때) 페리페럴은 <code>LL_REJECT_EXT_IND</code>에 <span class="term">오류 코드</span> <b>PIN or Key Missing (0x06)</b>을 실어 거절한다. 휴대폰에서 “기기를 다시 페어링하세요”가 뜨는 흔한 원인이다. 절차 도중 예상하지 않은 데이터 PDU가 오면 양쪽 모두 즉시 연결을 끊고 <b>0x3D(MIC Failure)</b>로 알린다.</p>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">공격자가 LL_ENC_REQ와 LL_ENC_RSP를 모두 엿들었다. SKD_C, SKD_P, IV_C, IV_P를 전부 안다. 세션 키를 계산할 수 있을까?</p><p class="wi-hint">SK = e(LTK, SKD). 공중에 나온 값과 나오지 않은 값을 나눠 보자.</p><div class="opts">
+      <button class="opt">그렇다. SKD를 알면 SK도 안다</button>
+      <button class="opt" data-correct>아니다. LTK를 모르면 AES 한 블록을 풀 수 없다</button>
+      <button class="opt">IV까지 알면 가능하다</button>
+    </div><div class="quiz-exp">SKD와 IV는 공개되어도 괜찮도록 설계한 값이다. SK의 비밀은 전부 LTK에서 온다. 그래서 LE 보안은 결국 페어링이 LTK를 얼마나 안전하게 만들었느냐(1권 8장, 이 책 7장)로 돌아간다. 레거시 페어링을 엿들어 LTK를 알아낸 공격자라면 SKD를 보고 SK를 바로 계산한다.</div></div>
+    <p class="spec-ref">암호화 시작 절차·SKD와 IV 조합·SK = e(LTK, SKD)·0x06과 0x3D: <b>[Vol 6] Part B §5.1.3.1</b> · e 함수: <b>[Vol 3] Part H §2.2.1</b> · 샘플(HCI와 PDU 바이트 전부): <b>[Vol 6] Part C §1</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="nonce">
+    <h2>13바이트 nonce: 같은 키, 다른 패킷</h2>
+    <p>세션 키 하나로 연결이 끝날 때까지 수만 개의 패킷을 잠근다. 블록 암호를 그대로 쓰면 같은 평문이 같은 암호문이 되어 패턴이 드러나므로, 패킷마다 한 번만 쓰는 값 <span class="term">nonce</span>를 섞는다. LE의 nonce는 13바이트로, 세 부분이다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>옥텟</th><th>내용</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td class="num">0~3</td><td><span class="term">packetCounter</span> [31:0]</td><td>방향마다 따로 세는 39비트 카운터의 아래 32비트(작은 바이트 먼저)</td></tr>
+        <tr><td class="num">4</td><td>비트 0~6: packetCounter [38:32] · 비트 7: <b>directionBit</b></td><td>센트럴이 보내면 1, 페리페럴이 보내면 0</td></tr>
+        <tr><td class="num">5~12</td><td>IV [63:0]</td><td>IV_P ‖ IV_C를 작은 바이트부터</td></tr>
+      </tbody>
+    </table></div>
+    <p>packetCounter는 암호화 시작 절차에서 처음 암호화한 PDU(LL_START_ENC_RSP)를 0으로 하고, <b>새로 암호화한 PDU마다</b> 하나씩 는다. 재전송은 늘리지 않는다. 같은 패킷을 다시 보내는 것이니 nonce도 같아야 받는 쪽이 같은 평문을 얻는다. 길이 0인 빈 PDU는 암호화하지 않으므로 카운터도 쓰지 않는다. 방향 비트가 있어서 센트럴과 페리페럴이 각자 0부터 세어도 nonce가 겹치지 않는다.</p>
+    <p class="spec-ref">CCM nonce 형식(Table 2.1)·packetCounter와 directionBit 규칙: <b>[Vol 6] Part E §2.1</b> · CCM 파라미터 M = 4, L = 2: <b>Part E §1</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="ccm">
+    <h2>AES-CCM: MIC를 만들고, 키스트림을 덧씌운다</h2>
+    <p>LE는 <span class="term">AES-CCM</span><span class="en">(Counter with CBC-MAC)</span>을 쓴다. 한 번의 계산으로 두 가지를 한다. ① <b>CBC-MAC</b>으로 헤더 일부와 페이로드를 요약해 4바이트 <span class="term">MIC</span><span class="en">(Message Integrity Check)</span>를 만들고, ② <b>카운터 모드</b>로 키스트림을 만들어 페이로드와 MIC에 XOR한다.</p>
+    <ul>
+      <li><b>B₀</b> = 0x49 ‖ nonce ‖ 페이로드 길이(2바이트). 0x49는 “MIC 4바이트, 길이 칸 2바이트, 추가 인증 데이터 있음”을 뜻하는 CCM 플래그다.</li>
+      <li><b>B₁</b> = 00 01 ‖ <b>헤더 첫 바이트(NESN·SN·MD를 0으로)</b> ‖ 0 × 13. 추가 인증 데이터(AAD)는 이 1바이트뿐이다.</li>
+      <li><b>B₂, B₃, …</b> = 페이로드를 16바이트씩(마지막은 0으로 채움).</li>
+      <li>X₁ = e(SK, B₀), Xᵢ₊₁ = e(SK, Xᵢ ⊕ Bᵢ). 마지막 X의 앞 4바이트가 MIC다.</li>
+      <li><b>Aᵢ</b> = 0x01 ‖ nonce ‖ i(2바이트), Sᵢ = e(SK, Aᵢ). S₀의 앞 4바이트로 MIC를, S₁, S₂, …로 페이로드를 XOR한다.</li>
+    </ul>
+    <p>암호화는 페이로드에만 걸리고 헤더(2바이트)는 평문으로 나간다. 받는 쪽이 길이와 LLID를 먼저 읽어야 하기 때문이다. 대신 헤더 첫 바이트 중 LLID와 CP 비트는 MIC로 보호한다.</p>
+    <div class="sim" id="sim-ccm">
+      <div class="sim-head"><span class="sim-tag">WORKBENCH</span><h3>패킷 암호화 작업대: 사양 샘플 네 개를 바이트까지</h3></div>
+      <div class="sim-controls" style="border-top:0">
+        <div class="ctrl"><span>사양 샘플</span><div class="seg" id="cc-p"><button data-value="rsp1" class="on">START_ENC_RSP ①</button><button data-value="rsp2">START_ENC_RSP ②</button><button data-value="d1">LL_DATA ①</button><button data-value="d2">LL_DATA ②</button><button data-value="own">직접 입력</button></div></div>
+      </div>
+      <div class="sim-view" style="padding:14px 16px">
+        <div class="hexin">
+          <label>LTK (큰 바이트부터)<input id="cc-ltk" spellcheck="false"></label>
+          <label>SKD_C · SKD_P (큰 바이트부터)<input id="cc-skd" spellcheck="false"></label>
+          <label>IV_C · IV_P (큰 바이트부터)<input id="cc-iv" spellcheck="false"></label>
+          <label>헤더 첫 바이트 · 보낸 쪽 · packetCounter<input id="cc-meta" spellcheck="false"></label>
+          <label style="grid-column:1/-1">페이로드 (평문, 공중 순서)<input id="cc-pl" spellcheck="false"></label>
+        </div>
+        <div class="blk" id="cc-out" style="margin-top:12px"></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">세션 키 SK</span><span class="v" id="cc-sk" style="font-size:12.5px;overflow-wrap:anywhere">—</span></div>
+        <div class="stat"><span class="k">암호화된 MIC</span><span class="v" id="cc-mic">—</span></div>
+        <div class="stat"><span class="k">사양 샘플과 비교</span><span class="v" id="cc-ok">—</span></div>
+      </div>
+      <div class="sim-note">입력 칸의 형식: SKD는 “SKD_C SKD_P”, IV는 “IV_C IV_P”, 세 번째 칸은 “헤더 보낸쪽(C 또는 P) 카운터”. 해볼 것: ① 샘플 넷을 차례로 눌러 B·X·A·S 블록이 사양 [Vol 6] Part C §1.2의 값과 같고 마지막 줄이 ✓인지 보자. ② START_ENC_RSP ①과 ②는 페이로드(0x06)가 같은데 암호문이 다르다. 무엇이 다른가(directionBit). ③ LL_DATA ①에서 헤더를 0E → 02로 바꿔도(NESN·SN만 다름) MIC가 그대로다. 0E → 0D(LLID가 바뀜)면 MIC가 바뀐다. 검증 스크립트는 네 샘플의 모든 블록 값과, 무작위 패킷 수백 개를 OpenSSL의 AES-CCM과 맞춰 본다.</div>
+    </div>
+    <p class="spec-ref">CCM 블록 B₀·B₁·Aᵢ(Table 2.2~2.4)과 헤더 마스크: <b>[Vol 6] Part E §2.2·§2.3</b> · 블록별 중간값(B, X, A, S)과 결과 패킷: <b>[Vol 6] Part C §1.2</b> · CCM 자체: IETF RFC 3610</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="tamper">
+    <h2>위·변조와 재전송: MIC가 막는 것과 막지 않는 것</h2>
+    <p>CCM은 <b>스트림 암호</b>처럼 동작한다. 암호문 비트 하나를 뒤집으면 복호한 평문의 같은 비트가 뒤집힌다. 공격자가 내용을 몰라도 “이 자리의 값을 바꾸기”는 쉽다는 뜻이다. 그래서 MIC가 필수다. 바뀐 평문으로 다시 계산한 MIC가 받은 MIC와 맞지 않으면 링크 계층은 그 패킷을 버리는 데서 그치지 않고 <b>연결을 끊는다</b>(0x3D). 4바이트 MIC를 맞힐 확률은 한 번에 2⁻³²이고, 한 번 틀리면 연결이 사라지니 시도를 거듭할 수도 없다.</p>
+    <p>MIC가 보지 않는 비트도 있다. 헤더의 NESN·SN·MD는 마스크되어 MIC에 들어가지 않는다. 이 비트들은 재전송과 흐름 제어(1권 6장)에 쓰여서, 같은 패킷을 다시 보낼 때나 확인 응답이 바뀔 때 값이 달라져도 다시 암호화하지 않도록 뺀 것이다. 길이 바이트도 B₀에 길이로 들어가므로 바꾸면 MIC가 맞지 않는다.</p>
+    <div class="sim" id="sim-tamper">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>암호문을 건드려 보기</h3></div>
+      <div class="sim-view" style="padding:14px 16px">
+        <div style="font-size:12.5px;color:var(--text-dim);margin-bottom:6px">사양 샘플 LL_DATA ①(센트럴 → 페리페럴, packetCounter 1)의 공중 바이트. 파랑 테두리 = 헤더, 주황 = 암호화된 MIC. 바이트를 누르면 맨 아래 비트를 뒤집는다.</div>
+        <div class="bytes" id="tm-bytes"></div>
+        <div class="blk" id="tm-out" style="margin-top:12px"></div>
+      </div>
+      <div class="sim-controls">
+        <div class="ctrl"><span>받는 쪽이 쓰는 packetCounter</span><div class="seg" id="tm-c"><button data-value="1" class="on">1 (정상)</button><button data-value="0">0 (이미 쓴 값)</button><button data-value="2">2</button></div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-self:end"><button class="btn" id="tm-reset">원래대로</button></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">MIC 검사</span><span class="v" id="tm-ok">—</span></div>
+        <div class="stat"><span class="k">링크 계층의 반응</span><span class="v" id="tm-act" style="font-size:14px">—</span></div>
+      </div>
+      <div class="sim-note">해볼 것: ① 페이로드 바이트 하나를 뒤집으면 복호한 평문의 같은 자리가 바뀌고 MIC 검사가 실패한다. ② 헤더 첫 바이트를 누르면 맨 아래 비트(LLID)가 바뀌어 실패한다. ③ “받는 쪽 packetCounter”를 0으로 하면 nonce가 달라져 평문이 엉뚱해지고 MIC도 틀린다. 공격자가 예전 패킷을 다시 틀어도(재생) 받는 쪽 카운터가 이미 앞서 있으니 통하지 않는다.</div>
+    </div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">구현 버그로 페리페럴이 패킷 두 개를 같은 packetCounter로 암호화해 보냈다. 엿듣는 사람은 무엇을 알게 될까?</p><p class="wi-hint">같은 nonce면 S₁, S₂, …(키스트림)도 같다.</p><div class="opts">
+      <button class="opt">아무것도 모른다. AES는 안전하다</button>
+      <button class="opt" data-correct>두 암호문을 XOR하면 두 평문의 XOR이 나온다</button>
+      <button class="opt">세션 키가 바로 드러난다</button>
+    </div><div class="quiz-exp">C₁ ⊕ C₂ = (P₁ ⊕ S) ⊕ (P₂ ⊕ S) = P₁ ⊕ P₂. 한쪽 평문을 짐작할 수 있으면(예: 정해진 형식의 ATT 응답) 다른 쪽이 그대로 드러난다. 같은 nonce로 MIC도 위조하기 쉬워진다. 그래서 사양은 카운터가 되풀이되지 않게 하고, 키를 바꿀 때마다 새 IV를 쓰라고 한다.</div></div>
+    <p class="spec-ref">MIC 계산 대상·암호화 대상·MIC 실패 시 연결 상실(0x3D): <b>[Vol 6] Part E §1</b> · 재전송 때 카운터를 늘리지 않음: <b>Part E §2.1</b> · NESN·SN·MD 마스크(Table 2.3): <b>Part E §2.2</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="rekey">
+    <h2>키 바꾸기, 그리고 등시성 링크의 IV</h2>
+    <p>연결을 끊지 않고 새 키를 쓰려면 <b>암호화 일시 정지 절차</b>를 쓴다. 센트럴이 <code>LL_PAUSE_ENC_REQ</code>를 보내고, 페리페럴이 암호화된 <code>LL_PAUSE_ENC_RSP</code>로 답하고, 센트럴이 평문 <code>LL_PAUSE_ENC_RSP</code>를 돌려주면 암호화가 꺼진다. 그 사이에는 데이터 PDU를 보내지 않는다. 바로 이어서 위의 시작 절차를 다시 해 <b>새 <span class="term">SKD</span>와 새 <span class="term">IV</span></b>로 새 세션 키를 만든다. 일시 정지 뒤에 페리페럴의 호스트가 LTK를 주지 못하면 거절이 아니라 연결 종료(0x06)다.</p>
+    <p>등시성 채널(14장)에도 같은 CCM을 쓴다. <b>CIS</b>는 연결된 ACL의 세션 키를 그대로 쓰고, IV는 ACL의 IV에서 아래 32비트만 그 CIS의 접근 주소와 XOR해 만든다. CIS마다 접근 주소가 다르므로 같은 키로도 nonce가 겹치지 않는다. packetCounter 자리에는 CIS의 페이로드 카운터를 쓴다. <b>BIS</b>는 연결이 없으니 <span class="term">방송 코드</span>(Broadcast_Code)에서 유도한 그룹 세션 키(<span class="term">GSK</span>)를 쓰고, IV 기준값은 BIGInfo에 실린 <span class="term">GIV</span>다(9장).</p>
+    <div class="formula">CIS·BIS의 IV: IV[31:0] = IV_base[31:0] ⊕ Access Address · IV[63:32] = IV_base[63:32]</div>
+    <p class="spec-ref">암호화 일시 정지: <b>[Vol 6] Part B §5.1.3.2</b> · CIS·BIS의 IV(그림 2.1)와 packetCounter: <b>[Vol 6] Part E §2.1</b> · CIS·BIS의 세션 키: <b>Part E §2.4</b> · GSK 유도(h8): <b>Part E §1.1</b></p>
+  </section>
+
+  <div class="callout related"><strong>다른 책에서</strong><ul><li><a href="../../bluetooth/chapters/security.html">BluetoothBook 08장 · 페어링과 보안</a> — LTK가 만들어지기까지(이 장의 출발점)</li><li><a href="../../bluetooth/chapters/connection.html">BluetoothBook 06장 · 연결</a> — 헤더의 NESN·SN·MD와 재전송</li></ul></div>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>LTK는 공중에 나가지 않는다. 연결마다 SK = e(LTK, SKD_P ‖ SKD_C)로 새 세션 키를 만들고, LL_START_ENC_REQ/RSP 세 번의 교환으로 양쪽이 같은 키인지 확인한다.</li>
+      <li>CCM nonce 13바이트 = packetCounter(39비트) + directionBit + IV(IV_P ‖ IV_C). 카운터는 새 PDU마다 늘고 재전송에는 그대로다.</li>
+      <li>AES-CCM(M = 4, L = 2): B₀·B₁(헤더 첫 바이트, NESN·SN·MD 마스크)·페이로드 블록으로 MIC, A₀으로 MIC 암호화, A₁…로 페이로드 암호화.</li>
+      <li>MIC가 틀리면 패킷이 아니라 연결이 끊긴다(0x3D). 같은 nonce를 두 번 쓰면 평문의 XOR이 드러난다.</li>
+      <li>키 교체는 일시 정지 + 재시작. CIS는 ACL의 키, BIS는 GSK를 쓰고, 둘 다 IV 아래 32비트를 접근 주소와 XOR한다.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>SKD = SKD_P ‖ SKD_C에서 SKD의 가장 작은 바이트는?</p><div class="opts">
+        <button class="opt">SKD_P의 가장 작은 바이트</button><button class="opt" data-correct>SKD_C의 가장 작은 바이트</button><button class="opt">IV_C의 첫 바이트</button><button class="opt">LTK의 첫 바이트</button>
+      </div><div class="quiz-exp">[Vol 6] Part B §5.1.3.1: SKD_C의 가장 작은 옥텟이 SKD의 가장 작은 옥텟, SKD_P의 가장 큰 옥텟이 SKD의 가장 큰 옥텟이다.</div></div>
+      <div class="quiz-q"><p>LL_START_ENC_REQ는 어떻게 보내는가?</p><div class="opts">
+        <button class="opt" data-correct>페리페럴이 평문으로 보낸다</button><button class="opt">센트럴이 암호문으로 보낸다</button><button class="opt">페리페럴이 암호문으로 보낸다</button><button class="opt">보내지 않는다</button>
+      </div><div class="quiz-exp">페리페럴이 SK를 계산한 뒤 평문으로 보내고, 암호문을 받을 준비를 한다. 이어지는 두 LL_START_ENC_RSP는 모두 암호문이다.</div></div>
+      <div class="quiz-q"><p>MIC 계산에서 0으로 가리는 헤더 비트는?</p><div class="opts">
+        <button class="opt">LLID</button><button class="opt">길이</button><button class="opt" data-correct>NESN, SN, MD</button><button class="opt">CP</button>
+      </div><div class="quiz-exp">재전송·흐름 제어에서 바뀌는 비트들이다. [Vol 6] Part E Table 2.3.</div></div>
+      <div class="quiz-q"><p>같은 패킷을 재전송할 때 packetCounter는?</p><div class="opts">
+        <button class="opt">하나 늘린다</button><button class="opt" data-correct>그대로 둔다</button><button class="opt">0으로 되돌린다</button><button class="opt">방향 비트를 뒤집는다</button>
+      </div><div class="quiz-exp">[Vol 6] Part E §2.1: “shall not be incremented for retransmissions.” 같은 nonce여야 같은 암호문이 된다.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  /* ================================================================ 계산 (검증 스크립트가 꺼내 쓴다) */
+  const SBOX = (() => { const s = new Array(256); let p = 1, q = 1; do { p = p ^ ((p << 1) & 0xff) ^ (p & 0x80 ? 0x1b : 0); q ^= q << 1; q ^= q << 2; q ^= q << 4; q &= 0xff; if (q & 0x80) q ^= 0x09; const x = q ^ ((q << 1) | (q >> 7)) ^ ((q << 2) | (q >> 6)) ^ ((q << 3) | (q >> 5)) ^ ((q << 4) | (q >> 4)); s[p] = (x ^ 0x63) & 0xff; } while (p !== 1); s[0] = 0x63; return s; })();
+  /** AES-128 한 블록. key·block은 바이트 배열(첫 바이트 = 가장 큰 바이트). [Vol 3] Part H §2.2.1의 e */
+  function aes128(key, block) {
+    const xt = (a) => ((a << 1) ^ (a & 0x80 ? 0x1b : 0)) & 0xff;
+    const w = key.slice(); let rc = 1;
+    for (let i = 16; i < 176; i += 4) { let t = w.slice(i - 4, i); if (i % 16 === 0) { t = [SBOX[t[1]] ^ rc, SBOX[t[2]], SBOX[t[3]], SBOX[t[0]]]; rc = xt(rc); } for (let j = 0; j < 4; j++) w[i + j] = w[i - 16 + j] ^ t[j]; }
+    let s = block.map((b, i) => b ^ w[i]);
+    for (let r = 1; r <= 10; r++) {
+      s = s.map((b) => SBOX[b]);
+      s = [0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12, 1, 6, 11].map((i) => s[i]);
+      if (r < 10) { const o = []; for (let c = 0; c < 4; c++) { const a = s.slice(4 * c, 4 * c + 4), x = a[0] ^ a[1] ^ a[2] ^ a[3]; for (let i = 0; i < 4; i++) o.push(a[i] ^ x ^ xt(a[i] ^ a[(i + 1) % 4])); } s = o; }
+      s = s.map((b, i) => b ^ w[16 * r + i]);
+    }
+    return s;
+  }
+  /** SK = e(LTK, SKD_P ‖ SKD_C). 모두 큰 바이트부터. [Vol 6] Part B §5.1.3.1 */
+  function sessionKey(ltk, skdC, skdP) { return aes128(ltk, skdP.concat(skdC)); }
+  /** CCM nonce 13바이트. iv = IV_P ‖ IV_C(큰 바이트부터 8바이트). [Vol 6] Part E Table 2.1 */
+  function ccmNonce(counter, dirBit, iv) {
+    const n = [];
+    for (let i = 0; i < 4; i++) n.push(Math.floor(counter / 2 ** (8 * i)) & 0xff);
+    n.push((Math.floor(counter / 2 ** 32) & 0x7f) | (dirBit ? 0x80 : 0));
+    return n.concat(iv.slice().reverse());
+  }
+  /** AAD: 헤더 첫 바이트에서 NESN(비트 2)·SN(비트 3)·MD(비트 4)를 0으로. [Vol 6] Part E Table 2.3 */
+  function aadByte(hdr) { return hdr & 0xe3; }
+  /** AES-CCM(M=4, L=2) 한 PDU. 중간 블록까지 돌려준다. [Vol 6] Part E §2.2·§2.3 */
+  function ccm(sk, nonce, hdr, payload) {
+    const x16 = (a, b) => a.map((v, i) => v ^ b[i]);
+    const B = [[0x49].concat(nonce, [0, payload.length]), [0, 1, aadByte(hdr)].concat(new Array(13).fill(0))];
+    for (let i = 0; i < payload.length; i += 16) { const c = payload.slice(i, i + 16); while (c.length < 16) c.push(0); B.push(c); }
+    const X = []; let x = new Array(16).fill(0);
+    B.forEach((b) => { x = aes128(sk, x16(x, b)); X.push(x); });
+    const mic = x.slice(0, 4), nA = Math.ceil(payload.length / 16) + 1, A = [], S = [];
+    for (let i = 0; i < nA; i++) { const a = [0x01].concat(nonce, [0, i]); A.push(a); S.push(aes128(sk, a)); }
+    const ks = [].concat(...S.slice(1));
+    return { B, X, A, S, mic, cipher: payload.map((p, i) => p ^ ks[i]), encMic: mic.map((m, i) => m ^ S[0][i]) };
+  }
+  /** 받는 쪽: 복호한 뒤 MIC를 다시 계산해 비교 */
+  function ccmOpen(sk, nonce, hdr, cipher, encMic) {
+    const probe = ccm(sk, nonce, hdr, new Array(cipher.length).fill(0)); // 키스트림만 얻는다
+    const ks = [].concat(...probe.S.slice(1)), plain = cipher.map((c, i) => c ^ ks[i]);
+    const re = ccm(sk, nonce, hdr, plain), ok = re.encMic.every((m, i) => m === encMic[i]);
+    return { plain, ok };
+  }
+
+  /* ================================================================ 사양 샘플 [Vol 6] Part C §1 */
+  const H = (s) => (s.replace(/[^0-9a-fA-F]/g, "").match(/../g) || []).map((x) => parseInt(x, 16));
+  const X = (a) => a.map((b) => BD.hex(b)).join("");
+  const SAMPLE = { ltk: "4C68384139F574D836BCF34E9DFB01BF", skdC: "ACBDCEDFE0F10213", skdP: "0213243546576879", ivC: "BADCAB24", ivP: "DEAFBABE" };
+  const PKT = {
+    rsp1: { hdr: 0x0f, from: "C", ctr: 0, pl: "06", want: "9F CDA7F448" },
+    rsp2: { hdr: 0x07, from: "P", ctr: 0, pl: "06", want: "A3 4C13A415" },
+    d1: { hdr: 0x0e, from: "C", ctr: 1, pl: "17 00 63 64 65 66 67 68 69 6a 6b 6c 6d 6e 6f 70 71 31 32 33 34 35 36 37 38 39 30", want: "7A70D66415226DF26B17839A060405596BD6564F796B5B9CE6FF32 F75A6D33" },
+    d2: { hdr: 0x06, from: "P", ctr: 1, pl: "17 00 37 36 35 34 33 32 31 30 41 42 43 44 45 46 47 48 49 4a 4b 4c 4d 4e 4f 50 51", want: "F38881E7BD94C9C369B9A66846DD4786AA8C39CE540D0DAE3ADCDF 89B96088" },
+  };
+
+  /* ================================================================ 1. 작업대 */
+  (function () {
+    const ins = ["cc-ltk", "cc-skd", "cc-iv", "cc-meta", "cc-pl"].map($);
+    let cur = "rsp1";
+    const fill = (k) => {
+      const p = PKT[k]; if (!p) return;
+      $("cc-ltk").value = SAMPLE.ltk; $("cc-skd").value = SAMPLE.skdC + " " + SAMPLE.skdP; $("cc-iv").value = SAMPLE.ivC + " " + SAMPLE.ivP;
+      $("cc-meta").value = BD.hex(p.hdr) + " " + p.from + " " + p.ctr; $("cc-pl").value = p.pl;
+    };
+    const seg = BD.seg("cc-p", (v) => { cur = v; fill(v); draw(); });
+    ins.forEach((el) => el.addEventListener("input", () => { if (cur !== "own") { cur = "own"; seg.set("own", false); } draw(); }));
+    const row = (k, v, cls) => `<span class="k">${k.padEnd(4)}</span> <span class="${cls || ""}">${v}</span>\n`;
+    function draw() {
+      const ltk = H($("cc-ltk").value), sk2 = $("cc-skd").value.trim().split(/\s+/).map(H), iv2 = $("cc-iv").value.trim().split(/\s+/).map(H), meta = $("cc-meta").value.trim().split(/\s+/), pl = H($("cc-pl").value);
+      const bad = ltk.length !== 16 || !sk2[1] || sk2[0].length !== 8 || sk2[1].length !== 8 || !iv2[1] || iv2[0].length !== 4 || iv2[1].length !== 4 || meta.length < 3 || !pl.length || pl.length > 251;
+      if (bad) { $("cc-out").innerHTML = "입력 형식을 확인하자: LTK 16바이트, SKD 8+8바이트, IV 4+4바이트, “헤더 C|P 카운터”, 페이로드 1~251바이트."; BD.stat("cc-sk", "—"); BD.stat("cc-mic", "—"); BD.stat("cc-ok", "—"); return; }
+      const sk = sessionKey(ltk, sk2[0], sk2[1]), iv = iv2[1].concat(iv2[0]), hdr = parseInt(meta[0], 16) & 0xff, dir = meta[1].toUpperCase() === "C" ? 1 : 0, ctr = Math.max(0, Math.min(2 ** 39 - 1, Math.floor(+meta[2] || 0)));
+      const n = ccmNonce(ctr, dir, iv), r = ccm(sk, n, hdr, pl);
+      let o = row("IV", X(iv) + "  (IV_P ‖ IV_C)") + row("N", X(n) + "  (nonce)", "a");
+      r.B.forEach((b, i) => (o += row("B" + i, X(b))));
+      r.X.forEach((x, i) => (o += row("X" + (i + 1), X(x))));
+      o += row("MIC", X(r.mic) + "  (마지막 X의 앞 4바이트)", "a");
+      r.A.forEach((a, i) => (o += row("A" + i, X(a)) + row("S" + i, X(r.S[i]))));
+      const air = [hdr, pl.length + 4].concat(r.cipher, r.encMic);
+      o += row("공중", X(air).replace(/(..)/g, "$1 ").trim(), "b");
+      const p = PKT[cur];
+      if (p) { const want = H(p.want), got = r.cipher.concat(r.encMic), same = want.length === got.length && want.every((v, i) => v === got[i]); o += row("사양", p.want.toLowerCase() + (same ? "  ✓ 일치" : "  ✗ 다름"), same ? "ok" : "bad"); BD.stat("cc-ok", same ? "✓ 일치" : "✗ 다름"); }
+      else BD.stat("cc-ok", "직접 입력");
+      $("cc-out").innerHTML = o; BD.stat("cc-sk", X(sk)); BD.stat("cc-mic", X(r.encMic));
+    }
+    fill(cur); draw();
+  })();
+
+  /* ================================================================ 2. 변조 */
+  (function () {
+    const sk = sessionKey(H(SAMPLE.ltk), H(SAMPLE.skdC), H(SAMPLE.skdP)), iv = H(SAMPLE.ivP + SAMPLE.ivC), p = PKT.d1;
+    const orig = [p.hdr, 31].concat(H(p.want)); let air = orig.slice();
+    const ctr = BD.seg("tm-c", draw);
+    $("tm-reset").addEventListener("click", () => { air = orig.slice(); draw(); });
+    function draw() {
+      $("tm-bytes").innerHTML = air.map((b, i) => `<button type="button" data-i="${i}" class="${i < 2 ? "h" : i >= air.length - 4 ? "m" : ""}${b !== orig[i] ? " x" : ""}" aria-label="바이트 ${i}: ${BD.hex(b)}">${BD.hex(b)}</button>`).join("");
+      const r = ccmOpen(sk, ccmNonce(+ctr(), 1, iv), air[0], air.slice(2, -4), air.slice(-4)), want = H(p.pl);
+      const diff = r.plain.map((v, i) => (v !== want[i] ? i : -1)).filter((i) => i >= 0);
+      $("tm-out").innerHTML = `<span class="k">복호한 평문</span> ${X(r.plain).replace(/(..)/g, "$1 ").trim()}\n<span class="k">원래 평문  </span> ${X(want).replace(/(..)/g, "$1 ").trim()}\n<span class="k">달라진 자리</span> ${diff.length ? diff.join(", ") : "없음"}`;
+      BD.stat("tm-ok", r.ok ? "통과 ✓" : "실패 ✗");
+      BD.stat("tm-act", r.ok ? "호스트로 전달" : "연결 끊음 · 0x3D (MIC Failure)");
+    }
+    $("tm-bytes").addEventListener("click", (e) => { const b = e.target.closest("button[data-i]"); if (!b) return; const i = +b.dataset.i; if (i === 1) return; air[i] ^= 1; draw(); });
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

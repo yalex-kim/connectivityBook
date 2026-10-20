@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>Classic 보안: 레거시 PIN에서 Secure Connections까지 · BluetoothBook 심화</title>
+<meta name="description" content="BR/EDR 보안의 세 세대를 비트 단위로. SAFER+ 기반 레거시 E21·E22·E1·E3, Secure Simple Pairing의 P-192 ECDH와 f1·g·f2·f3, Secure Connections의 h4·h5·h3과 수정된 B1을 쓰는 AES-CCM을 Core 6.3 Part G 예제 데이터로 재현한다.">
+<link rel="canonical" href="https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/classicsec.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="BluetoothBook 심화">
+<meta property="og:title" content="Classic 보안: 레거시 PIN에서 Secure Connections까지 · BluetoothBook 심화">
+<meta property="og:description" content="BR/EDR 보안의 세 세대를 비트 단위로. SAFER+ 기반 레거시 E21·E22·E1·E3, Secure Simple Pairing의 P-192 ECDH와 f1·g·f2·f3, Secure Connections의 h4·h5·h3과 수정된 B1을 쓰는 AES-CCM을 Core 6.3 Part G 예제 데이터로 재현한다.">
+<meta property="og:url" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/classicsec.html">
+<meta property="og:image" content="https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"Classic 보안: 레거시 PIN에서 Secure Connections까지","name":"Classic 보안: 레거시 PIN에서 Secure Connections까지 · BluetoothBook 심화","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/classicsec.html","mainEntityOfPage":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/classicsec.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":13,"image":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/og.png","dateModified":"2026-10-20","isPartOf":{"@type":"Book","@id":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/#book","name":"BluetoothBook 심화 — 프로토콜 스택을 끝까지 따라가는 블루투스 교과서","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},"publisher":{"@type":"Organization","name":"BluetoothBook 심화","url":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},"description":"BR/EDR 보안의 세 세대를 비트 단위로. SAFER+ 기반 레거시 E21·E22·E1·E3, Secure Simple Pairing의 P-192 ECDH와 f1·g·f2·f3, Secure Connections의 h4·h5·h3과 수정된 B1을 쓰는 AES-CCM을 Core 6.3 Part G 예제 데이터로 재현한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook 심화","item":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/"},{"@type":"ListItem","position":2,"name":"13 Classic 보안: 레거시 PIN에서 Secure Connections까지","item":"https://yalex-kim.github.io/yalexBook/bluetooth-deep/chapters/classicsec.html"}]}]}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/common.js"></script>
+<style>
+  .mono { font: 12.5px/1.8 var(--mono); word-break: break-all; }
+  .mono .k { color: var(--text-dim); }
+  .mono .hl { color: var(--accent); font-weight: 700; }
+  .mono .ok { color: var(--ok); font-weight: 700; }
+  .mono .no { color: var(--text-faint); }
+  .badge-ok { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; background: var(--ok); color: #fff; }
+</style>
+</head>
+<body data-chapter="classicsec">
+<main class="chapter">
+  <header class="chapter-hero">
+    <div class="eyebrow">Chapter 13</div>
+    <h1>Classic 보안: 레거시 PIN에서 Secure Connections까지</h1>
+    <p class="lead">BR/EDR 보안은 세 번 바뀌었다. 처음에는 PIN과 <span class="term">SAFER+</span> 블록 암호로 키를 만들고 E0 스트림 암호로 암호화했다. 2.1의 Secure Simple Pairing(<span class="term">SSP</span>)은 타원곡선 Diffie-Hellman과 HMAC-SHA-256으로 키 합의를 바꿨다. 4.1의 Secure Connections는 곡선을 P-256으로 올리고 장치 인증과 암호화를 AES로 바꿨다. 이 장은 세 세대의 함수를 모두 구현해 Part G의 예제 데이터와 맞춘다. 공격 절차가 아니라 각 방식이 무엇을 지키고 왜 바뀌었는지가 목표다.</p>
+    <ul class="objectives">
+      <li>레거시·SSP·Secure Connections가 각각 어떤 키 합의·인증·암호화를 쓰는지 표로 구분할 수 있다.</li>
+      <li>SAFER+ 기반 E22·E21·E1·E3의 입력과 출력(K_init, 결합 키, SRES·ACO, K_enc)을 설명할 수 있다.</li>
+      <li>SSP의 f1(약속)·g(숫자 비교)·f2(링크 키)·f3(확인)과 IOcap 인코딩을 따라갈 수 있다.</li>
+      <li>Secure Connections의 h4·h5·h3과 BR/EDR AES-CCM의 nonce·B1 형식을 적용할 수 있다.</li>
+    </ul>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="gen">
+    <h2>세 세대 한눈에</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th></th><th>레거시 (≤ 2.0)</th><th>SSP (2.1)</th><th>Secure Connections (4.1)</th></tr></thead>
+      <tbody>
+        <tr><td>키 합의</td><td>PIN + E22 → K_init, E21 결합 키</td><td>P-192 ECDH + f1·g·f3, f2 → 링크 키</td><td>P-256 ECDH, 같은 f 함수</td></tr>
+        <tr><td>장치 인증</td><td>E1 (SAFER+) → SRES, ACO</td><td>E1</td><td>h4 → h5 (HMAC-SHA-256) → SRES, ACO</td></tr>
+        <tr><td>암호화 키</td><td>E3 → K_enc</td><td>E3</td><td>h3 → AES 키</td></tr>
+        <tr><td>암호화</td><td>E0 스트림 암호</td><td>E0</td><td>AES-CCM (MIC 4바이트)</td></tr>
+      </tbody>
+    </table></div>
+    <p>바뀐 이유는 한 줄로 말할 수 있다. 레거시는 비밀이 PIN뿐이라 짧은 PIN이면 엿들은 교환으로 PIN을 추측해 볼 수 있었다. SSP는 비밀을 ECDH로 만들어 엿듣는 것만으로는 키를 얻을 수 없게 했고, 사람이 숫자를 비교하거나 패스키를 넣어 중간자를 막는다. Secure Connections는 곡선과 대칭 암호를 현대 표준으로 맞췄다. 그래서 GAP의 <b><span class="term">Secure Connections Only</span> 모드</b>는 BR/EDR의 서비스에 보안 모드 4 레벨 4(인증된 P-256 링크 키와 AES-CCM)를 요구한다.</p>
+    <div class="callout analogy"><strong>열쇠 맞추기</strong><p>레거시는 둘이 미리 정한 짧은 암호(PIN)를 섞어 열쇠를 깎는 것이다. 암호가 짧으면 엿들은 사람이 하나씩 대 보며 같은 열쇠를 깎아 볼 수 있다. SSP는 각자 비밀을 하나씩 갖고 공개된 재료만 주고받아 같은 열쇠를 만드는 방식(ECDH)이라, 엿들어도 열쇠를 못 깎는다. 다만 중간에서 둘 다인 척하는 사람을 막으려고 마지막에 화면의 여섯 자리 숫자를 서로 비교한다.</p></div>
+    <p class="spec-ref">보안 개요와 세대: <b>[Vol 2] Part H §1, §1.1</b> · 보안 모드 4와 Secure Connections Only: <b>[Vol 3] Part C §5.2.2</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="legacy">
+    <h2>레거시: SAFER+로 만든 E 함수들</h2>
+    <p>레거시의 모든 키 함수는 128비트 블록 암호 <b>A<sub>r</sub></b>(= SAFER+)와 그 변형 <b>A′<sub>r</sub></b>(1라운드 입력을 3라운드 입력에 다시 더해 역함수를 없앤 것)로 만든다. 한 라운드는 바이트마다 라운드 키를 XOR 또는 더하기 → e(45<sup>i</sup> mod 257) 또는 그 역 l → 다음 라운드 키를 더하기 또는 XOR → 2바이트 PHT(a, b → 2a+b, a+b) 4층과 그 사이 “아르메니아 셔플” 3번이다. 8라운드 뒤 17번째 키를 더한다. 라운드 키는 17바이트 레지스터를 매번 3비트 돌리고 바이어스 B<sub>p</sub>[i] = 45<sup>45<sup>17p+i+1</sup></sup>를 더해 만든다.</p>
+    <ul>
+      <li><b>E22</b>(K_init, 임시 키): PIN′ = PIN 뒤에 BD_ADDR을 붙여 최대 16바이트로, A′<sub>r</sub>(PIN′ 반복, RAND ⊕ L′·2<sup>120</sup>).</li>
+      <li><b>E21</b>(결합 키 재료): A′<sub>r</sub>(RAND ⊕ 6·2<sup>120</sup>, 주소 반복).</li>
+      <li><b>E1</b>(장치 인증): Hash(K, RAND, 주소, 6) = A′<sub>r</sub>(K̃, E(주소) +₁₆ (A<sub>r</sub>(K, RAND) ⊕ RAND)). 앞 4바이트가 <span class="term">SRES</span>(응답), 나머지 12바이트가 <span class="term">ACO</span>.</li>
+      <li><b>E3</b>(암호화 키): Hash(K, EN_RAND, COF, 12) → K_enc. 그 뒤 협상한 키 길이로 줄여 E0에 넣는다.</li>
+    </ul>
+    <div class="sim" id="sim-leg">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>레거시 E 함수 ([Vol 2] Part G §10)</h3></div>
+      <div class="sim-controls" style="border-top:0">
+        <div class="ctrl"><span>함수</span><div class="seg" id="lg-f"><button data-value="E22" class="on">E22 (PIN)</button><button data-value="E21">E21</button><button data-value="E1">E1</button><button data-value="E3">E3</button></div></div>
+        <label class="ctrl"><span>예제 <b id="lg-i-out">1</b></span><input type="range" id="lg-i" min="0" max="18" value="3"></label>
+      </div>
+      <div class="sim-view" style="padding:12px 16px"><div class="mono" id="lg-io"></div></div>
+      <div class="sim-readout"><div class="stat"><span class="k">사양 예와 비교</span><span class="v" id="lg-ok">—</span></div></div>
+      <div class="sim-note">바이트는 Part G §10의 표기대로 왼쪽이 0번(최하위) 바이트다. 해볼 것: E22에서 예제를 넘기면 PIN이 16바이트에서 1바이트까지 짧아지고, 짧을수록 BD_ADDR이 더 많이 붙어 L′ = min(16, L + 6)이 된다. PIN이 짧으면 키의 실제 비밀은 그 몇 바이트뿐이라는 점이 레거시의 약점이다.</div>
+    </div>
+    <p class="spec-ref">E1과 Hash: <b>[Vol 2] Part H §6.1</b> · A<sub>r</sub>·A′<sub>r</sub>, 라운드, e·l, 키 스케줄: <b>§6.2, §6.2.1~§6.2.3</b> · E21·E22: <b>§6.3</b> · E3: <b>§6.4</b> · K_init의 PIN 덧붙이기: <b>§3.2.1</b> · 예제: <b>[Vol 2] Part G §10.1~§10.5</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="ssp">
+    <h2>Secure Simple Pairing: ECDH와 f1·g·f2·f3</h2>
+    <p>SSP는 다섯 단계다. ① 공개 키 교환(PKa, PKb) ② 인증 1단계: 숫자 비교·Just Works·패스키·OOB 중 하나 ③ 인증 2단계: 확인 값 Ea·Eb 교환 ④ 링크 키 계산 ⑤ LMP 인증과 암호화. 함수는 모두 SHA-256 기반이다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>함수</th><th>정의</th><th>쓰임</th></tr></thead>
+      <tbody>
+        <tr><td>f1</td><td>HMAC-SHA-256<sub>X</sub>(U ‖ V ‖ Z)의 앞 128비트</td><td>약속 Ca = f1(PKax, PKbx, Na, Z). Z = 0(숫자 비교·OOB), 0x80·0x81(패스키 비트 0·1)</td></tr>
+        <tr><td>g</td><td>SHA-256(U ‖ V ‖ X ‖ Y) mod 2<sup>32</sup></td><td>숫자 비교 값 = g(PKax, PKbx, Na, Nb) mod 10<sup>6</sup></td></tr>
+        <tr><td>f2</td><td>HMAC-SHA-256<sub>W</sub>(N1 ‖ N2 ‖ "btlk" ‖ A1 ‖ A2)의 앞 128비트</td><td>링크 키 = f2(DHKey, Nc, Np, "btlk", BD_ADDR_C, BD_ADDR_P)</td></tr>
+        <tr><td>f3</td><td>HMAC-SHA-256<sub>W</sub>(N1 ‖ N2 ‖ R ‖ IOcap ‖ A1 ‖ A2)의 앞 128비트</td><td>Ea = f3(DHKey, Na, Nb, r, IOcapA, A, B), Eb는 순서를 바꿔서</td></tr>
+      </tbody>
+    </table></div>
+    <p><b><span class="term">IOcap</span></b>은 3바이트로, 위에서부터 Authentication_Requirements, OOB 데이터 유무, IO 능력이다. 확인 값에 IOcap이 들어가므로 중간자가 “나는 화면이 없다”고 속여 Just Works로 떨어뜨려도 Ea·Eb가 맞지 않는다.</p>
+    <div class="sim" id="sim-ssp">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>SSP 계산 체인 (P-192 데이터 세트 1, [Vol 2] Part G §7)</h3></div>
+      <div class="sim-controls" style="border-top:0">
+        <div class="ctrl"><span>f1의 Z</span><div class="seg" id="sp-z"><button data-value="00" class="on">0x00 숫자 비교</button><button data-value="80">0x80 패스키 비트 0</button><button data-value="81">0x81 패스키 비트 1</button></div></div>
+        <div class="ctrl"><span>IO 능력</span><div class="seg" id="sp-io"><button data-value="00" class="on">0 DisplayOnly</button><button data-value="01">1 DisplayYesNo</button><button data-value="02">2 KeyboardOnly</button><button data-value="03">3 NoInputNoOutput</button></div></div>
+        <div class="ctrl"><span>OOB · AuthReq</span><div class="seg" id="sp-o"><button data-value="0000" class="on">OOB 없음 · 0</button><button data-value="0001">OOB 있음 · 0</button><button data-value="0100">OOB 없음 · 1</button><button data-value="0101">OOB 있음 · 1</button></div></div>
+      </div>
+      <div class="sim-view" style="padding:12px 16px"><div class="mono" id="sp-io-out"></div></div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">숫자 비교 값</span><span class="v" id="sp-g">—</span></div>
+        <div class="stat"><span class="k">사양 예와 맞은 값</span><span class="v" id="sp-ok">—</span></div>
+      </div>
+      <div class="sim-note">브라우저에서 P-192 스칼라 곱셈, SHA-256, HMAC을 직접 계산한다. 입력: Private A = 07915f86…18ff, Private B = 1e636ca7…e16d, Na = d5cb8454…, Nb = a6e8e7cc…, A1 = 56123737bfce, A2 = a713702dcfc1, R = 12a3343b…(사양 예의 값). 해볼 것: IO 능력·OOB·AuthReq를 바꾸면 IOcap이 바뀌어 Ea·Eb가 완전히 달라진다(32가지 모두 Part G에 있다). h4·h5·h3은 Secure Connections의 함수지만 사양 예가 이 링크 키를 그대로 이어 쓴다.</div>
+    </div>
+    <div class="callout warn"><strong>사양 예의 불일치</strong><p>Part G §7.2.2.2의 g() P-256 예는 적힌 입력(U = 20b003d2…, V = 55188b3d…, X = d5cb8454…, Y = a6e8e7cc…)으로 다시 계산하면 SHA-256의 하위 32비트가 <b>0x5fda62e0</b>이지만, 예에는 0x000240E0(147680)이 적혀 있다. 같은 방법으로 P-192 예(0x52146a1e)는 정확히 나오고 OpenSSL의 SHA-256도 같은 값을 내므로, 예의 입력이나 출력 중 하나가 잘못 옮겨진 것으로 보인다. 이 책의 검증 스크립트는 이 불일치를 그대로 기록해 둔다.</p></div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">g의 출력이 0x52146a1e였다. 화면에 뜨는 여섯 자리는?</p><p class="wi-hint">10진수로 바꾼 뒤 아래 여섯 자리.</p><div class="opts">
+      <button class="opt">521466</button>
+      <button class="opt" data-correct>069598</button>
+      <button class="opt">137706</button>
+    </div><div class="quiz-exp">0x52146a1e = 1,377,069,598, mod 10⁶ = 069598. 사양 예(§7.2.2.1)와 같다. 앞자리 0도 그대로 보여 준다.</div></div>
+    <p class="spec-ref">SSP 단계: <b>[Vol 2] Part H §7, §7.1~§7.3</b> · f1·g·f2·f3: <b>§7.7.1~§7.7.4</b> · IO 능력과 인증 방식 대응: <b>[Vol 3] Part C §5.2.2.4~§5.2.2.6</b> · 예제: <b>[Vol 2] Part G §7.1, §7.2</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="sc">
+    <h2>Secure Connections: h4·h5·h3과 AES-CCM</h2>
+    <p>P-256으로 링크 키를 만든 뒤 장치 인증은 E1 대신 <b>h4</b>(장치 인증 키 = HMAC<sub>LK</sub>("btdk" ‖ A1 ‖ A2)) → <b>h5</b>(HMAC<sub>S</sub>(AU_RAND_C ‖ AU_RAND_P))를 쓴다. h5 출력의 앞 32비트가 SRES_C, 다음 32비트가 SRES_P, 나머지 64비트가 ACO다. 암호화 키는 <b>h3</b> = HMAC<sub>LK</sub>("btak" ‖ A1 ‖ A2 ‖ ACO)의 앞 128비트다.</p>
+    <p>암호화는 AES-CCM(M = 4, L = 2)인데 B1이 표준과 다르다. 연관 데이터 길이를 넣지 않고 바로 패킷 헤더 2바이트(ARQN·SEQN·FLOW를 0으로 가림)와 페이로드 헤더 1바이트(FLOW를 가림)를 넣는다. nonce 13바이트는 ACL이면 <b>PayloadCounter</b> 형식(39비트 카운터 + 길이 0 이어짐 비트 + 방향 비트 + IV), eSCO면 <b>클록</b> 형식(CLK₂₇₋₁ + dayCounter + IV)이다. IV는 암호화 시작 때 마지막 h5의 ACO, 재개 뒤에는 EN_RAND다. eSCO는 MIC 없이 암호화만 한다.</p>
+    <p>키 길이를 줄이기로 협상했으면 키의 하위 바이트를 0으로 바꾼다. 협상 범위는 7~16바이트이고, 호스트는 HCI로 받아들일 최소 길이를 정할 수 있다. 짧은 키는 그만큼 추측 공간이 작으므로 16바이트를 요구하는 것이 안전한 설정이다.</p>
+    <div class="sim" id="sim-ccm">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>BR/EDR AES-CCM ([Vol 2] Part G §1.2)</h3></div>
+      <div class="sim-controls" style="border-top:0">
+        <label class="ctrl"><span>예제 <b id="cc-i-out">2</b></span><input type="range" id="cc-i" min="0" max="9" value="1"></label>
+        <label class="ctrl"><span>키 길이 줄이기 <b id="cc-k-out">16</b> 바이트</span><input type="range" id="cc-k" min="7" max="16" value="16"></label>
+      </div>
+      <div class="sim-view" style="padding:12px 16px"><div class="mono" id="cc-io"></div></div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">MIC</span><span class="v" id="cc-m">—</span></div>
+        <div class="stat"><span class="k">사양 예와 비교</span><span class="v" id="cc-ok">—</span></div>
+      </div>
+      <div class="sim-note">AES는 브라우저에서 직접 계산한다. 2-DH3·3-DH5 예(10~13번)는 페이로드가 길어 이 화면에서는 빼고 검증 스크립트에서만 확인한다. 해볼 것: 2번과 3번은 같은 키·카운터에 방향만 다르다. nonce 4번 바이트의 0x20 비트 하나로 MIC와 암호문이 전부 달라진다. 마지막(EV3)은 클록 형식 nonce라 MIC가 없다. 키 길이를 줄이면 키의 하위 바이트가 00이 되고 결과는 예와 달라진다.</div>
+    </div>
+    <p class="spec-ref">h3·h4·h5: <b>[Vol 2] Part H §7.7.6~§7.7.8</b> · AES-CCM과 nonce: <b>§9, §9.1</b> · B0·B1: <b>§9.2</b> · A 블록: <b>§9.3</b> · 키 길이 줄이기: <b>§9.4</b> · 키 길이 협상(최소 7바이트): <b>[Vol 2] Part C §4.2.5.3</b> · 최소 키 길이 설정: <b>[Vol 4] Part E §7.3.102</b> · 예제: <b>[Vol 2] Part G §1.2, §7.2.6~§7.2.8</b></p>
+  </section>
+
+  <div class="callout related"><strong>다른 책에서</strong><ul><li><a href="../../bluetooth/chapters/security.html">BluetoothBook · 보안</a> — 페어링 방식과 보안 모드의 큰 그림</li><li><a href="smp.html">7장 · SMP 완전판</a> — LE 쪽의 P-256과 AES-CMAC 함수들</li></ul></div>
+
+  <section class="keypoints" id="summary">
+    <h2>핵심 정리</h2>
+    <ol>
+      <li>레거시: SAFER+(A<sub>r</sub>, A′<sub>r</sub>)로 E22(K_init), E21, E1(SRES·ACO), E3(K_enc), 암호화는 E0. 비밀은 PIN뿐.</li>
+      <li>SSP: ECDH(P-192) + HMAC-SHA-256의 f1(약속)·g(여섯 자리)·f2(링크 키)·f3(IOcap을 묶은 확인).</li>
+      <li>Secure Connections: P-256, h4 → h5(SRES_C·SRES_P·ACO) → h3(AES 키), AES-CCM의 B1은 길이 없이 헤더만.</li>
+      <li>nonce: ACL은 PayloadCounter + 방향 비트, eSCO는 CLK + dayCounter. IV는 ACO 또는 EN_RAND.</li>
+      <li>안전한 설정: Secure Connections Only(보안 모드 4 레벨 4), 키 길이 16바이트.</li>
+    </ol>
+  </section>
+
+  <section class="quiz-sec" id="quiz">
+    <h2>확인 퀴즈</h2>
+    <div class="quiz">
+      <div class="quiz-q"><p>E1 출력 중 ACO는 어디에 쓰이나?</p><div class="opts">
+        <button class="opt">PIN 길이</button><button class="opt" data-correct>E3의 COF로 들어가 암호화 키를 만든다</button><button class="opt">도약 순서</button><button class="opt">버린다</button>
+      </div><div class="quiz-exp">§6.1: ACO는 E3에 쓰는 Authenticated Ciphering Offset. Secure Connections에서는 h5의 ACO가 h3과 nonce의 IV에 쓰인다.</div></div>
+      <div class="quiz-q"><p>PIN이 4바이트일 때 E22의 L′은?</p><div class="opts">
+        <button class="opt">4</button><button class="opt">6</button><button class="opt" data-correct>10</button><button class="opt">16</button>
+      </div><div class="quiz-exp">L′ = min(16, L + 6) = 10. PIN 4바이트 뒤에 BD_ADDR 6바이트가 붙는다.</div></div>
+      <div class="quiz-q"><p>f3에 IOcap을 넣는 이유는?</p><div class="opts">
+        <button class="opt">키를 길게 하려고</button><button class="opt" data-correct>교환한 IO 능력이 변조되면 확인 값이 맞지 않게 하려고</button><button class="opt">숫자 비교 값을 만들려고</button><button class="opt">암호화 속도 때문에</button>
+      </div><div class="quiz-exp">IO 능력으로 인증 방식이 정해지므로, 이를 바꿔 약한 방식으로 떨어뜨리는 시도를 확인 단계에서 잡는다.</div></div>
+      <div class="quiz-q"><p>BR/EDR AES-CCM의 B1이 표준 CCM과 다른 점은?</p><div class="opts">
+        <button class="opt">MIC가 8바이트</button><button class="opt" data-correct>연관 데이터 길이 필드 없이 헤더 바이트가 바로 온다</button><button class="opt">nonce가 없다</button><button class="opt">CBC 대신 ECB</button>
+      </div><div class="quiz-exp">§9: RFC 3610에서 B1의 AAD 길이를 빼는 수정. B1 = 패킷 헤더 2 + 페이로드 헤더 1 + 0 13개.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const SBOX = (() => { const s = new Array(256); let p = 1, q = 1; do { p = p ^ ((p << 1) & 0xff) ^ (p & 0x80 ? 0x1b : 0); q ^= q << 1; q ^= q << 2; q ^= q << 4; q &= 0xff; if (q & 0x80) q ^= 0x09; const x = q ^ ((q << 1) | (q >> 7)) ^ ((q << 2) | (q >> 6)) ^ ((q << 3) | (q >> 5)) ^ ((q << 4) | (q >> 4)); s[p] = (x ^ 0x63) & 0xff; } while (p !== 1); s[0] = 0x63; return s; })();
+  const EXP45 = (() => { const e = []; let v = 1; for (let i = 0; i < 256; i++) { e.push(v % 256); v = (v * 45) % 257; } return e; })();
+  const LOG45 = (() => { const l = []; EXP45.forEach((v, i) => { l[v] = i; }); return l; })();
+  const CURVES = {
+    "P-192": { p: 0xfffffffffffffffffffffffffffffffeffffffffffffffffn, a: -3n, gx: 0x188da80eb03090f67cbf20eb43a18800f4ff0afd82ff1012n, gy: 0x07192b95ffc8da78631011ed6b24cdd573f977a11e794811n },
+    "P-256": { p: 0xffffffff00000001000000000000000000000000ffffffffffffffffffffffffn, a: -3n, gx: 0x6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296n, gy: 0x4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5n },
+  };
+  /* ================================================================ 계산 (검증 스크립트가 꺼내 쓴다) */
+  /** AES-128 한 블록 */
+  function aes128(key, block) {
+    const xt = (a) => ((a << 1) ^ (a & 0x80 ? 0x1b : 0)) & 0xff;
+    const w = key.slice(); let rc = 1;
+    for (let i = 16; i < 176; i += 4) { let t = w.slice(i - 4, i); if (i % 16 === 0) { t = [SBOX[t[1]] ^ rc, SBOX[t[2]], SBOX[t[3]], SBOX[t[0]]]; rc = xt(rc); } for (let j = 0; j < 4; j++) w[i + j] = w[i - 16 + j] ^ t[j]; }
+    let s = block.map((b, i) => b ^ w[i]);
+    for (let r = 1; r <= 10; r++) {
+      s = s.map((b) => SBOX[b]);
+      s = [0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12, 1, 6, 11].map((i) => s[i]);
+      if (r < 10) { const o = []; for (let c = 0; c < 4; c++) { const a = s.slice(4 * c, 4 * c + 4), x = a[0] ^ a[1] ^ a[2] ^ a[3]; for (let i = 0; i < 4; i++) o.push(a[i] ^ x ^ xt(a[i] ^ a[(i + 1) % 4])); } s = o; }
+      s = s.map((b, i) => b ^ w[16 * r + i]);
+    }
+    return s;
+  }
+  /** SAFER+ 라운드 키 K1~K17. [Vol 2] Part H §6.2.3 */
+  function saferKeys(key) {
+    const pm = (b, e, m) => { let r = 1n, x = BigInt(b) % m, k = BigInt(e); while (k > 0n) { if (k & 1n) r = (r * x) % m; x = (x * x) % m; k >>= 1n; } return r; };
+    const reg = [...key, key.reduce((a, b) => a ^ b, 0)], K = [key.slice()];
+    for (let p = 2; p <= 17; p++) {
+      for (let i = 0; i < 17; i++) reg[i] = ((reg[i] << 3) | (reg[i] >> 5)) & 255;
+      K.push(Array.from({ length: 16 }, (_, i) => (reg[(p - 1 + i) % 17] + Number(pm(45, pm(45, 17 * p + i + 1, 257n), 257n) % 256n)) & 255));
+    }
+    return K;
+  }
+  /** A_r(prime=false)·A'_r(prime=true). §6.2, §6.2.1 */
+  function ar(key, x, prime) {
+    const K = saferKeys(key), X = (j) => j % 4 === 0 || j % 4 === 3, SH = [8, 11, 12, 15, 2, 1, 6, 5, 10, 9, 14, 13, 0, 7, 4, 3];
+    let s = x.slice();
+    for (let r = 1; r <= 8; r++) {
+      if (prime && r === 3) s = s.map((v, j) => (X(j) ? v ^ x[j] : (v + x[j]) & 255));
+      const k1 = K[2 * r - 2], k2 = K[2 * r - 1];
+      s = s.map((v, j) => (X(j) ? (EXP45[v ^ k1[j]] + k2[j]) & 255 : LOG45[(v + k1[j]) & 255] ^ k2[j]));
+      for (let layer = 0; layer < 4; layer++) { const o = []; for (let i = 0; i < 16; i += 2) o.push((2 * s[i] + s[i + 1]) & 255, (s[i] + s[i + 1]) & 255); s = layer < 3 ? SH.map((p) => o[p]) : o; }
+    }
+    return s.map((v, j) => (X(j) ? v ^ K[16][j] : (v + K[16][j]) & 255));
+  }
+  /** E1·E3의 Hash. K̃는 바이트마다 정해진 상수를 더하거나 XOR. §6.1 (EQ 13~15) */
+  function hashE(K, i1, i2, L) {
+    const C = [233, 229, 223, 193, 179, 167, 149, 131], kt = K.map((v, i) => ((i < 8 ? i % 2 === 0 : i % 2 === 1) ? (v + C[i % 8]) & 255 : v ^ C[i % 8]));
+    const y = ar(K, i1, false).map((v, i) => ((v ^ i1[i]) + i2[i % L]) & 255);
+    return ar(kt, y, true);
+  }
+  function e1(K, rand, addr) { const h = hashE(K, rand, addr, 6); return { sres: h.slice(0, 4), aco: h.slice(4) }; }
+  function e21(rand, addr) { const x = rand.slice(); x[15] ^= 6; return ar(x, Array.from({ length: 16 }, (_, i) => addr[i % 6]), true); }
+  /** PIN' = PIN 뒤에 BD_ADDR, L' = min(16, L + 6). §6.3 (EQ 20~22) */
+  function e22(pin, addr, rand) {
+    const p = [...pin, ...addr].slice(0, Math.min(16, pin.length + (addr.length ? 6 : 0))), y = rand.slice(); y[15] ^= p.length;
+    return { pinp: p, key: ar(Array.from({ length: 16 }, (_, i) => p[i % p.length]), y, true) };
+  }
+  function e3(K, rand, cof) { return hashE(K, rand, cof, 12); }
+  /** SHA-256 */
+  function sha256(m) {
+    const K = [0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da, 0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967, 0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85, 0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070, 0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2];
+    const H = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19], r = (x, n) => (x >>> n) | (x << (32 - n));
+    const b = [...m, 0x80]; while (b.length % 64 !== 56) b.push(0);
+    const bits = m.length * 8; for (let i = 7; i >= 0; i--) b.push(Math.floor(bits / 2 ** (8 * i)) & 255);
+    for (let o = 0; o < b.length; o += 64) {
+      const w = [];
+      for (let i = 0; i < 64; i++) w[i] = i < 16 ? ((b[o + 4 * i] << 24) | (b[o + 4 * i + 1] << 16) | (b[o + 4 * i + 2] << 8) | b[o + 4 * i + 3]) >>> 0 : (w[i - 16] + (r(w[i - 15], 7) ^ r(w[i - 15], 18) ^ (w[i - 15] >>> 3)) + w[i - 7] + (r(w[i - 2], 17) ^ r(w[i - 2], 19) ^ (w[i - 2] >>> 10))) >>> 0;
+      let [a, bb, c, d, e, f, g, h] = H;
+      for (let i = 0; i < 64; i++) {
+        const t1 = (h + (r(e, 6) ^ r(e, 11) ^ r(e, 25)) + ((e & f) ^ (~e & g)) + K[i] + w[i]) >>> 0, t2 = ((r(a, 2) ^ r(a, 13) ^ r(a, 22)) + ((a & bb) ^ (a & c) ^ (bb & c))) >>> 0;
+        h = g; g = f; f = e; e = (d + t1) >>> 0; d = c; c = bb; bb = a; a = (t1 + t2) >>> 0;
+      }
+      [a, bb, c, d, e, f, g, h].forEach((v, i) => { H[i] = (H[i] + v) >>> 0; });
+    }
+    return H.flatMap((v) => [v >>> 24, (v >>> 16) & 255, (v >>> 8) & 255, v & 255]);
+  }
+  function hmac(key, m) { const k = key.length > 64 ? sha256(key) : key.slice(); while (k.length < 64) k.push(0); return sha256([...k.map((x) => x ^ 0x5c), ...sha256([...k.map((x) => x ^ 0x36), ...m])]); }
+  /** f1·g·f2·f3·h3·h4·h5 (바이트는 큰 쪽부터). [Vol 2] Part H §7.7 */
+  function f1(U, V, X, Z) { return hmac(X, [...U, ...V, Z]).slice(0, 16); }
+  function g(U, V, X, Y) { const h = sha256([...U, ...V, ...X, ...Y]).slice(28); return ((h[0] << 24) | (h[1] << 16) | (h[2] << 8) | h[3]) >>> 0; }
+  function f2(W, N1, N2, keyID, A1, A2) { return hmac(W, [...N1, ...N2, ...keyID, ...A1, ...A2]).slice(0, 16); }
+  function f3(W, N1, N2, R, IOcap, A1, A2) { return hmac(W, [...N1, ...N2, ...R, ...IOcap, ...A1, ...A2]).slice(0, 16); }
+  function h4(T, keyID, A1, A2) { return hmac(T, [...keyID, ...A1, ...A2]).slice(0, 16); }
+  function h5(S, R1, R2) { const o = hmac(S, [...R1, ...R2]).slice(0, 16); return { sresC: o.slice(0, 4), sresP: o.slice(4, 8), aco: o.slice(8) }; }
+  function h3(T, keyID, A1, A2, ACO) { return hmac(T, [...keyID, ...A1, ...A2, ...ACO]).slice(0, 16); }
+  /** 타원곡선 스칼라 곱 (아핀, BigInt). 결과 [x, y] */
+  function ecMul(curve, k, P) {
+    const { p, a } = CURVES[curve], m = (x) => ((x % p) + p) % p;
+    const inv = (x) => { let [r0, r1, s0, s1] = [m(x), p, 1n, 0n]; while (r1) { const q = r0 / r1; [r0, r1] = [r1, r0 - q * r1]; [s0, s1] = [s1, s0 - q * s1]; } return m(s0); };
+    const add = (A, B) => {
+      if (!A) return B; if (!B) return A;
+      if (A[0] === B[0] && m(A[1] + B[1]) === 0n) return null;
+      const l = A[0] === B[0] ? m((3n * A[0] * A[0] + a) * inv(2n * A[1])) : m((B[1] - A[1]) * inv(B[0] - A[0])), x = m(l * l - A[0] - B[0]);
+      return [x, m(l * (A[0] - x) - A[1])];
+    };
+    let R = null, Q = P || [CURVES[curve].gx, CURVES[curve].gy];
+    for (let e = k; e > 0n; e >>= 1n) { if (e & 1n) R = add(R, Q); Q = add(Q, Q); }
+    return R;
+  }
+  /** nonce: ACL PayloadCounter 형식, eSCO 클록 형식. IV는 IV[0]이 Nonce5. [Vol 2] Part H §9.1 */
+  function nonceAcl(pc, zl, dir, iv) { return [...Array.from({ length: 4 }, (_, i) => Math.floor(pc / 2 ** (8 * i)) & 255), (Math.floor(pc / 2 ** 32) & 15) | (zl << 4) | (dir << 5), ...iv]; }
+  function nonceClk(clk, day, iv) { return [clk & 255, (clk >>> 8) & 255, (clk >>> 16) & 255, ((clk >>> 24) & 7) | ((day & 31) << 3), ((day >> 5) & 63) | 0x40, ...iv]; }
+  /** BR/EDR AES-CCM: B1 = 패킷 헤더 2 + 페이로드 헤더 1 + 0 13개. hdr가 null이면 MIC 없이(eSCO). §9.2, §9.3 */
+  function ccmBr(k, nonce, hdr, pl) {
+    const ctr = (i) => [1, ...nonce, (i >> 8) & 255, i & 255], out = [];
+    for (let i = 0; i < pl.length; i += 16) { const s = aes128(k, ctr(i / 16 + 1)); for (let j = i; j < Math.min(i + 16, pl.length); j++) out.push(pl[j] ^ s[j - i]); }
+    if (!hdr) return { out, mic: null };
+    const B = [[0x49, ...nonce, (pl.length >> 8) & 255, pl.length & 255], [...hdr, ...new Array(13).fill(0)]];
+    for (let i = 0; i < pl.length; i += 16) { const b = pl.slice(i, i + 16); while (b.length < 16) b.push(0); B.push(b); }
+    let y = new Array(16).fill(0);
+    for (const b of B) y = aes128(k, y.map((v, i) => v ^ b[i]));
+    const s0 = aes128(k, ctr(0));
+    return { out, mic: y.slice(0, 4).map((v, i) => v ^ s0[i]), b0: B[0], b1: B[1] };
+  }
+  /** 키 길이 줄이기: 하위(오른쪽) 바이트를 0으로. §9.4 */
+  function shortenKey(k, n) { return k.map((v, i) => (i < n ? v : 0)); }
+
+  const Hx = (s) => (s ? s.match(/../g).map((x) => parseInt(x, 16)) : []), X = (a) => a.map((b) => b.toString(16).padStart(2, "0")).join("");
+  const OK = '<span class="ok">✓ 예와 같음</span>';
+
+  /* ================================================================ 1. 레거시 */
+  (function () {
+    const D = {"E22":[["d5a51083a04a1971f18649ea8b79311a","","001de169248850245a5f7cc7f0d6d633","539e4f2732e5ae2de1e0401f0813bd0d"],["7885b515e84b1f082cc499976f1725ce","","67ed56bfcf99825f0c6b349369da30ab","04435771e03a9daceb8bb1a493ee9bd8"],["1ce44839badde30396d03c4c36f23006","","40a94509238664f244ff8e3d13b119d3","9cde4b60f9b5861ed9df80858bac6f7f"],["fd397c7f5c1f937cdf82d8816cc377e2","","24b101fd56117d42c0545a4247357048","a5f2adf328e4e6a2b42f19c8b74ba884"],["ad955d58b6b8857820ac1262d617a6","0314c0642543","321964061ac49a436f9fb9824ac63f8b","c0ec1a5694e2b48d54297911e6c98b8f"],["e1232e2c5f3b833b3309088a87b6","fabecc58e609","d4ae20c80094547d7051931b5cc2a8d6","d7b39be13e3692c65b4a9e17a9c55e17"],["549f2694f353f5145772d8ae1e","20487681eb9f","272b73a2e40db52a6a61c6520549794a","9ac64309a37c25c3b4a584fc002a1618"],["2e5a42797958557b23447ca8","04f0d2737f02","7edb65f01a2f45a2bc9b24fb3390667e","d3af4c81e3f482f062999dee7882a73b"],["05fbad03f52fa9324f7732","b9ac071f9d70","26a92358294dce97b1d79ec32a67e81a","be87b44d079d45a08a71d15208c5cb50"],["8210e47390f3f48c32b3","7a3cdfe377d1","0edef05327eab5262430f21fc91ce682","bf0706d76ec3b11cce724b311bf71ff5"],["3dcdffcfd086802107","791a6a2c5cc3","86290e2892f278ff6c3fb917b020576a","cdb0cc68f6f6fbd70b46652de3ef3ffb"],["d0fb9b6838d464d8","25a868db91ab","3ab52a65bb3b24a08eb6cd284b4b9d4b","983218718ca9aa97892e312d86dd9516"],["9c57e10b4766cc","54ebd9328cb6","a6dc447ff08d4b366ff96e6cf207e179","9cd6650ead86323e87cafb1ff516d1e0"],["fcad169d7295","430d572f8842","3348470a7ea6cc6eb81b40472133262c","98f1543ab4d87bd5ef5296fb5e3d3a21"],["b10d068bca","b44775199f29","0f5bb150b4371ae4e5785293d22b7b0c","c55070b72bc982adb972ed05d1a74ddb"],["fb20f177","a683bd0b1896","148662a4baa73cfadb55489159e476e1","7ec864df2f1637c7e81f2319ae8f4671"],["a123b9","4459a44610f6","193a1b84376c88882c8d3b4ee93ba8d5","ac0daabf17732f632e34ef193658bf5d"],["3eaf","411fbbb51d1e","1453db4d057654e8eb62d7d62ec3608c","1674f9dc2063cc2b83d3ef8ba692ebef"],["6d","008aa9be62d5","1313f7115a9db842fcedc4b10088b48d","38ec0258134ec3f08461ae5c328968a1"]],"E21":[["00000000000000000000000000000000","000000000000","d14ca028545ec262cee700e39b5c39ee"],["2dd9a550343191304013b2d7e1189d09","cac4364303b6","e62f8bac609139b3999aedbc9d228042"],["dab3cffe9d5739d1b7bf4a667ae5ee24","02f8fd4cd661","b0376d0a9b338c2e133c32b69cb816b3"],["13ecad08ad63c37f8a54dc56e82f4dc1","9846c5ead4d9","5b61e83ad04d23e9d1c698851fa30447"]],"E1":[["00000000000000000000000000000000","00000000000000000000000000000000","000000000000","056c0fe6","48afcdd4bd40fef76693b113"],["159dd9f43fc3d328efba0cd8a861fa57","bc3f30689647c8d7c5a03ca80a91eceb","7ca89b233c2d","8d5205c5","3ed75df4abd9af638d144e94"],["45298d06e46bac21421ddfbed94c032b","0891caee063f5da1809577ff94ccdcfb","c62f19f6ce98","00507e5f","2a5f19fbf60907e69f39ca9f"],["35949a914225fabad91995d226de1d92","0ecd61782b4128480c05dc45542b1b8c","f428f0e624b3","80e5629c","a6fe4dcde3924611d3cc6ba1"]],"E3":[["00000000000000000000000000000000","00000000000000000000000000000000","48afcdd4bd40fef76693b113","cc802aecc7312285912e90af6a1e1154"],["34e86915d20c485090a6977931f96df5","950e604e655ea3800fe3eb4a28918087","68f4f472b5586ac5850f5f74","c1beafea6e747e304cf0bd7734b0a9e2"],["35cf77b333c294671d426fa79993a133","6a8ebcf5e6e471505be68d5eb8a3200c","658d791a9554b77c0b2f7b9f","a3032b4df1cceba8adc1a04427224299"],["b9f90c53206792b1826838b435b87d4d","5ecd6d75db322c75b6afbd799cb18668","63f701c7013238bbf88714ee","ea520cfc546b00eb7c3a6cea3ecb39ed"]]};
+    const fsel = BD.seg("lg-f", () => { const n = D[fsel()].length; $("lg-i").max = n - 1; if (+$("lg-i").value > n - 1) $("lg-i").value = 0; draw(); });
+    const i = BD.range("lg-i", (v) => String(v + 1), draw);
+    function draw() {
+      const f = fsel(), r = D[f][Math.min(i(), D[f].length - 1)];
+      let io = "", got = "", exp = "";
+      if (f === "E22") {
+        const o = e22(Hx(r[0]), Hx(r[1]), Hx(r[2]));
+        io = `<span class="k">PIN (${r[0].length / 2}바이트)</span> ${r[0]}<br><span class="k">BD_ADDR</span> ${r[1] || "(덧붙이지 않음)"}<br><span class="k">PIN′ (L′ = ${o.pinp.length})</span> ${X(o.pinp)}<br><span class="k">RAND</span> ${r[2]}<br><span class="k">K = E22</span> <span class="hl">${X(o.key)}</span>`;
+        got = X(o.key); exp = r[3];
+      } else if (f === "E21") {
+        const o = e21(Hx(r[0]), Hx(r[1]));
+        io = `<span class="k">RAND</span> ${r[0]}<br><span class="k">주소</span> ${r[1]}<br><span class="k">E21</span> <span class="hl">${X(o)}</span>`; got = X(o); exp = r[2];
+      } else if (f === "E1") {
+        const o = e1(Hx(r[0]), Hx(r[1]), Hx(r[2]));
+        io = `<span class="k">링크 키</span> ${r[0]}<br><span class="k">AU_RAND</span> ${r[1]}<br><span class="k">주소</span> ${r[2]}<br><span class="k">SRES</span> <span class="hl">${X(o.sres)}</span> · <span class="k">ACO</span> ${X(o.aco)}`; got = X(o.sres) + X(o.aco); exp = r[3] + r[4];
+      } else {
+        const o = e3(Hx(r[0]), Hx(r[1]), Hx(r[2]));
+        io = `<span class="k">링크 키</span> ${r[0]}<br><span class="k">EN_RAND</span> ${r[1]}<br><span class="k">COF (= ACO)</span> ${r[2]}<br><span class="k">K_enc</span> <span class="hl">${X(o)}</span>`; got = X(o); exp = r[3];
+      }
+      $("lg-io").innerHTML = io;
+      BD.stat("lg-ok", got === exp ? '<span class="badge-ok">일치</span> Part G §10' : "불일치");
+    }
+    draw();
+  })();
+
+  /* ================================================================ 2. SSP */
+  (function () {
+    const SA = 0x07915f86918ddc27005df1d6cf0c142b625ed2eff4a518ffn, SB = 0x1e636ca790b50f68f15d8dbe86244e309211d635de00e16dn;
+    const Na = Hx("d5cb8454d177733effffb2ec712baeab"), Nb = Hx("a6e8e7cc25a75f6e216583f7ff3dc4cf"), A1 = Hx("56123737bfce"), A2 = Hx("a713702dcfc1"), R = Hx("12a3343bb453bb5408da42d20c2d0fc8");
+    const EXP = { pkax: "15207009984421a6586f9fc3fe7e4329d2809ea51125f8ed", dh: "fb3ba2012c7e62466e486e229290175b4afebc13fdccee46", f1_00: "1bdc955a9d542ffc9f9e670cdf665010", f1_80: "611325ebcb6e5269b868113306095fa6", f1_81: "b68df39fd8a406b06a6c517d3666cf91", g: 0x52146a1e, lk: "c234c1198f3b520186ab92a2f874934e", dk: "b089c4e39d7c192c3aba3c2109d24c0d", aco: "c683b97d9d421f91", aes: "677b377f74a5d501121c46492d4cb489", f3: {"a000000": "5e6a346b8add7ee80e7ec0c2461b1509", "a000001": "7840e5445a13e3ce6e48a2decbe51482", "a000002": "da9afb5c6c9dbe0af4722b532520c4b3", "a000003": "2c0f220c50075285852e01bcee4b5f90", "a000100": "0a096af0fa61dce0933987febe95fc7d", "a000101": "49b8d74007888e770e1a49d6810069b9", "a000102": "309cd0327dec2514894a0c88b101a436", "a000103": "4512274ba875b156c2187e2061b90434", "b000000": "8d56dc59e70855f563b5e85e42d5964e", "b000001": "c92fdacbf0ce931e9c4087a9dfb7bc0b", "b000002": "52ac910200dc34285bbbf2144883c498", "b000003": "c419d677e0d426e6bb36de5fa54c5041", "b000100": "fb0e1f9f7c623c1bf2675fcff1551137", "b000101": "16c7be68184f1170fbbb2bef5a9c515d", "b000102": "24849f33d3ac05fef9034c18d9adb310", "b000103": "e0f484bb0b071483285903e85094046b", "a010000": "4bf22677415ed90aceb21873c71c1884", "a010001": "0d4b97992eb570efb369cfe45e1681b5", "a010002": "0f0906bbfa75e95c471e97c4211b2741", "a010003": "88f1f60ce1ff4bf8aa08a170dd061d4e", "a010100": "940f88f25317c358d9bd2f146778e36b", "a010101": "591396355ac4dc72be05a15e718ec945", "a010102": "a3dc055f656abb1d6e11d3f37340189a", "a010103": "fd5412a22ba5dd893852608f8ab0c934", "b010000": "2a742039c5fd6c6faafce17b619ac56f", "b010001": "a60d89efb52db7905179a6c63b8f212a", "b010002": "cb02f803d755fd936f0a832f4ee9fd4a", "b010003": "00786c04a24561485aaf22808871b874", "b010100": "2a58ef2d99281d472a88027423f8215f", "b010101": "ff7ab3752a144232f2cbbcbf979f5517", "b010102": "9d7fccef23625b1cc684fbf3f8b0e182", "b010103": "864f87e26dece4dfdde30ade1e463d4f"} };
+    const z = BD.seg("sp-z", draw), io = BD.seg("sp-io", draw), o = BD.seg("sp-o", draw);
+    const b = (n, len) => { const a = []; for (let i = len - 1; i >= 0; i--) a.push(Number((n >> BigInt(8 * i)) & 255n)); return a; };
+    const pa = ecMul("P-192", SA), pb = ecMul("P-192", SB), dh = ecMul("P-192", SA, pb), PKax = b(pa[0], 24), PKbx = b(pb[0], 24), DH = b(dh[0], 24);
+    function draw() {
+      const Z = parseInt(z(), 16), iocap = Hx(o() + io()), cap = X(iocap);
+      const ca = X(f1(PKax, PKbx, Na, Z)), gv = g(PKax, PKbx, Na, Nb), lk = f2(DH, Na, Nb, Hx("62746c6b"), A1, A2);
+      const ea = X(f3(DH, Na, Nb, R, iocap, A1, A2)), eb = X(f3(DH, Nb, Na, R, iocap, A2, A1));
+      const dk = h4(lk, Hx("6274646b"), A1, A2), h = h5(dk, Na, Nb), aes = h3(lk, Hx("6274616b"), A1, A2, h.aco);
+      const m = (got, exp) => (exp === undefined ? "" : got === exp ? " " + OK : ' <span class="no">✗</span>');
+      let n = 0, t = 0; const c = (got, exp) => { t++; if (got === exp) n++; return m(got, exp); };
+      $("sp-io-out").innerHTML =
+        `<span class="k">PKa.x</span> ${X(PKax)}${c(X(PKax), EXP.pkax)}<br><span class="k">PKb.x</span> ${X(PKbx)}<br><span class="k">DHKey</span> <span class="hl">${X(DH)}</span>${c(X(DH), EXP.dh)}` +
+        `<br><span class="k">Ca = f1(PKax, PKbx, Na, 0x${z()})</span> ${ca}${c(ca, EXP["f1_" + z()])}` +
+        `<br><span class="k">g(PKax, PKbx, Na, Nb)</span> 0x${gv.toString(16).padStart(8, "0")}${c(gv, EXP.g)}` +
+        `<br><span class="k">링크 키 = f2(DHKey, Na, Nb, "btlk", A1, A2)</span> <span class="hl">${X(lk)}</span>${c(X(lk), EXP.lk)}` +
+        `<br><span class="k">IOcap</span> ${cap} · <span class="k">Ea</span> ${ea}${c(ea, EXP.f3["a" + cap])} · <span class="k">Eb</span> ${eb}${c(eb, EXP.f3["b" + cap])}` +
+        `<br><span class="k">h4 → 장치 인증 키</span> ${X(dk)}${c(X(dk), EXP.dk)}<br><span class="k">h5 → SRES_C · SRES_P · ACO</span> ${X(h.sresC)} · ${X(h.sresP)} · ${X(h.aco)}${c(X(h.aco), EXP.aco)}<br><span class="k">h3 → AES 키</span> <span class="hl">${X(aes)}</span>${c(X(aes), EXP.aes)}`;
+      BD.stat("sp-g", String(gv % 1000000).padStart(6, "0"));
+      BD.stat("sp-ok", `${n} / ${t}`);
+    }
+    draw();
+  })();
+
+  /* ================================================================ 3. AES-CCM */
+  (function () {
+    const D = [[1,"DM1, Central → Peripheral","89678967896789674523452345234523","0000bc614e","0","0","66778899aabbccdd","1","3","2","","10a2ddc5","","",""],[2,"DM1, Central → Peripheral","89678967896789674523452345234523","0000bc614e","0","0","66778899aabbccdd","1","3","2","68696a6b6c6d6e6f","b1d8a011","b0ae898a6e6864d4","",""],[3,"DM1, Peripheral → Central","89678967896789674523452345234523","0000bc614e","0","1","66778899aabbccdd","1","3","2","68696a6b6c6d6e6f","59cfe237","f4e09ce4df769ada","",""],[4,"DM1, Central → Peripheral","ce2ad11ba11456bdbd9d8b1f848322fc","00bdb3be95","0","0","82b8b7275bf92769","1","3","2","86126da5dbb391649ba1cac46091723305","c62c327c","39b85fc8563749927ff047d6402bcc7cf9","",""],[5,"DM1, Peripheral → Central","ce2ad11ba11456bdbd9d8b1f848322fc","00bdb3be95","0","1","82b8b7275bf92769","1","3","2","86126da5dbb391649ba1cac46091723305","0e4cfd0b","43fb6250b5ad97d7d6caa358ff265c0eb3","",""],[6,"DH1, Central → Peripheral","7b04934fd9d25294ef1a014da094f0b5","006267f78b","0","0","74ca58e8b136986f","1","4","2","9bb3a2bddd043b3a904cc2470a1d545fb2095e3d","38004b33","34fa8cd8173d201c7882541443938481349b2fd0","",""],[7,"DH1, Peripheral → Central","7b04934fd9d25294ef1a014da094f0b5","006267f78b","0","1","74ca58e8b136986f","1","4","2","9bb3a2bddd043b3a904cc2470a1d545fb2095e3d","982630f2","19bb8e018a07b68dd86f7cdd3efdfc88a9562b1b","",""],[8,"DH1, Central → Peripheral","7b04934fd9d25294ef1a014da094f0b5","006267f78b","0","0","74ca58e8b136986f","1","4","2","8f11d05ee0e749b5eeda42f92b18450295388ce5872916b4bf7260","f9aae3a3","2058fe3b2ade52930614d4aa629695dc13aafd082b50d708838299","",""],[9,"DH1, Peripheral → Central","7b04934fd9d25294ef1a014da094f0b5","006267f78b","0","1","74ca58e8b136986f","1","4","2","8f11d05ee0e749b5eeda42f92b18450295388ce5872916b4bf7260","a5fb0f2f","0d19fce2b7e4c402a6f9fc631ff8edd58e67f9c35546f1d7c91bbf","",""],[14,"EV3","972b7dcdbe8942b7d8fdc356a5590aca","","","","70b690bddfe9630f","1","7","","4625f778578290f90ee83576b3f8a898faff3fe45db812b2e189297afd89","","7663793769b2ba4c41704100d6c4602adbae2a87f77a9fdba0c56d2cb532","030b5a8f","061a"]];
+    const i = BD.range("cc-i", (v) => String(D[v][0]), draw), kl = BD.range("cc-k", String, draw);
+    function draw() {
+      const [, name, K, pc, zl, dir, iv, lt, ty, llid, pl, mic, enc, clk, day] = D[i()], key = shortenKey(Hx(K), kl()), ivb = Hx(iv).reverse();
+      const nonce = clk ? nonceClk(parseInt(clk, 16), parseInt(day, 16), ivb) : nonceAcl(parseInt(pc, 16), +zl, +dir, ivb);
+      const r = ccmBr(key, nonce, clk ? null : [0, (+lt) | (parseInt(ty, 16) << 3), +llid], Hx(pl));
+      $("cc-io").innerHTML = `<span class="k">${name}</span><br><span class="k">키</span> ${X(key)}<br><span class="k">nonce</span> <span class="hl">${X(nonce)}</span>` + (r.b0 ? `<br><span class="k">B0</span> ${X(r.b0)}<br><span class="k">B1</span> ${X(r.b1)}` : "") + `<br><span class="k">평문 (${pl.length / 2}바이트)</span> ${pl || "(없음)"}<br><span class="k">암호문</span> ${X(r.out) || "(없음)"}`;
+      BD.stat("cc-m", r.mic ? X(r.mic) : "없음 (eSCO)");
+      BD.stat("cc-ok", X(r.out) === enc && (!r.mic || X(r.mic) === mic) ? '<span class="badge-ok">일치</span> Part G §1.2' : "다름");
+    }
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>
