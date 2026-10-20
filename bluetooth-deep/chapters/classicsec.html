@@ -140,7 +140,7 @@
         <div class="stat"><span class="k">MIC</span><span class="v" id="cc-m">—</span></div>
         <div class="stat"><span class="k">사양 예와 비교</span><span class="v" id="cc-ok">—</span></div>
       </div>
-      <div class="sim-note">AES는 브라우저에서 직접 계산한다. 2-DH3·3-DH5 예(10~13번)는 페이로드가 길어 이 화면에서는 빼고 검증 스크립트에서만 확인한다. 해볼 것: 2번과 3번은 같은 키·카운터에 방향만 다르다. nonce 4번 바이트의 0x20 비트 하나로 MIC와 암호문이 전부 달라진다. 마지막(EV3)은 클록 형식 nonce라 MIC가 없다. 키 길이를 줄이면 키의 하위 바이트가 00이 되고 결과는 예와 달라진다.</div>
+      <div class="sim-note">AES는 브라우저에서 직접 계산한다. 2-DH3·3-DH5 예(10~13번, 패킷 이름은 <a href="baseband.html#types">12장 패킷 종류</a>)는 페이로드가 길어 이 화면에서는 빼고 검증 스크립트에서만 확인한다. 해볼 것: 2번과 3번은 같은 키·카운터에 방향만 다르다. nonce 4번 바이트의 0x20 비트 하나로 MIC와 암호문이 전부 달라진다. 마지막(EV3)은 클록 형식 nonce라 MIC가 없다. 키 길이를 줄이면 키의 하위 바이트가 00이 되고 결과는 예와 달라진다.</div>
     </div>
     <p class="spec-ref">h3·h4·h5: <b>[Vol 2] Part H §7.7.6~§7.7.8</b> · AES-CCM과 nonce: <b>§9, §9.1</b> · B0·B1: <b>§9.2</b> · A 블록: <b>§9.3</b> · 키 길이 줄이기: <b>§9.4</b> · 키 길이 협상(최소 7바이트): <b>[Vol 2] Part C §4.2.5.3</b> · 최소 키 길이 설정: <b>[Vol 4] Part E §7.3.102</b> · 예제: <b>[Vol 2] Part G §1.2, §7.2.6~§7.2.8</b></p>
   </section>

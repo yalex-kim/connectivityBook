@@ -115,6 +115,8 @@ window.BD_TERMS = [
   ["shall", "shall / should / may", "사양의 요구 세기. shall = 필수, should = 권장, may = 허용(둘 다 필수 아님), must = 사실·결과, can = 가능성. [Vol 1] Part E §1", "intro"],
   ["예제 데이터", "Sample data", "사양이 함께 실은 계산 예. [Vol 2] Part G, [Vol 3] Part H 부록 D, [Vol 6] Part C. 본문과 다르면 예제가 틀린 것으로 본다. [Vol 1] Part E §4", "intro"],
   ["리틀 엔디언", "Little-endian", "작은 바이트를 먼저 놓는 순서. HCI 파라미터와 LE PDU 필드의 기본. [Vol 4] Part E §5.2", "intro"],
+  ["패킷 종류", "BR/EDR packet types", "DM1~DH5(기본 속도), 2-/3-DH1~DH5(EDR), HV·EV(음성), NULL·POLL·FHS·ID(제어). 숫자는 슬롯 수. [Vol 2] Part B §6.5, Table 6.2", "baseband"],
+  ["ptt", "packet_type_table", "ACL에서 EDR 패킷을 쓸지 LMP로 정한 값. 같은 TYPE 코드가 ptt = 0이면 DH5, 1이면 3-DH5. [Vol 2] Part B §6.5", "baseband"],
 ];
 
 /* 본문 표기 → 용어집 표제어 */
