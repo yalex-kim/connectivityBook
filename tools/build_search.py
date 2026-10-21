@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """서재 첫 화면의 통합 검색 색인(assets/search-index.js)을 만든다.
 
-책마다 용어집(js/terms.js), 장 목록(js/common.js의 CHAPTERS), 장 안의 절 제목(h2)을 모은다.
+책마다 용어집(js/terms.js), 장 목록(js/common.js의 CHAPTERS), 장 안의 절 제목(h2)과 영상 목록(assets/videos.js)을 모은다.
 사용: python3 tools/build_search.py          # 색인 쓰기
       python3 tools/build_search.py --check  # 색인이 낡았으면 실패(CI)
 """
@@ -34,6 +34,15 @@ def build():
         for ko, en, desc, slug in terms:
             c = titles.get(slug)
             items.append({'b': d, 'k': 'term', 't': ko, 'e': en, 'd': desc, 'u': f"{d}/chapters/glossary.html?q={quote(ko)}", 'c': f"{d}/chapters/{slug}.html", 'cn': f"{c['num']}장" if c else ''})
+    # 영상(assets/videos.js): 제목·소개로 찾고, 누르면 유튜브로. 이어진 장과 썸네일이 실제로 있는지 확인한다
+    vids = json.loads(subprocess.run(['node', '-e', f'global.window={{}};require({json.dumps(str(ROOT / "assets/videos.js"))});process.stdout.write(JSON.stringify(window.YB_VIDEOS))'],
+                                     capture_output=True, text=True, check=True).stdout)
+    for v in vids:
+        for c in v.get('chapters', []):
+            assert (ROOT / c['path']).exists(), f"videos.js {v['id']}: 없는 장 {c['path']}"
+        assert (ROOT / v['thumb']).exists(), f"videos.js {v['id']}: 없는 썸네일 {v['thumb']}"
+        book = v['chapters'][0]['path'].split('/')[0] if v.get('chapters') else ''
+        items.append({'b': book, 'k': 'video', 't': v['title'], 'e': v.get('subtitle', ''), 'd': v['summary'], 'u': f"https://www.youtube.com/watch?v={v['youtube']}"})
     return '/* tools/build_search.py가 만든다. 직접 고치지 말 것. */\nwindow.YB_SEARCH = ' + json.dumps(items, ensure_ascii=False, separators=(',', ':')) + ';\n'
 
 

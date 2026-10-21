@@ -696,6 +696,20 @@
     // chapter page extras
     const main = document.querySelector("main.chapter");
     if (main) {
+      // 이 장과 이어진 영상(서재의 assets/videos.js)이 있으면 핵심 정리 앞에 "영상으로 보기" 상자를 붙인다
+      const vs = document.createElement("script");
+      vs.src = `${root}../assets/videos.js`;
+      vs.onload = () => {
+        const here = `bluetooth/chapters/${curSlug}.html`, q = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+        const list = (window.YB_VIDEOS || []).filter((v) => (v.chapters || []).some((c) => c.path === here));
+        if (!list.length || main.querySelector(".video-callout")) return;
+        const box = document.createElement("div");
+        box.className = "callout related video-callout";
+        box.innerHTML = `<strong>영상으로 보기</strong><ul>${list.map((v) => `<li><a href="https://www.youtube.com/watch?v=${q(v.youtube)}" target="_blank" rel="noopener">${q(v.title)}</a> — ${q(v.subtitle)} (${q(v.duration)}, 유튜브)</li>`).join("")}</ul>`;
+        const kp = main.querySelector(".keypoints");
+        kp ? kp.parentNode.insertBefore(box, kp) : main.appendChild(box);
+      };
+      document.head.appendChild(vs);
       // Give search results stable anchors even when the source has no id.
       [...main.querySelectorAll(".sim")].filter((sim) => sim.querySelector(".sim-head h3")).forEach((sim, i) => { if (!sim.id) sim.id = `search-sim-${i + 1}`; });
       [...main.querySelectorAll("figure")].filter((figure) => figure.querySelector("figcaption")).forEach((figure, i) => { if (!figure.id) figure.id = `search-fig-${i + 1}`; });
