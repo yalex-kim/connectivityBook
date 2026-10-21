@@ -43,6 +43,11 @@ window.BT_TERMS = [
     ["HDT", "High Data Throughput", "LE 최대 속도를 2 Mb/s에서 7.5 Mb/s로 올리는 새 PHY. 2 Msym/s에 QPSK·QAM 계열 변조와 FEC, 2·3·4·6·7.5 Mb/s, 패킷마다 속도 선택. Core 6.3에도 없고 다음 Core 사양에 들어갈 공개 초안(Change Request) 단계다.", "phy"],
     ["컨볼루션 부호", "Convolutional code", "앞의 몇 비트와 섞어 여분의 비트를 만드는 오류 정정 부호. LE Coded는 부호율 ½, 구속장 K=4. [Vol 6] Part B §3.3.1", "phy"],
     ["패턴 매퍼", "Pattern mapper", "LE Coded S=8에서 부호 비트를 4심볼로 펼친다(0 → 0011, 1 → 1100). [Vol 6] Part B §3.3.2", "phy"],
+    ["물리 계층", "PHY, Physical layer", "전파로 비트를 실어 보내는 가장 아래 계층. 변조와 심볼 속도를 정한다. LE에는 1M·2M·Coded 세 가지 PHY가 있다. [Vol 6] Part A", "phy"],
+    ["신호 대 잡음비", "SNR, Signal-to-Noise Ratio", "받은 신호 세기와 잡음 세기의 비(보통 dB). 몇 dB만 떨어져도 비트 오류율이 자릿수로 뛴다.", "phy"],
+    ["오류 정정 부호", "FEC, Forward Error Correction", "여분 비트를 덧붙여 받는 쪽이 재전송 없이 비트 오류를 고치게 하는 부호. 클래식 DM 패킷은 2/3 FEC, 패킷 헤더는 1/3 FEC, LE Coded PHY는 컨볼루션 부호를 쓴다. [Vol 2] Part B §7.4·§7.5", "phy"],
+    ["DPSK", "Differential Phase Shift Keying", "직전 심볼과의 위상 차이로 비트를 싣는 변조. EDR은 π/4-DQPSK(심볼당 2비트, 2 Mb/s)와 8DPSK(3비트, 3 Mb/s)를 쓴다. [Vol 2] Part A §3.2.1", "phy"],
+    ["QAM", "Quadrature Amplitude Modulation", "위상과 세기를 함께 바꿔 한 심볼에 여러 비트를 싣는 변조. 공개 초안 HDT가 쓰는 방식으로, Core 6.3에는 없다.", "phy"],
     // 04 hopping
     ["주파수 도약", "Frequency hopping", "정해진 순서로 채널을 계속 바꾸며 통신해 간섭과 페이딩의 피해를 나눠 줄이는 방식.", "hopping"],
     ["AFH", "Adaptive Frequency Hopping", "나쁜 채널을 빼고 도약하는 방식. 클래식은 1.2에서 추가, 최소 20채널. LE는 필수, 최소 2채널. [Vol 2] Part B §2.3.1, [Vol 6] Part B §4.5.8.1", "hopping"],
@@ -70,6 +75,8 @@ window.BT_TERMS = [
     ["조회 스캔", "Inquiry scan", "찾아지고 싶은 클래식 기기가 조회 주파수 하나를 잠깐씩 듣는 상태(기본 2.56 s마다 11.25 ms). 발견 가능 모드. [Vol 2] Part B §8.4.1", "advertising"],
     ["호출", "Page", "클래식에서 주소를 아는 기기에 연결을 거는 절차. 상대는 페이지 스캔 중이어야 한다(연결 가능 모드). [Vol 2] Part B §8.3", "advertising"],
     ["EIR", "Extended Inquiry Response", "조회에 대답할 때 FHS 뒤에 보내는 이름·서비스 정보(최대 240바이트). [Vol 3] Part C §8", "advertising"],
+    ["TGAP", "GAP timers", "GAP가 정한 타이머·간격 값의 이름. 예: TGAP(adv_fast_interval1) = 30~60 ms, TGAP(private_addr_int) = 15분(권장). [Vol 3] Part C Table A.1", "advertising"],
+    ["FHS", "Frequency Hop Synchronization packet", "보내는 기기의 주소와 클록을 담은 클래식 제어 패킷. 조회에 답하거나 호출 중에 보내, 상대가 같은 도약 순서를 따라오게 한다. [Vol 2] Part B §6.5.1.4", "advertising"],
     // 06 connection
     ["연결 간격", "connInterval", "연결 이벤트 사이의 간격. 6.2부터 125 µs 단위 375 µs ~ 4 s(SCI 미지원이면 1.25 ms 단위 7.5 ms 이상). [Vol 6] Part B §4.5.1", "connection"],
     ["연결 이벤트", "Connection event", "연결 간격마다 열리는 짧은 주고받기. 센트럴이 앵커 포인트에서 먼저 보낸다. [Vol 6] Part B §4.5.1", "connection"],
@@ -85,6 +92,11 @@ window.BT_TERMS = [
     ["화이트닝", "Data whitening", "채널 번호로 초기화한 7비트 LFSR(x⁷+x⁴+1)과 XOR해 같은 비트가 길게 이어지지 않게 한다. [Vol 6] Part B §3.2", "connection"],
     ["데이터 길이 확장", "DLE, Data Length Extension", "4.2에서 링크 계층 페이로드를 27바이트에서 최대 251바이트로 늘린 기능. [Vol 6] Part B §2.4, §5.1.9", "connection"],
     ["LL 제어 PDU", "LL Control PDU", "LLID 11인 링크 계층 제어 메시지. 연결 갱신, 채널 맵, PHY, 암호화 시작, 종료 등. [Vol 6] Part B §2.4.2", "connection"],
+    ["링크 계층", "LL, Link Layer", "컨트롤러 안에서 LE의 광고·스캔·연결 상태, 패킷 형식, 확인 응답과 재전송, 채널 선택을 맡는 계층. 클래식에서는 베이스밴드와 링크 매니저가 이 일을 한다. [Vol 6] Part B", "connection"],
+    ["LLID", "Link Layer Identifier", "데이터 PDU 헤더의 2비트. 01 = 이어지는 조각 또는 빈 PDU, 10 = L2CAP 메시지의 시작(또는 전체), 11 = LL 제어 PDU. [Vol 6] Part B §2.4", "connection"],
+    ["CP", "CTEInfo Present", "데이터 PDU 헤더의 1비트. 1이면 헤더에 CTEInfo가 있고 패킷 끝에 일정 톤 확장(CTE)이 붙는다. [Vol 6] Part B §2.4", "connection"],
+    ["BCV / RCV / ECV", "Baseline / Rounded / Extended connInterval values", "6.2부터 연결 간격 값의 세 집합. ECV = 375 µs부터 125 µs 단위의 모든 값, RCV = 그중 1.25 ms의 배수, BCV = 그중 7.5 ms 이상. 모든 컨트롤러는 BCV를, 짧은 연결 간격(SCI) 지원 컨트롤러는 RCV를 반드시 지원한다. [Vol 6] Part B §4.5.1", "connection"],
+    ["LFSR", "Linear Feedback Shift Register", "몇 자리 비트를 XOR해 다시 넣는 시프트 레지스터. 정해진 의사 난수 비트열을 만든다. LE의 CRC 계산과 화이트닝(7비트, x⁷+x⁴+1)이 LFSR로 한다. [Vol 6] Part B §3.1.1·§3.2", "connection"],
     // 07 gatt
     ["속성", "Attribute", "핸들·종류(UUID)·값(≤ 512바이트)·권한으로 된 ATT의 데이터 단위. [Vol 3] Part F §3.2", "gatt"],
     ["핸들", "Attribute handle", "서버 안에서 속성의 16비트 주소(0x0001~0xFFFF).", "gatt"],
@@ -120,6 +132,11 @@ window.BT_TERMS = [
     ["RPA", "Resolvable Private Address", "IRK를 가진 상대만 알아볼 수 있는 가명 주소. prand(상위 2비트 01) ∥ ah(IRK, prand). [Vol 6] Part B §1.3.2.2", "security"],
     ["IRK", "Identity Resolving Key", "RPA를 만들고 해석하는 128비트 키. 본딩 때 배포한다. [Vol 3] Part H §2.4.2.1", "security"],
     ["정적 주소", "Static device address", "상위 2비트가 11인 무작위 주소. 전원을 껐다 켤 때만 바꿀 수 있다. [Vol 6] Part B §1.3.2.1", "security"],
+    ["중간자 공격", "MITM, Man-in-the-middle", "공격자가 두 기기 사이에 끼어 각자에게 상대인 척하며 따로 키를 만들고 중계하는 공격. 숫자 비교·패스키·OOB가 막고, Just Works는 막지 못한다. [Vol 3] Part H §2.3.1", "security"],
+    ["AES", "Advanced Encryption Standard", "128비트 블록 암호. 블루투스는 AES-128로 링크를 암호화하고(AES-CCM), RPA 해시와 페어링 계산(AES-CMAC)도 만든다. [Vol 3] Part H §2.2", "security"],
+    ["AES-CMAC", "Cipher-based Message Authentication Code", "AES로 만드는 메시지 인증 코드. LE Secure Connections의 f4·f5·f6·g2 함수가 이것으로 계산한다. [Vol 3] Part H §2.2.5", "security"],
+    ["TK", "Temporary Key", "레거시 페어링의 128비트 임시 키. Just Works는 0, 패스키는 6자리 숫자, OOB는 받은 값이다. 이것으로 STK를 만든다. [Vol 3] Part H §2.3", "security"],
+    ["STK", "Short Term Key", "레거시 페어링에서 TK와 두 난수로 만든 128비트 키. 첫 암호화에 쓰고, 그 위로 LTK 같은 키를 나눈다. [Vol 3] Part H §2.3.5.5", "security"],
     // 09 power
     ["듀티 사이클", "Duty cycle", "전체 시간 중 무선부가 켜져 있는 비율.", "power"],
     ["평균 전류", "Average current", "수면 전류 + 이벤트 한 번의 전하량 ÷ 간격. 배터리 수명 = 용량 ÷ 평균 전류.", "power"],
@@ -140,6 +157,18 @@ window.BT_TERMS = [
     ["플러시 기한", "Flush Timeout (FT)", "CIS에서 한 페이로드를 보낼 수 있는 이벤트 수. 지나면 버린다. [Vol 6] Part B §4.5.13.5", "audio"],
     ["브로드캐스트 오디오", "Auracast", "BIS로 여러 수신기에 소리를 뿌리는 LE 오디오 방송. 비공개 방송은 Broadcast_Code로 암호화한다. [Vol 3] Part C §10.9", "audio"],
     ["ISOAL", "Isochronous Adaptation Layer", "상위의 오디오 프레임(SDU)을 등시성 PDU에 나누고 맞추는 계층. [Vol 6] Part G", "audio"],
+    ["ACL", "Asynchronous Connection-oriented logical transport", "슬롯을 예약하지 않고 필요할 때 보내며, 깨지면 확인 응답으로 다시 보내는 일반 데이터 링크. 클래식의 A2DP 음악도 ACL로 간다. LE의 연결도 LE ACL이라 부른다. [Vol 2] Part B §4.4", "audio"],
+    ["CVSD", "Continuous Variable Slope Delta modulation", "클래식 통화의 기본 음성 부호화. 8 kHz 표본화, 64 kb/s 협대역. [Vol 2] Part B §9.2", "audio"],
+    ["SBC", "Subband Codec", "A2DP의 필수 코덱. 모든 A2DP 기기가 지원한다. Core 밖(A2DP 사양).", "audio"],
+    ["AAC", "Advanced Audio Coding", "A2DP의 선택 코덱. 같은 비트레이트에서 SBC보다 효율적이다. Core 밖.", "audio"],
+    ["LDAC", "LDAC", "소니의 A2DP 회사 코덱. 330/660/990 kb/s를 연결 상태에 따라 바꾼다. Core 밖.", "audio"],
+    ["BAP", "Basic Audio Profile", "LE 오디오에서 코덱 설정과 CIS·BIS 스트림을 만들고 시작하는 절차를 정한 기본 프로파일. Core 밖.", "audio"],
+    ["CIG", "Connected Isochronous Group", "같은 시각 기준을 갖는 CIS의 묶음. 좌우 이어폰의 CIS를 한 CIG로 묶어 같은 순간에 재생하게 한다. [Vol 6] Part B §4.5.14", "audio"],
+    ["BIG", "Broadcast Isochronous Group", "같은 시각 기준을 갖는 BIS(최대 31개)의 묶음. Auracast 방송이 BIG으로 나간다. [Vol 6] Part B §4.4.6.2", "audio"],
+    ["NSE", "Number of Subevents", "등시성 이벤트 하나 안의 최대 서브이벤트 수(재전송 기회 포함). 1~31. [Vol 6] Part B §4.4.6.3·§4.5.13", "audio"],
+    ["BN", "Burst Number", "이벤트마다 새로 들어오는 페이로드 수. CIS는 0~15, BIS는 1~7. [Vol 6] Part B §4.4.6.3·§4.5.13", "audio"],
+    ["PTO", "Pre-Transmission Offset", "BIS에서 뒤 이벤트의 페이로드를 미리 보내는 거리(이벤트 수, 0~15). [Vol 6] Part B §4.4.6.3", "audio"],
+    ["IRC", "Immediate Repetition Count", "BIS에서 같은 페이로드를 한 이벤트 안에서 되풀이하는 횟수(1~15). [Vol 6] Part B §4.4.6.3", "audio"],
     // 11 location
     ["비콘", "Beacon", "연결 없이 짧은 신원 정보를 광고로 계속 내보내는 기기. 기준 세기를 함께 실어 근접 판단에 쓴다.", "location"],
     ["도래각", "AoA, Angle of Arrival", "받는 쪽 안테나 배열의 위상 차이로 신호가 온 방향을 재는 방법. 5.1.", "location"],
@@ -149,6 +178,9 @@ window.BT_TERMS = [
     ["위상 보정값 인라인 전송", "Inline PCT Transfer (IPT)", "6.3에서 더한 채널 사운딩 선택 기능. 반사기가 되돌려 보내는 톤의 위상을 맞춰 자기 PCT의 Q를 0으로 만들고 크기만 보고한다. 잰 위상을 따로 넘기는 대신 톤에 실어 넘긴다. [Vol 6] Part A §6.5, Part H §4.6", "location"],
     ["PBR", "Phase-Based Ranging", "주파수에 따른 왕복 위상의 기울기로 거리를 구하는 방법. x = −(dφ/df)·c/4π, 1 MHz 간격이면 150 m마다 모호하다. [Vol 1] Part A §9.2", "location"],
     ["RTT", "Round-Trip Time", "패킷 왕복 시간으로 거리를 재는 방법. 중계로 줄일 수 없어 거리 하한을 보장한다. [Vol 1] Part A §9.3", "location"],
+    ["IQ 표본", "IQ sample", "받은 신호를 같은 위상(I)과 90° 어긋난 위상(Q) 성분으로 잰 값. 둘을 합치면 위상과 세기를 안다. 방향 찾기와 채널 사운딩이 쓴다. [Vol 6] Part B §2.5.4", "location"],
+    ["PCT", "Phase Correction Term", "채널 사운딩에서 받은 톤의 위상을 I·Q 값으로 남긴 결과. 시작기와 반사기의 PCT를 합쳐 거리를 계산한다. [Vol 6] Part H §4.6", "location"],
+    ["UWB", "Ultra-Wideband", "500 MHz 넘게 넓은 대역에 ns 펄스를 보내 왕복 시간으로 거리를 재는 무선. 블루투스와 다른 칩·표준(IEEE 802.15.4z)이다.", "location"],
     // 12 mesh
     ["블루투스 메시", "Bluetooth Mesh", "광고 패킷으로 메시지를 퍼뜨리는 다대다 네트워크. Core 밖의 Mesh Protocol 사양.", "mesh"],
     ["플러딩", "Flooding", "경로 계산 없이 받은 노드가 다시 뿌려 메시지를 퍼뜨리는 방식. 메시는 TTL과 캐시로 관리한다.", "mesh"],
@@ -170,10 +202,23 @@ window.BT_TERMS = [
     ["SAM", "Slot Availability Mask", "5.0. 두 BR/EDR 기기가 슬롯마다 송신·수신 가능 여부(0~3)를 서로 알려 주는 지도. [Vol 2] Part B §8.6.11", "coexistence"],
     ["피코넷 시계 조정", "Piconet Clock Adjustment", "4.1. 센트럴이 블루투스 시계를 LTE 같은 외부 프레임에 맞춰 옮기는 기능. [Vol 1] Part A §7.1", "coexistence"],
     ["외부 프레임 설정", "External Frame Configuration", "호스트가 이동통신 프레임의 길이와 하향·상향·양방향·보호 구간을 컨트롤러에 알려 주는 HCI 명령. [Vol 4] Part E §7.3.81", "coexistence"],
+    ["LTE", "Long-Term Evolution", "4G 이동통신 표준. 일부 대역(40: 2.3 GHz, 41·7: 2.5~2.6 GHz)이 2.4 GHz ISM 대역 바로 옆에 있어 같은 휴대폰 안의 블루투스와 간섭한다.", "coexistence"],
+    ["MWS", "Mobile Wireless Standards", "LTE·5G 같은 이동통신 무선을 가리키는 사양의 말. 블루투스와 MWS가 신호를 주고받는 것이 MWS 공존 신호다. [Vol 1] Part A §7.4", "coexistence"],
+    ["TDD", "Time Division Duplex", "한 주파수에서 송신과 수신을 시간으로 번갈아 하는 방식. 블루투스도 TDD이고, LTE TDD 프레임의 송수신 시각에 블루투스 슬롯을 맞추면 서로 덜 방해한다. [Vol 1] Part A §7.5", "coexistence"],
+    ["TDM", "Time Division Multiplexing", "여러 무선이 시간을 나눠 번갈아 쓰는 방식. 칩 안의 중재(PTA)나 MWS 공존 신호로 순서를 정한다.", "coexistence"],
+    ["UART", "Universal Asynchronous Receiver/Transmitter", "시작·정지 비트로 한 글자씩 보내는 직렬 통신. WCI-1은 반이중 UART를 전선 한 가닥에, WCI-2는 전이중 UART로 공존 신호를 나른다. [Vol 7] Part B §2·Part C §2", "coexistence"],
     // 14 design
     ["기능 교환", "Feature Exchange", "연결 직후 서로 지원하는 링크 계층 기능을 알리는 절차. 선택 기능을 쓸지 정하는 출발점. [Vol 6] Part B §5.1.4", "design"],
     ["PHY 갱신", "PHY Update", "연결 중에 1M·2M·Coded를 바꾸는 절차. [Vol 6] Part B §5.1.10", "design"],
 ];
 
 /* 본문 표기 → 용어집 표제어 (툴팁 연결용) */
-window.BT_TERM_ALIAS = {};
+window.BT_TERM_ALIAS = {
+    "ISM": "2.4 GHz ISM 대역",
+    "SIG": "블루투스 SIG",
+    "AD": "AD 구조",
+    "MTU": "ATT_MTU",
+    "IO": "입출력 능력",
+    "CCM": "AES-CCM",
+    "IQ": "IQ 표본",
+};

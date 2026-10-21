@@ -42,8 +42,8 @@
   <!-- ============================================================ -->
   <section id="band">
     <h2>2.4 GHz ISM 대역: 모두의 카페</h2>
-    <p>전파는 주파수(1초에 몇 번 진동하는가)에 따라 쓰임새가 나라별 법으로 정해져 있다. 방송, 휴대폰, 레이더는 정부가 면허를 준 사업자만 쓴다. 그런데 <b>2,400~2,483.5 MHz</b>는 산업·과학·의료(ISM)용으로 남겨 둔 대역으로, 출력 제한 같은 규칙만 지키면 <b>누구나 면허 없이</b> 쓸 수 있다. 전자레인지가 이 대역(약 2.45 GHz)의 에너지로 음식을 데우고, Wi-Fi, 블루투스, Zigbee, 무선 마우스 동글이 모두 이 대역을 나눠 쓴다. 이 책의 비유로 말하면 2.4 GHz는 <b>입장료 없는 시끄러운 카페</b>다.</p>
-    <p>블루투스는 이 83.5 MHz 폭을 채널로 나눈다. 클래식(BR/<span class="term">EDR</span>)은 2402 MHz부터 2480 MHz까지 <b>1 MHz 간격으로 79개</b>, LE는 같은 범위를 <b>2 MHz 간격으로 40개</b>로 나눈다. LE의 40개 중 3개(2402, 2426, 2480 MHz)는 처음 만나는 기기끼리 서로를 찾는 <span class="term">광고 채널</span><span class="en">(primary advertising channel)</span>이고, 나머지 37개는 연결된 뒤 대화에 쓰는 <span class="term">범용 채널</span><span class="en">(general-purpose channel)</span>이다.</p>
+    <p>전파는 주파수(1초에 몇 번 진동하는가)에 따라 쓰임새가 나라별 법으로 정해져 있다. 방송, 휴대폰, 레이더는 정부가 면허를 준 사업자만 쓴다. 그런데 <b>2,400~2,483.5 MHz</b>는 산업·과학·의료(<span class="term">ISM</span>)용으로 남겨 둔 대역으로, 출력 제한 같은 규칙만 지키면 <b>누구나 면허 없이</b> 쓸 수 있다. 전자레인지가 이 대역(약 2.45 GHz)의 에너지로 음식을 데우고, Wi-Fi, 블루투스, Zigbee, 무선 마우스 동글이 모두 이 대역을 나눠 쓴다. 이 책의 비유로 말하면 2.4 GHz는 <b>입장료 없는 시끄러운 카페</b>다.</p>
+    <p>블루투스는 이 83.5 MHz 폭을 채널로 나눈다. 클래식(BR/<span class="term">EDR</span>)은 2402 MHz부터 2480 MHz까지 <b>1 MHz 간격으로 79개</b>, <span class="term">LE</span>는 같은 범위를 <b>2 MHz 간격으로 40개</b>로 나눈다. LE의 40개 중 3개(2402, 2426, 2480 MHz)는 처음 만나는 기기끼리 서로를 찾는 <span class="term">광고 채널</span><span class="en">(primary advertising channel)</span>이고, 나머지 37개는 연결된 뒤 대화에 쓰는 <span class="term">범용 채널</span><span class="en">(general-purpose channel)</span>이다.</p>
     <div class="formula">LE 채널 번호 → 중심 주파수
       <div class="where">37 → 2402 MHz, 0~10 → 2404~2424 MHz, 38 → 2426 MHz, 11~36 → 2428~2478 MHz, 39 → 2480 MHz. 번호가 주파수 순서와 다른 이유는 광고 채널 세 개를 <b>대역의 양 끝과 가운데</b>에 흩어 놓으면서, 나머지 37개에 0부터 차례로 번호를 붙였기 때문이다.</div>
     </div>
@@ -101,7 +101,7 @@
       </tbody>
     </table></div>
     <p class="spec-ref">LE 송신 전력 범위와 Table 3.1 전력 등급: <b>[Vol 6] Part A §3</b> · BR/EDR 전력 등급: <b>[Vol 2] Part A §3</b> · LE 수신 감도 요구(Table 4.2): <b>[Vol 6] Part A §4.1</b></p>
-    <p>받는 쪽에는 <span class="term">수신 감도</span><span class="en">(receiver sensitivity)</span>가 있다. 이 세기보다 약하면 비트 오류가 너무 많아 패킷을 받을 수 없다. 사양은 LE 비부호화 PHY(1M·2M)에 <b>−70 dBm 이하</b>, LE Coded PHY S=2에 −75 dBm 이하, S=8에 −82 dBm 이하의 감도를 요구한다(3장). 이것은 “최소한 이 정도는 되어야 한다”는 하한이고, 요즘 칩은 이보다 20~25 dB 좋은 −95 dBm 안팎을 낸다. 사양의 요구와 실제 제품 사이의 이 큰 차이 덕분에 같은 블루투스라도 제품마다 도달 거리가 크게 다르다.</p>
+    <p>받는 쪽에는 <span class="term">수신 감도</span><span class="en">(receiver sensitivity)</span>가 있다. 이 세기보다 약하면 비트 오류가 너무 많아 패킷을 받을 수 없다. 사양은 LE 비부호화 <span class="term">PHY</span>(1M·2M)에 <b>−70 dBm 이하</b>, <span class="term">LE Coded</span> PHY S=2에 −75 dBm 이하, S=8에 −82 dBm 이하의 감도를 요구한다(3장). 이것은 “최소한 이 정도는 되어야 한다”는 하한이고, 요즘 칩은 이보다 20~25 dB 좋은 −95 dBm 안팎을 낸다. 사양의 요구와 실제 제품 사이의 이 큰 차이 덕분에 같은 블루투스라도 제품마다 도달 거리가 크게 다르다.</p>
   </section>
 
   <!-- ============================================================ -->
@@ -172,7 +172,7 @@
   <section id="rssi">
     <h2>RSSI: 받은 세기를 숫자로</h2>
     <p>수신기는 패킷을 받을 때마다 그 세기를 dBm 단위로 잰다. 이것이 <span class="term">RSSI</span><span class="en">(Received Signal Strength Indication)</span>다. 휴대폰 앱에서 주변 기기를 스캔하면 “−58 dBm” 같은 숫자가 뜨는데, 바로 그 광고 패킷의 RSSI다. 연결 품질 감시, 전력 제어(9장), 거리 짐작(11장)에 쓴다.</p>
-    <p>RSSI를 너무 믿으면 안 된다. 사양은 LE 기기가 RSSI를 지원한다면 정확도가 <b>±6 dB 정도이길 권장(should)</b>할 뿐이다(BR/EDR은 ±6 dB가 필수). ±6 dB는 거리로 바꾸면 트인 곳에서도 <b>절반~두 배</b>의 오차다. 여기에 위의 페이딩이 패킷마다 ±10 dB 이상의 출렁임을 더한다. 그래서 RSSI는 여러 번 평균 내서 “가깝다/멀다” 정도를 판단하는 데 쓰고, 정확한 거리는 6.0의 채널 사운딩(11장)처럼 다른 방법을 쓴다.</p>
+    <p>RSSI를 너무 믿으면 안 된다. 사양은 LE 기기가 RSSI를 지원한다면 정확도가 <b>±6 dB 정도이길 권장(<span class="term">should</span>)</b>할 뿐이다(<span class="term">BR/EDR</span>은 ±6 dB가 필수). ±6 dB는 거리로 바꾸면 트인 곳에서도 <b>절반~두 배</b>의 오차다. 여기에 위의 페이딩이 패킷마다 ±10 dB 이상의 출렁임을 더한다. 그래서 RSSI는 여러 번 평균 내서 “가깝다/멀다” 정도를 판단하는 데 쓰고, 정확한 거리는 6.0의 <span class="term">채널 사운딩</span>(11장)처럼 다른 방법을 쓴다.</p>
     <p class="spec-ref">RSSI 정확도 ±6 dB(should): <b>[Vol 6] Part A §4.8</b> · BR/EDR(shall): <b>[Vol 2] Part A §4</b></p>
     <div class="callout tip"><strong>끊김을 줄이는 현실적인 순서</strong><p>① 휴대폰과 이어폰 사이에 몸이 끼지 않게 한다(같은 쪽 주머니, 가방 바깥쪽). ② 전자레인지, 2.4 GHz Wi-Fi 공유기 바로 옆을 피한다. 공유기를 5·6 GHz로 쓰면 블루투스가 쉴 자리가 생긴다(4장). ③ 이어폰이 지원하면 “연결 우선” 모드로 코덱 비트레이트를 낮춘다(10장). 같은 마진에서 더 느린 데이터는 더 강하다(3장).</p></div>
   </section>

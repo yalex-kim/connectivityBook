@@ -29,7 +29,7 @@
   <header class="chapter-hero">
     <div class="eyebrow">Chapter 03</div>
     <h1>신호와 주파수: 잡음 아래의 목소리</h1>
-    <p class="lead">GPS 위성의 송신기는 수십 와트, 형광등 몇 개 정도다. 그 신호가 2만 km를 날아오면 지상에서는 <b>잡음보다 약하다</b>. 스펙트럼 분석기로 보면 아무것도 보이지 않는다. 그런데도 휴대폰은 이 신호를 받아 낸다. 이 장에서는 GNSS 신호가 어떤 주파수에 어떤 모양으로 실리는지, 그리고 잡음 아래의 신호를 어떻게 건져 올리는지를 숫자로 본다.</p>
+    <p class="lead">GPS 위성의 송신기는 수십 와트, 형광등 몇 개 정도다. 그 신호가 2만 km를 날아오면 지상에서는 <b>잡음보다 약하다</b>. 스펙트럼 분석기로 보면 아무것도 보이지 않는다. 그런데도 휴대폰은 이 신호를 받아 낸다. 이 장에서는 <span class="term">GNSS</span> 신호가 어떤 주파수에 어떤 모양으로 실리는지, 그리고 잡음 아래의 신호를 어떻게 건져 올리는지를 숫자로 본다.</p>
     <ul class="objectives">
       <li>GPS·Galileo의 반송파가 모두 10.23 MHz의 정수배라는 것을 규격 값으로 확인한다.</li>
       <li>상대론 때문에 위성 시계를 일부러 −4.4647 × 10⁻¹⁰만큼 늦춰 두는 이유를 직접 계산한다.</li>
@@ -79,7 +79,7 @@
   <section id="power">
     <h2>잡음 아래에서 건져 올리기</h2>
     <p>GPS 규격은 지상의 0 dBi 안테나에서 L1 C/A 신호를 <b>최소 −158.5 dBW</b>(−128.5 dBm)로 보장한다. 신호가 차지하는 약 2 MHz 폭의 열잡음은 −174 dBm/Hz + 63 dB ≈ −111 dBm이다. 신호가 잡음보다 17 dB 넘게 약하다.</p>
-    <p>비밀은 4장의 PRN 코드다. 수신기는 받은 신호에 같은 코드를 곱해 더한다(상관). 코드와 맞는 신호는 계속 쌓이고, 잡음은 들쭉날쭉해 덜 쌓인다. 1 ms(코드 한 주기) 동안 더하면 1/(1 kHz)의 좁은 폭으로 줄인 셈이 되어, 2 MHz 대비 약 30 dB를 얻는다. 그래서 GNSS 신호의 세기는 대역 안의 SNR이 아니라 <span class="term">C/N0</span><span class="en">(carrier-to-noise density)</span>, 1 Hz당 잡음에 대한 신호 세기(dB-Hz)로 말한다. 맑은 하늘에서 휴대폰은 보통 35~45 dB-Hz를 본다.</p>
+    <p>비밀은 4장의 <span class="term">PRN 코드</span>다. 수신기는 받은 신호에 같은 코드를 곱해 더한다(상관). 코드와 맞는 신호는 계속 쌓이고, 잡음은 들쭉날쭉해 덜 쌓인다. 1 ms(코드 한 주기) 동안 더하면 1/(1 kHz)의 좁은 폭으로 줄인 셈이 되어, 2 MHz 대비 약 30 dB를 얻는다. 그래서 GNSS 신호의 세기는 대역 안의 SNR이 아니라 <span class="term">C/N0</span><span class="en">(carrier-to-noise density)</span>, 1 Hz당 잡음에 대한 신호 세기(dB-Hz)로 말한다. 맑은 하늘에서 휴대폰은 보통 35~45 dB-Hz를 본다.</p>
     <div class="callout analogy"><strong>시끄러운 운동장의 박수 신호</strong><p>운동장 소음 속에서 친구 하나가 미리 정한 박자로 손뼉을 친다. 한 번만 치면 묻히지만, 같은 박자를 오래 들을수록 소음은 서로 상쇄되고 박자만 쌓여서 들린다. 코드를 아는 수신기가 적분 시간을 늘리는 것이 바로 이것이다. 적분 시간을 10배 늘리면 신호 대 잡음비가 10 dB 오른다.</p></div>
     <div class="sim" id="sim-cn0">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>수신 전력에서 C/N0와 적분 이득까지</h3></div>
@@ -102,7 +102,7 @@
   <!-- ============================================================ -->
   <section id="spectrum">
     <h2>BPSK와 BOC</h2>
-    <p>GPS L1 C/A는 코드 칩마다 반송파의 위상을 0°·180°로 뒤집는 <b>BPSK</b>다. 스펙트럼은 반송파를 중심으로 ±1.023 MHz에 첫 영점이 있는 sinc² 모양이다. Galileo E1과 새 GPS L1C는 같은 주파수에 같은 칩 속도를 쓰면서도 서로 덜 겹치도록 <b><span class="term">BOC</span></b>(Binary Offset Carrier)를 쓴다. 칩 안에서 부반송파로 한 번 더 뒤집어, 에너지를 중심이 아니라 양옆(±1.023 MHz 근처)으로 밀어낸다. 신호 모양이 뾰족해 <span class="term">다중 경로</span>(11장)에도 조금 더 강하다. Galileo E1은 BOC(1,1)에 BOC(6,1)을 조금 섞은 CBOC다.</p>
+    <p>GPS L1 C/A는 코드 <span class="term">칩</span>마다 반송파의 위상을 0°·180°로 뒤집는 <b>BPSK</b>다. 스펙트럼은 반송파를 중심으로 ±1.023 MHz에 첫 영점이 있는 sinc² 모양이다. Galileo E1과 새 GPS L1C는 같은 주파수에 같은 칩 속도를 쓰면서도 서로 덜 겹치도록 <b><span class="term">BOC</span></b>(Binary Offset Carrier)를 쓴다. 칩 안에서 부반송파로 한 번 더 뒤집어, 에너지를 중심이 아니라 양옆(±1.023 MHz 근처)으로 밀어낸다. 신호 모양이 뾰족해 <span class="term">다중 경로</span>(11장)에도 조금 더 강하다. Galileo E1은 BOC(1,1)에 BOC(6,1)을 조금 섞은 CBOC다.</p>
     <div class="sim" id="sim-psd">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>스펙트럼 모양 비교</h3></div>
       <div class="sim-view"><canvas id="cv-psd"></canvas></div>

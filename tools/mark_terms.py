@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """용어집(js/terms.js)의 표제어를 본문에 툴팁(<span class="term">)으로 표시한다.
 
-규칙: 용어마다 (1) 책을 읽는 순서로 처음 나오는 곳, (2) 그 용어의 장(terms.js 4번째 칸)에서 처음 나오는 곳.
+규칙: 용어마다 장마다 처음 나오는 곳 (중간 장부터 읽어도 툴팁이 있게).
+표제어 말고도 영문 이름의 약어("Channel Sounding (CS)", "ISI, Inter-Symbol Interference")와 *_TERM_ALIAS의 별칭도 찾는다.
+뜻이 흔한 낱말과 겹치는 표제어(LOCAL_ONLY)는 책에서 처음 나오는 곳과 그 용어의 장(terms.js 4번째 칸)에서만 표시한다.
 본문 문단(p, li)의 글자만 바꾸고 제목, 그림, 시뮬레이터, 퀴즈, 출처 줄, 코드, 링크 안은 건드리지 않는다.
 이미 표시된 곳이 있으면 그대로 둔다.
 사용: python3 tools/mark_terms.py [책 폴더...]   # 표시하기 (책을 안 주면 모든 책)
@@ -14,6 +16,8 @@ SKIP_CLASS = {'sim', 'quiz-sec', 'quiz-q', 'whatif', 'spec-ref', 'keypoints', 'c
 SKIP_TAG = {'h1', 'h2', 'h3', 'h4', 'code', 'a', 'figcaption', 'figure', 'button', 'label', 'table', 'pre', 'span', 'sub', 'sup', 'summary'}
 VOID = {'br', 'img', 'input', 'meta', 'link', 'hr', 'source', 'wbr'}
 HANGUL = re.compile(r'[가-힣]')
+# 한글 표제어 뒤에 이 글자가 오면 다른 낱말이다 (메시지 ≠ 메시)
+NOT_BEFORE = {'메시': '지'}
 
 
 def load_terms(book, ns):
@@ -21,9 +25,20 @@ def load_terms(book, ns):
     return json.loads(out)
 
 
-def keys_of(t):
+# 일상어로도 흔히 쓰여 장마다 표시하면 엉뚱한 곳에 붙는 표제어
+LOCAL_ONLY = {'표시', '알림', '호출', '조회', '속성', '특성', '서비스', '핸들', '서버', '클라이언트', '릴레이', '프렌드', '코덱', '프로파일', '본딩', '비콘'}
+ACRO = re.compile(r'\(([A-Z][A-Za-z0-9]*[A-Z0-9])\)|^([A-Z][A-Za-z0-9]*[A-Z0-9]),')
+
+
+def acronyms(t):
+    """영문 이름에 적힌 약어: 'Channel Sounding (CS)' → CS, 'ISI, Inter-Symbol ...' → ISI (common.js와 같은 규칙)"""
+    return [a or b for a, b in ACRO.findall(t[1])]
+
+
+def keys_of(t, alias=()):
     full = re.sub(r'\(.*?\)', '', t[0]).strip()
     ks = [full] + [p.strip() for p in re.split(r'·| / ', full) if p.strip() != full]
+    ks += [a for a in acronyms(t) + list(alias) if a not in ks]
     return [k for k in ks if len(k) >= 2 or HANGUL.search(k)]
 
 
@@ -34,7 +49,7 @@ def find(text, key):
         i = text.find(key, start)
         if i < 0: return -1
         a, b = text[i - 1] if i else ' ', text[i + len(key)] if i + len(key) < len(text) else ' '
-        if HANGUL.search(key[0]): ok = not HANGUL.search(a)
+        if HANGUL.search(key[0]): ok = not HANGUL.search(a) and b not in NOT_BEFORE.get(key, '')
         else: ok = not (a.isalnum() or a in '-_') and not (b.isascii() and (b.isalnum() or b in '-_'))
         if ok and (not HANGUL.search(key[-1]) or True): return i
         start = i + 1
@@ -70,19 +85,23 @@ def segments(html):
 
 def mark(book_dir, dry=False):
     book = ROOT / book_dir; cfg = json.loads((book / 'book.json').read_text()); ns = cfg['ui']['ns']
-    terms, _ = load_terms(book, ns)
+    terms, alias = load_terms(book, ns)
+    al = {}
+    for a, head in alias.items(): al.setdefault(head, []).append(a)
+    keys = {t[0]: keys_of(t, al.get(t[0], ())) for t in terms}
+    # 긴 이름부터: 'LE Coded'가 'LE'보다 먼저 자리를 잡게
+    terms = sorted(terms, key=lambda t: -max(map(len, keys[t[0]])))
     order = re.findall(r'slug: "([\w-]+)"', (book / 'js/common.js').read_text())
     pages = {s: (book / 'chapters' / f'{s}.html').read_text() for s in order if s != 'glossary'}
     added = 0; seen_book = set()
-    # 이미 표시된 용어(책 전체·장별)
     def marked_in(s): return {re.sub(r'\s+', '', m).lower() for m in re.findall(r'<span class="term">([^<]+)</span>', s)}
     for slug in order:
         if slug == 'glossary': continue
         html = pages[slug]; have = marked_in(html)
         for t in terms:
-            ks = keys_of(t); norm = {re.sub(r'\s+', '', k).lower() for k in ks + [t[0], t[1]]}
+            ks = keys[t[0]]; norm = {re.sub(r'\s+', '', k).lower() for k in ks + [t[0], t[1]]}
             if norm & have: seen_book.add(t[0]); continue
-            if t[0] in seen_book and t[3] != slug: continue
+            if t[0] in LOCAL_ONLY and t[0] in seen_book and t[3] != slug: continue
             best = None
             for a, b in segments(html):
                 seg = html[a:b]

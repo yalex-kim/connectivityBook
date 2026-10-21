@@ -33,7 +33,7 @@
   <header class="chapter-hero">
     <div class="eyebrow">Chapter 14</div>
     <h1>ISOAL과 등시성 타이밍</h1>
-    <p class="lead">LE 오디오 코덱 LC3는 7.5 ms나 10 ms마다 압축된 소리 한 덩어리(SDU)를 낸다. 무선은 ISO 간격마다 정해진 수의 PDU를 보낸다. 둘의 박자가 같으면 덩어리를 그대로 실으면 되지만, 7.5 ms 덩어리를 10 ms 간격에 실으려면 쪼개고 이어 붙이고 “원래 언제 만들어졌는지”를 함께 보내야 한다. 이 일을 하는 층이 <b><span class="term">ISOAL</span></b>(등시성 적응 계층)이다. 이 장은 그 두 방식과 지연 공식을 사양의 예로 맞춰 본다.</p>
+    <p class="lead">LE 오디오 코덱 LC3는 7.5 ms나 10 ms마다 압축된 소리 한 덩어리(SDU)를 낸다. 무선은 ISO 간격마다 정해진 수의 <span class="term">PDU</span>를 보낸다. 둘의 박자가 같으면 덩어리를 그대로 실으면 되지만, 7.5 ms 덩어리를 10 ms 간격에 실으려면 쪼개고 이어 붙이고 “원래 언제 만들어졌는지”를 함께 보내야 한다. 이 일을 하는 층이 <b><span class="term">ISOAL</span></b>(등시성 적응 계층)이다. 이 장은 그 두 방식과 지연 공식을 사양의 예로 맞춰 본다.</p>
     <ul class="objectives">
       <li>프레임 없는 PDU를 쓸 수 있는 조건과 USPI·UPPS·BN, LLID 0b00/0b01, 채움 PDU를 안다.</li>
       <li>프레임 있는 PDU의 분할 헤더(SC·CMPLT·길이)와 Time_Offset을 바이트로 만들 수 있다.</li>
@@ -58,7 +58,7 @@
   <!-- ============================================================ -->
   <section id="framed">
     <h2>프레임 있는 PDU: 분할 헤더와 Time_Offset</h2>
-    <p>박자가 맞지 않으면 <b>프레임 있는</b>(framed) PDU를 쓴다. PDU 페이로드는 세그먼트 여러 개이고, 세그먼트마다 2바이트 <b>분할 헤더</b>가 붙는다. 첫 바이트의 비트 0이 SC(0 = 새 SDU의 시작, 1 = 이어짐), 비트 1이 CMPLT(1 = 이 세그먼트로 SDU가 끝남), 둘째 바이트가 길이다. SC = 0인 세그먼트에는 헤더 뒤에 3바이트 <b>Time_Offset</b>(µs)이 붙고, 길이는 Time_Offset을 포함한다. Time_Offset은 SDU의 기준 시각에서 그 SDU의 첫 세그먼트를 싣는 CIG 기준점(또는 BIG 앵커 포인트)까지의 시간이라, 받는 쪽이 원래 박자를 복원할 수 있다.</p>
+    <p>박자가 맞지 않으면 <b>프레임 있는</b>(framed) PDU를 쓴다. PDU 페이로드는 세그먼트 여러 개이고, 세그먼트마다 2바이트 <b>분할 헤더</b>가 붙는다. 첫 바이트의 비트 0이 SC(0 = 새 SDU의 시작, 1 = 이어짐), 비트 1이 CMPLT(1 = 이 세그먼트로 SDU가 끝남), 둘째 바이트가 길이다. SC = 0인 세그먼트에는 헤더 뒤에 3바이트 <b>Time_Offset</b>(µs)이 붙고, 길이는 Time_Offset을 포함한다. Time_Offset은 SDU의 기준 시각에서 그 SDU의 첫 세그먼트를 싣는 CIG 기준점(또는 BIG <span class="term">앵커 포인트</span>)까지의 시간이라, 받는 쪽이 원래 박자를 복원할 수 있다.</p>
     <p>모드는 둘이다. <b>분할 모드</b>(Segmentable, 필수)는 SDU 하나를 여러 PDU에 걸쳐 나눌 수 있고 PDU 하나에 여러 SDU를 담을 수 있다. <b>비분할 모드</b>(Unsegmented, 선택)는 SDU를 나누지 않고 PDU 하나에 통째로 넣는다. PDU에 헤더와 Time_Offset을 넣을 5바이트가 남지 않으면 새 세그먼트를 시작하지 않는다.</p>
     <div class="sim" id="sim-seg">
       <div class="sim-head"><span class="sim-tag">WORKBENCH</span><h3>SDU 박자 → 프레임 있는 PDU (분할 모드)</h3></div>

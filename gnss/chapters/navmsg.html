@@ -38,7 +38,7 @@
   <header class="chapter-hero">
     <div class="eyebrow">Chapter 07</div>
     <h1>항법 메시지와 GPS 시간</h1>
-    <p class="lead">코드 위상은 1 ms 안의 시간만 알려 준다(4장). 위성이 “지금 몇 시 몇 초에 보냈고, 나는 이런 궤도에 있다”고 말해 줘야 거리와 위치를 계산할 수 있다. 그 말이 <span class="term">항법 메시지</span>다. GPS L1 C/A의 옛 메시지(LNAV)는 초당 50비트, 전화 모뎀보다 훨씬 느리다. 이 장에서는 그 메시지의 구조, 오류를 잡는 패리티, 그리고 1980년에 시작한 <span class="term">GPS 시간</span>을 본다.</p>
+    <p class="lead">코드 위상은 1 ms 안의 시간만 알려 준다(4장). 위성이 “지금 몇 시 몇 초에 보냈고, 나는 이런 궤도에 있다”고 말해 줘야 거리와 위치를 계산할 수 있다. 그 말이 <span class="term">항법 메시지</span>다. GPS <span class="term">L1</span> C/A의 옛 메시지(LNAV)는 초당 50비트, 전화 모뎀보다 훨씬 느리다. 이 장에서는 그 메시지의 구조, 오류를 잡는 패리티, 그리고 1980년에 시작한 <span class="term">GPS 시간</span>을 본다.</p>
     <ul class="objectives">
       <li>프레임(30 s)·서브프레임(6 s)·워드(30비트)의 구조와 각 서브프레임의 내용을 안다.</li>
       <li>규격 표 20-XIV의 해밍 패리티를 직접 계산하고 오류를 잡아 본다.</li>
@@ -95,7 +95,7 @@
     <ul>
       <li><b>서브프레임 1</b>: 주 번호, 위성 상태, 시계 보정 계수(a<sub>f0</sub>, a<sub>f1</sub>, a<sub>f2</sub>)와 기준 시각 t<sub>oc</sub>, 그룹 지연 T<sub>GD</sub>.</li>
       <li><b>서브프레임 2·3</b>: 그 위성만의 정밀 궤도, <span class="term">궤도력</span><span class="en">(ephemeris)</span>. 케플러 궤도 요소와 보정 항 16개 남짓이고, 보통 2시간마다 새것으로 바뀌며 4시간 정도 유효하다(8장에서 이것으로 위성 위치를 계산한다).</li>
-      <li><b>서브프레임 4·5</b>: 모든 위성의 대략적 궤도, <span class="term">알마낙</span><span class="en">(almanac)</span>. 정밀도는 km 수준이지만 몇 달 쓸 수 있다. 어떤 위성이 하늘에 있고 도플러가 얼마일지 미리 알아 탐색을 줄인다(5장의 온시동). 전리층 모델 계수(10장)와 UTC 변환 값도 여기 있다.</li>
+      <li><b>서브프레임 4·5</b>: 모든 위성의 대략적 궤도, <span class="term">알마낙</span><span class="en">(almanac)</span>. 정밀도는 km 수준이지만 몇 달 쓸 수 있다. 어떤 위성이 하늘에 있고 <span class="term">도플러</span>가 얼마일지 미리 알아 탐색을 줄인다(5장의 온시동). 전리층 모델 계수(10장)와 UTC 변환 값도 여기 있다.</li>
     </ul>
     <p>새 GPS 신호(L2C·L5의 CNAV, L1C의 CNAV-2)와 Galileo의 I/NAV·F/NAV는 더 효율적인 메시지 구조와 강한 오류 정정 부호를 쓴다. 이 장의 LNAV는 가장 오래되고 가장 널리 쓰이는 형식이다.</p>
   </section>

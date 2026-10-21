@@ -58,7 +58,7 @@
     <p>무선은 누구나 들을 수 있다. 블루투스 보안은 세 가지 위협을 구분해 다룬다.</p>
     <ul>
       <li><b>도청</b><span class="en">(passive eavesdropping)</span>: 근처에서 전파를 녹음해 내용을 알아내는 것. 막으려면 둘만 아는 키로 <b>암호화</b>해야 하고, 그 키를 만드는 과정 자체가 엿들어도 안전해야 한다.</li>
-      <li><b>중간자 공격</b><span class="en">(MITM, man-in-the-middle)</span>: 공격자가 두 기기 사이에 끼어 각각에게 상대인 척하는 것. 양쪽과 따로 키를 만들어 중계하면서 내용을 읽고 바꾼다. 막으려면 “지금 키를 나눈 상대가 정말 저 기기인가”를 사람이 확인하는 <b>인증</b>이 필요하다.</li>
+      <li><b><span class="term">중간자 공격</span></b><span class="en">(MITM, man-in-the-middle)</span>: 공격자가 두 기기 사이에 끼어 각각에게 상대인 척하는 것. 양쪽과 따로 키를 만들어 중계하면서 내용을 읽고 바꾼다. 막으려면 “지금 키를 나눈 상대가 정말 저 기기인가”를 사람이 확인하는 <b>인증</b>이 필요하다.</li>
       <li><b>추적</b><span class="en">(tracking)</span>: 내용은 몰라도 광고의 고정 주소를 따라가 사람의 동선을 알아내는 것. 막으려면 주소를 자주 바꾸되 친구는 알아볼 수 있어야 한다(<b>프라이버시</b>).</li>
     </ul>
     <div class="callout analogy"><strong>카페에서 둘만의 암호 정하기</strong><p>처음 만난 두 손님이 시끄러운 카페에서 둘만의 암호를 정하고 싶다. 큰 소리로 암호를 말하면 옆 테이블이 다 듣는다(도청). 그래서 공개해도 되는 재료만 주고받고 각자 머릿속에서 같은 암호를 계산하는 방법을 쓴다(디피-헬먼). 그런데 웨이터가 중간에서 쪽지를 바꿔치기하면, 두 손님은 각자 웨이터와 암호를 정한 줄도 모른다(중간자). 그래서 마지막에 “제 쪽지에서 나온 숫자는 438912인데 당신도 그렇습니까?”라고 <b>얼굴을 보고</b> 확인한다(숫자 비교). 그 뒤 서로를 연락처에 저장하면(본딩) 다음에는 이 과정을 건너뛴다.</p></div>
@@ -67,13 +67,13 @@
   <!-- ============================================================ -->
   <section id="phases">
     <h2>페어링의 세 단계와 본딩</h2>
-    <p>LE 페어링은 호스트의 <span class="term">SMP</span><span class="en">(Security Manager Protocol)</span>가 맡는다(1장). 연결된 상태에서 L2CAP 고정 채널로 진행된다.</p>
+    <p><span class="term">LE</span> 페어링은 <span class="term">호스트</span>의 <span class="term">SMP</span><span class="en">(Security Manager Protocol)</span>가 맡는다(1장). 연결된 상태에서 <span class="term">L2CAP</span> 고정 채널로 진행된다.</p>
     <div class="flow">
       <div><b>① 기능 교환</b>Pairing Request/Response로 입출력 능력, OOB 데이터 유무, MITM 보호 요구, Secure Connections 지원, 본딩 여부, 키 길이(7~16바이트)를 알린다.</div>
       <div><b>② 키 생성</b>①의 정보로 방식(Just Works, 숫자 비교, 패스키, OOB)을 정하고 키를 만든다. 레거시는 TK → STK, Secure Connections는 ECDH → LTK.</div>
       <div><b>③ 키 배포</b>링크를 암호화한 뒤 오래 쓸 키를 나눈다. 주소 해석용 IRK와 신원 주소, (레거시면) LTK. 예전에는 서명용 CSRK도 나눴지만 6.3에서 데이터 서명이 삭제되었다.</div>
     </div>
-    <p>③에서 받은 키를 저장해 두는 것이 <span class="term">본딩</span><span class="en">(bonding)</span>이다. 본딩한 두 기기는 다음 연결 때 페어링 없이 저장된 <span class="term">LTK</span>로 바로 암호화를 시작한다(링크 계층의 Encryption Start, 6장). 휴대폰 블루투스 설정의 “등록된 기기” 목록이 본딩 목록이다. 암호화는 컨트롤러가 <span class="term">AES-CCM</span>으로 하며, 패킷마다 4바이트 <span class="term">MIC</span>(메시지 무결성 코드)를 붙여 위조를 막는다.</p>
+    <p>③에서 받은 키를 저장해 두는 것이 <span class="term">본딩</span><span class="en">(bonding)</span>이다. 본딩한 두 기기는 다음 연결 때 페어링 없이 저장된 <span class="term">LTK</span>로 바로 암호화를 시작한다(<span class="term">링크 계층</span>의 Encryption Start, 6장). 휴대폰 블루투스 설정의 “등록된 기기” 목록이 본딩 목록이다. 암호화는 <span class="term">컨트롤러</span>가 <span class="term">AES-CCM</span>으로 하며, 패킷마다 4바이트 <span class="term">MIC</span>(메시지 무결성 코드)를 붙여 위조를 막는다.</p>
     <p class="spec-ref">페어링 방식·키 생성·배포: <b>[Vol 3] Part H §2.3·§2.4</b> · 키 길이 7~16바이트: <b>§2.3.4</b> · AES-CCM 링크 암호화와 MIC: <b>[Vol 6] Part E §1</b> · LE 보안 모드 1의 네 단계(보안 없음 / 미인증 암호화 / 인증 암호화 / 128비트 LE Secure Connections 인증): <b>[Vol 3] Part C §10.2.1</b></p>
   </section>
 
@@ -111,10 +111,10 @@
   <!-- ============================================================ -->
   <section id="legacy">
     <h2>레거시 페어링의 약점과 Secure Connections</h2>
-    <p>4.0~4.1의 <span class="term">레거시 페어링</span><span class="en">(LE legacy pairing)</span>은 임시 키 TK에서 단기 키 STK를 만든다. Just Works면 TK = 0, 패스키면 TK = 그 6자리 숫자다. 문제는 STK를 만드는 데 쓰인 나머지 재료(난수 두 개)가 <b>전부 공중으로 오간다</b>는 것이다. 페어링 순간을 녹음한 공격자는 TK 후보 100만 개(000000~999999)를 집에서 하나씩 대입해 보면 된다. 요즘 컴퓨터로 1초도 걸리지 않는다. 그 뒤로는 그 연결의 모든 대화를 풀 수 있다. 이 공격은 2013년 공개 도구로 시연되었다.</p>
+    <p>4.0~4.1의 <span class="term">레거시 페어링</span><span class="en">(LE legacy pairing)</span>은 임시 키 <span class="term">TK</span>에서 단기 키 <span class="term">STK</span>를 만든다. Just Works면 TK = 0, 패스키면 TK = 그 6자리 숫자다. 문제는 STK를 만드는 데 쓰인 나머지 재료(난수 두 개)가 <b>전부 공중으로 오간다</b>는 것이다. 페어링 순간을 녹음한 공격자는 TK 후보 100만 개(000000~999999)를 집에서 하나씩 대입해 보면 된다. 요즘 컴퓨터로 1초도 걸리지 않는다. 그 뒤로는 그 연결의 모든 대화를 풀 수 있다. 이 공격은 2013년 공개 도구로 시연되었다.</p>
     <p>4.2의 <span class="term">LE Secure Connections</span>는 키를 만드는 방법을 바꿨다. 두 기기가 각자 <b>P-256 타원곡선</b>의 비밀 키와 공개 키를 만들고 공개 키만 교환한다. 각자 “내 비밀 키 × 상대 공개 키”를 계산하면 같은 값(DHKey)이 나오지만, 공개 키 둘만 들은 공격자는 그 값을 계산할 수 없다. 이것이 <span class="term">타원곡선 디피-헬먼</span><span class="en">(ECDH)</span>이다. 그래서 Secure Connections는 <b>Just Works라도 도청에는 안전</b>하다. 남은 위협은 중간자다. 공격자가 양쪽에 자기 공개 키를 끼워 넣으면 양쪽과 각각 다른 DHKey를 만든다. 이를 사람이 잡아내는 것이 숫자 비교와 패스키다.</p>
     <ul>
-      <li><b>숫자 비교</b>: 양쪽이 g2(PKax, PKbx, Na, Nb) = AES-CMAC의 하위 32비트를 계산하고, 그 10진 하위 6자리를 보여 준다. 공개 키가 바꿔치기되었다면 두 숫자는 <b>0.999999의 확률로 다르다</b>. 사람 눈이 마지막 방어선이다.</li>
+      <li><b>숫자 비교</b>: 양쪽이 g2(PKax, PKbx, Na, Nb) = <span class="term">AES-CMAC</span>의 하위 32비트를 계산하고, 그 10진 하위 6자리를 보여 준다. 공개 키가 바꿔치기되었다면 두 숫자는 <b>0.999999의 확률로 다르다</b>. 사람 눈이 마지막 방어선이다.</li>
       <li><b>패스키(Secure Connections)</b>: 6자리 숫자는 20비트다. 이를 <b>한 비트씩 20번</b>에 나눠 확약(commit)과 공개를 주고받는다. 공격자는 비트마다 맞힐 확률 1/2로 도박해야 하고, 틀리면 들킨다. 레거시처럼 녹음 뒤 대입하는 길은 막힌다.</li>
     </ul>
     <p class="spec-ref">g2와 6자리 비교값(g2 mod 10⁶): <b>[Vol 3] Part H §2.2.9</b> · 숫자 비교에서 단순 MITM이 다른 값을 낼 확률 0.999999: <b>§2.3.5.6.2</b> · 패스키 20라운드: <b>§2.3.5.6.3</b> · 샘플 데이터 D.5(g2), D.7(ah): <b>[Vol 3] Part H Appendix D</b></p>
@@ -134,7 +134,7 @@
       </div>
       <div class="sim-note">“새로 페어링”을 누를 때마다 브라우저의 WebCrypto로 두 기기의 실제 P-256 키 쌍과 128비트 난수 Na·Nb를 만들고, 사양의 g2 = AES-CMAC<sub>Na</sub>(PKax ∥ PKbx ∥ Nb) mod 2³²를 계산해 하위 6자리를 보여 준다(AES-128과 CMAC은 이 페이지가 직접 계산한다). 해볼 것: ① 그냥 누르면 두 화면의 숫자가 같다. ② “중간자”를 켜면 A는 중간자와, B도 중간자와 따로 키를 만든다. 두 화면의 숫자가 다르게 나와 사람이 “아니요”를 누르게 된다. ③ “사양 샘플 D.5 계산”을 누르면 사양의 U·V·X·Y로 계산한 AES-CMAC이 1536d18d…2f9ed5ba와 같은지 확인한다. 단순화: 실제로는 DHKey로 LTK를 만들고(f5), 확인값(f4, f6)도 주고받는다.</div>
     </div>
-    <div class="callout warn"><strong>6.2가 짚은 것: 레거시 패스키는 “미인증”</strong><p>Core 6.2부터 방식 표(Table 2.8)는 같은 패스키 입력이라도 <b>레거시 페어링에서는 미인증(Unauthenticated)</b>, Secure Connections에서는 인증(Authenticated) 키로 분류한다. 위에서 본 것처럼 레거시 패스키는 녹음 뒤 대입으로 풀리므로 “사람이 확인했다”는 보장이 의미가 없기 때문이다. 6.2에는 클래식(BR/EDR)의 Secure Simple Pairing 구현이 약한 패스키를 만들 수 있다는 보안 정정(erratum 24489)도 반영되었다. 클래식에서는 2019년 키 길이 협상을 1바이트까지 낮추는 KNOB 공격이 알려진 뒤, 최소 7바이트 키를 강제하는 것이 권고되었다.</p></div>
+    <div class="callout warn"><strong>6.2가 짚은 것: 레거시 패스키는 “미인증”</strong><p>Core 6.2부터 방식 표(Table 2.8)는 같은 패스키 입력이라도 <b>레거시 페어링에서는 미인증(Unauthenticated)</b>, Secure Connections에서는 인증(Authenticated) 키로 분류한다. 위에서 본 것처럼 레거시 패스키는 녹음 뒤 대입으로 풀리므로 “사람이 확인했다”는 보장이 의미가 없기 때문이다. 6.2에는 클래식(<span class="term">BR/EDR</span>)의 Secure Simple Pairing 구현이 약한 패스키를 만들 수 있다는 보안 정정(erratum 24489)도 반영되었다. 클래식에서는 2019년 키 길이 협상을 1바이트까지 낮추는 KNOB 공격이 알려진 뒤, 최소 7바이트 키를 강제하는 것이 권고되었다.</p></div>
     <p class="spec-ref">레거시 패스키의 Unauthenticated 분류: <b>[Vol 3] Part H Table 2.8</b> · 6.2 보안 정정 24489: <b>[Vol 1] Part C §16.3</b></p>
     <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">LE Secure Connections를 지원하는 휴대폰과 이어폰(입출력 없음)이 페어링한다. 근처에서 녹음만 하는 도청자와, 중간에서 쪽지를 바꾸는 중간자 중 누구를 막을 수 있을까?</p><p class="wi-hint">위 판정기에서 방식을 확인하고, ECDH가 무엇을 막는지 떠올려 보자.</p><div class="opts">
       <button class="opt">둘 다 막는다</button>
@@ -153,7 +153,7 @@
       <li>hash = ah(IRK, prand) = AES-128<sub>IRK</sub>(0…0 ∥ prand)의 하위 24비트.</li>
       <li>IRK를 가진 친구는 받은 주소의 prand로 hash를 계산해 보고, 맞으면 “아, 그 이어폰이구나” 하고 알아본다. IRK가 없는 사람에게는 매번 다른 무작위 주소로 보인다.</li>
     </ul>
-    <p>주소를 얼마나 자주 바꿀까? GAP는 TGAP(private_addr_int)를 <b>15분</b>(주소를 바꾸는 최대 간격)으로 권장한다. 그런데 모든 기기가 정확히 15분마다 바꾸면, 주소가 바뀌는 순간의 박자로 다시 이어 붙여 추적할 수 있다. 6.1은 컨트롤러가 <b>최소~최대 범위 안의 무작위 시간</b>마다 주소를 바꾸게 했다(HCI 기본값 8~15분).</p>
+    <p>주소를 얼마나 자주 바꿀까? <span class="term">GAP</span>는 <span class="term">TGAP</span>(private_addr_int)를 <b>15분</b>(주소를 바꾸는 최대 간격)으로 권장한다. 그런데 모든 기기가 정확히 15분마다 바꾸면, 주소가 바뀌는 순간의 박자로 다시 이어 붙여 추적할 수 있다. 6.1은 컨트롤러가 <b>최소~최대 범위 안의 무작위 시간</b>마다 주소를 바꾸게 했다(<span class="term">HCI</span> 기본값 8~15분).</p>
     <p class="spec-ref">무작위 주소 종류(상위 2비트 00 비해석, 01 RPA, 11 정적): <b>[Vol 6] Part B §1.3.2</b> · RPA 생성과 해석: <b>§1.3.2.2·§1.3.2.3</b> · ah 함수: <b>[Vol 3] Part H §2.2.2</b> · TGAP(private_addr_int) 15 min: <b>[Vol 3] Part C Appendix A</b> · 무작위 RPA 갱신(RPA_Timeout_Min/Max, 기본 480~900 s): <b>[Vol 4] Part E</b> HCI_LE_Set_Resolvable_Private_Address_Timeout [v2]</p>
     <div class="sim" id="sim-rpa">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>가명 주소 만들고 알아보기: AES-128로 계산하는 RPA</h3></div>

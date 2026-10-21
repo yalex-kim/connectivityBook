@@ -29,7 +29,7 @@
   <header class="chapter-hero">
     <div class="eyebrow">Chapter 11</div>
     <h1>위치 찾기: RSSI에서 채널 사운딩까지</h1>
-    <p class="lead">소파 틈에 빠진 이어폰을 찾으려고 휴대폰의 “찾기” 화면을 켜면 “가까워지는 중… 30 cm”라고 알려 준다. 자동차는 운전자가 다가오면 문을 열고, 차 안인지 밖인지까지 구분한다. 대형 마트의 앱은 지금 내가 어느 진열대 앞인지 안다. 블루투스는 원래 데이터를 나르는 기술이지만, 전파 자체가 거리와 방향의 단서를 품고 있다. 이 장에서는 그 단서를 쓰는 세 단계, 즉 <b>세기</b>(RSSI), <b>방향</b>(AoA·AoD), 그리고 6.0의 <b>위상과 시간</b>(채널 사운딩)을 차례로 다룬다. 단계가 올라갈수록 정확해지고, 그만큼 하드웨어와 계산이 필요해진다.</p>
+    <p class="lead">소파 틈에 빠진 이어폰을 찾으려고 휴대폰의 “찾기” 화면을 켜면 “가까워지는 중… 30 cm”라고 알려 준다. 자동차는 운전자가 다가오면 문을 열고, 차 안인지 밖인지까지 구분한다. 대형 마트의 앱은 지금 내가 어느 진열대 앞인지 안다. 블루투스는 원래 데이터를 나르는 기술이지만, 전파 자체가 거리와 방향의 단서를 품고 있다. 이 장에서는 그 단서를 쓰는 세 단계, 즉 <b>세기</b>(<span class="term">RSSI</span>), <b>방향</b>(<span class="term">AoA</span>·<span class="term">AoD</span>), 그리고 6.0의 <b>위상과 시간</b>(채널 사운딩)을 차례로 다룬다. 단계가 올라갈수록 정확해지고, 그만큼 하드웨어와 계산이 필요해진다.</p>
     <ul class="objectives">
       <li>RSSI와 경로 손실 모델로 거리를 추정할 때 오차가 거리에 비례해 커지는 이유를 안다.</li>
       <li>비콘이 광고에 기준 세기를 실어 보내는 방식과 근접(가까움/멂) 판단의 한계를 이해한다.</li>
@@ -42,11 +42,11 @@
   <!-- ============================================================ -->
   <section id="rssi">
     <h2>세기로 짐작하기: RSSI 거리 추정</h2>
-    <p>가장 간단한 방법은 2장의 링크 버짓을 거꾸로 푸는 것이다. 1 m에서의 수신 세기 P<sub>1m</sub>을 알고 경로 손실 지수 n을 가정하면, 받은 RSSI에서 거리를 계산할 수 있다.</p>
+    <p>가장 간단한 방법은 2장의 <span class="term">링크 버짓</span>을 거꾸로 푸는 것이다. 1 m에서의 수신 세기 P<sub>1m</sub>을 알고 <span class="term">경로 손실 지수</span> n을 가정하면, 받은 RSSI에서 거리를 계산할 수 있다.</p>
     <div class="formula">d ≈ 10<sup>(P<sub>1m</sub> − RSSI) / (10 · n)</sup> &nbsp; m
       <div class="where">예: P<sub>1m</sub> = −59 dBm, n = 2, RSSI = −71 dBm이면 d = 10<sup>12/20</sup> ≈ 4 m. 같은 RSSI라도 n = 3이라 가정하면 2.5 m가 된다. 환경을 모르면 n부터 틀린다.</div>
     </div>
-    <p>문제는 오차다. 2장에서 본 대로 RSSI 자체의 정확도 권장이 ±6 dB이고, 다중 경로 페이딩과 몸이 가리는 정도가 패킷마다 수~수십 dB를 흔든다. 식의 지수 때문에 <b>dB 오차는 거리의 배율 오차</b>가 된다. 6 dB 오차는 n = 2에서 거리 2배, n = 3에서 1.6배다. 1 m에서 2배 오차는 50 cm지만 10 m에서는 10 m다. 그래서 RSSI는 “1 m 안이다 / 근처다 / 멀다” 같은 <b>구역 판단</b>에 쓰고, 여러 번 평균하거나 여러 수신기의 값을 합쳐 쓴다.</p>
+    <p>문제는 오차다. 2장에서 본 대로 RSSI 자체의 정확도 권장이 ±6 dB이고, <span class="term">다중 경로 페이딩</span>과 몸이 가리는 정도가 패킷마다 수~수십 dB를 흔든다. 식의 지수 때문에 <b>dB 오차는 거리의 배율 오차</b>가 된다. 6 dB 오차는 n = 2에서 거리 2배, n = 3에서 1.6배다. 1 m에서 2배 오차는 50 cm지만 10 m에서는 10 m다. 그래서 RSSI는 “1 m 안이다 / 근처다 / 멀다” 같은 <b>구역 판단</b>에 쓰고, 여러 번 평균하거나 여러 수신기의 값을 합쳐 쓴다.</p>
     <div class="callout analogy"><strong>목소리 크기로 거리 짐작하기</strong><p>카페에서 목소리가 크게 들리면 가까이 있다고 짐작한다. 하지만 원래 목소리가 큰 사람일 수도 있고, 기둥 뒤에 있어서 작게 들릴 수도 있다. 가까울 때는 조금만 다가가도 크게 바뀌어 짐작이 쉽지만, 멀어질수록 몇 걸음 차이가 거의 구별되지 않는다. RSSI 거리 추정의 한계가 이것이다.</p></div>
     <div class="sim" id="sim-rssi">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>RSSI로 거리 재기: 왜 멀수록 엉망이 될까</h3></div>
@@ -65,7 +65,7 @@
       <div class="sim-note">점 하나가 추정 한 번이다(가로 = 실제 거리, 세로 = 추정 거리, 로그 눈금). 대각선에 가까울수록 정확하다. 해볼 것: ① 실제 거리 1 m와 15 m에서 점이 흩어진 폭을 비교하자. 로그 눈금에서 폭이 같다는 것은 실제 거리에 비례해 오차가 커진다는 뜻이다. ② 평균 개수를 10으로 늘리면 흩어짐이 약 1/3로 준다(√10). 대신 판단이 늦어진다. ③ 추정에 n = 2를 쓰면(실제 2.7) 먼 거리를 체계적으로 과대 추정한다. 모델: RSSI = P1m − 10·2.7·log₁₀(d) + N(0, σ²), P1m = −59 dBm. 평균은 dBm에서 냈다.</div>
     </div>
     <h3>비콘: 광고에 기준 세기 싣기</h3>
-    <p><span class="term">비콘</span><span class="en">(beacon)</span>은 연결 없이 짧은 신원 정보를 광고로 계속 내보내는 기기다(5장의 브로드캐스터). 대표적인 형식은 회사들이 정한 것으로, 예를 들어 Apple의 iBeacon은 제조사 데이터에 16바이트 UUID와 두 개의 2바이트 번호(major, minor), 그리고 <b>1 m에서의 기준 세기</b>(1바이트)를 담는다. 받는 앱은 이 기준 세기와 RSSI를 위 식에 넣어 가깝다/멀다를 판단한다. 매장 진열대, 박물관 전시물, 실내 위치 표시에 쓰였다. 분실물 태그 네트워크는 반대로, 태그가 비콘처럼 광고하면 지나가는 수많은 휴대폰이 그것을 듣고 자기 GPS 위치를 붙여 주인에게 (암호화해서) 알려 주는 방식이다. 이 형식들은 Core 밖이며, 5장의 AD 구조(제조사 데이터 0xFF) 안에 들어간다.</p>
+    <p><span class="term">비콘</span><span class="en">(beacon)</span>은 연결 없이 짧은 신원 정보를 광고로 계속 내보내는 기기다(5장의 <span class="term">브로드캐스터</span>). 대표적인 형식은 회사들이 정한 것으로, 예를 들어 Apple의 iBeacon은 제조사 데이터에 16바이트 <span class="term">UUID</span>와 두 개의 2바이트 번호(major, minor), 그리고 <b>1 m에서의 기준 세기</b>(1바이트)를 담는다. 받는 앱은 이 기준 세기와 RSSI를 위 식에 넣어 가깝다/멀다를 판단한다. 매장 진열대, 박물관 전시물, 실내 위치 표시에 쓰였다. 분실물 태그 네트워크는 반대로, 태그가 비콘처럼 광고하면 지나가는 수많은 휴대폰이 그것을 듣고 자기 GPS 위치를 붙여 주인에게 (암호화해서) 알려 주는 방식이다. 이 형식들은 Core 밖이며, 5장의 <span class="term">AD 구조</span>(제조사 데이터 0xFF) 안에 들어간다.</p>
     <p class="spec-ref">RSSI 정확도 ±6 dB: <b>[Vol 6] Part A §4.8</b> · 광고 데이터 형식: <b>[Vol 3] Part C §11</b> · 송신 전력 AD 구조와 확장 광고의 TxPower 필드: <b>[Vol 6] Part B §2.3.4.7</b></p>
   </section>
 
@@ -76,7 +76,7 @@
     <div class="formula">Δφ = 2π · d · sin θ / λ &nbsp;&nbsp;⇒&nbsp;&nbsp; θ = arcsin(Δφ · λ / (2π · d))
       <div class="where">d = 안테나 간격, λ ≈ 12.3 cm(2.44 GHz), θ = 정면에서 잰 각도. d가 λ/2(약 6.1 cm)보다 크면 서로 다른 각도가 같은 Δφ(2π 차이)를 만들어 방향이 모호해진다. 그래서 배열 안테나는 보통 반 파장 이하 간격으로 놓는다.</div>
     </div>
-    <p>위상을 재려면 신호가 변조 없이 일정해야 한다. GFSK 데이터는 주파수가 계속 바뀌므로 위상을 비교하기 어렵다. 그래서 5.1은 패킷 끝에 <span class="term">일정 톤 확장</span><span class="en">(CTE, Constant Tone Extension)</span>을 붙인다. 화이트닝하지 않은 1만 계속 보내, 일정한 주파수(+250 kHz 편이)의 순수한 톤이 된다. CTE는 16~160 µs이고, 처음 4 µs는 보호 구간, 다음 8 µs는 기준 구간, 그 뒤로 1 µs 또는 2 µs의 전환 슬롯과 표본 슬롯이 번갈아 온다. 수신기는 표본 슬롯마다 다른 안테나로 바꿔 가며 IQ 표본(위상과 세기)을 찍는다.</p>
+    <p>위상을 재려면 신호가 변조 없이 일정해야 한다. <span class="term">GFSK</span> 데이터는 주파수가 계속 바뀌므로 위상을 비교하기 어렵다. 그래서 5.1은 패킷 끝에 <span class="term">일정 톤 확장</span><span class="en">(CTE, Constant Tone Extension)</span>을 붙인다. <span class="term">화이트닝</span>하지 않은 1만 계속 보내, 일정한 주파수(+250 kHz 편이)의 순수한 톤이 된다. CTE는 16~160 µs이고, 처음 4 µs는 보호 구간, 다음 8 µs는 기준 구간, 그 뒤로 1 µs 또는 2 µs의 전환 슬롯과 표본 슬롯이 번갈아 온다. 수신기는 표본 슬롯마다 다른 안테나로 바꿔 가며 <span class="term">IQ 표본</span>(위상과 세기)을 찍는다.</p>
     <ul>
       <li><b>AoA</b>(Angle of Arrival): 받는 쪽이 안테나 배열을 갖고 바꿔 가며 받는다. 천장의 위치 수신기가 태그들의 방향을 잰다. 태그는 안테나 하나면 된다.</li>
       <li><b>AoD</b>(Angle of Departure): 보내는 쪽이 배열을 갖고 바꿔 가며 보낸다. 받는 휴대폰은 안테나 하나로 각 안테나에서 온 위상을 비교해 자기가 어느 방향에 있는지 계산한다. 실내 내비게이션처럼 수신자가 많을 때 쓴다.</li>
@@ -112,7 +112,7 @@
     <div class="formula">x = −(dφ / df) · c / (4π) &nbsp;&nbsp;&nbsp; d<sub>wrap</sub> = c / (2 · Δf) = 150 m (Δf = 1 MHz)
       <div class="where">위상은 2π마다 되돌아오므로, 1 MHz 간격으로 잰 이웃 채널 사이의 위상 변화가 2π를 넘으면 구분할 수 없다. 그래서 거리는 150 m마다 같은 값으로 보인다. 사양은 이 모호성을 RTT로 풀 수 있다고 적는다. 실제로는 여러 반사 경로가 섞이므로, 측정한 채널 응답을 역푸리에 변환해 가장 먼저 도착한 경로를 찾는 방법을 쓴다.</div>
     </div>
-    <p>CS는 광고 채널을 제외한 <b>1 MHz 간격 72개 채널</b>(2402 + k MHz, k = 2~22, 26~76)을 쓴다. 한 절차는 이벤트 → 서브이벤트 → 스텝으로 나뉘고, 스텝은 네 모드가 있다. 모드 0은 두 기기의 주파수·시간을 맞추는 보정, 모드 1은 <span class="term">RTT</span>, 모드 2는 <span class="term">PBR</span> 톤, 모드 3은 둘 다다. 사양은 거리 계산 알고리즘 자체는 정하지 않고, 정확한 측정값(IQ, 도착·출발 시각)을 만드는 규칙을 정한다.</p>
+    <p>CS는 <span class="term">광고 채널</span>을 제외한 <b>1 MHz 간격 72개 채널</b>(2402 + k MHz, k = 2~22, 26~76)을 쓴다. 한 절차는 이벤트 → 서브이벤트 → 스텝으로 나뉘고, 스텝은 네 모드가 있다. 모드 0은 두 기기의 주파수·시간을 맞추는 보정, 모드 1은 <span class="term">RTT</span>, 모드 2는 <span class="term">PBR</span> 톤, 모드 3은 둘 다다. 사양은 거리 계산 알고리즘 자체는 정하지 않고, 정확한 측정값(IQ, 도착·출발 시각)을 만드는 규칙을 정한다.</p>
     <p class="spec-ref">CS 개요와 모드 0~3, PBR 거리 식과 d<sub>wrap</sub> = 150 m: <b>[Vol 1] Part A §9.1~§9.3</b> · 72개 CS 채널: <b>[Vol 6] Part A §2</b> · CS 패킷·RTT·공격 탐지: <b>[Vol 6] Part H</b> · 6.0 새 기능: <b>[Vol 1] Part C §14.1</b></p>
     <div class="sim" id="sim-cs">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>위상 기울기로 거리 재기 (PBR + RTT)</h3></div>
@@ -139,8 +139,8 @@
     </div><div class="quiz-exp">세기는 증폭기로 꾸밀 수 있지만, 중계는 언제나 시간을 더한다. 그래서 RTT는 “적어도 이만큼은 멀다”는 하한을 보장한다(거리 한정). 공격자는 대신 신호의 일부를 미리 추측해 보내거나 진폭을 조작하는 더 정교한 공격을 시도하는데, 6.0은 위상 기반 공격 탐지를, 6.2는 진폭 기반 공격 대응(Amplitude-based Attack Resilience)을 추가했다.</div></div>
     <p class="spec-ref">CS 공격 탐지 요구(위상 기반, 진폭 기반 DFT 탐지): <b>[Vol 6] Part H §3.5</b> · 6.2의 Channel Sounding Amplitude-based Attack Resilience: <b>[Vol 1] Part C §16.1</b></p>
     <h3>6.3에서 더해진 것</h3>
-    <p>이 책의 기준 판인 6.3은 채널 사운딩에 두 가지를 더했다. 첫째는 <b><span class="term">위상 보정값 인라인 전송</span></b><span class="en">(Inline PCT Transfer, IPT)</span>이다. 위상 방식에서는 시작기(initiator)와 반사기(reflector)가 각자 받은 톤의 위상을 재서 I·Q 값(PCT)으로 남긴다. IPT를 켜면 반사기는 자기가 되돌려 보내는 톤의 위상을 미리 맞춰서, 자기가 보고하는 PCT의 허수부(Q)가 0이 되고 실수부(I)에는 신호 크기만 남게 한다. 반사기가 잰 위상을 따로 넘기는 대신 되돌려 보내는 톤에 실어(인라인으로) 넘기는 셈이다. 이때 안테나 전환 시간은 반사기가 알려 준 IPT용 값(T_SW_IPT)까지 고려해 정한다.</p>
-    <p>둘째는 <b>PHY별 RTT 정확도</b>다. 왕복 시간(RTT)용 패킷은 필수인 LE 1M 말고도 선택 기능인 LE 2M·LE 2M 2BT로 보낼 수 있는데, 6.3부터는 2M 계열 PHY의 RTT 정확도 요구를 1M과 따로 정해 능력 교환 때 알릴 수 있다. 두 기능 모두 양쪽 칩이 지원해야 쓰는 선택 기능이다.</p>
+    <p>이 책의 기준 판인 6.3은 채널 사운딩에 두 가지를 더했다. 첫째는 <b><span class="term">위상 보정값 인라인 전송</span></b><span class="en">(Inline PCT Transfer, IPT)</span>이다. 위상 방식에서는 시작기(initiator)와 반사기(reflector)가 각자 받은 톤의 위상을 재서 I·Q 값(<span class="term">PCT</span>)으로 남긴다. IPT를 켜면 반사기는 자기가 되돌려 보내는 톤의 위상을 미리 맞춰서, 자기가 보고하는 PCT의 허수부(Q)가 0이 되고 실수부(I)에는 신호 크기만 남게 한다. 반사기가 잰 위상을 따로 넘기는 대신 되돌려 보내는 톤에 실어(인라인으로) 넘기는 셈이다. 이때 안테나 전환 시간은 반사기가 알려 준 IPT용 값(T_SW_IPT)까지 고려해 정한다.</p>
+    <p>둘째는 <b><span class="term">PHY</span>별 RTT 정확도</b>다. 왕복 시간(RTT)용 패킷은 필수인 <span class="term">LE 1M</span> 말고도 선택 기능인 <span class="term">LE 2M</span>·<span class="term">LE</span> 2M 2BT로 보낼 수 있는데, 6.3부터는 2M 계열 PHY의 RTT 정확도 요구를 1M과 따로 정해 능력 교환 때 알릴 수 있다. 두 기능 모두 양쪽 칩이 지원해야 쓰는 선택 기능이다.</p>
     <p class="spec-ref">IPT: <b>[Vol 6] Part A §6.5</b> · 반사기의 톤 위상과 PCT: <b>[Vol 6] Part H §4.6</b> · IPT의 안테나 전환 시간: <b>Part H §4.3.3</b> · 능력 교환(IPT 비트, RTT_PHY 비트, 2M용 RTT 필드): <b>[Vol 6] Part B §2.4.2.44</b> · 6.3 새 기능 목록: <b>[Vol 1] Part C §17.1</b></p>
   </section>
 
@@ -156,7 +156,7 @@
         <tr><td>(참고) UWB</td><td>ns 펄스 왕복 시간</td><td>수~10 cm</td><td>별도 UWB 칩</td><td>디지털 키, 태그</td></tr>
       </tbody>
     </table></div>
-    <p>채널 사운딩은 이미 휴대폰과 액세서리에 있는 블루투스 무선부로 UWB에 가까운 일을 하려는 시도다. 정확도는 아직 UWB보다 낮은 편이지만, 추가 칩 없이 쓸 수 있다는 점이 크다. 1장에서 강조했듯이 6.0 이상이라고 모두 CS를 지원하는 것은 아니며, 두 기기 모두 지원해야 한다.</p>
+    <p>채널 사운딩은 이미 휴대폰과 액세서리에 있는 블루투스 무선부로 <span class="term">UWB</span>에 가까운 일을 하려는 시도다. 정확도는 아직 UWB보다 낮은 편이지만, 추가 칩 없이 쓸 수 있다는 점이 크다. 1장에서 강조했듯이 6.0 이상이라고 모두 CS를 지원하는 것은 아니며, 두 기기 모두 지원해야 한다.</p>
   </section>
 
   <div class="callout related"><strong>다른 책에서</strong><ul><li><a href="../../uwb/chapters/twr.html">UWBBook 06장 · 양방향 거리 측정: SS-TWR와 DS-TWR</a> — 세기 대신 시간으로 재는 거리</li><li><a href="../../uwb/chapters/aoa.html">UWBBook 08장 · 방향 찾기: PDoA와 AoA</a> — 같은 위상 차이 원리를 500 MHz 대역에서</li><li><a href="../../gnss/chapters/intro.html">GNSSBook 01장 · GNSS란 무엇인가</a> — 하늘의 시계로 재는 위치</li><li><a href="../../bluetooth-deep/chapters/cs.html">BluetoothBook 심화 16장 · Channel Sounding: 위상과 왕복 시간으로 거리 재기</a> — Channel Sounding의 DRBG와 거리 계산</li><li><a href="../../bluetooth-deep/chapters/direction.html">BluetoothBook 심화 17장 · 방향 찾기: CTE, IQ 표본, 안테나 전환</a> — CTE와 IQ 표본에서 각도까지</li></ul></div>

@@ -29,7 +29,7 @@
   <header class="chapter-hero">
     <div class="eyebrow">Chapter 06</div>
     <h1>채널 차지하기: CSMA/CA와 EDCA</h1>
-    <p class="lead">공유기 속도 표시는 1,201 Mb/s인데, 실제로 파일을 받으면 그 절반쯤이다. 아파트에서 저녁만 되면 더 느려진다. 4장의 링크 속도는 “말하는 순간의 속도”일 뿐이고, 와이파이는 <b>말할 차례를 얻는 데</b> 시간을 꽤 쓴다. 이 장에서는 한 채널을 여러 기기가 나눠 쓰는 규칙, 즉 먼저 듣고(CS) 무작위로 기다렸다가(CA) 말하는 방법과 그 비용을 숫자로 본다.</p>
+    <p class="lead">공유기 속도 표시는 1,201 Mb/s인데, 실제로 파일을 받으면 그 절반쯤이다. 아파트에서 저녁만 되면 더 느려진다. 4장의 <span class="term">링크 속도</span>는 “말하는 순간의 속도”일 뿐이고, 와이파이는 <b>말할 차례를 얻는 데</b> 시간을 꽤 쓴다. 이 장에서는 한 채널을 여러 기기가 나눠 쓰는 규칙, 즉 먼저 듣고(CS) 무작위로 기다렸다가(CA) 말하는 방법과 그 비용을 숫자로 본다.</p>
     <ul class="objectives">
       <li>와이파이가 이더넷처럼 충돌을 “감지”하지 못하고 “회피”해야 하는 이유를 안다.</li>
       <li>SIFS·슬롯·AIFS와 무작위 백오프가 만드는 한 번의 프레임 교환을 마이크로초 단위로 그린다.</li>
@@ -49,7 +49,7 @@
   <!-- ============================================================ -->
   <section id="timing">
     <h2>한 번의 프레임 교환을 마이크로초로 보기</h2>
-    <p>와이파이의 시간은 몇 가지 간격으로 짜여 있다. 5 GHz OFDM 기준으로:</p>
+    <p>와이파이의 시간은 몇 가지 간격으로 짜여 있다. 5 GHz <span class="term">OFDM</span> 기준으로:</p>
     <ul>
       <li><span class="term">SIFS</span><span class="en">(Short Interframe Space)</span> 16 µs: 데이터를 받고 ACK를 보내기 전처럼 “이미 차례를 가진” 쪽이 기다리는 가장 짧은 간격. 2.4 GHz에서는 10 µs에 신호 확장 6 µs가 붙는다.</li>
       <li><span class="term">슬롯</span><span class="en">(slot time)</span> 9 µs: 백오프 숫자 하나를 세는 단위. 옛 802.11b가 섞인 2.4 GHz에서는 20 µs.</li>
@@ -78,7 +78,7 @@
   <!-- ============================================================ -->
   <section id="crowd">
     <h2>기기가 많아지면</h2>
-    <p>CW가 15라면 기기 둘이 같은 숫자를 고를 확률은 1/16 정도로 작다. 하지만 기기가 열, 스물이 되면 누군가와 겹칠 확률이 빠르게 커진다. 충돌한 프레임은 공중 시간을 통째로 버리고, 충돌한 기기들은 CW를 키워 더 오래 기다린다. 와이파이 6가 아파트·경기장처럼 붐비는 곳을 겨냥해 새 장치(OFDMA, <span class="term">BSS 컬러</span>링, 12장)를 들여온 이유가 여기에 있다.</p>
+    <p>CW가 15라면 기기 둘이 같은 숫자를 고를 확률은 1/16 정도로 작다. 하지만 기기가 열, 스물이 되면 누군가와 겹칠 확률이 빠르게 커진다. 충돌한 프레임은 공중 시간을 통째로 버리고, 충돌한 기기들은 CW를 키워 더 오래 기다린다. 와이파이 6가 아파트·경기장처럼 붐비는 곳을 겨냥해 새 장치(<span class="term">OFDMA</span>, <span class="term">BSS 컬러</span>링, 12장)를 들여온 이유가 여기에 있다.</p>
     <div class="sim" id="sim-crowd">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>백오프 경쟁: 기기 수와 충돌</h3></div>
       <div class="sim-view"><canvas id="cv-crowd"></canvas></div>
@@ -114,7 +114,7 @@
       </div>
       <figcaption><b>그림 6-1.</b> 숨은 단말. A와 C는 AP와는 통하지만 서로 들리지 않아, 캐리어 센스가 서로를 막지 못한다.</figcaption>
     </figure>
-    <p>해결책은 짧은 프레임으로 먼저 예약하는 것이다. A가 짧은 <b>RTS</b><span class="en">(Request To Send, 20바이트)</span>를 보내면 AP가 <b>CTS</b><span class="en">(Clear To Send, 14바이트)</span>로 답한다. C는 A의 RTS는 못 들어도 AP의 CTS는 듣는다. 모든 프레임에는 “이 교환이 앞으로 몇 µs 동안 이어지는지”를 적은 <b>Duration</b> 칸이 있어서, 이를 들은 기기는 그동안 채널이 바쁘다고 기록하고(<span class="term">NAV</span><span class="en">(Network Allocation Vector)</span>, 가상 캐리어 센스) 조용히 기다린다. 충돌이 나더라도 짧은 RTS끼리 부딪히므로 손해가 적다.</p>
+    <p>해결책은 짧은 프레임으로 먼저 예약하는 것이다. A가 짧은 <b>RTS</b><span class="en">(Request To Send, 20바이트)</span>를 보내면 <span class="term">AP</span>가 <b>CTS</b><span class="en">(Clear To Send, 14바이트)</span>로 답한다. C는 A의 RTS는 못 들어도 AP의 CTS는 듣는다. 모든 프레임에는 “이 교환이 앞으로 몇 µs 동안 이어지는지”를 적은 <b>Duration</b> 칸이 있어서, 이를 들은 기기는 그동안 채널이 바쁘다고 기록하고(<span class="term">NAV</span><span class="en">(Network Allocation Vector)</span>, 가상 캐리어 센스) 조용히 기다린다. 충돌이 나더라도 짧은 RTS끼리 부딪히므로 손해가 적다.</p>
     <p>대가는 매번 RTS + SIFS + CTS + SIFS(24 Mb/s 기준 88 µs)가 더 든다는 것이다. 그래서 <span class="term">RTS/CTS</span>는 보통 큰 프레임이나 묶음에만 쓰고, 드라이버가 상황을 보고 켠다. 위의 “프레임 하나 보내는 데 드는 시간” 시뮬레이터에서 체크해 보면 작은 패킷에서는 손해가 크다는 것이 보인다.</p>
     <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">숨은 단말 C가 AP의 CTS를 들었다. CTS의 Duration 칸에는 무엇이 들어 있어야 할까?</p><p class="wi-hint">C는 A의 데이터가 끝나고 ACK까지 나갈 때까지 조용해야 한다.</p><div class="opts">
       <button class="opt">CTS 자신의 길이만</button>
