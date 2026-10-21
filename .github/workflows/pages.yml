@@ -44,6 +44,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      # js·css 주소에 커밋 번호를 붙여, 배포 뒤 새로고침하면 바로 새 파일을 받게 한다 (캐시 10분)
+      - name: Stamp asset URLs
+        run: python3 tools/stamp_assets.py "${GITHUB_SHA::7}"
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .
