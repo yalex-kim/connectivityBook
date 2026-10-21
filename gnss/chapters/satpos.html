@@ -34,7 +34,7 @@
   <header class="chapter-hero">
     <div class="eyebrow">Chapter 08</div>
     <h1>위성 위치 계산</h1>
-    <p class="lead">거리만 알아서는 위치를 못 구한다. “어디에 있는 위성까지의 거리”인지 알아야 한다. 위성은 자기 위치를 좌표로 보내지 않는다. 대신 궤도를 설명하는 값 16개(궤도력)를 보내고, 수신기가 원하는 순간의 위치를 직접 계산한다. GPS 규격은 그 계산법을 표 하나(표 20-IV)에 담았다. 이 장에서는 그 표를 한 줄씩 따라간다.</p>
+    <p class="lead">거리만 알아서는 위치를 못 구한다. “어디에 있는 위성까지의 거리”인지 알아야 한다. 위성은 자기 위치를 좌표로 보내지 않는다. 대신 궤도를 설명하는 값 16개(<span class="term">궤도력</span>)를 보내고, 수신기가 원하는 순간의 위치를 직접 계산한다. GPS 규격은 그 계산법을 표 하나(표 20-IV)에 담았다. 이 장에서는 그 표를 한 줄씩 따라간다.</p>
     <ul class="objectives">
       <li>궤도력의 값들(√A, e, M<sub>0</sub>, Δn, ω, Ω<sub>0</sub>, Ω̇, i<sub>0</sub>, IDOT, 보정 계수 6개, t<sub>oe</sub>)이 무엇을 뜻하는지 안다.</li>
       <li>규격 표 20-IV의 순서대로 위성의 지구 고정(ECEF) 좌표를 계산한다.</li>
@@ -71,7 +71,7 @@
   <!-- ============================================================ -->
   <section id="clock">
     <h2>위성 시계와 상대론 보정</h2>
-    <p>위성 시계도 GPS 시간과 조금씩 다르다. 관제국이 그 차이를 다항식(a<sub>f0</sub> + a<sub>f1</sub>·(t − t<sub>oc</sub>) + a<sub>f2</sub>·(t − t<sub>oc</sub>)²)으로 보내 준다. 여기에 3장에서 미리 맞춰 두지 못한 상대론 효과가 남는다. 궤도가 완전한 원이 아니어서(이심률 e), 위성이 지구에 가까울 때는 빠르고 낮은 곳에서 시계가 느리게, 멀 때는 반대로 간다. 이 주기적 효과가 Δt<sub>r</sub> = F·e·√A·sin E<sub>k</sub>, F = −4.442807633 × 10⁻¹⁰ s/m<sup>½</sup>다. e = 0.01이면 최대 약 23 ns, 거리로 7 m다.</p>
+    <p>위성 시계도 <span class="term">GPS 시간</span>과 조금씩 다르다. 관제국이 그 차이를 다항식(a<sub>f0</sub> + a<sub>f1</sub>·(t − t<sub>oc</sub>) + a<sub>f2</sub>·(t − t<sub>oc</sub>)²)으로 보내 준다. 여기에 3장에서 미리 맞춰 두지 못한 상대론 효과가 남는다. 궤도가 완전한 원이 아니어서(이심률 e), 위성이 지구에 가까울 때는 빠르고 낮은 곳에서 시계가 느리게, 멀 때는 반대로 간다. 이 주기적 효과가 Δt<sub>r</sub> = F·e·√A·sin E<sub>k</sub>, F = −4.442807633 × 10⁻¹⁰ s/m<sup>½</sup>다. e = 0.01이면 최대 약 23 ns, 거리로 7 m다.</p>
     <p class="spec-ref">시계 보정 Δt<sub>sv</sub> = a<sub>f0</sub> + a<sub>f1</sub>(t − t<sub>oc</sub>) + a<sub>f2</sub>(t − t<sub>oc</sub>)² + Δt<sub>r</sub>, Δt<sub>r</sub> = F e √A sin E<sub>k</sub>, F = −2√μ/c² = −4.442807633 × 10⁻¹⁰: IS-GPS-200N 20.3.3.3.3.1(p.98) · RTKLIB은 같은 값을 −2√(μA)·e·sin E/c²로 계산(<code>eph2pos()</code> “relativity correction”)</p>
   </section>
 

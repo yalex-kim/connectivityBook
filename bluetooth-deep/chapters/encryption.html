@@ -61,7 +61,7 @@
     <div class="callout analogy"><strong>금고 열쇠와 오늘의 출입증</strong><p>금고 열쇠(LTK)는 금고에만 두고 들고 다니지 않는다. 매일 아침 두 사람이 각자 주사위를 던져 나온 숫자(SKD_C, SKD_P)를 금고 열쇠로 찍어 그날의 출입증(SK)을 만든다. 출입증을 잃어버려도 그날 하루뿐이고, 한 사람이 주사위를 조작해도 다른 사람의 숫자가 섞이니 혼자서는 출입증을 정할 수 없다.</p></div>
     <p>절차는 센트럴이 시작한다. 센트럴의 호스트가 <code>HCI_LE_Enable_Encryption</code>으로 LTK와 함께 그 LTK를 찾을 단서(EDIV, Rand)를 건네면, 링크 계층이 자기 몫의 무작위 값 <b>SKD_C</b>(8바이트)와 <b>IV_C</b>(4바이트)를 만들어 <code>LL_ENC_REQ</code>로 보낸다. 페리페럴은 자기 몫 <b>SKD_P</b>·<b>IV_P</b>를 <code>LL_ENC_RSP</code>로 돌려주고, 호스트에 <code>HCI_LE_Long_Term_Key_Request</code> 이벤트로 EDIV와 Rand를 넘겨 맞는 LTK를 달라고 한다. LTK가 있으면 양쪽 모두</p>
     <div class="formula">SKD = SKD_P ‖ SKD_C (SKD_C가 아래쪽 8바이트) · IV = IV_P ‖ IV_C · <b>SK = e(LTK, SKD)</b></div>
-    <p>를 계산한다. e는 AES-128 한 블록 암호화다(1권 8장). 그다음 세 번 악수한다. 페리페럴이 <b>암호화하지 않은</b> <code>LL_START_ENC_REQ</code>를 보내고, 센트럴이 <b>암호화한</b> <code>LL_START_ENC_RSP</code>로 답하고, 페리페럴도 암호화한 <code>LL_START_ENC_RSP</code>로 답하면 연결이 암호화된다. 마지막 두 PDU는 내용이 아니라 “같은 키로 잠그고 풀 수 있다”를 확인하는 용도다. 키가 틀렸다면 MIC가 맞지 않아 여기서 끊긴다.</p>
+    <p>를 계산한다. e는 AES-128 한 블록 암호화다(1권 8장). 그다음 세 번 악수한다. 페리페럴이 <b>암호화하지 않은</b> <code>LL_START_ENC_REQ</code>를 보내고, 센트럴이 <b>암호화한</b> <code>LL_START_ENC_RSP</code>로 답하고, 페리페럴도 암호화한 <code>LL_START_ENC_RSP</code>로 답하면 연결이 암호화된다. 마지막 두 <span class="term">PDU</span>는 내용이 아니라 “같은 키로 잠그고 풀 수 있다”를 확인하는 용도다. 키가 틀렸다면 MIC가 맞지 않아 여기서 끊긴다.</p>
     <figure class="diagram">
       <div style="overflow-x:auto">
       <svg viewBox="0 0 760 420" role="img" aria-label="암호화 시작 절차의 메시지 순서" style="min-width:600px">

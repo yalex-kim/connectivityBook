@@ -36,7 +36,7 @@
   <header class="chapter-hero">
     <div class="eyebrow">Chapter 14</div>
     <h1>블루투스 제품 설계 플레이그라운드</h1>
-    <p class="lead">지금까지 각 장에서 따로 계산했던 것들은 사실 한 제품 안에서 서로 얽혀 있다. 연결 간격을 줄이면 반응은 빨라지지만 배터리가 줄고, Coded PHY로 거리를 늘리면 공중 시간이 늘어 처리량과 배터리가 줄며, 송신 전력을 올리면 거리는 늘지만 2장에서 봤듯 몸이 가리는 손실 앞에서는 효과가 작다. 이 장에서는 제품 하나를 골라 직접 파라미터를 정하고, 그 결과가 요구 사항과 Core 6.3의 규칙을 함께 만족하는지 확인한다. 정답은 하나가 아니다. 무엇을 포기할지 고르는 것이 설계다.</p>
+    <p class="lead">지금까지 각 장에서 따로 계산했던 것들은 사실 한 제품 안에서 서로 얽혀 있다. <span class="term">연결 간격</span>을 줄이면 반응은 빨라지지만 배터리가 줄고, Coded <span class="term">PHY</span>로 거리를 늘리면 공중 시간이 늘어 처리량과 배터리가 줄며, 송신 전력을 올리면 거리는 늘지만 2장에서 봤듯 몸이 가리는 손실 앞에서는 효과가 작다. 이 장에서는 제품 하나를 골라 직접 파라미터를 정하고, 그 결과가 요구 사항과 Core 6.3의 규칙을 함께 만족하는지 확인한다. 정답은 하나가 아니다. 무엇을 포기할지 고르는 것이 설계다.</p>
     <ul class="objectives">
       <li>제품의 요구 사항(배터리 수명, 반응 시간, 거리, 데이터 양)을 블루투스 파라미터로 옮긴다.</li>
       <li>2~12장의 계산(링크 버짓, 패킷 시간, 연결 규칙, 처리량, 전류)을 함께 돌려 교환 관계를 체감한다.</li>
@@ -98,7 +98,7 @@
         <tr><td>수천 기기 관리</td><td>서브이벤트·응답 슬롯</td><td>PAwR (5.4)</td><td>12장</td></tr>
       </tbody>
     </table></div>
-    <div class="callout warn"><strong>“둘 다 지원해야 한다”를 잊지 말 것</strong><p>표의 기능 대부분은 선택 사항이다(1장). 내 제품이 지원해도 상대(대개 사용자의 휴대폰)가 지원하지 않으면 쓸 수 없다. 그래서 제품은 기본 경로(LE 1M, 레거시 광고, 7.5 ms 이상 간격)로도 동작하게 만들고, 상대가 지원할 때만 더 나은 경로로 올라가도록 설계한다. 연결 직후의 <span class="term">기능 교환</span>(Feature Exchange 절차, [Vol 6] Part B §5.1.4)이 그 출발점이다.</p></div>
+    <div class="callout warn"><strong>“둘 다 지원해야 한다”를 잊지 말 것</strong><p>표의 기능 대부분은 선택 사항이다(1장). 내 제품이 지원해도 상대(대개 사용자의 휴대폰)가 지원하지 않으면 쓸 수 없다. 그래서 제품은 기본 경로(<span class="term">LE 1M</span>, 레거시 광고, 7.5 ms 이상 간격)로도 동작하게 만들고, 상대가 지원할 때만 더 나은 경로로 올라가도록 설계한다. 연결 직후의 <span class="term">기능 교환</span>(Feature Exchange 절차, [Vol 6] Part B §5.1.4)이 그 출발점이다.</p></div>
   </section>
 
   <div class="callout related"><strong>더 깊이</strong><ul><li><a href="../../bluetooth-deep/chapters/debugging.html">BluetoothBook 심화 18장 · 사례로 배우는 디버깅: HCI 로그에서 원인까지</a> — 현장 문제를 HCI 로그로 진단하기</li><li><a href="../../bluetooth-deep/chapters/intro.html">BluetoothBook 심화 01장 · 들어가며: 사양을 직접 읽는 책</a> — 사양 읽는 법</li></ul></div>
