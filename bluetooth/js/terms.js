@@ -51,6 +51,7 @@ window.BT_TERMS = [
     ["채널 선택 알고리즘 #2", "Channel Selection Algorithm #2", "접근 주소에서 만든 channelIdentifier와 이벤트 카운터를 섞은 의사 난수로 채널을 고른다. 5.0. [Vol 6] Part B §4.5.8.3", "hopping"],
     ["PTA", "Packet Traffic Arbitration", "같은 칩·기기 안의 Wi-Fi와 블루투스가 누가 언제 말할지 중재하는 방식(구현 영역).", "hopping"],
     // 05 advertising
+    ["PDU", "Protocol Data Unit", "프로토콜 데이터 단위. 한 계층이 상대편의 같은 계층에 건네는 데이터 덩어리(헤더 + 내용). LE 링크 계층 패킷에서는 접근 주소와 CRC 사이의 2~258바이트 부분이고, ATT PDU·L2CAP PDU처럼 계층마다 같은 말을 쓴다. [Vol 6] Part B §2.1", "advertising"],
     ["브로드캐스터", "Broadcaster", "광고만 하고 연결은 받지 않는 GAP 역할. 비콘 등. [Vol 3] Part C §2.2.2", "advertising"],
     ["옵서버", "Observer", "광고를 듣기만 하는 GAP 역할.", "advertising"],
     ["페리페럴", "Peripheral", "연결 가능한 광고를 하다가 연결 요청을 받아들이는 역할. 연결 중에는 센트럴의 시간표를 따른다.", "advertising"],

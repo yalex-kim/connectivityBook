@@ -68,7 +68,7 @@
   <!-- ============================================================ -->
   <section id="event">
     <h2>광고 이벤트: 세 채널에 한 번씩, 조금씩 흔들며</h2>
-    <p>광고하는 기기는 <span class="term">광고 이벤트</span><span class="en">(advertising event)</span>마다 같은 광고 PDU를 광고 채널에 하나씩, 보통 37 → 38 → 39 순서로 보낸다. 세 채널에 나눠 보내는 이유는 2장과 4장에서 봤다. 한 채널이 Wi-Fi에 막혀 있거나 페이딩 골짜기에 빠져 있어도 나머지가 살아남는다.</p>
+    <p>광고하는 기기는 <span class="term">광고 이벤트</span><span class="en">(advertising event)</span>마다 같은 광고 <span class="term">PDU</span>를 광고 채널에 하나씩, 보통 37 → 38 → 39 순서로 보낸다. 세 채널에 나눠 보내는 이유는 2장과 4장에서 봤다. 한 채널이 Wi-Fi에 막혀 있거나 페이딩 골짜기에 빠져 있어도 나머지가 살아남는다.</p>
     <p>이벤트 사이의 시간은 광고 간격에 무작위 지연을 더한 값이다.</p>
     <div class="formula">T<sub>advEvent</sub> = advInterval + advDelay
       <div class="where">advInterval은 0.625 ms의 정수배로 <b>20 ms ~ 10,485.759375 s</b>(약 2.9시간). advDelay는 이벤트마다 새로 뽑는 <b>0~10 ms</b>의 (의사)난수다. 같은 간격으로 광고하는 두 기기가 우연히 같은 순간에 시작했다면 영원히 부딪힐 것이다. 매번 조금씩 흔들면 다음 이벤트에서는 어긋난다.</div>
@@ -93,7 +93,7 @@
   <!-- ============================================================ -->
   <section id="pdu">
     <h2>광고 패킷 해부: 31바이트의 경제학</h2>
-    <p>광고 채널의 패킷은 LE 1M에서 프리앰블 1바이트, 모든 광고가 같이 쓰는 <span class="term">접근 주소</span> <b>0x8E89BED6</b> 4바이트, PDU, CRC 3바이트로 이루어진다. PDU는 2바이트 헤더(종류, 주소 종류, 길이)와 페이로드다. 가장 흔한 ADV_IND의 페이로드는 광고자의 주소 <b>AdvA 6바이트</b>와 호스트가 넣는 <b>AdvData 0~31바이트</b>다.</p>
+    <p>광고 채널의 패킷은 LE 1M에서 프리앰블 1바이트, 모든 광고가 같이 쓰는 <span class="term">접근 주소</span> <b>0x8E89BED6</b> 4바이트, PDU, CRC 3바이트로 이루어진다. <b>PDU</b>(Protocol Data Unit, 프로토콜 데이터 단위)는 한 계층이 상대편의 같은 계층에 건네는 데이터 덩어리로, 링크 계층에서는 패킷 가운데 실제 내용이 담긴 부분이다. 앞뒤의 프리앰블·접근 주소·CRC는 이 덩어리를 실어 나르고 확인하는 포장이다. 광고 PDU는 2바이트 헤더(종류, 주소 종류, 길이)와 페이로드다. 가장 흔한 ADV_IND의 페이로드는 광고자의 주소 <b>AdvA 6바이트</b>와 호스트가 넣는 <b>AdvData 0~31바이트</b>다.</p>
     <div class="table-wrap"><table>
       <thead><tr><th>레거시 광고 PDU</th><th>연결</th><th>스캔 요청</th><th>쓰임</th></tr></thead>
       <tbody>
@@ -104,7 +104,7 @@
       </tbody>
     </table></div>
     <p>AdvData 안은 <span class="term">AD 구조</span><span class="en">(AD structure)</span>를 이어 붙인 것이다. AD 구조 하나는 <b>[길이 1바이트][종류 1바이트][값]</b>이다. 길이는 종류와 값을 합친 바이트 수다. 종류 번호(AD type)와 각 값의 형식은 Core 밖의 <b>Assigned Numbers</b>와 <b>Core Specification Supplement</b>에 정해져 있다. 자주 쓰는 것은 플래그(0x01), 16비트 서비스 UUID 목록(0x02·0x03), 이름(0x08 일부·0x09 전체), 송신 전력(0x0A), 제조사 데이터(0xFF)다.</p>
-    <p class="spec-ref">광고 채널 접근 주소 0x8E89BED6: <b>[Vol 6] Part B §2.1.2</b> · 광고 PDU 종류(Table 2.3)와 Length 1~255: <b>[Vol 6] Part B §2.3</b> · ADV_IND 페이로드: <b>§2.3.1.1</b> · AD 구조 형식: <b>[Vol 3] Part C §11</b></p>
+    <p class="spec-ref">LE 패킷 = 프리앰블·접근 주소·PDU(2~258바이트)·CRC: <b>[Vol 6] Part B §2.1</b> · 광고 채널 접근 주소 0x8E89BED6: <b>[Vol 6] Part B §2.1.2</b> · 광고 PDU 종류(Table 2.3)와 Length 1~255: <b>[Vol 6] Part B §2.3</b> · ADV_IND 페이로드: <b>§2.3.1.1</b> · AD 구조 형식: <b>[Vol 3] Part C §11</b></p>
 
     <div class="sim" id="sim-ad">
       <div class="sim-head"><span class="sim-tag">BUILDER</span><h3>광고 데이터 만들기: 31바이트에 무엇을 넣을까</h3></div>

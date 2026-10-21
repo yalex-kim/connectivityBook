@@ -38,7 +38,7 @@
   <header class="chapter-hero">
     <div class="eyebrow">Chapter 04</div>
     <h1>링크 계층 제어 절차: instant와 충돌 규칙</h1>
-    <p class="lead">연결 간격을 바꾸고, 채널 맵을 바꾸고, PHY를 바꾸는 일은 두 기기가 <b>같은 이벤트에서 동시에</b> 바꿔야 한다. 한쪽만 먼저 바꾸면 서로 다른 시각, 다른 채널에서 기다리다 연결이 끊긴다. 링크 계층은 이것을 “<span class="term">instant</span>”라는 미래의 이벤트 번호로 약속한다. 이 장은 그 약속의 규칙과, 두 기기가 동시에 절차를 시작했을 때 누가 양보하는지를 따라가고, 제어 PDU 하나를 공중 비트까지 직접 만들어 본다.</p>
+    <p class="lead">연결 간격을 바꾸고, 채널 맵을 바꾸고, PHY를 바꾸는 일은 두 기기가 <b>같은 이벤트에서 동시에</b> 바꿔야 한다. 한쪽만 먼저 바꾸면 서로 다른 시각, 다른 채널에서 기다리다 연결이 끊긴다. 링크 계층은 이것을 “<span class="term">instant</span>”라는 미래의 이벤트 번호로 약속한다. 이 장은 그 약속의 규칙과, 두 기기가 동시에 절차를 시작했을 때 누가 양보하는지를 따라가고, 제어 <span class="term">PDU</span> 하나를 공중 비트까지 직접 만들어 본다.</p>
     <ul class="objectives">
       <li>LL 제어 PDU의 형식(헤더·opcode·CtrData)과 “한 번에 하나”, 40초 응답 타임아웃 규칙을 안다.</li>
       <li>instant를 고르는 규칙(6번의 기회, mod 65536 비교)과 Instant Passed(0x28)가 언제 나는지 설명할 수 있다.</li>
