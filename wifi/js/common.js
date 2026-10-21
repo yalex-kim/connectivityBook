@@ -907,7 +907,9 @@
         const tip = document.createElement("div"); tip.className = "sb-tip"; tip.id = "sb-tip"; tip.setAttribute("role", "tooltip"); body.appendChild(tip);
         let cur = null, hideT = 0;
         const esc = (x) => x.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+        let shownAt = 0;
         const show = (el, t) => {
+          if (cur !== el || !tip.classList.contains("show")) shownAt = Date.now();
           clearTimeout(hideT); cur = el;
           const c = CHAPTERS.find((x) => x.slug === t[3]);
           tip.innerHTML = `<div class="tt-h"><b>${esc(t[0])}</b><span>${esc(t[1])}</span></div><p>${esc(t[2])}</p><div class="tt-l">` +
@@ -925,11 +927,14 @@
         main.querySelectorAll(".term").forEach((el) => {
           const t = find(el.textContent); if (!t) return;
           el.classList.add("has-tip"); el.tabIndex = 0;
-          el.addEventListener("mouseenter", () => show(el, t));
-          el.addEventListener("mouseleave", () => hide());
+          // 올리기·떠나기는 마우스일 때만. 터치는 탭 뒤에 가짜 mouseleave가 와서 바로 닫혔다
+          el.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") show(el, t); });
+          el.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") hide(); });
           el.addEventListener("focus", () => show(el, t));
           el.addEventListener("blur", () => hide());
-          el.addEventListener("click", (e) => { e.stopPropagation(); cur === el && tip.classList.contains("show") ? hide(true) : show(el, t); });
+          // 탭 한 번에 mouseenter·focus·click이 이어 오므로, 방금 연 툴팁은 click으로 닫지 않는다
+          el.addEventListener("click", (e) => { e.stopPropagation();
+            cur === el && tip.classList.contains("show") && Date.now() - shownAt > 500 ? hide(true) : show(el, t); });
         });
         document.addEventListener("click", (e) => { if (!tip.contains(e.target)) hide(true); });
         document.addEventListener("keydown", (e) => { if (e.key === "Escape") hide(true); });
