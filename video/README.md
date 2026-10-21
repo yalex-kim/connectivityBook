@@ -29,6 +29,8 @@ npm run still    # 정지 화면 한 장 (out/still.png)
 npm run render   # 나레이션판 out/afh-explainer.mp4 (public/audio/의 음성이 있어야 한다)
 npm run render:silent   # 무음판 out/afh-explainer-silent.mp4
 npm run loudnorm # 나레이션판 음량을 −16 LUFS로 맞춤 → out/afh-explainer-final.mp4 (ffmpeg)
+npm run youtube  # 유튜브 제목·설명(챕터)·태그 out/youtube/youtube.txt, 자막 subtitles.ko.srt
+npm run thumbnail # 썸네일 out/youtube/thumbnail.png (업로드 전 1280×720으로 줄인다)
 ```
 
 ## 구조
