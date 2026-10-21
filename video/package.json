@@ -1,0 +1,30 @@
+{
+  "name": "connectivitybook-video",
+  "private": true,
+  "description": "ConnectivityBook 내용을 Remotion으로 만든 영상",
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render AfhExplainerVoice out/afh-explainer.mp4",
+    "still": "remotion still AfhExplainer out/still.png --frame=1500",
+    "check": "node scripts/check-book.mjs && tsc --noEmit",
+    "render:silent": "remotion render AfhExplainer out/afh-explainer-silent.mp4",
+    "narrate": "python3 scripts/narrate.py",
+    "loudnorm": "ffmpeg -y -i out/afh-explainer.mp4 -c:v copy -af loudnorm=I=-16:TP=-1.5:LRA=11 -c:a aac -b:a 192k out/afh-explainer-final.mp4",
+    "youtube": "esbuild scripts/youtube.ts --bundle --platform=node --log-level=warning --outfile=out/youtube.cjs && node out/youtube.cjs",
+    "thumbnail": "remotion still AfhThumbnail out/youtube/thumbnail.png"
+  },
+  "dependencies": {
+    "@react-three/fiber": "9.8.2",
+    "@remotion/cli": "4.0.537",
+    "@remotion/three": "4.0.537",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.537",
+    "three": "0.186.1"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.2",
+    "@types/three": "0.186.0",
+    "typescript": "5.9.3"
+  }
+}
