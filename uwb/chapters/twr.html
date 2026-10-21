@@ -33,7 +33,7 @@
   <header class="chapter-hero">
     <div class="eyebrow">Chapter 06</div>
     <h1>양방향 거리 측정: SS-TWR와 DS-TWR</h1>
-    <p class="lead">휴대폰과 태그의 시계는 서로 맞춰져 있지 않다. 한쪽이 “지금 12시 0분 0.000000001초에 보냈어”라고 해도, 받는 쪽 시계로는 그게 언제인지 알 수 없다. 그래서 UWB는 한 번 보내고 받는 것으로는 거리를 잴 수 없고, <b>보내고, 답을 받고, 걸린 시간을 비교</b>한다. 이것이 <span class="term">TWR</span><span class="en">(Two-Way Ranging)</span>이다. 이 장의 공식은 공개 라이브러리 Decawave <code>uwb-core</code>의 <code>rng_math.c</code>를 그대로 옮겼고, 그 라이브러리의 자체 시험 값으로 검증했다.</p>
+    <p class="lead">휴대폰과 태그의 시계는 서로 맞춰져 있지 않다. 한쪽이 “지금 12시 0분 0.000000001초에 보냈어”라고 해도, 받는 쪽 시계로는 그게 언제인지 알 수 없다. 그래서 <span class="term">UWB</span>는 한 번 보내고 받는 것으로는 거리를 잴 수 없고, <b>보내고, 답을 받고, 걸린 시간을 비교</b>한다. 이것이 <span class="term">TWR</span><span class="en">(Two-Way Ranging)</span>이다. 이 장의 공식은 공개 라이브러리 Decawave <code>uwb-core</code>의 <code>rng_math.c</code>를 그대로 옮겼고, 그 라이브러리의 자체 시험 값으로 검증했다.</p>
     <ul class="objectives">
       <li>단방향 TWR(SS-TWR)의 공식 ToF = (T<sub>round</sub> − T<sub>reply</sub>) ÷ 2를 타임라인에서 유도한다.</li>
       <li>응답 시간과 두 시계의 ppm 차이가 SS-TWR 오차를 만드는 방식, 반송파 보정의 효과를 계산한다.</li>
@@ -50,7 +50,7 @@
       <li>A가 잰 왕복 시간 <b>T<sub>round</sub></b> = A의 수신 시각 − A의 송신 시각</li>
       <li>B가 잰 응답 시간 <b>T<sub>reply</sub></b> = B의 송신 시각 − B의 수신 시각 (Response 안에 담아 알려 준다)</li>
     </ul>
-    <p>왕복에서 B가 기다린 시간을 빼면 신호가 두 번 날아간 시간이 남는다. 그래서 <b>ToF = (T<sub>round</sub> − T<sub>reply</sub>) ÷ 2</b>. 각자 자기 시계 안에서의 차이만 쓰므로, 두 시계가 맞을 필요가 없다. 대신 5장에서 본 대로 시계의 <b>빠르기</b>가 다르면 T<sub>reply</sub>가 A의 단위로 틀리게 전달된다.</p>
+    <p>왕복에서 B가 기다린 시간을 빼면 신호가 두 번 날아간 시간이 남는다. 그래서 <b><span class="term">ToF</span> = (T<sub>round</sub> − T<sub>reply</sub>) ÷ 2</b>. 각자 자기 시계 안에서의 차이만 쓰므로, 두 시계가 맞을 필요가 없다. 대신 5장에서 본 대로 시계의 <b>빠르기</b>가 다르면 T<sub>reply</sub>가 A의 단위로 틀리게 전달된다.</p>
     <div class="callout analogy"><strong>메아리와 답장 시간</strong><p>산에서 “야호”를 외치고 메아리가 2초 뒤에 오면, 소리가 왕복한 시간이 2초라서 산까지 1초 거리다. 사람이 답한다면 답하기 전에 망설인 시간을 빼야 한다. TWR은 상대가 “나는 받고 나서 정확히 이만큼 있다가 답했다”고 알려 줘서 그 시간을 뺀다. 문제는 상대의 시계도 조금 틀리다는 것이다.</p></div>
     <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">두 기기의 시계가 서로 20 ppm 어긋나 있다. DS-TWR(메시지 셋)를 쓰면 이 오차는?</p><p class="wi-hint">DS-TWR은 양쪽이 한 번씩 응답해 왕복을 두 번 잰다.</p><div class="opts">
       <button class="opt">SS-TWR과 같다</button>
@@ -78,7 +78,7 @@
     <div class="formula">SS-TWR 오차 ≈ T<sub>reply</sub> × (e<sub>A</sub> − e<sub>B</sub>) ÷ 2 &nbsp;&nbsp;(e = 시계 빠르기 오차, ppm)
       <div class="where">응답 시간이 길수록, 두 시계가 다를수록 커진다. 그래서 SS-TWR는 응답을 아주 빨리 하거나(수십~수백 µs), 시계 차이를 재서 보정한다.</div>
     </div>
-    <p><code>uwb-core</code>의 <code>calc_tof_ss()</code>는 마지막 인자 <b>skew</b>로 이 보정을 한다: ToF = (T<sub>round</sub> − T<sub>reply</sub> × (1 − skew)) ÷ 2. A는 B가 보낸 Response의 반송파 주파수가 자기 반송파와 얼마나 다른지 재서(5장, 9번 채널에서 1 ppm ≈ 8 kHz) skew를 얻는다.</p>
+    <p><code>uwb-core</code>의 <code>calc_tof_ss()</code>는 마지막 인자 <b>skew</b>로 이 보정을 한다: ToF = (T<sub>round</sub> − T<sub>reply</sub> × (1 − skew)) ÷ 2. A는 B가 보낸 Response의 반송파 주파수가 자기 반송파와 얼마나 다른지 재서(5장, 9번 채널에서 1 <span class="term">ppm</span> ≈ 8 kHz) skew를 얻는다.</p>
   </section>
 
   <!-- ============================================================ -->

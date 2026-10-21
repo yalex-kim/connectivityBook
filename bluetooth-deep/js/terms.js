@@ -117,6 +117,7 @@ window.BD_TERMS = [
   ["리틀 엔디언", "Little-endian", "작은 바이트를 먼저 놓는 순서. HCI 파라미터와 LE PDU 필드의 기본. [Vol 4] Part E §5.2", "intro"],
   ["패킷 종류", "BR/EDR packet types", "DM1~DH5(기본 속도), 2-/3-DH1~DH5(EDR), HV·EV(음성), NULL·POLL·FHS·ID(제어). 숫자는 슬롯 수. [Vol 2] Part B §6.5, Table 6.2", "baseband"],
   ["ptt", "packet_type_table", "ACL에서 EDR 패킷을 쓸지 LMP로 정한 값. 같은 TYPE 코드가 ptt = 0이면 DH5, 1이면 3-DH5. [Vol 2] Part B §6.5", "baseband"],
+  ["PDU", "Protocol Data Unit", "프로토콜 데이터 단위. 한 계층이 상대편의 같은 계층에 건네는 데이터 덩어리(헤더 + 내용). LE 링크 계층 패킷에서는 접근 주소와 CRC 사이의 2~258바이트. [Vol 6] Part B §2.1", "procedures"],
 ];
 
 /* 본문 표기 → 용어집 표제어 */

@@ -313,7 +313,7 @@ ok(tctx.window.WF_TERMS.every((t) => t.length === 4 && slugs.has(t[3])), 'every 
 // 본문의 모든 .term이 용어집 항목에 이어지는가(common.js 툴팁과 같은 규칙)
 {
   const norm = (x) => x.replace(/\s+/g, '').toLowerCase(), keys = new Set();
-  tctx.window.WF_TERMS.forEach((t) => { [t[0], t[0].replace(/\(.*?\)/g, ''), t[1], t[1].replace(/\(.*?\)/g, '')].forEach((k) => keys.add(norm(k))); t[0].split(/[\/·]/).forEach((k) => keys.add(norm(k))); });
+  tctx.window.WF_TERMS.forEach((t) => { [t[0], t[0].replace(/\(.*?\)/g, ''), t[1], t[1].replace(/\(.*?\)/g, '')].forEach((k) => keys.add(norm(k))); t[0].split(/[\/·]/).forEach((k) => keys.add(norm(k))); for (const m of t[1].matchAll(/\(([A-Z][A-Za-z0-9]*[A-Z0-9])\)|^([A-Z][A-Za-z0-9]*[A-Z0-9]),/g)) keys.add(norm(m[1] || m[2])); });
   const al = tctx.window.WF_TERM_ALIAS || {};
   for (const f of fs.readdirSync(path.join(root, 'chapters')).filter((x) => x.endsWith('.html'))) {
     for (const m of fs.readFileSync(path.join(root, 'chapters', f), 'utf8').matchAll(/<span class="term">([^<]+)<\/span>/g)) ok(keys.has(norm(al[m[1].trim()] || m[1])), `term "${m[1]}" in ${f} has a glossary entry`);

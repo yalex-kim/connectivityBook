@@ -9,7 +9,7 @@ python3 -m http.server 8000                          # → http://localhost:8000
 for f in */scripts/verify-factcheck.cjs; do node "$f"; done   # 책마다 계산·구조 검증
 python3 tools/sync_shared.py [--check]               # shared/ → 각 책의 js/common.js, css/style.css
 python3 tools/build_search.py [--check]              # 서재 통합 검색 색인 assets/search-index.js
-python3 tools/mark_terms.py [책...] [--check]        # 용어집 표제어에 툴팁 달기(처음 나오는 곳 + 그 용어의 장)
+python3 tools/mark_terms.py [책...] [--check]        # 용어집 표제어·약어·별칭에 툴팁 달기(장마다 처음 나오는 곳)
 (cd <책> && python3 tools/seo.py)                    # canonical/OG/JSON-LD, 책 sitemap
 ```
 

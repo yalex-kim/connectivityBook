@@ -129,7 +129,7 @@
   <section id="cap">
     <h2>묶어서 다루기: CAP와 방송 도우미</h2>
     <p>좌우 이어폰은 서로 다른 두 기기이고 각자 ASE를 가진다. CAP는 두 기기가 같은 <b>조정 세트</b>(CSIP로 서로를 알아봄)라는 것을 알고, 두 기기의 ASE를 같은 CIG 안의 두 CIS로 묶어 함께 Enable하게 한다. 그래야 왼쪽만 먼저 나오거나 한쪽만 멈추지 않는다. 등시성 그룹의 공통 동기점(CIG_Sync_Delay, 14장)이 두 귀의 소리를 같은 순간에 내게 한다.</p>
-    <p>방송(Auracast)에서는 휴대폰이 <b>방송 도우미</b>가 된다. 보청기 대신 스캔해서 방송을 찾고, <span class="term">BASS</span>로 보청기에 “이 방송 묶음(SID)을 들어라”를 쓰고, 필요하면 방송 코드를 넣어 주고, PAST로 주기적 광고 동기 정보를 넘긴다(5장). 보청기는 스캔 없이 BIG에 동기화해 BIS를 받는다(9장).</p>
+    <p>방송(Auracast)에서는 휴대폰이 <b>방송 도우미</b>가 된다. 보청기 대신 스캔해서 방송을 찾고, <span class="term">BASS</span>로 보청기에 “이 방송 묶음(SID)을 들어라”를 쓰고, 필요하면 <span class="term">방송 코드</span>를 넣어 주고, <span class="term">PAST</span>로 주기적 광고 동기 정보를 넘긴다(5장). 보청기는 스캔 없이 BIG에 동기화해 BIS를 받는다(9장).</p>
     <p class="spec-ref">CAP·CSIP·BASS(Bluetooth SIG 사양) · BIG 동기와 PAST: <b>[Vol 6] Part B §4.4.6, §5.1.13</b> · 방송 코드: <b>[Vol 3] Part C §3.2.6</b></p>
   </section>
 

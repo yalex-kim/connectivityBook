@@ -33,7 +33,7 @@
   <header class="chapter-hero">
     <div class="eyebrow">Chapter 10</div>
     <h1>L2CAP: 채널, 신호, 크레딧 기반 흐름 제어</h1>
-    <p class="lead">HCI의 ACL 데이터(2장) 위, ATT와 SMP 아래에 L2CAP이 있다. 하는 일은 셋이다. 한 연결 위에 여러 “채널”을 나눠 싣고, 채널을 열고 닫는 신호를 주고받고, 큰 데이터(SDU)를 작은 조각으로 나눠 상대가 받을 수 있는 만큼만 보낸다. 이 장은 LE의 L2CAP을 따라가며, 파일 하나가 SDU → <span class="term">K-frame</span> → HCI ACL 조각 → LL PDU로 쪼개지는 과정을 바이트 단위로 계산한다.</p>
+    <p class="lead"><span class="term">HCI</span>의 ACL 데이터(2장) 위, ATT와 SMP 아래에 L2CAP이 있다. 하는 일은 셋이다. 한 연결 위에 여러 “채널”을 나눠 싣고, 채널을 열고 닫는 신호를 주고받고, 큰 데이터(SDU)를 작은 조각으로 나눠 상대가 받을 수 있는 만큼만 보낸다. 이 장은 LE의 L2CAP을 따라가며, 파일 하나가 SDU → <span class="term">K-frame</span> → HCI ACL 조각 → LL <span class="term">PDU</span>로 쪼개지는 과정을 바이트 단위로 계산한다.</p>
     <ul class="objectives">
       <li>LE의 고정 채널과 동적 채널, L2CAP 기본 머리말과 신호 명령의 형식을 안다.</li>
       <li>LE 크레딧 기반 흐름 제어의 K-frame, MTU·MPS, 크레딧 규칙과 위반 시 동작을 설명할 수 있다.</li>

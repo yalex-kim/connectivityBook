@@ -97,7 +97,7 @@
     <p>이 책에서 가장 많이 헷갈리는 것은 “같은 값이 어디서는 앞뒤가 뒤집혀 보인다”는 점이다. 규칙은 세 가지뿐이다.</p>
     <ol>
       <li><b>값</b>을 적을 때는 사람처럼 큰 자리부터(MSO 먼저): 접근 주소 0x8E89BED6.</li>
-      <li><b><span class="term">HCI</span>와 대부분의 PDU 필드</b>는 <span class="term">리틀 엔디언</span>: 작은 바이트가 먼저. 0x8E89BED6은 D6 BE 89 8E 순서로 놓인다.</li>
+      <li><b><span class="term">HCI</span>와 대부분의 <span class="term">PDU</span> 필드</b>는 <span class="term">리틀 엔디언</span>: 작은 바이트가 먼저. 0x8E89BED6은 D6 BE 89 8E 순서로 놓인다.</li>
       <li><b>공중</b>에서는 필드마다 LSB가 먼저 나간다. 3비트 값 3은 1, 1, 0 순서로 보내고 사양은 이것을 “110”이라 적는다.</li>
     </ol>
     <p>예제 데이터의 표기는 곳마다 다르다. [Vol 2] Part G §10은 “가장 낮은 바이트가 왼쪽”, 같은 Part G의 §7과 [Vol 3] Part H 부록 D는 “큰 바이트가 왼쪽”, Part G §3의 <span class="term">동기어</span>는 전송 순서 그대로 4비트씩 끊은 16진이다. 각 장은 예제를 쓸 때 어느 표기인지 밝혀 두었다.</p>

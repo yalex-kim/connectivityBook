@@ -37,7 +37,7 @@
   <header class="chapter-hero">
     <div class="eyebrow">Chapter 11</div>
     <h1>FiRa 세션: 라운드·슬롯·역할</h1>
-    <p class="lead">6장의 핑퐁은 두 기기가 “언제, 어느 채널에서, 어떤 코드로, 누가 먼저” 보낼지 이미 안다고 가정했다. 실제로는 그 약속부터 정해야 한다. iPhone과 갤럭시가 서로를, 또 다른 회사의 태그를 잴 수 있으려면 약속의 형식이 같아야 한다. FiRa Consortium이 정하고 Android UWB 스택이 구현한 그 약속, <b>세션</b>을 들여다본다.</p>
+    <p class="lead">6장의 핑퐁은 두 기기가 “언제, 어느 채널에서, 어떤 코드로, 누가 먼저” 보낼지 이미 안다고 가정했다. 실제로는 그 약속부터 정해야 한다. iPhone과 갤럭시가 서로를, 또 다른 회사의 태그를 잴 수 있으려면 약속의 형식이 같아야 한다. <span class="term">FiRa</span> Consortium이 정하고 Android <span class="term">UWB</span> 스택이 구현한 그 약속, <b>세션</b>을 들여다본다.</p>
     <ul class="objectives">
       <li>컨트롤러·컨트롤리와 시작자·응답자, 두 쌍의 역할을 구분한다.</li>
       <li>RSTU, 슬롯, 라운드, 측정 간격의 관계를 Android 기본값으로 계산한다.</li>
@@ -53,7 +53,7 @@
       <li><b><span class="term">컨트롤러</span> / 컨트롤리</b><span class="en">(controller / controlee)</span>: 누가 세션의 설정(채널, 코드, 간격, 슬롯)을 정하고 시간표를 내는가. 컨트롤러가 <span class="term">라운드</span>마다 제어 메시지로 시간표를 알린다.</li>
       <li><b>시작자 / 응답자</b><span class="en">(initiator / responder)</span>: 6장의 핑퐁에서 누가 Poll을 보내는가. 보통 컨트롤러가 시작자지만, 둘은 별개의 설정이다.</li>
     </ul>
-    <p>휴대폰과 분실물 태그라면 휴대폰이 컨트롤러·시작자, 태그가 컨트롤리·응답자다. Android는 TDoA용으로 광고자·관찰자 역할도 둔다(9장).</p>
+    <p>휴대폰과 분실물 태그라면 휴대폰이 컨트롤러·시작자, 태그가 컨트롤리·응답자다. Android는 <span class="term">TDoA</span>용으로 광고자·관찰자 역할도 둔다(9장).</p>
     <p class="spec-ref">역할 값: Android <code>FiraParams.java</code>의 <code>RANGING_DEVICE_ROLE_RESPONDER = 0</code>, <code>_INITIATOR = 1</code>, <code>_ADVERTISER = 5</code>, <code>_OBSERVER = 6</code> · 일대다: <code>MULTI_NODE_MODE_UNICAST = 0</code>, <code>_ONE_TO_MANY = 1</code>, <code>_MANY_TO_MANY = 2</code></p>
   </section>
 
@@ -62,7 +62,7 @@
     <h2>RSTU, 슬롯, 라운드, 간격</h2>
     <p>FiRa의 시간은 네 층이다.</p>
     <ol>
-      <li><span class="term">RSTU</span><span class="en">(Ranging Scheduling Time Unit)</span>: 1/1.2 µs ≈ 833.3 ns. 499.2 MHz 칩 416개 길이다. 자동차 키(CCC)는 400 RSTU = 1/3 ms를 “chap”이라 부른다.</li>
+      <li><span class="term">RSTU</span><span class="en">(Ranging Scheduling Time Unit)</span>: 1/1.2 µs ≈ 833.3 ns. <span class="term">499.2 MHz</span> 칩 416개 길이다. 자동차 키(<span class="term">CCC</span>)는 400 RSTU = 1/3 ms를 “chap”이라 부른다.</li>
       <li><b>슬롯</b>: 프레임 하나를 보내는 칸. Android 기본 2,400 RSTU = 2 ms. 4장의 거리 측정 프레임(약 140 µs)이 넉넉히 들어간다.</li>
       <li><b>라운드</b>: 한 번의 거리 측정에 필요한 메시지들이 차례로 들어가는 슬롯 묶음. 기본 25슬롯 = 50 ms.</li>
       <li><b>측정 간격</b>(ranging interval): 라운드가 다시 돌아오는 주기. 기본 200 ms, 즉 초당 5번. 라운드 사이에는 칩이 잔다(12장).</li>
