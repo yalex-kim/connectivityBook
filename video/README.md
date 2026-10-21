@@ -4,7 +4,7 @@
 
 | 영상 | 컴포지션 | 형식 | 근거 |
 |---|---|---|---|
-| 블루투스는 왜 AFH가 필요할까: Wi-Fi와의 공존 | `AfhExplainerVoice` (나레이션) · `AfhExplainer` (무음) | 가로 1920×1080, 30fps, 나레이션판 약 1분 38초 · 무음판 약 1분 52초 | BluetoothBook 입문 2장(radio)·4장(hopping), [Vol 6] Part B §4.5.8, [Vol 2] Part B §2.6.3 |
+| 블루투스는 왜 AFH가 필요할까: Wi-Fi와의 공존 | `AfhExplainerVoice` (나레이션) · `AfhExplainer` (무음) | 가로 1920×1080, 30fps, 나레이션판 약 1분 44초 · 무음판 약 1분 52초 | BluetoothBook 입문 2장(radio)·4장(hopping), [Vol 6] Part B §4.5.8, [Vol 2] Part B §2.6.3 |
 
 ## 준비
 
@@ -39,14 +39,17 @@ npm run loudnorm # 나레이션판 음량을 −16 LUFS로 맞춤 → out/afh-ex
 
 ## 나레이션
 
-나레이션은 `src/afh/script.ts`의 `say` 문장을 타입캐스트로 읽은 것입니다. 화면 자막은 `caption`입니다.
+나레이션은 `src/afh/script.ts`의 `say` 문장들을 타입캐스트로 읽은 것입니다. 화면 자막은 같은 문장을 기호로 적은 `caption`이고, 나레이션이 그 문장을 읽는 동안 보입니다(두 배열의 문장 수가 같아야 한다).
 
 ```bash
 set -a; . /volume1/dev/k-history-video-agent/.env; set +a   # TYPECAST_API_KEY, TYPECAST_VOICE_ID
-/volume1/dev/k-history-video-agent/.venv/bin/python scripts/narrate.py
+/volume1/dev/k-history-video-agent/.venv/bin/python scripts/narrate.py [--redo hop,map] [--pitch hop:-2]
 ```
 
-- 장면마다 `public/audio/<id>.wav`를 한 번만 만든다. 이미 있으면 건너뛰므로, 문장을 고친 장면만 그 파일을 지우고 다시 돌린다.
+- 장면마다 `public/audio/<id>.wav`를 한 번만 만든다. 문장을 고친 장면은 `--redo`로 지정해야 다시 만든다(지정하지 않으면 옛 음성이라고 알리고 멈춘다).
+- 감정은 장면마다 자동으로 고르지 않고 '보통'으로 고정한다. 자동 선택(SmartPrompt)은 장면마다 톤이 튀었다(도약 장면이 다른 장면보다 약 5반음 높았다).
+- 한 장면만 톤이 튀면 `--pitch <id>:<반음>`으로 그 음성의 높이만 바꾼다(ffmpeg rubberband, 길이 그대로, 타입캐스트를 다시 부르지 않음).
+- 음성에서 쉼 위치를 찾아 문장이 바뀌는 시각(`cues`)을 기록한다. 자막 전환, 공식 장면의 막대, 덮인 채널의 하나 → 셋 전환 같은 화면 변화가 이 시각에 맞춰진다.
 - 타입캐스트는 무료 계정이라 실패해도 자동으로 다시 부르지 않고 멈춘다.
-- 끝나면 `src/afh/durations.json`(장면별 음성 길이)을 쓴다. 나레이션판은 장면 길이를 음성 길이 + 여백(0.3초 앞, 0.6초 뒤)으로 맞추고, 애니메이션이 다 보이는 최소 길이보다 짧게는 줄이지 않는다.
+- 끝나면 `src/afh/durations.json`(장면별 음성 길이, 문장 시각, 문장, 음높이 조정)을 쓴다. `npm run check`가 이 파일이 지금 대본으로 만든 것인지 확인한다. 나레이션판은 장면 길이를 음성 길이 + 여백(0.3초 앞, 0.6초 뒤)으로 맞추고, 애니메이션이 다 보이는 최소 길이보다 짧게는 줄이지 않는다.
 - 음성 파일은 저장소에 올리지 않는다(`.gitignore`). 길이 파일만 올린다.

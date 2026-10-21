@@ -8,12 +8,27 @@ import { Band, Caption, Card, Grid, RunningLoss, Title, clamp, fade, useFont, us
 import DURATIONS from "./durations.json";
 
 /** 장면마다 애니메이션이 다 보이려면 필요한 최소 길이(프레임) */
-const MIN: Record<Scene["id"], number> = { hook: 150, band: 200, hop: 150, cover: 280, formula: 300, grid: 300, retx: 210, afh: 300, map: 200, outro: 120 };
+const MIN: Record<Scene["id"], number> = { hook: 150, band: 200, hop: 120, cover: 280, formula: 300, grid: 200, retx: 210, afh: 300, map: 330, outro: 150 };
 const LEAD = 9; // 음성은 장면 시작 0.3초 뒤에
 const TAIL = 18; // 음성이 끝나고 0.6초 쉼
-/** 나레이션판: 장면 길이 = 음성 길이 + 여백(최소 길이 이상) */
-const voiced = (s: Scene): Scene => ({ ...s, frames: Math.max(MIN[s.id], Math.ceil(((DURATIONS as Record<string, number>)[s.id] ?? 0) * 30) + LEAD + TAIL) });
-export const scenesFor = (voice: boolean) => (voice ? SCENES.map(voiced) : SCENES);
+
+/** 길이와 문장 시작 시각(장면 안 프레임, 첫 문장은 0)이 정해진 장면 */
+export type Timed = Scene & { cues: number[] };
+type Dur = { dur: number; cues: number[]; text: string };
+const DUR = DURATIONS as Record<string, Dur>;
+
+/** 무음판: 문장 시작을 글자 수 비율로 나눈다 */
+const silent = (s: Scene): Timed => {
+  const total = s.say.reduce((n, x) => n + x.length, 0), span = s.frames - 30;
+  let acc = 0;
+  return { ...s, cues: s.say.map((x) => { const c = 10 + Math.round((span * acc) / total); acc += x.length; return c; }) };
+};
+/** 나레이션판: 장면 길이 = 음성 길이 + 여백(최소 길이 이상), 문장 시작 = 음성에서 찾은 시각 */
+const voiced = (s: Scene): Timed => {
+  const d = DUR[s.id];
+  return { ...s, frames: Math.max(MIN[s.id], Math.ceil(d.dur * 30) + LEAD + TAIL), cues: [0, ...d.cues.map((c) => LEAD + Math.round(c * 30))] };
+};
+export const scenesFor = (voice: boolean): Timed[] => SCENES.map(voice ? voiced : silent);
 export const framesFor = (voice: boolean) => scenesFor(voice).reduce((n, s) => n + s.frames, 0);
 
 const BLOCKED = wifiBlocked(WIFI);
@@ -56,10 +71,10 @@ const HopScene: React.FC = () => {
 };
 
 /* 5. 덮인 채널: 하나 → 셋 */
-const Cover: React.FC<{ len: number }> = ({ len }) => {
-  const f = useCurrentFrame(), half = len / 2, three = f > half;
+const Cover: React.FC<{ len: number; cues: number[] }> = ({ len, cues }) => {
+  const f = useCurrentFrame(), one = cues[1], half = cues[2], three = f > half;
   const order = [...(three ? BLOCKED : ONE)].sort((a, b) => a - b);
-  const prog = three ? interpolate(f, [half + 20, len - 50], [0, 1], clamp) : interpolate(f, [20, half - 30], [0, 1], clamp);
+  const prog = three ? interpolate(f, [half + 10, Math.min(len - 30, half + 90)], [0, 1], clamp) : interpolate(f, [one, Math.min(half - 10, one + 90)], [0, 1], clamp);
   const covered = new Set(order.slice(0, Math.round(prog * order.length)));
   const wifi = three ? wifiAll(interpolate(f, [half, half + 30], [1 / 3, 1], clamp)).map((w) => (w.ch === 6 ? { ...w, a: 1 } : w)) : [{ ch: 6, a: 1 }];
   return (
@@ -75,7 +90,7 @@ const Cover: React.FC<{ len: number }> = ({ len }) => {
 };
 
 /* 6. 공식과 조건별 예시 */
-const Formula: React.FC<{ len: number }> = ({ len }) => {
+const Formula: React.FC<{ cues: number[] }> = ({ cues }) => {
   const a = useIn(10);
   return (
     <>
@@ -85,7 +100,7 @@ const Formula: React.FC<{ len: number }> = ({ len }) => {
           깨질 확률 ≈ <span style={{ color: C.warn }}>덮인 채널 비율</span> × <span style={{ color: C.warn }}>Wi-Fi가 말하는 시간 비율</span>
         </div>
       </Card>
-      {CASES.map(([name, w, d], i) => <CaseBar key={name} i={i} name={name} wifi={w} duty={d} at={Math.round(len * [0.36, 0.56, 0.76][i])} />)}
+      {CASES.map(([name, w, d], i) => <CaseBar key={name} i={i} name={name} wifi={w} duty={d} at={cues[i + 1]} />)}
       <div style={{ position: "absolute", top: 838, left: 0, right: 0, textAlign: "center", fontFamily: FONT, color: C.dim, fontSize: 28 }}>겹치면 깨진다고 단순화한 계산 · 같은 공식, 다른 조건이면 숫자도 바뀐다</div>
     </>
   );
@@ -106,19 +121,19 @@ const CaseBar: React.FC<{ i: number; name: string; wifi: number[]; duty: number;
 
 /* 7. 격자 + 누적 그래프 */
 const GridScene: React.FC<{ len: number }> = ({ len }) => {
-  const f = useCurrentFrame(), t = interpolate(f, [15, len - 40], [0, 1], clamp);
+  const f = useCurrentFrame(), t = interpolate(f, [8, len - 24], [0, 1], clamp);
   return (
     <>
       <Title kicker="실제로 뛰어 보면 · Wi-Fi 1·6·11, 각 50%">처음엔 들쭉날쭉, 길게 보면 계산값 근처</Title>
       <Grid x={110} y={250} w={820} h={540} events={HOP.slice(0, GRID_N)} shown={t * GRID_N} blocked={BLOCKED} />
-      <RunningLoss x={1060} y={250} w={750} h={540} events={HOP} shown={Math.pow(t, 1.6) * RUN_N} expected={EXP} />
+      <RunningLoss x={1060} y={250} w={750} h={540} events={HOP} shown={Math.pow(t, 1.4) * RUN_N} expected={EXP} />
     </>
   );
 };
 
 /* 8. 재전송 */
-const Retx: React.FC<{ len: number }> = ({ len }) => {
-  const a = useIn(10), b = useIn(Math.round(len * 0.4)), c = useIn(Math.round(len * 0.62));
+const Retx: React.FC<{ len: number; cues: number[] }> = ({ len, cues }) => {
+  const a = useIn(10), b = useIn(cues[1]), c = useIn(Math.round(cues[1] + 0.45 * (len - cues[1])));
   const box = (txt: string, sub: string, col: string, p: number, x: number) => (
     <Card x={x} y={300} w={500} h={430} a={p}>
       <div style={{ fontSize: 44, fontWeight: 900, color: col }}>{txt}</div>
@@ -136,13 +151,13 @@ const Retx: React.FC<{ len: number }> = ({ len }) => {
 };
 
 /* 9. AFH */
-const Afh: React.FC<{ len: number }> = ({ len }) => {
-  const f = useCurrentFrame(), rm = interpolate(f, [20, 110], [0, 1], clamp), shown = interpolate(f, [140, len - 30], [0, GRID_N], clamp);
+const Afh: React.FC<{ len: number; cues: number[] }> = ({ len, cues }) => {
+  const f = useCurrentFrame(), go = cues[1] + 75, rm = interpolate(f, [cues[1], cues[1] + 60], [0, 1], clamp), shown = interpolate(f, [go + 10, len - 20], [0, GRID_N], clamp), info = useIn(cues[2]);
   const lost = AFH.slice(0, Math.floor(shown)).filter((e) => e.hit).length;
   return (
     <>
       <Title kicker="AFH · 적응형 주파수 도약">붐비는 채널을 채널 맵에서 빼고 뛴다</Title>
-      {f < 130 ? (
+      {f < go ? (
         <Band x={160} y={290} w={1600} wifi={wifiAll(1)} bars={1} covered={BLOCKED} removed={rm} />
       ) : (
         <>
@@ -150,7 +165,7 @@ const Afh: React.FC<{ len: number }> = ({ len }) => {
           <Card x={1290} y={250} w={520} h={540}>
             <div style={{ fontSize: 30, color: C.dim }}>이 가정에서 깨진 패킷</div>
             <div style={{ fontSize: 80, fontWeight: 900, color: C.ok, marginTop: 6 }}>{lost} / {Math.max(1, Math.floor(shown))}</div>
-            <div style={{ fontSize: 28, color: C.dim, marginTop: 30, lineHeight: 1.6 }}>
+            <div style={{ fontSize: 28, color: C.dim, marginTop: 30, lineHeight: 1.6, opacity: info }}>
               <b style={{ color: C.text }}>Classic</b> 79채널 · 최소 20개 사용<br />
               <b style={{ color: C.text }}>저전력(LE)</b> 37채널 · 최소 2개 사용<br />
               둘 다 채널 맵으로 도약할 채널을 고른다
@@ -162,60 +177,103 @@ const Afh: React.FC<{ len: number }> = ({ len }) => {
   );
 };
 
-/* 10. 채널 맵 만들기 */
-const MapScene: React.FC = () => {
-  const steps: [string, string][] = [
-    ["① 재기", "센트럴이 채널마다 패킷 오류와 잡음을 잰다"],
-    ["② 분류", "채널을 좋음 · 나쁨 · 알 수 없음으로 나눈다"],
-    ["③ 알리기", "새 채널 맵을 상대에게 보내고, 정해진 순간부터 함께 쓴다"],
-  ];
+/* 10. 채널 맵 만들기: 재기 → 가리기 → 보내기 → 같은 맵으로 뛰기 */
+const MapScene: React.FC<{ len: number; cues: number[] }> = ({ len, cues }) => {
+  const f = useCurrentFrame(), m = cues[1], send = cues[2];
+  const X0 = 420, CW = 29, Y = 330;
+  const scan = interpolate(f, [m, m + 110], [0, 37], clamp); // 재면서 가리기
+  const bits = interpolate(f, [send, send + 25], [0, 1], clamp); // 채널 맵 만들기
+  const fly = interpolate(f, [send + 30, send + 95], [0, 1], clamp); // 상대에게 보내기
+  const both = interpolate(f, [send + 100, send + 120], [0, 1], clamp); // 같은 맵으로 뛰기
+  const good = [...Array(37).keys()].filter((c) => !BLOCKED.has(c));
+  const hopCh = good[Math.floor(f / 8) % good.length * 7 % good.length];
+  const dev = (x: number, label: string, icon: React.ReactNode, on: number) => (
+    <g>
+      <circle cx={x} cy={Y + 150} r={92} fill={C.panel} stroke={on ? C.ok : "#2a3a58"} strokeWidth={4} />
+      <g transform={`translate(${x},${Y + 150})`}>{icon}</g>
+      <text x={x} y={Y + 285} textAnchor="middle" fill={C.text} fontFamily={FONT} fontSize={30} fontWeight={700}>{label}</text>
+      <g opacity={on}>
+        <rect x={x - 70} y={Y + 305} width={140} height={40} rx={20} fill={C.ok} />
+        <text x={x} y={Y + 333} textAnchor="middle" fill={C.bg} fontFamily={FONT} fontSize={24} fontWeight={800}>같은 맵</text>
+      </g>
+    </g>
+  );
+  const phone = <g><rect x={-30} y={-56} width={60} height={112} rx={12} fill={C.panel} stroke={C.text} strokeWidth={4} /><rect x={-22} y={-44} width={44} height={84} rx={4} fill="#1d3557" /></g>;
+  const buds = <g>{[-24, 24].map((x) => <g key={x} transform={`translate(${x},0) scale(${x < 0 ? -1 : 1},1)`}><circle cx={0} cy={-12} r={17} fill={C.panel} stroke={C.text} strokeWidth={4} /><rect x={4} y={-8} width={12} height={42} rx={6} fill={C.panel} stroke={C.text} strokeWidth={4} /></g>)}</g>;
   return (
     <>
       <Title kicker="채널 맵">피할 채널은 어떻게 알까?</Title>
-      {steps.map(([h, t], i) => <MapStep key={h} i={i} h={h} t={t} />)}
-      <div style={{ position: "absolute", top: 820, left: 0, right: 0, textAlign: "center", fontFamily: FONT, color: C.dim, fontSize: 26 }}>호스트가 “이 채널은 나쁘다”고 알려 줄 수도 있다 (HCI_LE_Set_Host_Channel_Classification)</div>
+      <svg width={1920} height={1080} viewBox="0 0 1920 1080" style={{ position: "absolute", inset: 0 }}>
+        {dev(230, "센트럴", phone, both)}
+        {dev(1690, "상대 기기", buds, both)}
+        <text x={X0} y={Y - 18} fill={C.dim} fontFamily={FONT} fontSize={26}>채널 0 ~ 36</text>
+        {Array.from({ length: 37 }, (_, c) => {
+          const done = c < scan, bad = BLOCKED.has(c);
+          return (
+            <g key={c}>
+              <rect x={X0 + c * CW} y={Y} width={CW - 4} height={64} rx={5} fill={!done ? "#2b3b57" : bad ? C.bad : C.ok} opacity={done ? 0.9 : 1} />
+              {done && bad && <text x={X0 + c * CW + (CW - 4) / 2} y={Y + 42} textAnchor="middle" fill="#fff" fontFamily={FONT} fontSize={22} fontWeight={900}>✕</text>}
+              <g opacity={bits}>
+                <rect x={X0 + c * CW} y={Y + 110} width={CW - 4} height={50} rx={5} fill={bad ? "#1b2740" : "#16443a"} />
+                <text x={X0 + c * CW + (CW - 4) / 2} y={Y + 145} textAnchor="middle" fill={bad ? C.faint : C.ok} fontFamily={FONT} fontSize={24} fontWeight={800}>{bad ? 0 : 1}</text>
+              </g>
+            </g>
+          );
+        })}
+        {scan > 0 && scan < 37 && <rect x={X0 + scan * CW - 3} y={Y - 10} width={6} height={84} fill={C.text} />}
+        <g opacity={interpolate(f, [m, m + 20], [0, 1], clamp)}>
+          <text x={X0 + 37 * CW} y={Y - 18} textAnchor="end" fontFamily={FONT} fontSize={26}>
+            <tspan fill={C.dim}>재서 가리기: </tspan><tspan fill={C.ok} fontWeight={700}>좋음</tspan><tspan fill={C.dim}> · </tspan><tspan fill={C.bad} fontWeight={700}>나쁨</tspan>
+          </text>
+        </g>
+        <text x={X0} y={Y + 100} fill={C.dim} fontFamily={FONT} fontSize={26} opacity={bits}>채널 맵 (1 = 쓴다, 0 = 뺀다)</text>
+        {fly > 0 && (
+          <g transform={`translate(${interpolate(fly, [0, 1], [330, 1590])},${Y + 250})`} opacity={1 - both}>
+            <rect x={-150} y={-34} width={300} height={68} rx={16} fill={C.accent} />
+            <text x={0} y={-2} textAnchor="middle" fill={C.bg} fontFamily={FONT} fontSize={24} fontWeight={800}>새 채널 맵</text>
+            <text x={0} y={24} textAnchor="middle" fill={C.bg} fontFamily={FONT} fontSize={20} fontWeight={700}>+ 적용 시점(instant)</text>
+          </g>
+        )}
+        {both > 0 && (
+          <g opacity={both}>
+            <circle cx={X0 + hopCh * CW + (CW - 4) / 2} cy={Y + 135} r={20} fill="none" stroke={C.text} strokeWidth={4} />
+            <text x={960} y={Y + 270} textAnchor="middle" fill={C.text} fontFamily={FONT} fontSize={30} fontWeight={700}>정해진 순간부터 둘이 같은 맵으로, 1인 채널만 골라 뛴다</text>
+          </g>
+        )}
+      </svg>
     </>
-  );
-};
-const MapStep: React.FC<{ i: number; h: string; t: string }> = ({ i, h, t }) => {
-  const a = useIn(10 + i * 60);
-  return (
-    <Card x={160 + i * 550} y={290} w={500} h={440} a={a}>
-      <div style={{ fontSize: 48, fontWeight: 900, color: C.accent }}>{h}</div>
-      <div style={{ fontSize: 34, color: C.text, marginTop: 24, lineHeight: 1.5, wordBreak: "keep-all" }}>{t}</div>
-    </Card>
   );
 };
 
 /* 11. 정리 */
-const Outro: React.FC = () => {
-  const a = useIn(0), b = useIn(30);
+const Outro: React.FC<{ cues: number[] }> = ({ cues }) => {
+  const a = useIn(0), b = useIn(cues[1]);
   return (
-    <div style={{ position: "absolute", top: 230, left: 0, right: 0, textAlign: "center", fontFamily: FONT }}>
-      <div style={{ opacity: a, color: C.text, fontSize: 68, fontWeight: 900 }}>같은 대역을 나눠 쓰는 비결은<br /><span style={{ color: C.accent }}>피할 채널을 아는 것</span></div>
-      <div style={{ opacity: b, color: C.dim, fontSize: 36, marginTop: 60 }}>직접 계산해 보기 · ConnectivityBook · BluetoothBook 입문 4장 “주파수 도약”</div>
-      <div style={{ opacity: b, color: C.faint, fontSize: 30, marginTop: 16 }}>yalex-kim.github.io/connectivityBook</div>
+    <div style={{ position: "absolute", top: 250, left: 0, right: 0, textAlign: "center", fontFamily: FONT }}>
+      <div style={{ opacity: a, color: C.text, fontSize: 66, fontWeight: 900, lineHeight: 1.3 }}>블루투스는 붐비는 채널을 알아내<br /><span style={{ color: C.accent }}>채널 맵에서 빼고 뛴다</span></div>
+      <div style={{ opacity: b, color: C.dim, fontSize: 40, fontWeight: 600, marginTop: 50 }}>그래서 같은 대역의 Wi-Fi와 함께 지낼 수 있다</div>
+      <div style={{ opacity: b, color: C.faint, fontSize: 26, marginTop: 90 }}>BluetoothBook 입문 4장 “주파수 도약” · ConnectivityBook</div>
     </div>
   );
 };
 
-const body = (s: Scene) => {
+const body = (s: Timed) => {
   switch (s.id) {
     case "hook": return <Hook />;
     case "band": return <BandScene />;
     case "hop": return <HopScene />;
-    case "cover": return <Cover len={s.frames} />;
-    case "formula": return <Formula len={s.frames} />;
+    case "cover": return <Cover len={s.frames} cues={s.cues} />;
+    case "formula": return <Formula cues={s.cues} />;
     case "grid": return <GridScene len={s.frames} />;
-    case "retx": return <Retx len={s.frames} />;
-    case "afh": return <Afh len={s.frames} />;
-    case "map": return <MapScene />;
-    case "outro": return <Outro />;
+    case "retx": return <Retx len={s.frames} cues={s.cues} />;
+    case "afh": return <Afh len={s.frames} cues={s.cues} />;
+    case "map": return <MapScene len={s.frames} cues={s.cues} />;
+    case "outro": return <Outro cues={s.cues} />;
   }
 };
 
-const SceneFrame: React.FC<{ s: Scene; voice: boolean }> = ({ s, voice }) => {
-  const f = useCurrentFrame();
+const SceneFrame: React.FC<{ s: Timed; voice: boolean }> = ({ s, voice }) => {
+  const f = useCurrentFrame(), k = s.cues.filter((c) => c <= f).length - 1;
   return (
     <AbsoluteFill style={{ opacity: fade(f, s.frames) }}>
       {body(s)}
@@ -224,7 +282,7 @@ const SceneFrame: React.FC<{ s: Scene; voice: boolean }> = ({ s, voice }) => {
           <Audio src={staticFile(`audio/${s.id}.wav`)} />
         </Sequence>
       )}
-      <Caption text={s.caption} />
+      <Caption key={k} text={s.caption[Math.max(0, k)]} />
     </AbsoluteFill>
   );
 };
