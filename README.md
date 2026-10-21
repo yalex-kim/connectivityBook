@@ -17,6 +17,7 @@ GitHub Pages 주소: https://yalex-kim.github.io/connectivityBook/
 ```
 index.html              전체 책장 (assets/books.js의 목록을 그린다)
 assets/books.js         책 목록 데이터 — 새 책을 여기에 등록
+assets/videos.js        영상 목록 — 서재의 영상 섹션, 장 본문의 "영상으로 보기", 통합 검색에 쓰인다
 assets/search-index.js  서재 통합 검색 색인 (tools/build_search.py가 만든다)
 shared/                 네 책이 함께 쓰는 common.js·style.css 원본 (tools/sync_shared.py로 각 책에 복사)
 tools/                  sync_shared.py, build_search.py
