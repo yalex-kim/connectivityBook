@@ -10,11 +10,12 @@ for f in */scripts/verify-factcheck.cjs; do node "$f"; done   # 책마다 계산
 python3 tools/sync_shared.py [--check]               # shared/ → 각 책의 js/common.js, css/style.css
 python3 tools/build_search.py [--check]              # 서재 통합 검색 색인 assets/search-index.js
 python3 tools/mark_terms.py [책...] [--check]        # 용어집 표제어·약어·별칭에 툴팁 달기(장마다 처음 나오는 곳)
+python3 tools/spec_links.py [--check]               # 블루투스 두 책의 "[Vol x] Part y §z" → 사양서 웹판 절 주소표 assets/bt-spec.js (새 절을 인용하면 다시 돌린다, 네트워크)
 python3 tools/stamp_assets.py <버전>                # (배포 때 CI만) js·css 주소에 ?v=<커밋> 붙이기. 로컬에서 돌리지 않는다
 (cd <책> && python3 tools/seo.py)                    # canonical/OG/JSON-LD, 책 sitemap
 ```
 
-CI(`.github/workflows/pages.yml`)가 PR과 `main` push마다 `sync_shared.py --check`, `build_search.py --check`, `mark_terms.py --check`, 모든 `verify-factcheck.cjs`를 돌리고, 통과해야 배포한다.
+CI(`.github/workflows/pages.yml`)가 PR과 `main` push마다 `sync_shared.py --check`, `build_search.py --check`, `mark_terms.py --check`, `spec_links.py --check`, 모든 `verify-factcheck.cjs`를 돌리고, 통과해야 배포한다.
 
 ## 구조
 
