@@ -133,7 +133,7 @@
     </table></div>
     <h3>흔한 초기화 순서</h3>
     <p>사양이 순서를 하나로 정하지는 않지만, 공개 스택들은 대체로 이렇게 시작한다. HCI_Reset → Read_Local_Version_Information(코어 버전) → Read_Local_Supported_Commands → LE_Read_Local_Supported_Features → Set_Event_Mask·LE_Set_Event_Mask → LE_Read_Buffer_Size(데이터를 보내기 전 필수) → Read_BD_ADDR. 해독기의 “흔한 초기화 순서”가 이 흐름의 바이트다. 리셋 직후 명령을 하나씩만 보내는 것도 위의 명령 크레딧 규칙 때문이다.</p>
-    <p class="spec-ref">Set_Event_Mask: <b>[Vol 4] Part E §7.3.1</b> · LE_Set_Event_Mask [v1]·[v2]: <b>§7.8.1</b> · Read_Local_Supported_Commands [v1]·[v2]: <b>§7.4.2</b> · 버전 있는 이벤트: <b>§4.8</b> · 6.3 새 기능: <b>[Vol 1] Part C §17.1</b> · 버전 정보: <b>§7.4.1</b></p>
+    <p class="spec-ref">Set_Event_Mask: <b>[Vol 4] Part E §7.3.1</b> · LE_Set_Event_Mask [v1]·[v2]: <b>§7.8.1</b> · Read_Local_Supported_Commands [v1]·[v2]: <b>§7.4.2</b> · 버전 있는 이벤트: <b>§4.8</b> · 6.3 새 기능: <b>[Vol 1] Part C §17.1</b> · 버전 정보: <b>[Vol 4] Part E §7.4.1</b></p>
   </section>
 
   <div class="callout related"><strong>다른 책에서</strong><ul><li><a href="../../bluetooth/chapters/intro.html">BluetoothBook 01장 · 블루투스란 무엇인가</a> — 호스트와 컨트롤러로 나뉜 스택</li></ul></div>

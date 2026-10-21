@@ -166,7 +166,7 @@
       </tbody>
     </table></div>
     <p>앞의 여덟 개를 <b>실시간 공존 신호</b>라 부른다. 신호는 실제 사건보다 조금 일찍 와야 쓸모가 있으므로, 사양은 권장 오프셋과 흔들림(지터) 범위도 정한다. 예를 들어 MWS_RX는 실제 수신 시작보다 2 ms ~ 20 µs 앞서 올리고, BLUETOOTH_TX_ON은 송신 시작보다 최대 100 µs 앞서 올리며, 대부분의 지터는 5 µs 이내다. 신호의 세부 설정(패턴의 모양, 스캔 주파수 표, 이동통신 채널의 중심 주파수와 폭)은 호스트가 <span class="term">HCI</span> 명령으로 미리 알려 준다.</p>
-    <p class="spec-ref">공존 신호(Table 2.1)와 각 신호 정의: <b>[Vol 7] Part A §2.1</b> · 오프셋·지터 권장값(Table 2.2·2.3): <b>§2.2</b> · HCI_Set_MWS_Channel_Parameters(0x006E), Set_MWS_Signaling(§7.3.82), Set_MWS_Transport_Layer(§7.3.83), Set_MWS_Scan_Frequency_Table(§7.3.84), Set_MWS_PATTERN_Configuration(0x0073, 구간 종류 0x00 불가·0x01 송신·0x02 수신·0x03 둘 다·0x04 MWS 프레임): <b>[Vol 4] Part E §7.3.80~§7.3.85</b></p>
+    <p class="spec-ref">공존 신호(Table 2.1)와 각 신호 정의: <b>[Vol 7] Part A §2.1</b> · 오프셋·지터 권장값(Table 2.2·2.3): <b>§2.2</b> · HCI MWS 명령: <b>[Vol 4] Part E §7.3.80~§7.3.85</b> — HCI_Set_MWS_Channel_Parameters(0x006E), Set_MWS_Signaling(§7.3.82), Set_MWS_Transport_Layer(§7.3.83), Set_MWS_Scan_Frequency_Table(§7.3.84), Set_MWS_PATTERN_Configuration(0x0073, 구간 종류 0x00 불가·0x01 송신·0x02 수신·0x03 둘 다·0x04 MWS 프레임)</p>
   </section>
 
   <!-- ============================================================ -->

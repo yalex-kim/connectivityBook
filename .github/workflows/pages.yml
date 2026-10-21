@@ -26,6 +26,8 @@ jobs:
         run: python3 tools/build_search.py --check
       - name: Glossary terms have tooltips
         run: python3 tools/mark_terms.py --check
+      - name: Spec citations link to the Core spec
+        run: python3 tools/spec_links.py --check
       # 책마다 scripts/verify-factcheck.cjs가 있으면 실행한다
       - name: Verify every book
         run: |
