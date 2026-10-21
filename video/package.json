@@ -4,9 +4,12 @@
   "description": "ConnectivityBook 내용을 Remotion으로 만든 영상",
   "scripts": {
     "studio": "remotion studio",
-    "render": "remotion render AfhExplainer out/afh-explainer.mp4",
+    "render": "remotion render AfhExplainerVoice out/afh-explainer.mp4",
     "still": "remotion still AfhExplainer out/still.png --frame=1500",
-    "check": "node scripts/check-book.mjs && tsc --noEmit"
+    "check": "node scripts/check-book.mjs && tsc --noEmit",
+    "render:silent": "remotion render AfhExplainer out/afh-explainer-silent.mp4",
+    "narrate": "python3 scripts/narrate.py",
+    "loudnorm": "ffmpeg -y -i out/afh-explainer.mp4 -c:v copy -af loudnorm=I=-16:TP=-1.5:LRA=11 -c:a aac -b:a 192k out/afh-explainer-final.mp4"
   },
   "dependencies": {
     "@remotion/cli": "4.0.537",

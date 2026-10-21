@@ -1,10 +1,20 @@
-import { AbsoluteFill, interpolate, Sequence, useCurrentFrame } from "remotion";
+import { AbsoluteFill, Audio, interpolate, Sequence, staticFile, useCurrentFrame } from "remotion";
 import { C, FONT } from "../theme";
 import { csa2Channel, CH_ID, expectedLoss, simulate, wifiBlocked, WIFI } from "../book";
-import { ASSUMPTIONS, CASES, SCENES, type Scene } from "./script";
+import { CASES, SCENES, type Scene } from "./script";
+import { DeviceRoom } from "./devices";
 import { Band, Caption, Card, Grid, RunningLoss, Title, clamp, fade, useFont, useIn } from "./parts";
 
-export const totalFrames = SCENES.reduce((n, s) => n + s.frames, 0);
+import DURATIONS from "./durations.json";
+
+/** 장면마다 애니메이션이 다 보이려면 필요한 최소 길이(프레임) */
+const MIN: Record<Scene["id"], number> = { hook: 150, band: 200, hop: 150, cover: 280, formula: 300, grid: 300, retx: 210, afh: 300, map: 200, outro: 120 };
+const LEAD = 9; // 음성은 장면 시작 0.3초 뒤에
+const TAIL = 18; // 음성이 끝나고 0.6초 쉼
+/** 나레이션판: 장면 길이 = 음성 길이 + 여백(최소 길이 이상) */
+const voiced = (s: Scene): Scene => ({ ...s, frames: Math.max(MIN[s.id], Math.ceil(((DURATIONS as Record<string, number>)[s.id] ?? 0) * 30) + LEAD + TAIL) });
+export const scenesFor = (voice: boolean) => (voice ? SCENES.map(voiced) : SCENES);
+export const framesFor = (voice: boolean) => scenesFor(voice).reduce((n, s) => n + s.frames, 0);
 
 const BLOCKED = wifiBlocked(WIFI);
 const ONE = wifiBlocked([6]);
@@ -15,19 +25,13 @@ const HOP = simulate(RUN_N, false), AFH = simulate(GRID_N, true);
 const EXP = expectedLoss(WIFI, 0.5);
 const wifiAll = (a: number) => WIFI.map((ch, i) => ({ ch, a: interpolate(a * 3 - i, [0, 1], [0, 1], clamp) }));
 
-/* 1. 훅: 같은 대역 + 결말 미리보기(빨간 격자 → 덮인 줄이 지워진 격자) */
-const Hook: React.FC = () => {
-  const f = useCurrentFrame();
-  return (
-    <>
-      <Title kicker="BLUETOOTH × Wi-Fi">같은 2.4 GHz, 왜 서로를 망가뜨리지 않을까?</Title>
-      <Grid x={110} y={260} w={800} h={520} events={HOP.slice(0, GRID_N)} shown={interpolate(f, [0, 120], [0, GRID_N], clamp)} blocked={BLOCKED} />
-      <Grid x={1010} y={260} w={800} h={520} events={AFH} shown={interpolate(f, [0, 120], [0, GRID_N], clamp)} blocked={BLOCKED} dimBlocked={1} />
-      <div style={{ position: "absolute", top: 818, left: 110, width: 800, textAlign: "center", fontFamily: FONT, color: C.dim, fontSize: 28 }}>그냥 뛰면</div>
-      <div style={{ position: "absolute", top: 818, left: 1010, width: 800, textAlign: "center", fontFamily: FONT, color: C.dim, fontSize: 28 }}>피할 채널을 알고 뛰면</div>
-    </>
-  );
-};
+/* 1. 훅: 같은 방에서 Wi-Fi 기기와 블루투스 기기를 함께 쓴다 */
+const Hook: React.FC = () => (
+  <>
+    <DeviceRoom />
+    <Title kicker="BLUETOOTH × Wi-Fi">같은 대역, 왜 서로를 망가뜨리지 않을까?</Title>
+  </>
+);
 
 /* 2. 같은 대역 */
 const BandScene: React.FC = () => {
@@ -51,27 +55,6 @@ const HopScene: React.FC = () => {
   );
 };
 
-/* 4. 가정 */
-const Assume: React.FC = () => (
-  <>
-    <Title kicker="가정">얼마나 부딪힐까? 이렇게 가정하고 계산한다</Title>
-    {ASSUMPTIONS.map((t, i) => (
-      <AssumeRow key={t} i={i} text={t} />
-    ))}
-  </>
-);
-const AssumeRow: React.FC<{ i: number; text: string }> = ({ i, text }) => {
-  const a = useIn(10 + i * 18);
-  return (
-    <Card x={360} y={250 + i * 150} w={1200} h={124} a={a}>
-      <div style={{ display: "flex", alignItems: "center", gap: 28, height: "100%" }}>
-        <div style={{ width: 56, height: 56, borderRadius: 28, background: C.accent, color: C.bg, fontSize: 32, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center" }}>{i + 1}</div>
-        <div style={{ fontSize: 40, fontWeight: 700 }}>{text}</div>
-      </div>
-    </Card>
-  );
-};
-
 /* 5. 덮인 채널: 하나 → 셋 */
 const Cover: React.FC<{ len: number }> = ({ len }) => {
   const f = useCurrentFrame(), half = len / 2, three = f > half;
@@ -81,7 +64,7 @@ const Cover: React.FC<{ len: number }> = ({ len }) => {
   const wifi = three ? wifiAll(interpolate(f, [half, half + 30], [1 / 3, 1], clamp)).map((w) => (w.ch === 6 ? { ...w, a: 1 } : w)) : [{ ch: 6, a: 1 }];
   return (
     <>
-      <Title kicker="덮인 채널">Wi-Fi가 덮는 블루투스 채널은 몇 개?</Title>
+      <Title kicker="얼마나 부딪힐까">Wi-Fi가 덮는 블루투스 채널은 몇 개?</Title>
       <Band x={160} y={290} w={1600} wifi={wifi} bars={1} covered={covered} />
       <div style={{ position: "absolute", top: 160, right: 110, fontFamily: FONT, textAlign: "right" }}>
         <span style={{ color: C.dim, fontSize: 32, marginRight: 16 }}>{three ? "Wi-Fi 1·6·11" : "Wi-Fi 6 하나"}</span>
@@ -92,7 +75,7 @@ const Cover: React.FC<{ len: number }> = ({ len }) => {
 };
 
 /* 6. 공식과 조건별 예시 */
-const Formula: React.FC = () => {
+const Formula: React.FC<{ len: number }> = ({ len }) => {
   const a = useIn(10);
   return (
     <>
@@ -102,13 +85,13 @@ const Formula: React.FC = () => {
           깨질 확률 ≈ <span style={{ color: C.warn }}>덮인 채널 비율</span> × <span style={{ color: C.warn }}>Wi-Fi가 말하는 시간 비율</span>
         </div>
       </Card>
-      {CASES.map(([name, w, d], i) => <CaseBar key={name} i={i} name={name} wifi={w} duty={d} />)}
-      <div style={{ position: "absolute", top: 838, left: 0, right: 0, textAlign: "center", fontFamily: FONT, color: C.dim, fontSize: 28 }}>모두 같은 공식, 다른 조건 · 가정이 바뀌면 숫자도 바뀐다</div>
+      {CASES.map(([name, w, d], i) => <CaseBar key={name} i={i} name={name} wifi={w} duty={d} at={Math.round(len * [0.36, 0.56, 0.76][i])} />)}
+      <div style={{ position: "absolute", top: 838, left: 0, right: 0, textAlign: "center", fontFamily: FONT, color: C.dim, fontSize: 28 }}>겹치면 깨진다고 단순화한 계산 · 같은 공식, 다른 조건이면 숫자도 바뀐다</div>
     </>
   );
 };
-const CaseBar: React.FC<{ i: number; name: string; wifi: number[]; duty: number }> = ({ i, name, wifi, duty }) => {
-  const a = useIn(70 + i * 90), nb = wifiBlocked(wifi).size, v = expectedLoss(wifi, duty);
+const CaseBar: React.FC<{ i: number; name: string; wifi: number[]; duty: number; at: number }> = ({ i, name, wifi, duty, at }) => {
+  const a = useIn(at), nb = wifiBlocked(wifi).size, v = expectedLoss(wifi, duty);
   return (
     <div style={{ position: "absolute", left: 260, top: 400 + i * 140, width: 1400, height: 110, opacity: a, fontFamily: FONT, display: "flex", alignItems: "center", gap: 30 }}>
       <div style={{ width: 380, color: C.text, fontSize: 36, fontWeight: 700 }}>{name}</div>
@@ -134,8 +117,8 @@ const GridScene: React.FC<{ len: number }> = ({ len }) => {
 };
 
 /* 8. 재전송 */
-const Retx: React.FC = () => {
-  const a = useIn(10), b = useIn(80), c = useIn(150);
+const Retx: React.FC<{ len: number }> = ({ len }) => {
+  const a = useIn(10), b = useIn(Math.round(len * 0.4)), c = useIn(Math.round(len * 0.62));
   const box = (txt: string, sub: string, col: string, p: number, x: number) => (
     <Card x={x} y={300} w={500} h={430} a={p}>
       <div style={{ fontSize: 44, fontWeight: 900, color: col }}>{txt}</div>
@@ -221,38 +204,42 @@ const body = (s: Scene) => {
     case "hook": return <Hook />;
     case "band": return <BandScene />;
     case "hop": return <HopScene />;
-    case "assume": return <Assume />;
     case "cover": return <Cover len={s.frames} />;
-    case "formula": return <Formula />;
+    case "formula": return <Formula len={s.frames} />;
     case "grid": return <GridScene len={s.frames} />;
-    case "retx": return <Retx />;
+    case "retx": return <Retx len={s.frames} />;
     case "afh": return <Afh len={s.frames} />;
     case "map": return <MapScene />;
     case "outro": return <Outro />;
   }
 };
 
-const SceneFrame: React.FC<{ s: Scene }> = ({ s }) => {
+const SceneFrame: React.FC<{ s: Scene; voice: boolean }> = ({ s, voice }) => {
   const f = useCurrentFrame();
   return (
     <AbsoluteFill style={{ opacity: fade(f, s.frames) }}>
       {body(s)}
+      {voice && (
+        <Sequence from={LEAD} layout="none">
+          <Audio src={staticFile(`audio/${s.id}.wav`)} />
+        </Sequence>
+      )}
       <Caption text={s.caption} />
     </AbsoluteFill>
   );
 };
 
-export const AfhExplainer: React.FC = () => {
+export const AfhExplainer: React.FC<{ voice: boolean }> = ({ voice }) => {
   useFont();
   let at = 0;
   return (
     <AbsoluteFill style={{ background: `radial-gradient(1600px 900px at 50% 35%, #12213a, ${C.bg})` }}>
-      {SCENES.map((s) => {
+      {scenesFor(voice).map((s) => {
         const from = at;
         at += s.frames;
         return (
           <Sequence key={s.id} from={from} durationInFrames={s.frames}>
-            <SceneFrame s={s} />
+            <SceneFrame s={s} voice={voice} />
           </Sequence>
         );
       })}

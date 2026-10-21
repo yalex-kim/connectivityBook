@@ -4,7 +4,7 @@
 
 | 영상 | 컴포지션 | 형식 | 근거 |
 |---|---|---|---|
-| 블루투스는 왜 AFH가 필요할까: Wi-Fi와의 공존 | `AfhExplainer` | 가로 1920×1080, 30fps, 약 1분 52초, 무음(자막) | BluetoothBook 입문 2장(radio)·4장(hopping), [Vol 6] Part B §4.5.8, [Vol 2] Part B §2.6.3 |
+| 블루투스는 왜 AFH가 필요할까: Wi-Fi와의 공존 | `AfhExplainerVoice` (나레이션) · `AfhExplainer` (무음) | 가로 1920×1080, 30fps, 나레이션판 약 1분 38초 · 무음판 약 1분 52초 | BluetoothBook 입문 2장(radio)·4장(hopping), [Vol 6] Part B §4.5.8, [Vol 2] Part B §2.6.3 |
 
 ## 준비
 
@@ -24,7 +24,9 @@ Remotion은 처음 렌더할 때 Chrome Headless Shell을 내려받습니다. �
 npm run check    # 영상의 계산이 책과 같은지 + 타입 검사
 npm run studio   # 브라우저에서 미리 보기·편집
 npm run still    # 정지 화면 한 장 (out/still.png)
-npm run render   # out/afh-explainer.mp4
+npm run render   # 나레이션판 out/afh-explainer.mp4 (public/audio/의 음성이 있어야 한다)
+npm run render:silent   # 무음판 out/afh-explainer-silent.mp4
+npm run loudnorm # 나레이션판 음량을 −16 LUFS로 맞춤 → out/afh-explainer-final.mp4 (ffmpeg)
 ```
 
 ## 구조
@@ -37,4 +39,14 @@ npm run render   # out/afh-explainer.mp4
 
 ## 나레이션
 
-지금은 무음판입니다. 타입캐스트는 무료 계정이라 실패해도 자동으로 다시 부르지 않습니다. 대본(`script.ts`의 `say`)을 확정한 뒤 요청이 있을 때 한 번만 음성을 만들고, 장면 길이를 음성 길이에 맞춥니다. 음성 파일(`public/audio/`)은 저장소에 올리지 않습니다.
+나레이션은 `src/afh/script.ts`의 `say` 문장을 타입캐스트로 읽은 것입니다. 화면 자막은 `caption`입니다.
+
+```bash
+set -a; . /volume1/dev/k-history-video-agent/.env; set +a   # TYPECAST_API_KEY, TYPECAST_VOICE_ID
+/volume1/dev/k-history-video-agent/.venv/bin/python scripts/narrate.py
+```
+
+- 장면마다 `public/audio/<id>.wav`를 한 번만 만든다. 이미 있으면 건너뛰므로, 문장을 고친 장면만 그 파일을 지우고 다시 돌린다.
+- 타입캐스트는 무료 계정이라 실패해도 자동으로 다시 부르지 않고 멈춘다.
+- 끝나면 `src/afh/durations.json`(장면별 음성 길이)을 쓴다. 나레이션판은 장면 길이를 음성 길이 + 여백(0.3초 앞, 0.6초 뒤)으로 맞추고, 애니메이션이 다 보이는 최소 길이보다 짧게는 줄이지 않는다.
+- 음성 파일은 저장소에 올리지 않는다(`.gitignore`). 길이 파일만 올린다.
