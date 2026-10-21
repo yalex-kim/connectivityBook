@@ -896,6 +896,65 @@
       }
     }
 
+    // 사양 인용 → Bluetooth Core 사양서 웹판의 그 절 (주소표 assets/bt-spec.js, 규칙은 tools/spec_links.py와 같다)
+    // 본문·툴팁은 "[Vol 6] Part B §2.4"(뒤에 ·§2.5, ~§2.6 이어 쓰기 포함)만, 출처 줄(.spec-ref)은 앞의 권·Part를 이어 쓰는 "§4.5.13.5", "Part E §2.4"도 잇는다
+    // Part 없는 "[Vol 2]"는 권 전체라 그 권의 목차 페이지로
+    let specLink = null;
+    if (main && /\[Vol \d\]/.test(main.textContent)) {
+      const TOK = /(?:\[Vol (\d)\] )?Part ([A-Z]+)\b|\[Vol (\d)\](?! Part)|(?<![0-9A-Za-z])§([0-9A-Z]+(?:\.[0-9A-Z]+)*)/g;
+      const SKIP = "a, code, pre, script, style, svg, button, input, textarea, .sim, .spec-ref";
+      const walk = (root, ref) => {
+        const D = window.BT_SPEC, st = { vol: null, key: null };
+        const tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode: (n) => { const c = n.parentElement.closest(SKIP); return c && c !== root ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT; } });
+        const nodes = []; while (tw.nextNode()) nodes.push(tw.currentNode);
+        for (const n of nodes) {
+          const t = n.data, toks = []; let chain = null;
+          for (const m of t.matchAll(TOK)) {
+            const s0 = m.index, e0 = s0 + m[0].length;
+            if (m[2]) {
+              if (m[1]) st.vol = m[1]; else if (!ref) { chain = null; continue; }
+              st.key = st.vol ? st.vol + m[2] : null; chain = st.key && { end: e0 };
+              if (st.key) toks.push({ s: s0, e: e0, key: st.key, sec: null });
+            } else if (m[3]) {
+              st.vol = m[3]; st.key = chain = null;
+              if (D.vols[m[3]]) toks.push({ s: s0, e: e0, vol: m[3] });
+            } else if (ref ? st.key : chain && /^\s*[·~]?\s*$/.test(t.slice(chain.end, s0))) {
+              const prev = toks[toks.length - 1];
+              // "Part B §2.4"는 링크 하나로
+              if (prev && prev.key && !prev.sec && /^\s*$/.test(t.slice(prev.e, s0))) { prev.e = e0; prev.sec = m[4]; } else toks.push({ s: s0, e: e0, key: st.key, sec: m[4] });
+              if (chain) chain.end = e0;
+            }
+          }
+          const ok = toks.filter((k) => k.vol || D.parts[k.key]);
+          if (!ok.length) continue;
+          const f = document.createDocumentFragment(); let at = 0;
+          for (const k of ok) {
+            const P = k.vol ? { p: D.vols[k.vol], s: {} } : D.parts[k.key], a = document.createElement("a");
+            f.append(t.slice(at, k.s));
+            a.className = "spec-link"; a.target = "_blank"; a.rel = "noopener"; a.textContent = t.slice(k.s, k.e);
+            a.href = D.base + P.p + (k.sec && P.s[k.sec] ? "#UUID-" + P.s[k.sec] : "");
+            a.title = `Bluetooth Core ${D.v} 사양서에서 보기`;
+            f.append(a); at = k.e;
+          }
+          f.append(t.slice(at)); n.replaceWith(f);
+        }
+      };
+      const all = (root) => { root.querySelectorAll(".spec-ref").forEach((el) => walk(el, true)); walk(root, false); };
+      const go = () => {
+        specLink = (el) => walk(el, false);
+        all(main);
+        // 용어집처럼 나중에 그려지는 내용도 잇는다
+        const mo = new MutationObserver((ms) => {
+          mo.disconnect();
+          ms.forEach((m) => m.addedNodes.forEach((x) => { if (x.nodeType === 1 && x.isConnected && !x.closest("a, .sim, svg")) x.matches(".spec-ref") ? walk(x, true) : all(x); }));
+          mo.observe(main, { childList: true, subtree: true });
+        });
+        mo.observe(main, { childList: true, subtree: true });
+      };
+      if (window.BT_SPEC) go();
+      else { const sc = document.createElement("script"); sc.src = `${root}../assets/bt-spec.js`; sc.onload = go; document.head.appendChild(sc); }
+    }
+
     // 용어 툴팁: 본문의 .term에 용어집 설명을 붙인다
     if (main && curSlug !== "glossary" && main.querySelector(".term")) {
       const bind = () => {
@@ -919,6 +978,7 @@
           tip.innerHTML = `<div class="tt-h"><b>${esc(t[0])}</b><span>${esc(t[1])}</span></div><p>${esc(t[2])}</p><div class="tt-l">` +
             (c && c.slug !== curSlug ? `<a href="${href(c.slug)}">${c.num}장 ${esc(c.title)}에서 자세히 →</a>` : "") +
             `<a href="${href("glossary")}?q=${encodeURIComponent(t[0].replace(/\(.*?\)/g, ""))}">용어집</a></div>`;
+          if (specLink) specLink(tip.querySelector("p"));
           tip.classList.add("show"); el.setAttribute("aria-describedby", "sb-tip");
           const r = el.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
           let x = Math.max(12, Math.min(innerWidth - tw - 12, r.left + r.width / 2 - tw / 2));
