@@ -3,6 +3,7 @@ import { C, FONT } from "../theme";
 import { csa2Channel, CH_ID, expectedLoss, simulate, wifiBlocked, WIFI } from "../book";
 import { CASES, SCENES, type Scene } from "./script";
 import { DeviceRoom } from "./devices";
+import { Stage3D, Waterfall3D, camLerp, chX, type Cam, type Vec } from "./world3d";
 import { Band, Caption, Card, Grid, RunningLoss, Title, clamp, fade, useFont, useIn } from "./parts";
 
 import DURATIONS from "./durations.json";
@@ -48,39 +49,54 @@ const Hook: React.FC = () => (
   </>
 );
 
-/* 2. 같은 대역 */
-const BandScene: React.FC = () => {
-  const f = useCurrentFrame();
+/* 2. 같은 대역 (3D): 위에서 크게 보다가 다가간다 */
+const Legend: React.FC<{ items: [string, string][] }> = ({ items }) => (
+  <div style={{ position: "absolute", left: 110, top: 850, display: "flex", gap: 34, fontFamily: FONT, fontSize: 24, color: C.dim }}>
+    {items.map(([col, t]) => <span key={t}><span style={{ display: "inline-block", width: 16, height: 16, borderRadius: 4, background: col, marginRight: 10 }} />{t}</span>)}
+  </div>
+);
+const BAND_LEGEND: [string, string][] = [[C.accent2, "2.4 GHz ISM 대역 경계 (2,400~2,483.5 MHz)"], [C.warn, "Wi-Fi 1·6·11"], ["#62738f", "블루투스 LE 채널 37개"], [C.bad, "전자레인지"]];
+
+const BandScene: React.FC<{ len: number; cues: number[] }> = ({ len, cues }) => {
+  const f = useCurrentFrame(), w = interpolate(f, [30, 110], [0, 1], clamp);
+  const cam = camLerp({ pos: [0, 78, 92], look: [0, 0, 0], fov: 42 }, { pos: [0, 30, 60], look: [0, 4, 0], fov: 40 }, f / len);
   return (
     <>
+      <Stage3D cam={cam} ism={interpolate(f, [0, 25], [0, 1], clamp)} wifi={[0, 1, 2].map((i) => interpolate(w * 3 - i, [0, 1], [0, 1], clamp)) as [number, number, number]} pillars={interpolate(f, [80, 150], [0, 1], clamp)} color={() => "#7f93b3"} microwave={interpolate(f, [cues[1], cues[1] + 30], [0, 1], clamp)} />
       <Title kicker="같은 대역">2.4 GHz를 함께 쓰는 이웃들</Title>
-      <Band x={160} y={300} w={1600} wifi={wifiAll(interpolate(f, [40, 130], [0, 1], clamp))} bars={interpolate(f, [100, 170], [0, 1], clamp)} ism={interpolate(f, [0, 30], [0, 1], clamp)} microwave={interpolate(f, [160, 190], [0, 1], clamp)} />
+      <Legend items={BAND_LEGEND} />
     </>
   );
 };
 
-/* 3. 도약 */
-const HopScene: React.FC = () => {
-  const f = useCurrentFrame(), e = Math.floor(f / 10);
+/* 3. 도약 (3D): 옆으로 미끄러지는 카메라 앞에서 패킷이 기둥 사이를 뛴다 */
+const HopScene: React.FC<{ len: number }> = ({ len }) => {
+  const f = useCurrentFrame(), P = 9, e = Math.floor(f / P), p = (f % P) / P;
+  const ch = (k: number) => csa2Channel(k, CH_ID, ALL37), top = 8.2;
+  const at = (k: number): Vec => [chX(ch(k)), top, 0];
+  const a = at(e), b = at(e + 1), ball: Vec = [a[0] + (b[0] - a[0]) * p, top + Math.sin(Math.PI * p) * 7, 0];
+  const trail = [3, 2, 1].map((d) => at(e - d + 1)).filter((_, i) => e - 3 + i >= 0);
+  const cam = camLerp({ pos: [-62, 30, 74], look: [-4, 5, 0], fov: 40 }, { pos: [58, 26, 70], look: [4, 5, 0], fov: 40 }, f / len);
   return (
     <>
+      <Stage3D cam={cam} wifi={[1, 1, 1]} pillars={1} color={(c) => (c === ch(e) ? C.text : C.accent)} ball={ball} trail={trail} />
       <Title kicker="주파수 도약">한 채널에 머물지 않고 계속 옮겨 다닌다</Title>
-      <Band x={160} y={300} w={1600} wifi={wifiAll(1)} bars={1} dot={csa2Channel(e, CH_ID, ALL37)} />
     </>
   );
 };
 
-/* 5. 덮인 채널: 하나 → 셋 */
+/* 5. 덮인 채널 (3D): 위로 올라가 내려다보며, 벽 아래 기둥이 주황으로 바뀐다 */
 const Cover: React.FC<{ len: number; cues: number[] }> = ({ len, cues }) => {
   const f = useCurrentFrame(), one = cues[1], half = cues[2], three = f > half;
   const order = [...(three ? BLOCKED : ONE)].sort((a, b) => a - b);
   const prog = three ? interpolate(f, [half + 10, Math.min(len - 30, half + 90)], [0, 1], clamp) : interpolate(f, [one, Math.min(half - 10, one + 90)], [0, 1], clamp);
   const covered = new Set(order.slice(0, Math.round(prog * order.length)));
-  const wifi = three ? wifiAll(interpolate(f, [half, half + 30], [1 / 3, 1], clamp)).map((w) => (w.ch === 6 ? { ...w, a: 1 } : w)) : [{ ch: 6, a: 1 }];
+  const side = interpolate(f, [half, half + 30], [0, 1], clamp);
+  const cam = camLerp({ pos: [0, 34, 60], look: [0, 3, 0], fov: 40 }, { pos: [0, 66, 26], look: [0, 0, 3], fov: 40 }, f / len);
   return (
     <>
+      <Stage3D cam={cam} wifi={[side, 1, side]} pillars={1} color={(c) => (covered.has(c) ? C.warn : C.accent)} />
       <Title kicker="얼마나 부딪힐까">Wi-Fi가 덮는 블루투스 채널은 몇 개?</Title>
-      <Band x={160} y={290} w={1600} wifi={wifi} bars={1} covered={covered} />
       <div style={{ position: "absolute", top: 160, right: 110, fontFamily: FONT, textAlign: "right" }}>
         <span style={{ color: C.dim, fontSize: 32, marginRight: 16 }}>{three ? "Wi-Fi 1·6·11" : "Wi-Fi 6 하나"}</span>
         <span style={{ color: C.warn, fontSize: 64, fontWeight: 900, fontVariantNumeric: "tabular-nums" }}>{covered.size} / 37</span>
@@ -119,59 +135,112 @@ const CaseBar: React.FC<{ i: number; name: string; wifi: number[]; duty: number;
   );
 };
 
-/* 7. 격자 + 누적 그래프 */
+/* 7. 폭포형 시간 지도 (3D) + 누적 손실률 그래프 */
 const GridScene: React.FC<{ len: number }> = ({ len }) => {
-  const f = useCurrentFrame(), t = interpolate(f, [8, len - 24], [0, 1], clamp);
+  const f = useCurrentFrame(), t = interpolate(f, [8, len - 24], [0, 1], clamp), n = Math.pow(t, 1.4) * RUN_N;
+  const cam = camLerp({ pos: [18, 52, 150], look: [22, 0, 40], fov: 40 }, { pos: [34, 44, 136], look: [24, 0, 44], fov: 40 }, f / len);
   return (
     <>
+      <Waterfall3D cam={cam} events={HOP} shown={Math.max(1, n)} blocked={BLOCKED} />
       <Title kicker="실제로 뛰어 보면 · Wi-Fi 1·6·11, 각 50%">처음엔 들쭉날쭉, 길게 보면 계산값 근처</Title>
-      <Grid x={110} y={250} w={820} h={540} events={HOP.slice(0, GRID_N)} shown={t * GRID_N} blocked={BLOCKED} />
-      <RunningLoss x={1060} y={250} w={750} h={540} events={HOP} shown={Math.pow(t, 1.4) * RUN_N} expected={EXP} />
+      <div style={{ position: "absolute", left: 1150, top: 230, width: 690, height: 610, background: "rgba(11,18,32,.82)", borderRadius: 20 }} />
+      <RunningLoss x={1220} y={260} w={580} h={480} events={HOP} shown={n} expected={EXP} />
+      <Legend items={[[C.warn, "Wi-Fi가 말하는 칸"], [C.accent, "성공한 패킷"], [C.bad, "깨진 패킷"]]} />
     </>
   );
 };
 
-/* 8. 재전송 */
+/* 8. 재전송 (도식): 데이터는 다시 보내 복구되지만 늦어지고, 오디오는 재생 시각을 놓치면 끊긴다 */
 const Retx: React.FC<{ len: number; cues: number[] }> = ({ len, cues }) => {
-  const a = useIn(10), b = useIn(cues[1]), c = useIn(Math.round(cues[1] + 0.45 * (len - cues[1])));
-  const box = (txt: string, sub: string, col: string, p: number, x: number) => (
-    <Card x={x} y={300} w={500} h={430} a={p}>
-      <div style={{ fontSize: 44, fontWeight: 900, color: col }}>{txt}</div>
-      <div style={{ fontSize: 32, color: C.dim, marginTop: 20, lineHeight: 1.5, wordBreak: "keep-all" }}>{sub}</div>
-    </Card>
+  const f = useCurrentFrame(), c1 = cues[1], c2 = Math.round(c1 + 0.45 * (len - c1));
+  const X0 = 300, DX = 230, ev = (i: number) => X0 + i * DX;
+  const pk = (x: number, y: number, col: string, a: number, label: string, broken = false) => (
+    <g opacity={a} transform={`translate(${x},${y - 30 * (1 - a)})`}>
+      <rect x={-48} y={-30} width={96} height={60} rx={12} fill={col} opacity={broken ? 0.35 : 1} />
+      <text x={0} y={10} textAnchor="middle" fill={broken ? C.bad : C.bg} fontFamily={FONT} fontSize={28} fontWeight={900}>{label}</text>
+      {broken && <text x={0} y={14} textAnchor="middle" fill={C.bad} fontFamily={FONT} fontSize={64} fontWeight={900}>✕</text>}
+    </g>
   );
+  const appear = (s: number) => interpolate(f, [s, s + 12], [0, 1], clamp);
+  // 위: 데이터 줄
+  const dY = 360, aY = 690;
   return (
     <>
       <Title kicker="재전송">다시 보내면 되지 않나?</Title>
-      {box("복구는 된다", "깨진 패킷은 다음 기회에 다시 보낸다. 데이터는 대부분 살아난다.", C.ok, a, 160)}
-      {box("대신 늦어진다", "다시 보낼수록 지연이 쌓이고, 실제로 보낼 수 있는 양이 줄어든다.", C.warn, b, 710)}
-      {box("오디오는 못 기다린다", "제때 오지 않은 소리는 버릴 수밖에 없어 끊김이 된다.", C.bad, c, 1260)}
+      <svg width={1920} height={1080} viewBox="0 0 1920 1080" style={{ position: "absolute", inset: 0 }}>
+        {[["데이터", dY], ["오디오", aY]].map(([t, y]) => (
+          <g key={t as string}>
+            <text x={110} y={(y as number) + 10} fill={C.text} fontFamily={FONT} fontSize={34} fontWeight={800}>{t}</text>
+            <line x1={X0 - 70} x2={ev(6) + 40} y1={(y as number) + 60} y2={(y as number) + 60} stroke={C.faint} strokeWidth={3} />
+            {[0, 1, 2, 3, 4, 5].map((i) => <line key={i} x1={ev(i)} x2={ev(i)} y1={(y as number) + 50} y2={(y as number) + 70} stroke={C.faint} strokeWidth={3} />)}
+            <text x={ev(6) + 40} y={(y as number) + 100} textAnchor="end" fill={C.faint} fontFamily={FONT} fontSize={22}>연결 이벤트 →</text>
+          </g>
+        ))}
+        {/* 데이터: 1 성공, 2 깨짐, 다음 기회에 2를 다시 보내 성공, 3은 한 칸 밀림 */}
+        {pk(ev(0), dY, C.accent, appear(10), "1")}
+        {pk(ev(1), dY, C.accent, appear(35), "2", f > 55)}
+        <g opacity={appear(70)}>
+          <path d={`M ${ev(1)} ${dY - 40} Q ${(ev(1) + ev(2)) / 2} ${dY - 120} ${ev(2)} ${dY - 40}`} fill="none" stroke={C.ok} strokeWidth={4} strokeDasharray="10 8" />
+          <text x={(ev(1) + ev(2)) / 2} y={dY - 108} textAnchor="middle" fill={C.ok} fontFamily={FONT} fontSize={26} fontWeight={700}>다시 보냄</text>
+        </g>
+        {pk(ev(2), dY, C.ok, appear(85), "2")}
+        {pk(ev(3), dY, C.accent, appear(105), "3")}
+        <g opacity={appear(c1)}>
+          <rect x={ev(2) - 50} y={dY + 82} width={DX * 1 + 100} height={52} rx={12} fill={C.warn} opacity={0.18} />
+          <text x={ev(2) + DX / 2} y={dY + 118} textAnchor="middle" fill={C.warn} fontFamily={FONT} fontSize={28} fontWeight={800}>그만큼 늦어진다 (뒤 패킷도 밀림)</text>
+        </g>
+        {/* 오디오: 재생 시각(점선)까지 와야 한다. 다시 보낸 조각은 시각을 놓쳐 버려지고, 소리에 빈틈 */}
+        <g opacity={appear(c1 - 10)}>
+          {[0, 1, 2].map((i) => (
+            <g key={i}>
+              <line x1={ev(i) + 160} x2={ev(i) + 160} y1={aY - 150} y2={aY + 60} stroke={C.text} strokeWidth={2} strokeDasharray="6 8" opacity={0.6} />
+              <text x={ev(i) + 160} y={aY - 160} textAnchor="middle" fill={C.dim} fontFamily={FONT} fontSize={22}>♪{i + 1} 재생 시각</text>
+            </g>
+          ))}
+          {pk(ev(0), aY, C.accent, appear(c1), "♪1")}
+          {pk(ev(1), aY, C.accent, appear(c1 + 15), "♪2", f > c1 + 30)}
+          {pk(ev(2), aY, C.accent, appear(c1 + 30), "♪3")}
+          {pk(ev(2), aY - 90, C.warn, appear(c2), "♪2")}
+        </g>
+        <g opacity={appear(c2 + 15)}>
+          <text x={ev(2) + 80} y={aY - 82} textAnchor="start" fill={C.bad} fontFamily={FONT} fontSize={26} fontWeight={800}>♪2 재생 시각이 지나 버림</text>
+          {/* 소리 파형: ♪2 자리가 비어 끊김 */}
+          {Array.from({ length: 90 }, (_, i) => {
+            const x = X0 - 40 + i * 12, gap = x > ev(1) + 40 && x < ev(1) + 160 + 40;
+            const h = gap ? 0 : 10 + 26 * Math.abs(Math.sin(i * 0.7) * Math.cos(i * 0.23));
+            return <rect key={i} x={x} y={aY + 120 - h} width={6} height={h * 2} rx={3} fill={C.accent2} opacity={0.8} />;
+          })}
+          <text x={ev(1) + 100} y={aY + 200} textAnchor="middle" fill={C.bad} fontFamily={FONT} fontSize={28} fontWeight={800}>끊김</text>
+        </g>
+      </svg>
     </>
   );
 };
 
-/* 9. AFH */
+/* 9. AFH (3D): 덮인 기둥이 가라앉고, 남은 줄로만 흐르는 폭포 */
 const Afh: React.FC<{ len: number; cues: number[] }> = ({ len, cues }) => {
-  const f = useCurrentFrame(), go = cues[1] + 75, rm = interpolate(f, [cues[1], cues[1] + 60], [0, 1], clamp), shown = interpolate(f, [go + 10, len - 20], [0, GRID_N], clamp), info = useIn(cues[2]);
+  const f = useCurrentFrame(), go = cues[1] + 75, rm = interpolate(f, [cues[1], cues[1] + 60], [0, 1], clamp), shown = interpolate(f, [go, len - 10], [1, GRID_N], clamp), info = useIn(cues[2]);
   const lost = AFH.slice(0, Math.floor(shown)).filter((e) => e.hit).length;
+  const stageCam = camLerp({ pos: [0, 40, 60], look: [0, 2, 0], fov: 40 }, { pos: [0, 30, 48], look: [0, 2, 0], fov: 40 }, f / go);
+  const fallCam = camLerp({ pos: [10, 50, 140], look: [12, 0, 40], fov: 40 }, { pos: [26, 40, 128], look: [16, 0, 46], fov: 40 }, (f - go) / (len - go));
   return (
     <>
-      <Title kicker="AFH · 적응형 주파수 도약">붐비는 채널을 채널 맵에서 빼고 뛴다</Title>
       {f < go ? (
-        <Band x={160} y={290} w={1600} wifi={wifiAll(1)} bars={1} covered={BLOCKED} removed={rm} />
+        <Stage3D cam={stageCam} wifi={[1, 1, 1]} pillars={1} color={(c) => (BLOCKED.has(c) ? C.warn : C.accent)} removed={(c) => (BLOCKED.has(c) ? rm : 0)} />
       ) : (
-        <>
-          <Grid x={110} y={250} w={1100} h={540} events={AFH} shown={shown} blocked={BLOCKED} dimBlocked={1} />
-          <Card x={1290} y={250} w={520} h={540}>
-            <div style={{ fontSize: 30, color: C.dim }}>이 가정에서 깨진 패킷</div>
-            <div style={{ fontSize: 80, fontWeight: 900, color: C.ok, marginTop: 6 }}>{lost} / {Math.max(1, Math.floor(shown))}</div>
-            <div style={{ fontSize: 28, color: C.dim, marginTop: 30, lineHeight: 1.6, opacity: info }}>
-              <b style={{ color: C.text }}>Classic</b> 79채널 · 최소 20개 사용<br />
-              <b style={{ color: C.text }}>저전력(LE)</b> 37채널 · 최소 2개 사용<br />
-              둘 다 채널 맵으로 도약할 채널을 고른다
-            </div>
-          </Card>
-        </>
+        <Waterfall3D cam={fallCam} events={AFH} shown={shown} blocked={BLOCKED} laneOff={1} />
+      )}
+      <Title kicker="AFH · 적응형 주파수 도약">붐비는 채널을 채널 맵에서 빼고 뛴다</Title>
+      {f >= go && (
+        <Card x={1290} y={250} w={520} h={540}>
+          <div style={{ fontSize: 30, color: C.dim }}>이 가정에서 깨진 패킷</div>
+          <div style={{ fontSize: 80, fontWeight: 900, color: C.ok, marginTop: 6 }}>{lost} / {Math.max(1, Math.floor(shown))}</div>
+          <div style={{ fontSize: 28, color: C.dim, marginTop: 30, lineHeight: 1.6, opacity: info }}>
+            <b style={{ color: C.text }}>Classic</b> 79채널 · 최소 20개 사용<br />
+            <b style={{ color: C.text }}>저전력(LE)</b> 37채널 · 최소 2개 사용<br />
+            둘 다 채널 맵으로 도약할 채널을 고른다
+          </div>
+        </Card>
       )}
     </>
   );
@@ -245,30 +314,33 @@ const MapScene: React.FC<{ len: number; cues: number[] }> = ({ len, cues }) => {
   );
 };
 
-/* 11. 정리 */
-const Outro: React.FC<{ cues: number[] }> = ({ cues }) => {
-  const a = useIn(0), b = useIn(cues[1]);
+/* 11. 정리 (3D): AFH로 흐르는 폭포를 카메라가 크게 돌며 보여 준다 */
+const Outro: React.FC<{ len: number; cues: number[] }> = ({ len, cues }) => {
+  const f = useCurrentFrame(), a = useIn(0), b = useIn(cues[1]), ang = interpolate(f, [0, len], [-0.7, 0.5]);
+  const cam: Cam = { pos: [Math.sin(ang) * 120, 60, 40 + Math.cos(ang) * 120], look: [0, 0, 40], fov: 40 };
   return (
-    <div style={{ position: "absolute", top: 250, left: 0, right: 0, textAlign: "center", fontFamily: FONT }}>
-      <div style={{ opacity: a, color: C.text, fontSize: 66, fontWeight: 900, lineHeight: 1.3 }}>블루투스는 붐비는 채널을 알아내<br /><span style={{ color: C.accent }}>채널 맵에서 빼고 뛴다</span></div>
-      <div style={{ opacity: b, color: C.dim, fontSize: 40, fontWeight: 600, marginTop: 50 }}>그래서 같은 대역의 Wi-Fi와 함께 지낼 수 있다</div>
-      <div style={{ opacity: b, color: C.faint, fontSize: 26, marginTop: 90 }}>BluetoothBook 입문 4장 “주파수 도약” · ConnectivityBook</div>
-    </div>
+    <>
+      <Waterfall3D cam={cam} events={AFH} shown={interpolate(f, [0, len], [20, GRID_N], clamp)} blocked={BLOCKED} laneOff={1} />
+      <div style={{ position: "absolute", top: 90, left: 0, right: 0, textAlign: "center", fontFamily: FONT, textShadow: "0 4px 24px rgba(0,0,0,.8)" }}>
+        <div style={{ opacity: a, color: C.text, fontSize: 60, fontWeight: 900, lineHeight: 1.3 }}>블루투스는 붐비는 채널을 알아내 <span style={{ color: C.accent }}>채널 맵에서 빼고 뛴다</span></div>
+        <div style={{ opacity: b, color: C.text, fontSize: 38, fontWeight: 700, marginTop: 18 }}>그래서 같은 대역의 Wi-Fi와 함께 지낼 수 있다</div>
+      </div>
+    </>
   );
 };
 
 const body = (s: Timed) => {
   switch (s.id) {
     case "hook": return <Hook />;
-    case "band": return <BandScene />;
-    case "hop": return <HopScene />;
+    case "band": return <BandScene len={s.frames} cues={s.cues} />;
+    case "hop": return <HopScene len={s.frames} />;
     case "cover": return <Cover len={s.frames} cues={s.cues} />;
     case "formula": return <Formula cues={s.cues} />;
     case "grid": return <GridScene len={s.frames} />;
     case "retx": return <Retx len={s.frames} cues={s.cues} />;
     case "afh": return <Afh len={s.frames} cues={s.cues} />;
     case "map": return <MapScene len={s.frames} cues={s.cues} />;
-    case "outro": return <Outro cues={s.cues} />;
+    case "outro": return <Outro len={s.frames} cues={s.cues} />;
   }
 };
 
