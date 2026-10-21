@@ -106,6 +106,14 @@ const bitsStr = (s) => s.replace(/\s/g, '').split('').map(Number);
   const p = { ta: 100, ts: 100, tw: 100, pkt: 0.376, gap: 0.6, limit: 60000 };
   const lat = Array.from({ length: 200 }, () => f.discoveryLatency(p, rnd));
   ok(lat.every(isFinite) && Math.max(...lat) < 1500, 'continuous scan discovers quickly');
+  // 클래식 조회(단순화 모델): 지금 열차에 든 주파수는 첫 창에서, 아니면 열차가 바뀐 뒤 찾는다 ([Vol 2] Part B §8.4.1·§8.4.2)
+  const g = vm.createContext({ Math }); vm.runInContext(fn(src, 'classicInquiry') + '\nthis.c = classicInquiry;', g);
+  eq(g.c(0, [{ offset: 0.5, idx0: 3 }], 10.24), [0.5], 'A 열차 주파수, A 열차 중 첫 창에서 발견');
+  eq(g.c(0, [{ offset: 0.5, idx0: 20 }], 10.24), [3.06], 'B 열차 주파수는 열차가 B로 바뀐 뒤(2.56 s~) 창에서 발견');
+  eq(g.c(1, [{ offset: 0.5, idx0: 20 }], 10.24), [0.5], '시작 열차가 B면 바로 발견');
+  // 주파수는 1.28 s마다 1씩 바뀐다: 15 → 16(열차 경계)을 넘으면 열차가 달라진다
+  eq(g.c(0, [{ offset: 1.3, idx0: 15 }], 10.24), [3.86], '경계를 넘은 주파수(16)는 B 열차 때 발견');
+  let all = 0; for (let st = 0; st < 2; st++) for (let o = 0; o < 256; o += 7) for (let i = 0; i < 32; i++) { const t = g.c(st, [{ offset: o / 100, idx0: i }], 10.24)[0]; ok(t !== null && t <= 10.24, `발견 시각 ≤ 10.24 s (start ${st}, offset ${o}, idx ${i})`); all++; }
 }
 
 // ---------------------------------------------------------------- 06 connection

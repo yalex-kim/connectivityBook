@@ -65,6 +65,10 @@ window.BT_TERMS = [
     ["주기적 광고", "Periodic advertising", "고정된 간격(7.5 ms ~ 81.91875 s)으로 보내는 광고. 수신자는 시간표에 동기를 맞춰 연결 없이 받는다. [Vol 6] Part B §4.4.2.2.3", "advertising"],
     ["CONNECT_IND", "Connect indication PDU", "센트럴이 광고에 응답해 보내는 연결 요청. 접근 주소, CRCInit, 간격, 지연, 타임아웃, 채널 맵, hopIncrement 등을 담는다. [Vol 6] Part B §2.3.3.1", "advertising"],
     ["접근 주소", "Access Address", "패킷 앞의 32비트 식별자. 광고는 0x8E89BED6, 연결마다 새 무작위 값. [Vol 6] Part B §2.1.2", "advertising"],
+    ["조회", "Inquiry", "클래식(BR/EDR)에서 처음 보는 기기를 찾는 절차. 찾는 쪽이 조회 전용 32개 주파수를 열차 A·B로 돌며 ID 패킷을 계속 보낸다. [Vol 2] Part B §8.4", "advertising"],
+    ["조회 스캔", "Inquiry scan", "찾아지고 싶은 클래식 기기가 조회 주파수 하나를 잠깐씩 듣는 상태(기본 2.56 s마다 11.25 ms). 발견 가능 모드. [Vol 2] Part B §8.4.1", "advertising"],
+    ["호출", "Page", "클래식에서 주소를 아는 기기에 연결을 거는 절차. 상대는 페이지 스캔 중이어야 한다(연결 가능 모드). [Vol 2] Part B §8.3", "advertising"],
+    ["EIR", "Extended Inquiry Response", "조회에 대답할 때 FHS 뒤에 보내는 이름·서비스 정보(최대 240바이트). [Vol 3] Part C §8", "advertising"],
     // 06 connection
     ["연결 간격", "connInterval", "연결 이벤트 사이의 간격. 6.2부터 125 µs 단위 375 µs ~ 4 s(SCI 미지원이면 1.25 ms 단위 7.5 ms 이상). [Vol 6] Part B §4.5.1", "connection"],
     ["연결 이벤트", "Connection event", "연결 간격마다 열리는 짧은 주고받기. 센트럴이 앵커 포인트에서 먼저 보낸다. [Vol 6] Part B §4.5.1", "connection"],
