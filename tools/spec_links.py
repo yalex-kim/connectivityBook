@@ -43,7 +43,8 @@ def build():
     # 책에서 인용한 절만 남긴다 (전체는 180 KB). 새 인용이 생기면 --check가 알려 주고, 이 도구를 다시 돌린다
     used = cited()
     for k, v in parts.items(): v['s'] = {n: u[5:] for n, u in v['s'].items() if (k, n) in used}
-    data = {'v': VERSION, 'base': BASE, 'parts': parts}
+    vols = {str(n): f'{d}.html' for d, n in VOLS.items()}
+    data = {'v': VERSION, 'base': BASE, 'vols': vols, 'parts': parts}
     OUT.write_text('/* Bluetooth Core 사양서 웹판의 절 주소표. tools/spec_links.py가 만든다 — 손으로 고치지 않는다 */\n'
                    f'window.BT_SPEC = {json.dumps(data, ensure_ascii=False, separators=(",", ":"))};\n')
     print('wrote', OUT.relative_to(ROOT), OUT.stat().st_size // 1024, 'KB')
@@ -52,6 +53,7 @@ def build():
 def citations():
     """책에 적힌 인용을 (파일, 인용 글, Part 키, [절...])로 (common.js와 같은 규칙).
     본문·툴팁: "[Vol 6] Part B §2.4", "§4.5.13.1·§4.5.13.2", "§4.4.6.1~§4.4.6.3"처럼 Vol이 적힌 인용만.
+    Part 없는 "[Vol 2]"는 권 전체를 가리키므로 그 권의 목차 페이지로 잇는다 (Part 키 대신 'V2').
     출처 줄(.spec-ref): 앞에서 정한 권·Part를 이어 쓰는 "Part E §2.4", "· 플러시 기한: §4.5.13.5"도."""
     sec = r'§([0-9A-Z]+(?:\.[0-9A-Z]+)*)'
     for b in BOOKS:
@@ -59,14 +61,19 @@ def citations():
             for line in html.unescape(f.read_text()).split('\n'):
                 if 'class="spec-ref"' in line:
                     vol = key = None
-                    for m in re.finditer(r'(?:\[Vol (\d)\] )?Part ([A-Z]+)\b|(?<![0-9A-Za-z])' + sec, line):
+                    for m in re.finditer(r'(?:\[Vol (\d)\] )?Part ([A-Z]+)\b|\[Vol (\d)\](?! Part)|(?<![0-9A-Za-z])' + sec, line):
                         if m.group(2):
                             vol = m.group(1) or vol
                             key = vol and vol + m.group(2)
-                        elif key: yield f, m.group(0), key, [m.group(3)]
+                        elif m.group(3):
+                            vol, key = m.group(3), None
+                            yield f, m.group(0), 'V' + vol, []
+                        elif key: yield f, m.group(0), key, [m.group(4)]
                 else:
                     for m in CITE.finditer(line):
                         yield f, m.group(0), m.group(1) + m.group(2), re.findall(sec, m.group(3))
+                    for m in re.finditer(r'\[Vol (\d)\](?! Part)', line):
+                        yield f, m.group(0), 'V' + m.group(1), []
 
 
 def cited():
@@ -74,7 +81,8 @@ def cited():
 
 
 def check():
-    data = json.loads(re.search(r'window\.BT_SPEC = (.*);', OUT.read_text()).group(1))['parts']
+    D = json.loads(re.search(r'window\.BT_SPEC = (.*);', OUT.read_text()).group(1))
+    data = dict(D['parts'], **{'V' + n: {'s': {}} for n in D['vols']})
     bad = []
     for f, text, key, secs in citations():
         where = f'{f.relative_to(ROOT)}: {text}'
