@@ -97,7 +97,7 @@
   <!-- ============================================================ -->
   <section id="angle">
     <h2 id="hci-iq">IQ 표본이 호스트에 오기까지</h2>
-    <p>각도 계산은 호스트가 하므로, 컨트롤러가 찍은 IQ 표본은 HCI 이벤트로 올라온다. CTE를 받는 길은 둘이다. 연결 없이 주기적 광고에 붙은 CTE를 받거나(광고 쪽 AoD 비콘, 또는 태그가 보내는 AoA), 연결 안에서 상대에게 CTE를 달라고 요청한다.</p>
+    <p>각도 계산은 호스트가 하므로, 컨트롤러가 찍은 IQ 표본은 HCI 이벤트로 올라온다. CTE를 받는 길은 둘이다. 연결 없이 <span class="term">주기적 광고</span>에 붙은 CTE를 받거나(광고 쪽 AoD <span class="term">비콘</span>, 또는 태그가 보내는 AoA), 연결 안에서 상대에게 CTE를 달라고 요청한다.</p>
     <div class="table-wrap"><table>
       <thead><tr><th></th><th>보내는 쪽 (명령)</th><th>받는 쪽 (명령 → 이벤트)</th></tr></thead>
       <tbody>
@@ -105,8 +105,8 @@
         <tr><td>연결 안</td><td>Set Connection CTE Transmit Parameters <code>0x2055</code>, CTE Response Enable <code>0x2057</code></td><td>Set Connection CTE Receive Parameters <code>0x2054</code>, CTE Request Enable <code>0x2056</code> → (LL_CTE_REQ/RSP) → Connection IQ Report <code>0x3E/0x16</code>, 실패하면 CTE Request Failed <code>0x3E/0x17</code></td></tr>
       </tbody>
     </table></div>
-    <p><span class="term">안테나 전환 패턴</span>은 받는 쪽(AoA) 또는 보내는 쪽(AoD) 명령의 <code>Antenna_IDs[i]</code>로 넣는다. 컨트롤러가 무엇을 할 수 있는지(지원하는 슬롯 길이, 안테나 수, 최대 패턴 길이, 최대 CTE 길이)는 LE Read Antenna Information <code>0x2058</code>으로 먼저 묻는다.</p>
-    <p>IQ 보고 이벤트에는 표본 말고도 계산에 필요한 것이 함께 온다. 채널 번호(채널마다 파장이 조금 다르다), RSSI(0.1 dBm 단위)와 그것을 잰 안테나, CTE 종류와 슬롯 길이, 이벤트 카운터, 그리고 <b>Packet_Status</b>다. Packet_Status가 0x00이면 CRC가 맞은 패킷이다. 0x01·0x02는 CRC가 틀렸지만 CTE 위치를 짐작해 찍은 표본이라 버리는 편이 안전하고, 0xFF는 자원이 없어 못 찍었다는 뜻이다(표본 0개). 표본은 <b>Sample_Count</b>개(9~82)의 I와 Q가 각각 부호 있는 1바이트로 찍은 순서대로 오고, 0x80은 “유효한 표본 없음”이다.</p>
+    <p><span class="term">안테나 전환 패턴</span>은 받는 쪽(AoA) 또는 보내는 쪽(AoD) 명령의 <code>Antenna_IDs[i]</code>로 넣는다. 컨트롤러가 무엇을 할 수 있는지(지원하는 슬롯 길이, 안테나 수, 최대 패턴 길이, 최대 CTE 길이)는 <span class="term">LE</span> Read Antenna Information <code>0x2058</code>으로 먼저 묻는다.</p>
+    <p>IQ 보고 이벤트에는 표본 말고도 계산에 필요한 것이 함께 온다. 채널 번호(채널마다 파장이 조금 다르다), <span class="term">RSSI</span>(0.1 <span class="term">dBm</span> 단위)와 그것을 잰 안테나, CTE 종류와 슬롯 길이, 이벤트 카운터, 그리고 <b>Packet_Status</b>다. Packet_Status가 0x00이면 CRC가 맞은 패킷이다. 0x01·0x02는 CRC가 틀렸지만 CTE 위치를 짐작해 찍은 표본이라 버리는 편이 안전하고, 0xFF는 자원이 없어 못 찍었다는 뜻이다(표본 0개). 표본은 <b>Sample_Count</b>개(9~82)의 I와 Q가 각각 부호 있는 1바이트로 찍은 순서대로 오고, 0x80은 “유효한 표본 없음”이다.</p>
     <p class="spec-ref">IQ 보고 이벤트(0x15·0x16)의 파라미터, Sample_Count 9~82, 0x80, Packet_Status: <b>[Vol 4] Part E §7.7.65.21·§7.7.65.22</b> · CTE 요청 실패 0x17: §7.7.65.23 · 명령 0x0051~0x0058: §7.8.80~§7.8.87</p>
 
     <h2>IQ 표본에서 각도로</h2>
