@@ -84,6 +84,25 @@
       <button class="opt">GIV가 비밀이라 안 된다</button>
     </div><div class="quiz-exp">GSKD와 GIV는 BIGInfo에 평문으로 실린다. 코드만 알게 되면 그때의 GSK를 다시 계산할 수 있다. GSKD가 막는 것은 “다른 BIG의 키를 재사용”이지, “코드가 새면 과거가 풀림”이 아니다. 앞의 녹음을 지키려면 코드 자체를 자주 바꿔야 한다.</div></div>
     <p class="spec-ref">h8과 IGLTK·GLTK·GSK 유도, “BIG1~3”의 값: <b>[Vol 6] Part E §1.1.1·§1.1.2</b> · h6·h7: <b>[Vol 3] Part H §2.2.10·§2.2.11</b> · GSKD·GIV를 BIG마다 새로: <b>[Vol 6] Part B §4.4.6.10</b> · 샘플: <b>[Vol 6] Part C §6</b></p>
+    <figure class="diagram">
+      <div style="overflow-x:auto">
+      <svg viewBox="0 0 760 200" role="img" aria-label="방송 코드에서 IGLTK, GLTK를 거쳐 GSK가 만들어지는 흐름. GSKD는 BIG마다 새로 정한다" style="min-width:640px">
+        <defs><marker id="bk-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--accent)"/></marker></defs>
+        <rect x="10" y="60" width="130" height="56" rx="10" class="f-acc2-soft"/><text x="75" y="84" text-anchor="middle" class="t-acc">방송 코드</text><text x="75" y="104" text-anchor="middle" class="t-mono">사람이 나눠 가짐</text>
+        <path d="M144 88 H186" class="s-acc" marker-end="url(#bk-ar)"/><text x="165" y="80" text-anchor="middle" class="t-mono">h7</text><text x="165" y="110" text-anchor="middle" class="t-mono">"BIG1"</text>
+        <rect x="190" y="60" width="120" height="56" rx="10" class="f-elev"/><text x="250" y="93" text-anchor="middle" class="t">IGLTK</text>
+        <path d="M314 88 H356" class="s-acc" marker-end="url(#bk-ar)"/><text x="335" y="80" text-anchor="middle" class="t-mono">h6</text><text x="335" y="110" text-anchor="middle" class="t-mono">"BIG2"</text>
+        <rect x="360" y="60" width="120" height="56" rx="10" class="f-elev"/><text x="420" y="93" text-anchor="middle" class="t">GLTK</text>
+        <path d="M484 88 H566" class="s-acc" marker-end="url(#bk-ar)"/><text x="525" y="80" text-anchor="middle" class="t-mono">h8</text><text x="525" y="110" text-anchor="middle" class="t-mono">"BIG3"</text>
+        <rect x="570" y="60" width="180" height="56" rx="10" class="f-acc-soft"/><text x="660" y="84" text-anchor="middle" class="t-acc">GSK</text><text x="660" y="104" text-anchor="middle" class="t-mono">모든 BIS의 세션 키</text>
+        <rect x="440" y="150" width="170" height="36" rx="8" class="f-surface"/><text x="525" y="173" text-anchor="middle" class="t-mono">GSKD (BIGInfo, BIG마다 새로)</text>
+        <path d="M525 146 V118" class="s-line" marker-end="url(#bk-ar)"/>
+        <text x="10" y="30" class="t-dim">여기까지는 방송 코드만 알면 누구나 같은 값 →</text>
+        <text x="570" y="30" class="t-dim">→ BIG마다 달라진다</text>
+      </svg>
+      </div>
+      <figcaption><b>그림 9-1.</b> BIG 키의 유도. 방송 코드에서 h7과 h6으로 GLTK까지는 고정된 문자열("BIG1", "BIG2")만 쓰므로 같은 코드면 언제나 같은 값이다. 마지막 h8에 BIGInfo로 알리는 GSKD를 넣어, 같은 방송 코드를 다시 써도 BIG마다 다른 세션 키 GSK가 나온다.</figcaption>
+    </figure>
   </section>
 
   <!-- ============================================================ -->

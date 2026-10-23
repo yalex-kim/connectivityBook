@@ -77,6 +77,31 @@
       <div class="sim-note">이벤트 0~7의 PDU 바이트. 파랑 = 분할 헤더(SC/CMPLT 바이트, 길이), 주황 = Time_Offset(µs, 리틀 엔디언), 나머지 = SDU 데이터(S0, S1 …의 첫 바이트를 SDU 번호로 채웠다). 모델: SDU j는 j × SDU 간격에 생기고, 이벤트 k(시각 k × ISO 간격)의 PDU에는 그 전에 생긴 데이터만 싣는다. F = (1 + 100 ppm) × ISO 간격 ÷ SDU 간격. 해볼 것: ① 7.5 ms SDU를 10 ms 간격에 실으면 어떤 이벤트에는 SDU 시작이 둘, 어떤 이벤트에는 이어지는 조각이 들어간다. ② Max_PDU를 줄여 대역 조건이 깨지면 밀린 바이트가 쌓인다. ③ SDU 간격 = ISO 간격(10/10)이면 프레임 없는 PDU로도 된다(아래 계산기).</div>
     </div>
     <p class="spec-ref">분할 헤더(그림 2.3, Table 2.2·2.3)·Time_Offset·5바이트 규칙·모드: <b>[Vol 6] Part G §2.2</b> · Time_Offset 정의: <b>§3.1</b></p>
+    <figure class="diagram">
+      <div style="overflow-x:auto">
+      <svg viewBox="0 0 760 230" role="img" aria-label="프레임 없는 PDU는 SDU 조각만 담고 LLID로 시작·끝을 표시한다. 프레임 있는 PDU는 세그먼트마다 분할 헤더 2바이트, 새 SDU의 첫 세그먼트에는 Time_Offset 3바이트가 붙는다" style="min-width:640px">
+        <text x="10" y="24" class="t-acc">프레임 없음</text><text x="10" y="42" class="t-mono">박자가 맞을 때</text>
+        <rect x="150" y="12" width="44" height="34" rx="4" class="f-surface"/><text x="172" y="34" text-anchor="middle" class="t-mono">헤더</text>
+        <rect x="196" y="12" width="250" height="34" rx="4" class="f-acc-soft"/><text x="321" y="34" text-anchor="middle" class="t-mono">SDU 조각 (머리말 없음)</text>
+        <text x="460" y="26" class="t-mono">LLID 0b00 = 끝 조각·SDU 전체</text><text x="460" y="42" class="t-mono">LLID 0b01 = 시작·중간·채움</text>
+        <text x="10" y="104" class="t-acc">프레임 있음</text><text x="10" y="122" class="t-mono">박자가 다를 때</text>
+        <rect x="150" y="92" width="44" height="34" rx="4" class="f-surface"/><text x="172" y="114" text-anchor="middle" class="t-mono">헤더</text>
+        <rect x="196" y="92" width="62" height="34" rx="4" class="f-acc2-soft"/><text x="227" y="106" text-anchor="middle" class="t-mono">분할 헤더</text><text x="227" y="120" text-anchor="middle" class="t-mono">2 B</text>
+        <rect x="260" y="92" width="88" height="34" rx="4" class="f-elev" stroke="var(--warn)"/><text x="304" y="106" text-anchor="middle" class="t-mono">Time_Offset</text><text x="304" y="120" text-anchor="middle" class="t-mono">3 B</text>
+        <rect x="350" y="92" width="136" height="34" rx="4" class="f-acc-soft"/><text x="418" y="114" text-anchor="middle" class="t-mono">SDU j의 앞부분</text>
+        <rect x="488" y="92" width="62" height="34" rx="4" class="f-acc2-soft"/><text x="519" y="106" text-anchor="middle" class="t-mono">분할 헤더</text><text x="519" y="120" text-anchor="middle" class="t-mono">2 B</text>
+        <rect x="552" y="92" width="88" height="34" rx="4" class="f-elev" stroke="var(--warn)"/><text x="596" y="106" text-anchor="middle" class="t-mono">Time_Offset</text><text x="596" y="120" text-anchor="middle" class="t-mono">3 B</text>
+        <rect x="642" y="92" width="108" height="34" rx="4" class="f-acc-soft"/><text x="696" y="114" text-anchor="middle" class="t-mono">SDU j+1 …</text>
+        <text x="196" y="148" class="t-mono">SC = 0 (새 SDU), CMPLT = 1이면 이 세그먼트로 SDU가 끝남</text>
+        <rect x="150" y="166" width="44" height="34" rx="4" class="f-surface"/><text x="172" y="188" text-anchor="middle" class="t-mono">헤더</text>
+        <rect x="196" y="166" width="62" height="34" rx="4" class="f-acc2-soft"/><text x="227" y="180" text-anchor="middle" class="t-mono">분할 헤더</text><text x="227" y="194" text-anchor="middle" class="t-mono">2 B</text>
+        <rect x="260" y="166" width="226" height="34" rx="4" class="f-acc-soft"/><text x="373" y="188" text-anchor="middle" class="t-mono">SDU j+1의 나머지</text>
+        <text x="500" y="182" class="t-mono">SC = 1 (이어짐): Time_Offset 없음</text>
+        <text x="10" y="222" class="t-dim">PDU에 5바이트(헤더 2 + Time_Offset 3)가 남지 않으면 새 SDU를 시작하지 않는다</text>
+      </svg>
+      </div>
+      <figcaption><b>그림 14-1.</b> ISOAL의 두 PDU. 프레임 없는 PDU는 SDU 조각을 그대로 담고 LLID만으로 끝 조각을 표시한다. 프레임 있는 PDU는 세그먼트마다 2바이트 분할 헤더(SC, CMPLT, 길이)를 붙이고, 새 SDU의 첫 세그먼트(SC = 0)에는 원래 박자를 되살릴 Time_Offset 3바이트를 더한다. 분할 모드에서는 한 PDU에 여러 SDU의 세그먼트가 함께 실린다.</figcaption>
+    </figure>
   </section>
 
   <!-- ============================================================ -->

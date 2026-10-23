@@ -142,6 +142,32 @@
       <div class="sim-note">슬라이더 단위: 주기·서브이벤트 간격·슬롯 지연은 1.25 ms, 슬롯 간격은 0.125 ms. 해볼 것: ① 서브이벤트 128개 넘게 늘리면 위반이다. ② 슬롯 수를 늘리면 슬롯 간격 상한(남은 시간 ÷ 슬롯 수)에 걸린다. ③ 서브이벤트 수 × 간격이 주기보다 길면 다음 주기와 겹친다.</div>
     </div>
     <p class="spec-ref">SyncInfo: <b>[Vol 6] Part B §2.3.4.6</b> · 주기적 광고 이벤트: <b>§4.4.2.2.3</b> · PAwR 이벤트와 시간 규칙: <b>§4.4.2.2.4</b> · LL_PERIODIC_SYNC_IND(PAST): <b>§2.4.2.27·§5.1.13</b></p>
+    <figure class="diagram">
+      <div style="overflow-x:auto">
+      <svg viewBox="0 0 760 250" role="img" aria-label="주기적 광고: ADV_EXT_IND가 AUX_ADV_IND를 가리키고, AUX_ADV_IND의 SyncInfo가 주기마다 오는 AUX_SYNC_IND 열차를 가리킨다. PAST는 연결로 SyncInfo를 건네 스캔 없이 열차에 타게 한다" style="min-width:640px">
+        <defs><marker id="pa-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--accent)"/></marker></defs>
+        <text x="10" y="30" class="t-mono">주 채널</text>
+        <rect x="80" y="14" width="110" height="28" rx="5" class="f-acc-soft"/><text x="135" y="33" text-anchor="middle" class="t-mono">ADV_EXT_IND</text>
+        <path d="M150 46 L196 80" class="s-acc" marker-end="url(#pa-ar)"/><text x="190" y="60" class="t-mono">AuxPtr</text>
+        <text x="10" y="98" class="t-mono">보조 채널</text>
+        <rect x="200" y="82" width="150" height="28" rx="5" class="f-elev" stroke="var(--accent)"/><text x="275" y="101" text-anchor="middle" class="t-mono">AUX_ADV_IND</text>
+        <rect x="270" y="114" width="80" height="20" rx="4" class="f-acc2-soft"/><text x="310" y="128" text-anchor="middle" class="t-mono">SyncInfo</text>
+        <path d="M350 124 L396 166" class="s-acc" marker-end="url(#pa-ar)"/>
+        <text x="10" y="186" class="t-mono">주기적 광고</text>
+        <rect x="400" y="170" width="100" height="28" rx="5" class="f-acc-soft"/><text x="450" y="189" text-anchor="middle" class="t-mono">AUX_SYNC_IND</text>
+        <rect x="530" y="170" width="100" height="28" rx="5" class="f-acc-soft"/><text x="580" y="189" text-anchor="middle" class="t-mono">AUX_SYNC_IND</text>
+        <rect x="660" y="170" width="90" height="28" rx="5" class="f-acc-soft"/><text x="705" y="189" text-anchor="middle" class="t-mono">…</text>
+        <path d="M450 206 V214 H580 V206" class="s-line"/><text x="515" y="232" text-anchor="middle" class="t-dim">주기 (1.25 ms 배수, 7.5 ms ~ 81.91875 s)</text>
+        <text x="400" y="56" class="t-dim">SyncInfo 18바이트: 첫 AUX_SYNC_IND까지 오프셋,</text>
+        <text x="400" y="74" class="t-dim">주기, 채널 맵, 접근 주소, CRC 초기값, 이벤트 카운터</text>
+        <rect x="80" y="160" width="230" height="56" rx="8" class="f-surface"/>
+        <text x="195" y="182" text-anchor="middle" class="t">PAST: 휴대폰 → 보청기</text>
+        <text x="195" y="202" text-anchor="middle" class="t-mono">LL_PERIODIC_SYNC_IND (0x1C)</text>
+        <path d="M314 188 H396" class="s-line" stroke-dasharray="5 4" marker-end="url(#pa-ar)"/>
+      </svg>
+      </div>
+      <figcaption><b>그림 5-1.</b> 주기적 광고에 타는 두 길. 스캐너는 주 채널의 ADV_EXT_IND에서 AuxPtr을 따라 AUX_ADV_IND를 받고, 거기 실린 SyncInfo로 주기마다 오는 AUX_SYNC_IND 열차에 동기화한다. 그 뒤로는 광고 채널을 스캔하지 않고 정해진 시각에만 깨어난다. 스캔이 부담인 기기는 PAST로 이미 동기화한 휴대폰에게서 연결을 통해 SyncInfo를 건네받아 바로 열차에 탄다.</figcaption>
+    </figure>
   </section>
 
   <div class="callout related"><strong>다른 책에서</strong><ul><li><a href="../../bluetooth/chapters/advertising.html">BluetoothBook 05장 · 광고와 스캔</a> — 레거시 광고와 31바이트</li><li><a href="../../bluetooth/chapters/mesh.html">BluetoothBook 12장 · 메시와 사물 인터넷</a> — PAwR로 전자 가격표 수천 개</li></ul></div>
