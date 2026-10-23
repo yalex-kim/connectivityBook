@@ -19,6 +19,7 @@ window.BD_TERMS = [
   ["DHKey 확인값", "DHKey Check (f6)", "인증 2단계에서 교환하는 Ea·Eb. 같은 DHKey와 바뀌지 않은 IOcap·주소를 증명한다. [Vol 3] Part H §2.2.8", "smp"],
   ["CTKD", "Cross-Transport Key Derivation", "한쪽 전송(LE/클래식)의 SC 키에서 다른 쪽 키를 h6·h7로 유도하는 것. CT2 = 1이면 h7을 쓴다. [Vol 3] Part H §2.4.2.4·§2.4.2.5", "smp"],
   ["CT2", "CT2 bit", "Pairing Request/Response 인증 요구의 비트. 양쪽 모두 1이면 CTKD에 h7을 쓴다. [Vol 3] Part H §2.4.2.4", "smp"],
+    ["ILK", "Intermediate Link Key", "교차 전송 키 유도(CTKD)의 중간 키. LE의 LTK에서 h7(CT2 = 1) 또는 h6으로 ILK를 만들고, 다시 h6으로 클래식 링크 키를 만든다. [Vol 3] Part H §2.4.2.4", "smp"],
   // 08 privacy
   ["RPA", "Resolvable Private Address", "IRK를 가진 기기만 알아볼 수 있는 임의 주소. 위 두 비트 01, prand ‖ ah(IRK, prand). [Vol 6] Part B §1.3.2.2", "privacy"],
   ["IRK", "Identity Resolving Key", "RPA를 만들고 푸는 128비트 키. 페어링 3단계에서 신원 주소와 함께 나눈다. [Vol 3] Part H §3.6.4", "privacy"],
@@ -27,12 +28,15 @@ window.BD_TERMS = [
   ["필터 수용 목록", "Filter Accept List", "필터 정책이 쓰는 아는 기기 주소 목록(옛 이름 White List). [Vol 6] Part B §4.3.1", "privacy"],
   ["네트워크 프라이버시 모드", "Network Privacy Mode", "해석 목록 레코드의 기본 모드. 상대가 RPA로 올 때만 받고 신원 주소로 오면 버린다. [Vol 6] Part B §4.7", "privacy"],
   ["기기 프라이버시 모드", "Device Privacy Mode", "상대의 신원 주소와 RPA를 모두 받는 모드. RPA를 쓰지 않을 때가 있는 기기용. [Vol 6] Part B §4.7", "privacy"],
+    ["NRPA", "Non-Resolvable Private Address", "해석할 수 없는 임의 주소. 위 두 비트가 00이고 나머지가 무작위라서, 본딩한 상대도 원래 기기를 알아볼 수 없다. [Vol 6] Part B §1.3.2.2", "privacy"],
   // 09 bigsec
   ["방송 코드", "Broadcast_Code", "암호화된 BIG의 공유 비밀. 화면에서는 UTF-8 4~16옥텟 문자열(“Bluetooth Privacy Code”), 그 아래에서는 작은 바이트부터 채운 128비트 값. [Vol 3] Part C §3.2.6", "bigsec"],
   ["GSK", "Group Session Key", "BIS를 암호화하는 키. GSK = h8(GLTK, GSKD, “BIG3”). [Vol 6] Part E §1.1.2", "bigsec"],
   ["GSKD", "Group Session Key Diversifier", "암호화된 BIG마다 컨트롤러가 새로 뽑아 BIGInfo에 싣는 128비트. 같은 방송 코드에서도 GSK가 달라진다. [Vol 6] Part B §4.4.6.10", "bigsec"],
   ["GIV", "Group Initialization Vector", "BIGInfo에 싣는 64비트. BIS의 IV는 GIV의 아래 32비트를 그 BIS의 접근 주소와 XOR한 값. [Vol 6] Part E §2.1", "bigsec"],
   ["시드 접근 주소", "Seed Access Address (SAA)", "BIGInfo에 싣는 32비트. BIS마다 SAA ⊕ DW(n)으로 접근 주소를 만든다. [Vol 6] Part B §2.1.2", "bigsec"],
+    ["IGLTK / GLTK", "Intermediate / Group Long Term Key", "BIG 암호화의 중간 키. 방송 코드로 IGLTK = h7(\"BIG1\", 코드), GLTK = h6(IGLTK, \"BIG2\")를 만들고 여기서 GSK를 유도한다. [Vol 6] Part E §1.1.2", "bigsec"],
+    ["DW", "Diversifier Word", "BIS마다 접근 주소를 다르게 하려고 시드 접근 주소(SAA)에 XOR하는 32비트 값. D = (35·n + 42) mod 128의 7비트를 정해진 자리에 흩어 만든다. [Vol 6] Part B §2.1.2", "bigsec"],
   // 02 hci
   ["HCI", "Host Controller Interface", "호스트와 컨트롤러가 명령·이벤트·데이터를 주고받는 표준 형식. [Vol 4] Part E", "hci"],
   ["H4", "HCI UART packet indicator", "UART 하나로 HCI 패킷을 섞어 보낼 때 앞에 붙이는 1바이트(명령 01, ACL 02, 동기 03, 이벤트 04, ISO 05). [Vol 4] Part A §2", "hci"],
@@ -42,6 +46,7 @@ window.BD_TERMS = [
   ["Command Status", "HCI_Command_Status", "명령을 받아 시작했음을 알리는 이벤트(0x0F). 결과는 나중에 다른 이벤트로 온다. [Vol 4] Part E §7.7.15", "hci"],
   ["Number Of Completed Packets", "HCI_Number_Of_Completed_Packets", "컨트롤러가 비운 데이터 버퍼 수를 핸들별로 돌려주는 이벤트(0x13). 호스트의 데이터 크레딧. [Vol 4] Part E §7.7.19", "hci"],
   ["LE Meta 이벤트", "HCI_LE_Meta event", "모든 LE 이벤트를 싣는 이벤트 코드 0x3E. 첫 바이트가 서브이벤트 코드. [Vol 4] Part E §7.7.65", "hci"],
+    ["ISO 데이터", "ISO, HCI ISO Data packet", "등시성(isochronous) 데이터. HCI에서는 표시 바이트 0x05인 패킷 종류로, LE 오디오의 CIS·BIS 데이터를 호스트와 컨트롤러가 주고받는다. [Vol 4] Part E §5.4.5", "hci"],
   // 03 scheduling
   ["앵커 포인트", "Anchor point", "연결 이벤트의 시작 시각. 센트럴은 보낼 것이 있으면 여기서 첫 PDU를 보낸다. [Vol 6] Part B §4.5.1", "scheduling"],
   ["connEventCounter", "connEventCounter", "두 기기가 함께 세는 16비트 연결 이벤트 번호. 건너뛴 이벤트도 센다. 절차의 instant 기준. [Vol 6] Part B §4.5.1", "scheduling"],
@@ -67,6 +72,7 @@ window.BD_TERMS = [
   ["크레딧", "Credits", "상대가 보내도 되는 K-frame 수. 0에서 받거나 65535를 넘으면 채널을 끊는다. [Vol 3] Part A §10.1", "l2cap"],
   ["ECFC", "Enhanced Credit Based Flow Control", "LE와 클래식에서 쓰는 크레딧 기반 방식. 요청 하나로 채널 최대 5개, MTU·MPS ≥ 64, 재설정 가능. EATT가 쓴다. [Vol 3] Part A §10.2", "l2cap"],
   ["SPSM", "Simplified Protocol/Service Multiplexer", "크레딧 기반 채널을 열 때 고르는 서비스 번호. 0x0001~0x007F SIG 할당, 0x0080~0x00FF 동적. [Vol 3] Part A §4.22", "l2cap"],
+    ["SDU", "Service Data Unit", "상위 계층이 한 번에 넘기는 데이터 덩어리. L2CAP에서는 앱 데이터 하나(MTU 이하)로 K-frame 여러 개로 나뉘고, ISOAL에서는 LC3 같은 코덱 프레임 하나다. [Vol 3] Part A §3.4.2 · [Vol 6] Part G", "l2cap"],
   // 11 gatt
   ["ATT 베어러", "ATT bearer", "ATT PDU가 오가는 L2CAP 채널. 고정 채널 0x0004 하나(일반) 또는 ECFC 채널 여럿(EATT). 순차 규칙은 베어러마다. [Vol 3] Part F §3.2.11", "gatt"],
   ["EATT", "Enhanced ATT", "ECFC 채널 여러 개를 ATT 베어러로 쓰는 것. 병렬 트랜잭션, ATT_MTU ≥ 64, 알림을 버리지 않음. [Vol 3] Part G §5.3", "gatt"],
@@ -109,16 +115,27 @@ window.BD_TERMS = [
   ["SRES", "Signed Response", "장치 인증에서 상대가 돌려주는 32비트 응답. E1 또는 h5의 앞부분", "classicsec"],
   ["IOcap", "IO capability data", "AuthReq·OOB 유무·IO 능력 3바이트. f3에 들어가 인증 방식 변조를 잡는다", "classicsec"],
   ["Secure Connections Only", "Secure Connections Only mode", "모든 서비스에 보안 모드 4 레벨 4(P-256 인증 키, AES-CCM)를 요구하는 GAP 모드. [Vol 3] Part C §5.2.2", "classicsec"],
+    ["PIN", "PIN code", "레거시 페어링에서 사용자가 넣는 1~16바이트 값. 초기화 키(E22)의 재료라서 짧으면 엿들은 기록으로 맞혀 볼 수 있다. [Vol 2] Part H §3.2.1", "classicsec"],
+    ["E0·E1·E3·E21·E22", "Legacy BR/EDR security functions", "레거시 클래식 보안 함수. E22는 초기화 키, E21은 결합 키, E1은 장치 인증(SRES·ACO), E3은 암호 키(K_enc)를 만들고(모두 SAFER+ 기반), E0은 스트림 암호로 데이터를 암호화한다. [Vol 2] Part H §4·§6", "classicsec"],
+    ["HMAC-SHA-256", "Hash-based MAC with SHA-256", "SHA-256 해시로 만드는 메시지 인증 코드. 클래식 SSP의 f1·f2·f3 함수가 이것으로 계산한다. [Vol 2] Part H §7.7", "classicsec"],
   ["오류 코드", "Error code", "HCI 이벤트의 Status·Reason과 LL·LMP 거절에 쓰는 1바이트 값. [Vol 1] Part F Table 1.1", "debugging"],
   ["Command Status", "HCI_Command_Status", "오래 걸리는 명령을 받았다는 이벤트(0x0F). 0x00은 성공이 아니라 시작. [Vol 4] Part E §7.7.15", "debugging"],
   ["Instant Passed", "Instant Passed (0x28)", "instant가 지난 뒤 절차 PDU를 받아 연결을 잃었을 때의 오류 코드. [Vol 6] Part B §5.5.1", "debugging"],
   ["shall", "shall / should / may", "사양의 요구 세기. shall = 필수, should = 권장, may = 허용(둘 다 필수 아님), must = 사실·결과, can = 가능성. [Vol 1] Part E §1", "intro"],
   ["예제 데이터", "Sample data", "사양이 함께 실은 계산 예. [Vol 2] Part G, [Vol 3] Part H 부록 D, [Vol 6] Part C. 본문과 다르면 예제가 틀린 것으로 본다. [Vol 1] Part E §4", "intro"],
   ["리틀 엔디언", "Little-endian", "작은 바이트를 먼저 놓는 순서. HCI 파라미터와 LE PDU 필드의 기본. [Vol 4] Part E §5.2", "intro"],
+    ["LSB", "Least Significant Bit", "가장 낮은 자리 비트. 블루투스는 공중으로 필드마다 LSB부터 보내고, 여러 바이트 값은 작은 바이트부터 놓는다(리틀 엔디언). [Vol 6] Part B §1.2", "intro"],
   ["패킷 종류", "BR/EDR packet types", "DM1~DH5(기본 속도), 2-/3-DH1~DH5(EDR), HV·EV(음성), NULL·POLL·FHS·ID(제어). 숫자는 슬롯 수. [Vol 2] Part B §6.5, Table 6.2", "baseband"],
   ["ptt", "packet_type_table", "ACL에서 EDR 패킷을 쓸지 LMP로 정한 값. 같은 TYPE 코드가 ptt = 0이면 DH5, 1이면 3-DH5. [Vol 2] Part B §6.5", "baseband"],
+    ["CLK", "Bluetooth clock", "BR/EDR 기기의 28비트 클록. 312.5 µs마다 1 늘어(3.2 kHz) 두 틱이 한 슬롯(625 µs)이다. 센트럴의 클록이 피코넷의 기준이고 도약 순서도 여기서 나온다. [Vol 2] Part B §1.1", "baseband"],
+    ["PERM5", "Permutation operation", "도약 선택 커널의 한 단계. 5비트 값을 제어 비트 14개에 따라 나비 연산으로 섞는다. [Vol 2] Part B §2.6.2.3", "baseband"],
+    ["LMP", "Link Manager Protocol", "BR/EDR 두 기기의 링크 매니저가 주고받는 제어 프로토콜. 연결 설정, 인증·암호화, 전력 모드를 맡는다(LE의 LL 제어 PDU에 해당한다). [Vol 2] Part C", "baseband"],
   ["PDU", "Protocol Data Unit", "프로토콜 데이터 단위. 한 계층이 상대편의 같은 계층에 건네는 데이터 덩어리(헤더 + 내용). LE 링크 계층 패킷에서는 접근 주소와 CRC 사이의 2~258바이트. [Vol 6] Part B §2.1", "procedures"],
 ];
 
 /* 본문 표기 → 용어집 표제어 */
-window.BD_TERM_ALIAS = {};
+window.BD_TERM_ALIAS = {
+    "DRBG": "CS DRBG",
+    "DID": "ADI",
+    "SID": "ADI",
+};

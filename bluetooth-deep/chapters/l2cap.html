@@ -33,7 +33,7 @@
   <header class="chapter-hero">
     <div class="eyebrow">Chapter 10</div>
     <h1>L2CAP: 채널, 신호, 크레딧 기반 흐름 제어</h1>
-    <p class="lead"><span class="term">HCI</span>의 ACL 데이터(2장) 위, ATT와 SMP 아래에 L2CAP이 있다. 하는 일은 셋이다. 한 연결 위에 여러 “채널”을 나눠 싣고, 채널을 열고 닫는 신호를 주고받고, 큰 데이터(SDU)를 작은 조각으로 나눠 상대가 받을 수 있는 만큼만 보낸다. 이 장은 LE의 L2CAP을 따라가며, 파일 하나가 SDU → <span class="term">K-frame</span> → HCI ACL 조각 → LL <span class="term">PDU</span>로 쪼개지는 과정을 바이트 단위로 계산한다.</p>
+    <p class="lead"><span class="term">HCI</span>의 <span class="term">ACL</span> 데이터(2장) 위, <span class="term">ATT</span>와 <span class="term">SMP</span> 아래에 <span class="term">L2CAP</span>이 있다. 하는 일은 셋이다. 한 연결 위에 여러 “채널”을 나눠 싣고, 채널을 열고 닫는 신호를 주고받고, 큰 데이터(<span class="term">SDU</span>)를 작은 조각으로 나눠 상대가 받을 수 있는 만큼만 보낸다. 이 장은 <span class="term">LE</span>의 L2CAP을 따라가며, 파일 하나가 SDU → <span class="term">K-frame</span> → HCI ACL 조각 → <span class="term">LL</span> <span class="term">PDU</span>로 쪼개지는 과정을 바이트 단위로 계산한다.</p>
     <ul class="objectives">
       <li>LE의 고정 채널과 동적 채널, L2CAP 기본 머리말과 신호 명령의 형식을 안다.</li>
       <li>LE 크레딧 기반 흐름 제어의 K-frame, MTU·MPS, 크레딧 규칙과 위반 시 동작을 설명할 수 있다.</li>
@@ -76,7 +76,7 @@
         <tr><td class="num">0x19 / 0x1A</td><td>CREDIT_BASED_RECONFIGURE_REQ / RSP</td><td>ECFC 채널의 MTU·MPS 바꾸기</td></tr>
       </tbody>
     </table></div>
-    <p>채널을 열 때는 <b><span class="term">SPSM</span></b>(서비스 번호)을 준다. 0x0001~0x007F는 SIG가 할당한 프로토콜(<span class="term">EATT</span> 등), 0x0080~0x00FF는 동적 번호로, 클라이언트가 GATT에서 매번 다시 읽어야 한다.</p>
+    <p>채널을 열 때는 <b><span class="term">SPSM</span></b>(<span class="term">서비스</span> 번호)을 준다. 0x0001~0x007F는 <span class="term">SIG</span>가 할당한 프로토콜(<span class="term">EATT</span> 등), 0x0080~0x00FF는 동적 번호로, <span class="term">클라이언트</span>가 <span class="term">GATT</span>에서 매번 다시 읽어야 한다.</p>
     <p class="spec-ref">신호 패킷 형식과 LE 한 명령 규칙: <b>[Vol 3] Part A §4</b> · 명령: <b>§4.1~§4.28</b> · 연결 파라미터 갱신은 페리페럴만, LL 절차를 못 쓸 때만: <b>§4.20</b> · SPSM 범위(Table 4.15): <b>§4.22</b></p>
   </section>
 
@@ -85,7 +85,7 @@
     <h2>LE 크레딧 기반 흐름 제어</h2>
     <p>동적 채널의 데이터 단위는 <b>K-frame</b>이다. 상위 계층의 데이터 덩어리(SDU)를 K-frame 여러 개로 나누고, <b>첫 K-frame에만</b> SDU 전체 길이(2바이트)를 붙인다. 두 숫자가 크기를 정한다.</p>
     <ul>
-      <li><b>MTU</b>: 내가 받을 수 있는 가장 큰 SDU. LE 크레딧 기반은 최소 23바이트.</li>
+      <li><b><span class="term">MTU</span></b>: 내가 받을 수 있는 가장 큰 SDU. LE 크레딧 기반은 최소 23바이트.</li>
       <li><b><span class="term">MPS</span></b>: 내가 받을 수 있는 가장 큰 K-frame 페이로드. 최소 23, 최대 65533.</li>
     </ul>
     <p>그리고 <b>크레딧</b>. 채널을 열 때 서로 “처음에 K-frame을 몇 개까지 보내도 된다”(0~65535)를 주고, K-frame 하나를 보낼 때마다 하나씩 쓴다. 받는 쪽은 처리한 만큼 FLOW_CONTROL_CREDIT_IND로 돌려준다. 규칙은 엄격하다. 크레딧이 0인데 K-frame을 받으면, 크레딧 합이 65535를 넘으면, SDU가 MTU를 넘거나 K-frame이 MPS를 넘거나 조각 합이 SDU 길이를 넘으면 <b>받는 쪽이 채널을 끊는다</b>. 크레딧 0을 돌려주는 IND는 무시한다(보내면 안 된다).</p>
@@ -117,7 +117,7 @@
   <section id="ecfc">
     <h2>ECFC: 채널 여럿을 한 번에, 그리고 EATT</h2>
     <p>5.2에서 더한 <b>향상된 크레딧 기반 흐름 제어</b>(<span class="term">ECFC</span>)는 같은 크레딧 방식을 LE와 클래식 모두에 쓰고, 요청 하나로 <b>채널을 최대 5개</b> 연다. MTU와 MPS는 최소 64바이트다. 열린 뒤에도 RECONFIGURE로 MTU·MPS를 바꿀 수 있는데, <b>MTU는 줄일 수 없고</b>, 채널을 여럿 함께 바꿀 때는 MPS도 줄일 수 없다(이미 보낸 조각이 새 한도를 넘지 않게). 받는 쪽은 옛 MPS로 보내던 PDU를 다 보낸 뒤에야 응답한다.</p>
-    <p>ECFC의 대표 사용자가 <b>EATT</b>(Enhanced ATT)다. 0x0004 고정 채널 하나뿐이던 ATT를 ECFC 채널 여럿으로 늘려, 한 채널에서 긴 읽기가 진행 중이어도 다른 채널로 알림이나 다른 요청을 동시에 보낸다. EATT 채널은 암호화된 연결에서만 열고, K-frame 하나에 ATT PDU 하나만 싣는다(11장).</p>
+    <p>ECFC의 대표 사용자가 <b>EATT</b>(Enhanced ATT)다. 0x0004 고정 채널 하나뿐이던 ATT를 ECFC 채널 여럿으로 늘려, 한 채널에서 긴 읽기가 진행 중이어도 다른 채널로 <span class="term">알림</span>이나 다른 요청을 동시에 보낸다. EATT 채널은 암호화된 연결에서만 열고, K-frame 하나에 ATT PDU 하나만 싣는다(11장).</p>
     <div class="sim" id="sim-rcf">
       <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>ECFC 재설정 요청 검사</h3></div>
       <div class="sim-controls" style="border-top:0">

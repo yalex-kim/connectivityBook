@@ -2,6 +2,7 @@
 """용어집(js/terms.js)의 표제어를 본문에 툴팁(<span class="term">)으로 표시한다.
 
 규칙: 용어마다 장마다 처음 나오는 곳 (중간 장부터 읽어도 툴팁이 있게).
+book.json의 ui.termsAlso가 있으면(심화편 → 입문편) 앞 책의 용어도 표시한다.
 표제어 말고도 영문 이름의 약어("Channel Sounding (CS)", "ISI, Inter-Symbol Interference")와 *_TERM_ALIAS의 별칭도 찾는다.
 뜻이 흔한 낱말과 겹치는 표제어(LOCAL_ONLY)는 책에서 처음 나오는 곳과 그 용어의 장(terms.js 4번째 칸)에서만 표시한다.
 본문 문단(p, li)의 글자만 바꾸고 제목, 그림, 시뮬레이터, 퀴즈, 출처 줄, 코드, 링크 안은 건드리지 않는다.
@@ -86,6 +87,12 @@ def segments(html):
 def mark(book_dir, dry=False):
     book = ROOT / book_dir; cfg = json.loads((book / 'book.json').read_text()); ns = cfg['ui']['ns']
     terms, alias = load_terms(book, ns)
+    also = cfg['ui'].get('termsAlso')
+    if also:  # 이어지는 책은 앞 책의 용어도 표시한다 (같은 말이면 이 책의 항목이 먼저, common.js와 같은 규칙)
+        t2, a2 = load_terms(ROOT / also['dir'], also['ns'])
+        own = {k for t in terms for k in keys_of(t)}
+        terms = terms + [t for t in t2 if not set(keys_of(t)) & own]
+        alias = {**a2, **alias}
     al = {}
     for a, head in alias.items(): al.setdefault(head, []).append(a)
     keys = {t[0]: keys_of(t, al.get(t[0], ())) for t in terms}

@@ -36,7 +36,7 @@
   <header class="chapter-hero">
     <div class="eyebrow">Chapter 11</div>
     <h1>ATT/GATT 심화: EATT, 큐 쓰기, Database Hash</h1>
-    <p class="lead">1권 7장은 속성과 서비스·특성, 읽기·쓰기·알림을 다뤘다. 이 장은 현장에서 부딪히는 세부로 내려간다. 요청 하나가 끝나야 다음을 보낼 수 있는 순차 규칙과 30초 타임아웃, 긴 값을 나눠 쓰는 <span class="term">큐 쓰기</span>, 여러 요청을 동시에 흘리는 <span class="term">EATT</span>, 그리고 펌웨어를 올린 뒤 휴대폰이 옛 핸들을 계속 쓰는 문제를 막는 <span class="term">Database Hash</span>와 <span class="term">Robust Caching</span>이다.</p>
+    <p class="lead">1권 7장은 <span class="term">속성</span>과 <span class="term">서비스</span>·<span class="term">특성</span>, 읽기·쓰기·<span class="term">알림</span>을 다뤘다. 이 장은 현장에서 부딪히는 세부로 내려간다. 요청 하나가 끝나야 다음을 보낼 수 있는 순차 규칙과 30초 타임아웃, 긴 값을 나눠 쓰는 <span class="term">큐 쓰기</span>, 여러 요청을 동시에 흘리는 <span class="term">EATT</span>, 그리고 펌웨어를 올린 뒤 휴대폰이 옛 <span class="term">핸들</span>을 계속 쓰는 문제를 막는 <span class="term">Database Hash</span>와 <span class="term">Robust Caching</span>이다.</p>
     <ul class="objectives">
       <li>ATT opcode의 비트 구조와 여섯 PDU 종류, 순차 프로토콜과 30초 트랜잭션 규칙을 안다.</li>
       <li>Read Blob과 Prepare/Execute Write로 긴 값을 읽고 쓰는 과정을 따라갈 수 있다.</li>
@@ -48,7 +48,7 @@
   <!-- ============================================================ -->
   <section id="pdu">
     <h2>ATT PDU와 순차 프로토콜</h2>
-    <p>ATT <span class="term">PDU</span>의 첫 바이트 opcode는 아래 6비트가 <b>방법</b>(Method), 비트 6이 <b>명령 플래그</b>(1이면 응답이 없는 명령), 비트 7은 6.3에서 “이전에 쓰던 값”이 되었다(서명된 쓰기의 인증 서명 플래그. 데이터 서명 삭제와 함께 0xD2 Signed Write Command도 사라졌다). 그래서 ATT_WRITE_CMD는 0x52 = 0x12(쓰기 방법) | 0x40이다. 나머지 바이트는 매개변수이고 ATT_MTU − 1까지 들어간다. 여러 바이트 값은 <span class="term">리틀 엔디언</span>이지만, 속성 값 자체의 바이트 순서는 상위 사양이 정한다.</p>
+    <p><span class="term">ATT</span> <span class="term">PDU</span>의 첫 바이트 opcode는 아래 6비트가 <b>방법</b>(Method), 비트 6이 <b>명령 플래그</b>(1이면 응답이 없는 명령), 비트 7은 6.3에서 “이전에 쓰던 값”이 되었다(서명된 쓰기의 인증 서명 플래그. 데이터 서명 삭제와 함께 0xD2 Signed Write Command도 사라졌다). 그래서 ATT_WRITE_CMD는 0x52 = 0x12(쓰기 방법) | 0x40이다. 나머지 바이트는 매개변수이고 <span class="term">ATT_MTU</span> − 1까지 들어간다. 여러 바이트 값은 <span class="term">리틀 엔디언</span>이지만, 속성 값 자체의 바이트 순서는 상위 사양이 정한다.</p>
     <div class="table-wrap"><table>
       <thead><tr><th>종류</th><th>방향</th><th>흐름 제어</th><th>예</th></tr></thead>
       <tbody>
@@ -58,7 +58,7 @@
         <tr><td>알림(NTF)</td><td>서버 → 클라이언트</td><td>없음</td><td>0x1B, MULTIPLE 0x23</td></tr>
       </tbody>
     </table></div>
-    <p>요청-응답과 표시-확인 한 쌍이 <b>트랜잭션</b>이다. 트랜잭션은 한 베어러에서 끝나야 하고, <b>30초</b> 안에 끝나지 않으면 실패로 처리하며 그 베어러로는 더 아무것도 보내지 않는다. 다시 쓰려면 베어러를 새로 맺어야 하는데, 고정 채널 0x0004 베어러라면 사실상 연결을 끊고 다시 맺는 것이다. 응답이 늦는 서버 하나가 휴대폰 앱 전체를 멈추게 하는 흔한 원인이다.</p>
+    <p>요청-응답과 <span class="term">표시</span>-확인 한 쌍이 <b>트랜잭션</b>이다. 트랜잭션은 한 베어러에서 끝나야 하고, <b>30초</b> 안에 끝나지 않으면 실패로 처리하며 그 베어러로는 더 아무것도 보내지 않는다. 다시 쓰려면 베어러를 새로 맺어야 하는데, 고정 채널 0x0004 베어러라면 사실상 연결을 끊고 다시 맺는 것이다. 응답이 늦는 <span class="term">서버</span> 하나가 휴대폰 앱 전체를 멈추게 하는 흔한 원인이다.</p>
     <div class="callout analogy"><strong>창구 하나짜리 민원실</strong><p>일반 <span class="term">ATT 베어러</span>는 창구가 하나인 민원실이다. 앞사람 민원(요청)이 끝나야 다음 민원을 받는다. 서류 넣기(명령)와 안내 방송(알림)은 창구를 거치지 않지만, 손이 모자라면 버려질 수 있다. EATT는 창구를 여러 개 여는 것이다. 한 창구에서 긴 서류를 처리하는 동안 옆 창구에서 다른 민원을 본다.</p></div>
     <p class="spec-ref">PDU 종류(Table 3.1)·opcode 형식(Table 3.2): <b>[Vol 3] Part F §3.3·§3.3.1</b> · 순차 프로토콜: <b>§3.3.2</b> · 트랜잭션과 30초: <b>§3.3.3</b> · opcode 요약과 0xD2: <b>§3.4.8</b></p>
   </section>
@@ -67,7 +67,7 @@
   <section id="long">
     <h2>긴 값: Read Blob과 큐 쓰기</h2>
     <p>ATT_MTU − 1보다 긴 값은 한 번에 오가지 못한다. 읽을 때는 ATT_READ_REQ로 앞부분을 받고, 이어서 <b>ATT_READ_BLOB_REQ</b>(0x0C)에 오프셋을 주어 나머지를 차례로 받는다(1권 7장의 왕복 계산). 쓸 때는 <b>큐 쓰기</b>를 쓴다. ATT_PREPARE_WRITE_REQ(0x16)로 (핸들, 오프셋, 조각)을 서버의 대기열에 넣고, 서버는 받은 내용을 그대로 되돌려 준다. 마지막에 ATT_EXECUTE_WRITE_REQ(0x18)에 플래그 1을 주면 대기열 전체를 한꺼번에 반영하고, 0을 주면 모두 버린다.</p>
-    <p>이 되돌려 받기를 이용한 것이 <b>신뢰성 있는 쓰기</b>(Reliable Writes)다. 클라이언트는 서버가 돌려준 조각이 보낸 것과 같은지 확인하고, 하나라도 다르면 실행 대신 취소(플래그 0)를 보낸다. 서버의 대기열이 가득 차면 Prepare Queue Full(0x09)이 온다. 대기열은 여러 특성의 조각을 함께 담을 수 있어 “여러 값을 원자적으로 바꾸기”에도 쓴다.</p>
+    <p>이 되돌려 받기를 이용한 것이 <b>신뢰성 있는 쓰기</b>(Reliable Writes)다. <span class="term">클라이언트</span>는 서버가 돌려준 조각이 보낸 것과 같은지 확인하고, 하나라도 다르면 실행 대신 취소(플래그 0)를 보낸다. 서버의 대기열이 가득 차면 Prepare Queue Full(0x09)이 온다. 대기열은 여러 특성의 조각을 함께 담을 수 있어 “여러 값을 원자적으로 바꾸기”에도 쓴다.</p>
     <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">ATT_MTU가 23일 때 ATT_PREPARE_WRITE_REQ 하나에 실을 수 있는 값 조각은 최대 몇 바이트일까?</p><p class="wi-hint">opcode 1 + 핸들 2 + 오프셋 2.</p><div class="opts">
       <button class="opt">22바이트</button>
       <button class="opt">20바이트</button>
@@ -93,8 +93,8 @@
   <!-- ============================================================ -->
   <section id="hash">
     <h2>Database Hash: 데이터베이스의 지문</h2>
-    <p>휴대폰은 한 번 찾은 핸들을 기억해 두고(1권 7장의 캐싱) 다음 연결에서 바로 쓴다. 그런데 펌웨어를 올려 서비스가 바뀌면 옛 핸들이 엉뚱한 특성을 가리킨다. 이를 알아채는 수단이 GATT 서비스의 <b>Database Hash</b> 특성(UUID 0x2B2A)이다. 서버의 서비스 구조를 요약한 128비트 값이라, 클라이언트는 연결할 때 이것만 읽어 보고 기억해 둔 값과 같으면 다시 찾지 않는다.</p>
-    <p>계산 규칙: 키가 모두 0인 AES-CMAC에, 핸들 순서대로 다음을 이어 붙인 메시지를 넣는다. 서비스·포함·특성 선언과 확장 속성 디스크립터는 <b>(핸들, 타입, 값)</b>, 사용자 설명·CCCD·SCCD·표현 형식·집합 형식 디스크립터는 <b>(핸들, 타입)</b>만, 그 밖(특성 값 등)은 넣지 않는다. 모두 리틀 엔디언이다. 사양의 예: 특성 선언 값 {0x02, 0x0005, 0x2A00}은 02 05 00 00 2A로 붙는다. 그래서 장치 이름 같은 <b>특성 값이 바뀌어도 해시는 그대로</b>이고, 특성을 추가하거나 속성(properties)을 바꾸면 해시가 바뀐다.</p>
+    <p>휴대폰은 한 번 찾은 핸들을 기억해 두고(1권 7장의 캐싱) 다음 연결에서 바로 쓴다. 그런데 펌웨어를 올려 서비스가 바뀌면 옛 핸들이 엉뚱한 특성을 가리킨다. 이를 알아채는 수단이 <span class="term">GATT</span> 서비스의 <b>Database Hash</b> 특성(<span class="term">UUID</span> 0x2B2A)이다. 서버의 서비스 구조를 요약한 128비트 값이라, 클라이언트는 연결할 때 이것만 읽어 보고 기억해 둔 값과 같으면 다시 찾지 않는다.</p>
+    <p>계산 규칙: 키가 모두 0인 <span class="term">AES-CMAC</span>에, 핸들 순서대로 다음을 이어 붙인 메시지를 넣는다. 서비스·포함·특성 선언과 확장 속성 <span class="term">디스크립터</span>는 <b>(핸들, 타입, 값)</b>, 사용자 설명·<span class="term">CCCD</span>·SCCD·표현 형식·집합 형식 디스크립터는 <b>(핸들, 타입)</b>만, 그 밖(특성 값 등)은 넣지 않는다. 모두 리틀 엔디언이다. 사양의 예: 특성 선언 값 {0x02, 0x0005, 0x2A00}은 02 05 00 00 2A로 붙는다. 그래서 장치 이름 같은 <b>특성 값이 바뀌어도 해시는 그대로</b>이고, 특성을 추가하거나 속성(properties)을 바꾸면 해시가 바뀐다.</p>
     <div class="sim" id="sim-hash">
       <div class="sim-head"><span class="sim-tag">WORKBENCH</span><h3>GATT 데이터베이스와 Database Hash</h3></div>
       <div class="sim-controls" style="border-top:0">
