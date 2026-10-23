@@ -154,6 +154,30 @@
   <section id="mtu">
     <h2>ATT_MTU: 23바이트의 유래와 긴 값 쪼개기</h2>
     <p><span class="term">ATT_MTU</span>는 ATT <span class="term">PDU</span> 하나의 최대 크기다. LE의 기본값은 <b>23바이트</b>다. 숫자의 유래는 6장에 있다. 4.2 이전 링크 계층 페이로드 27바이트에서 L2CAP 헤더 4바이트를 빼면 23이다. 알림 PDU는 옵코드 1 + 핸들 2바이트를 쓰므로 값은 <b>ATT_MTU − 3 = 20바이트</b>까지 실린다. 클라이언트가 ATT_EXCHANGE_MTU_REQ로 더 큰 값을 제안하면 둘 중 작은 값으로 정해진다. 4.2의 <span class="term">DLE</span>(251바이트)와 짝을 맞춘 247이 흔한 선택이다(247 + 4 = 251).</p>
+    <figure class="diagram">
+      <div style="overflow-x:auto">
+      <svg viewBox="0 0 760 250" role="img" aria-label="알림 PDU가 L2CAP 프레임과 링크 계층 패킷 안에 들어가는 모습과 ATT_MTU 23의 유래" style="min-width:620px">
+        <text x="10" y="30" class="t-mono">링크 계층 패킷</text>
+        <rect x="120" y="14" width="56" height="28" rx="5" class="f-surface"/><text x="148" y="33" text-anchor="middle" class="t-mono">프리앰블</text>
+        <rect x="180" y="14" width="70" height="28" rx="5" class="f-surface"/><text x="215" y="33" text-anchor="middle" class="t-mono">접근 주소</text>
+        <rect x="254" y="14" width="66" height="28" rx="5" class="f-acc2-soft"/><text x="287" y="33" text-anchor="middle" class="t-mono">헤더 2 B</text>
+        <rect x="324" y="14" width="356" height="28" rx="5" class="f-acc2-soft"/><text x="502" y="33" text-anchor="middle" class="t">페이로드: 기본 27 B (DLE면 최대 251 B)</text>
+        <rect x="684" y="14" width="66" height="28" rx="5" class="f-surface"/><text x="717" y="33" text-anchor="middle" class="t-mono">CRC 3 B</text>
+        <path d="M324 46 L254 92 M680 46 L750 92" class="s-line" stroke-dasharray="3 3"/>
+        <text x="10" y="114" class="t-mono">L2CAP 프레임</text>
+        <rect x="254" y="96" width="92" height="30" rx="5" class="f-elev"/><text x="300" y="115" text-anchor="middle" class="t-mono">길이 2 B</text>
+        <rect x="350" y="96" width="112" height="30" rx="5" class="f-elev"/><text x="406" y="115" text-anchor="middle" class="t-mono">CID 0x0004 (ATT)</text>
+        <rect x="466" y="96" width="284" height="30" rx="5" class="f-acc-soft"/><text x="608" y="115" text-anchor="middle" class="t">ATT PDU: 최대 ATT_MTU</text>
+        <path d="M466 130 L254 176 M750 130 L750 176" class="s-line" stroke-dasharray="3 3"/>
+        <text x="10" y="196" class="t-mono">ATT 알림 PDU</text>
+        <rect x="254" y="180" width="112" height="30" rx="5" class="f-acc-soft"/><text x="310" y="199" text-anchor="middle" class="t-mono">옵코드 0x1B · 1 B</text>
+        <rect x="370" y="180" width="100" height="30" rx="5" class="f-acc-soft"/><text x="420" y="199" text-anchor="middle" class="t-mono">핸들 2 B</text>
+        <rect x="474" y="180" width="276" height="30" rx="5" class="f-elev" stroke="var(--accent)"/><text x="612" y="199" text-anchor="middle" class="t">값: 최대 ATT_MTU − 3</text>
+        <text x="254" y="236" class="t-dim">기본: 27 − 4 = ATT_MTU 23 → 값 20바이트 · DLE 251 − 4 = 247 → 값 244바이트</text>
+      </svg>
+      </div>
+      <figcaption><b>그림 7-1.</b> 알림 하나가 공중으로 나가는 모양. ATT PDU는 L2CAP 머리말(길이·채널 번호 4바이트)을 달고 링크 계층 패킷의 페이로드에 실린다. 4.2 이전 링크 계층 페이로드 27바이트에서 L2CAP 머리말을 빼면 기본 ATT_MTU 23바이트가 되고, 옵코드와 핸들 3바이트를 빼면 알림 값은 20바이트까지 실린다. 암호화된 연결이면 페이로드 뒤에 MIC 4바이트가 더 붙는다.</figcaption>
+    </figure>
     <p>값이 ATT_MTU에 다 들어가지 않으면 두 층에서 쪼갠다. ATT 층에서는 <b>긴 값 읽기</b>(READ_BLOB_REQ로 오프셋을 바꿔 가며 여러 번)와 <b>긴 값 쓰기</b>(PREPARE_WRITE_REQ 여러 번 + EXECUTE_WRITE_REQ)를 쓴다. ATT PDU 하나가 링크 계층 페이로드보다 크면 L2CAP이 여러 링크 계층 패킷으로 나눈다(<span class="term">LLID</span> 10 = 시작, 01 = 이어짐). 둘 다 공짜가 아니다. 쪼갤 때마다 헤더와 왕복이 늘어난다.</p>
     <div class="sim" id="sim-mtu">
       <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>긴 값 하나를 보내는 데 드는 PDU와 왕복</h3></div>

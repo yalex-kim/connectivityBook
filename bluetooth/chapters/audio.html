@@ -125,6 +125,38 @@
       <li><span class="term">CIS</span><span class="en">(Connected Isochronous Stream)</span>: 연결된 두 기기 사이의 등시성 스트림. ACL 연결(6장)에 딸려 있고, 확인 응답과 재전송이 있다. 귀마다 CIS 하나씩, 여러 CIS를 묶은 것이 <b>CIG</b>(그룹)다. 같은 CIG의 스트림은 같은 기준 시각에 맞춰 재생된다.</li>
       <li><span class="term">BIS</span><span class="en">(Broadcast Isochronous Stream)</span>: 연결 없이 뿌리는 등시성 스트림. 확인 응답이 없으므로 같은 데이터를 미리 정한 횟수만큼 반복해 신뢰도를 올린다. 최대 31개 BIS를 묶은 것이 <b><span class="term">BIG</span></b>다.</li>
     </ul>
+    <figure class="diagram">
+      <div style="overflow-x:auto">
+      <svg viewBox="0 0 760 290" role="img" aria-label="클래식 오디오의 중계, LE 오디오의 CIG와 두 CIS, Auracast의 BIG 방송 구조 비교" style="min-width:640px">
+        <defs><marker id="au-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--accent)"/></marker>
+          <marker id="au-ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--accent-2)"/></marker></defs>
+        <text x="120" y="22" text-anchor="middle" class="t-acc">클래식 (A2DP)</text>
+        <rect x="70" y="40" width="100" height="34" rx="8" class="f-elev"/><text x="120" y="62" text-anchor="middle" class="t">휴대폰</text>
+        <circle cx="70" cy="190" r="22" class="f-acc-soft"/><text x="70" y="195" text-anchor="middle" class="t">R</text>
+        <circle cx="170" cy="190" r="22" class="f-acc2-soft"/><text x="170" y="195" text-anchor="middle" class="t">L</text>
+        <path d="M110 78 L78 164" class="s-acc" marker-end="url(#au-ar)"/><text x="58" y="122" class="t-mono">ACL</text>
+        <path d="M94 190 H144" class="s-line" stroke-dasharray="4 3" marker-end="url(#au-ar)"/><text x="120" y="230" text-anchor="middle" class="t-dim">한쪽이 받아 중계하거나</text><text x="120" y="248" text-anchor="middle" class="t-dim">옆에서 같이 듣기(회사 기술)</text>
+        <path d="M250 20 V260" class="s-axis" stroke-dasharray="3 5"/>
+        <text x="375" y="22" text-anchor="middle" class="t-acc">LE 오디오 유니캐스트</text>
+        <rect x="325" y="40" width="100" height="34" rx="8" class="f-elev"/><text x="375" y="62" text-anchor="middle" class="t">휴대폰</text>
+        <rect x="290" y="150" width="170" height="80" rx="10" class="f-surface" stroke-dasharray="5 4"/><text x="375" y="250" text-anchor="middle" class="t-dim">CIG: 같은 기준 시각에 재생</text>
+        <circle cx="330" cy="190" r="22" class="f-acc-soft"/><text x="330" y="195" text-anchor="middle" class="t">L</text>
+        <circle cx="420" cy="190" r="22" class="f-acc2-soft"/><text x="420" y="195" text-anchor="middle" class="t">R</text>
+        <path d="M360 78 L334 164" class="s-acc" marker-end="url(#au-ar)"/><text x="318" y="122" class="t-mono">CIS 1</text>
+        <path d="M390 78 L416 164" class="s-acc" marker-end="url(#au-ar)"/><text x="410" y="122" class="t-mono">CIS 2</text>
+        <text x="375" y="272" text-anchor="middle" class="t-mono">확인 응답 · 재전송</text>
+        <path d="M500 20 V260" class="s-axis" stroke-dasharray="3 5"/>
+        <text x="630" y="22" text-anchor="middle" class="t-acc">Auracast (방송)</text>
+        <rect x="580" y="40" width="100" height="34" rx="8" class="f-elev"/><text x="630" y="62" text-anchor="middle" class="t">송신기</text>
+        <circle cx="540" cy="190" r="18" class="f-acc-soft"/><circle cx="600" cy="190" r="18" class="f-acc-soft"/><circle cx="660" cy="190" r="18" class="f-acc-soft"/><circle cx="720" cy="190" r="18" class="f-acc-soft"/>
+        <path d="M600 78 L546 168" class="s-line" stroke="var(--accent-2)" marker-end="url(#au-ar2)"/><path d="M620 78 L602 168" class="s-line" stroke="var(--accent-2)" marker-end="url(#au-ar2)"/><path d="M640 78 L658 168" class="s-line" stroke="var(--accent-2)" marker-end="url(#au-ar2)"/><path d="M660 78 L714 168" class="s-line" stroke="var(--accent-2)" marker-end="url(#au-ar2)"/>
+        <text x="630" y="236" text-anchor="middle" class="t-dim">BIG: BIS 최대 31개</text>
+        <text x="630" y="254" text-anchor="middle" class="t-mono">확인 응답 없음 → 반복 전송</text>
+        <text x="630" y="272" text-anchor="middle" class="t-mono">받는 기기 수에 제한 없음</text>
+      </svg>
+      </div>
+      <figcaption><b>그림 10-1.</b> 세 가지 오디오 연결. 클래식 A2DP는 휴대폰과 수신기 하나 사이의 ACL 링크라, 완전 무선 이어폰은 한쪽이 중계하거나 옆에서 같이 듣는 각 회사의 기술이 필요했다. LE 오디오는 귀마다 CIS를 따로 두고 한 CIG로 묶어 같은 시각에 재생한다. Auracast는 연결 없이 BIG로 뿌리므로 확인 응답 대신 같은 데이터를 정해진 횟수만큼 반복하고, 몇 명이 듣든 송신기의 부담은 같다.</figcaption>
+    </figure>
     <p>CIS는 이런 파라미터로 정의된다.</p>
     <div class="table-wrap"><table>
       <thead><tr><th>파라미터</th><th>뜻</th><th>사양 범위</th></tr></thead>

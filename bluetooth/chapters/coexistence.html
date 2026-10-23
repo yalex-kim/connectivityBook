@@ -52,6 +52,36 @@
   <section id="neighbors">
     <h2>이웃은 누구인가: 대역 안과 대역 옆</h2>
     <p>블루투스의 이웃은 두 부류다. 2장에서 본 대로 <b>같은 <span class="term">2.4 GHz ISM 대역</span> 안</b>에는 Wi-Fi, IEEE 802.15.4(Zigbee·Thread), 무선 키보드 동글, 전자레인지가 있다. 모두 면허 없이 같은 대역을 나눠 쓰는 처지다. 그리고 <b>대역 바로 옆</b>에는 면허 대역의 이동통신이 붙어 있다. LTE·5G의 <span class="term">TDD</span> 대역 40(2,300~2,400 MHz)은 ISM 대역 아래쪽 끝과 맞닿아 있고, TDD 대역 41(2,496~2,690 MHz)과 FDD 대역 7(상향 2,500~2,570 MHz)은 위쪽 끝에서 10~20 MHz 남짓 떨어져 있다(대역 번호와 범위는 3GPP 표준).</p>
+    <figure class="diagram">
+      <div style="overflow-x:auto">
+      <svg viewBox="0 0 760 230" role="img" aria-label="2.3~2.7 GHz 주파수 지도: LTE 대역 40, 2.4 GHz ISM 대역, LTE 대역 41과 대역 7 상향" style="min-width:640px">
+        <!-- x = 30 + (MHz - 2300) * 1.75 -->
+        <path d="M30 170 H730" class="s-axis"/>
+        <g>
+          <path d="M30 166 V174 M205 166 V174 M351 166 V174 M373 166 V174 M555 166 V174 M712 166 V174 M730 166 V174" class="s-axis"/>
+          <text x="30" y="190" text-anchor="middle" class="t-mono">2300</text>
+          <text x="205" y="190" text-anchor="middle" class="t-mono">2400</text>
+          <text x="351" y="204" text-anchor="middle" class="t-mono">2483.5</text>
+          <text x="373" y="190" text-anchor="start" class="t-mono">2496</text>
+          <text x="555" y="190" text-anchor="middle" class="t-mono">2600</text><text x="712" y="204" text-anchor="middle" class="t-mono">2690</text>
+          <text x="730" y="190" text-anchor="middle" class="t-mono">2700 MHz</text>
+        </g>
+        <rect x="30" y="70" width="175" height="96" rx="4" fill="var(--warn)" fill-opacity=".18" stroke="var(--warn)"/>
+        <text x="117" y="104" text-anchor="middle" class="t">LTE·5G 대역 40</text><text x="117" y="122" text-anchor="middle" class="t-mono">TDD 2300~2400</text><text x="117" y="140" text-anchor="middle" class="t-dim">면허 대역</text>
+        <rect x="205" y="40" width="146" height="126" rx="4" class="f-acc-soft"/>
+        <text x="278" y="64" text-anchor="middle" class="t-acc">ISM 2.4 GHz</text>
+        <text x="278" y="88" text-anchor="middle" class="t-mono">블루투스</text><text x="278" y="106" text-anchor="middle" class="t-mono">Wi-Fi</text><text x="278" y="124" text-anchor="middle" class="t-mono">802.15.4</text><text x="278" y="142" text-anchor="middle" class="t-mono">전자레인지</text>
+        <rect x="373" y="70" width="340" height="96" rx="4" fill="var(--warn)" fill-opacity=".18" stroke="var(--warn)"/>
+        <text x="543" y="94" text-anchor="middle" class="t">LTE·5G 대역 41 (TDD 2496~2690)</text>
+        <rect x="380" y="108" width="122" height="44" rx="4" fill="var(--bad)" fill-opacity=".14" stroke="var(--bad)"/>
+        <text x="441" y="126" text-anchor="middle" class="t-mono">대역 7 상향</text><text x="441" y="142" text-anchor="middle" class="t-mono">FDD 2500~2570</text>
+        <path d="M351 30 V166 M373 30 V166" class="s-line" stroke-dasharray="3 3"/>
+        <text x="362" y="24" text-anchor="middle" class="t-dim">틈 12.5 MHz</text>
+        <text x="30" y="224" class="t-dim">대역 안의 이웃은 함께 나눠 쓰고, 대역 옆의 이웃은 필터·격리와 시간 나누기로 피한다</text>
+      </svg>
+      </div>
+      <figcaption><b>그림 13-1.</b> 2.4 GHz 블루투스의 이웃. ISM 대역(2400~2483.5 MHz) 안에서는 Wi-Fi, 802.15.4, 전자레인지와 함께 쓰고, 바로 옆에는 면허 대역의 이동통신이 붙어 있다. 아래쪽은 TDD 대역 40이 맞닿고, 위쪽은 TDD 대역 41과 FDD 대역 7 상향이 10~20 MHz 남짓 떨어져 있다(대역 번호와 범위는 3GPP 표준). 같은 휴대폰 안의 이 모뎀이 이 장의 주인공이다.</figcaption>
+    </figure>
     <p>멀리 있는 이웃은 거리가 손실을 만들어 준다(2장의 <span class="term">링크 버짓</span>). 문제는 <b>같은 기기 안</b>의 이웃이다. 사양은 같은 제품 안에서 활동을 조정할 수 있는 무선들을 <span class="term">공존 배치</span><span class="en">(collocated)</span>되었다고 하고, 그런 제품을 <b>다중 무선 단말</b><span class="en">(MRT, Multi-Radio Terminal)</span>이라 부른다. 휴대폰의 LTE 모뎀이 +23 <span class="term">dBm</span>으로 송신하는 순간, 몇 cm 옆 블루투스 수신기에 들어오는 세기는 안테나 사이의 격리(보통 10~20 dB)만큼만 줄어든다. 2장에서 블루투스가 받으려는 신호는 −70~−95 dBm이었다. 100 dB 가까이 센 이웃이 바로 옆에서 소리치는 셈이다.</p>
     <div class="callout analogy"><strong>카페 바로 옆 공연장</strong><p>지금까지 블루투스의 카페(2.4 GHz)에는 다른 손님들(Wi-Fi, Zigbee)이 있었다. 이 장의 새 이웃은 벽 하나를 사이에 둔 <b>공연장</b>(LTE·5G)이다. 공연장은 면허를 받은 곳이라 자기 시간표(기지국이 정한다)대로 움직이고, 블루투스 때문에 공연을 멈추지 않는다. 블루투스가 할 수 있는 일은 둘이다. 벽에 방음재를 붙이거나(필터와 격리), 공연이 쉬는 시간에 말하는 것(시간 나누기). 쉬는 시간을 알려면 공연장이 시간표를 알려 줘야 한다(공존 신호).</p></div>
     <p>사양은 간섭을 줄이는 방법을 네 가지로 나눈다.</p>

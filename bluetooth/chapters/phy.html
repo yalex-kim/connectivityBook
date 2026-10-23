@@ -152,6 +152,39 @@
     </ul>
     <p>사양이 요구하는 감도도 PHY마다 다르다. LE 1M·2M은 −70 <span class="term">dBm</span> 이하, Coded S=2는 −75 dBm 이하, S=8은 −82 dBm 이하다. 실제 칩에서 S=8은 1M보다 대략 8~12 dB 좋은 감도를 낸다. 트인 곳(거리 2배당 6 dB)이라면 12 dB는 <b>거리 4배</b>다. “블루투스 5는 4배 멀리”라는 문구의 근거다. 실내에서는 <span class="term">경로 손실 지수</span>가 커서 2~3배 정도로 줄어든다.</p>
     <p class="spec-ref">PHY 정의(LE 1M 필수, LE Coded 선택, LE 2M·LE 2M 2BT): <b>[Vol 6] Part A §1</b> · 감도 Table 4.2: <b>[Vol 6] Part A §4.1</b> · FEC 부호기(부호율 ½, K=4, G0 = 1+x+x²+x³, G1 = 1+x²+x³)와 패턴 매퍼(S=8: 0 → 0011, 1 → 1100): <b>[Vol 6] Part B §3.3</b></p>
+    <figure class="diagram">
+      <div style="overflow-x:auto">
+      <svg viewBox="0 0 760 300" role="img" aria-label="LE 1M, LE 2M, LE Coded 패킷의 필드 구성과 길이" style="min-width:620px">
+        <text x="10" y="22" class="t-acc">LE 1M</text><text x="10" y="40" class="t-mono">1 Msym/s</text>
+        <rect x="140" y="12" width="70" height="34" rx="5" class="f-surface"/><text x="175" y="27" text-anchor="middle" class="t-mono">프리앰블</text><text x="175" y="40" text-anchor="middle" class="t-mono">1 B · 8 µs</text>
+        <rect x="214" y="12" width="90" height="34" rx="5" class="f-acc2-soft"/><text x="259" y="27" text-anchor="middle" class="t-mono">접근 주소</text><text x="259" y="40" text-anchor="middle" class="t-mono">4 B · 32 µs</text>
+        <rect x="308" y="12" width="250" height="34" rx="5" class="f-acc-soft"/><text x="433" y="27" text-anchor="middle" class="t-mono">PDU</text><text x="433" y="40" text-anchor="middle" class="t-mono">2~258 B · 16~2,064 µs</text>
+        <rect x="562" y="12" width="80" height="34" rx="5" class="f-elev"/><text x="602" y="27" text-anchor="middle" class="t-mono">CRC</text><text x="602" y="40" text-anchor="middle" class="t-mono">3 B · 24 µs</text>
+        <rect x="646" y="12" width="104" height="34" rx="5" class="f-elev" stroke-dasharray="4 3"/><text x="698" y="27" text-anchor="middle" class="t-mono">CTE (선택)</text><text x="698" y="40" text-anchor="middle" class="t-mono">16~160 µs</text>
+        <text x="10" y="92" class="t-acc">LE 2M</text><text x="10" y="110" class="t-mono">2 Msym/s</text>
+        <rect x="140" y="82" width="70" height="34" rx="5" class="f-surface"/><text x="175" y="97" text-anchor="middle" class="t-mono">프리앰블</text><text x="175" y="110" text-anchor="middle" class="t-mono">2 B · 8 µs</text>
+        <rect x="214" y="82" width="90" height="34" rx="5" class="f-acc2-soft"/><text x="259" y="97" text-anchor="middle" class="t-mono">접근 주소</text><text x="259" y="110" text-anchor="middle" class="t-mono">4 B · 16 µs</text>
+        <rect x="308" y="82" width="250" height="34" rx="5" class="f-acc-soft"/><text x="433" y="97" text-anchor="middle" class="t-mono">PDU</text><text x="433" y="110" text-anchor="middle" class="t-mono">2~258 B · 8~1,032 µs</text>
+        <rect x="562" y="82" width="80" height="34" rx="5" class="f-elev"/><text x="602" y="97" text-anchor="middle" class="t-mono">CRC</text><text x="602" y="110" text-anchor="middle" class="t-mono">3 B · 12 µs</text>
+        <rect x="646" y="82" width="104" height="34" rx="5" class="f-elev" stroke-dasharray="4 3"/><text x="698" y="97" text-anchor="middle" class="t-mono">CTE (선택)</text><text x="698" y="110" text-anchor="middle" class="t-mono">16~160 µs</text>
+        <text x="10" y="172" class="t-acc">LE Coded</text><text x="10" y="190" class="t-mono">1 Msym/s</text>
+        <rect x="140" y="162" width="70" height="34" rx="5" class="f-surface"/><text x="175" y="177" text-anchor="middle" class="t-mono">프리앰블</text><text x="175" y="190" text-anchor="middle" class="t-mono">80 µs</text>
+        <rect x="214" y="162" width="90" height="34" rx="5" class="f-acc2-soft"/><text x="259" y="177" text-anchor="middle" class="t-mono">접근 주소</text><text x="259" y="190" text-anchor="middle" class="t-mono">256 µs</text>
+        <rect x="308" y="162" width="36" height="34" rx="5" class="f-elev"/><text x="326" y="177" text-anchor="middle" class="t-mono">CI</text><text x="326" y="190" text-anchor="middle" class="t-mono">16</text>
+        <rect x="348" y="162" width="46" height="34" rx="5" class="f-elev"/><text x="371" y="177" text-anchor="middle" class="t-mono">TERM1</text><text x="371" y="190" text-anchor="middle" class="t-mono">24</text>
+        <rect x="398" y="162" width="190" height="34" rx="5" class="f-acc-soft"/><text x="493" y="177" text-anchor="middle" class="t-mono">PDU</text><text x="493" y="190" text-anchor="middle" class="t-mono">S=8: 128~16,448 µs</text>
+        <rect x="592" y="162" width="80" height="34" rx="5" class="f-elev"/><text x="632" y="177" text-anchor="middle" class="t-mono">CRC</text><text x="632" y="190" text-anchor="middle" class="t-mono">S=8: 192</text>
+        <rect x="676" y="162" width="74" height="34" rx="5" class="f-elev"/><text x="713" y="177" text-anchor="middle" class="t-mono">TERM2</text><text x="713" y="190" text-anchor="middle" class="t-mono">S=8: 24</text>
+        <path d="M214 206 H394" class="s-acc"/><path d="M214 201 V211 M394 201 V211" class="s-acc"/>
+        <text x="304" y="226" text-anchor="middle" class="t-dim">FEC 블록 1: 언제나 S=8</text>
+        <path d="M398 206 H750" class="s-line"/><path d="M398 201 V211 M750 201 V211" class="s-line"/>
+        <text x="574" y="226" text-anchor="middle" class="t-dim">FEC 블록 2: CI가 정한 S=2 또는 S=8</text>
+        <text x="574" y="244" text-anchor="middle" class="t-mono">S=2이면 PDU 32~4,112 µs · CRC 48 · TERM2 6</text>
+        <text x="10" y="284" class="t-mono">칸 너비는 시간에 비례하지 않는다 · 시간 →</text>
+      </svg>
+      </div>
+      <figcaption><b>그림 3-1.</b> LE 패킷의 모양. 1M과 2M은 같은 필드를 같은 순서로 보내고, 2M은 모든 필드를 두 배 빠르게 보낸다(프리앰블만 2바이트로 늘려 길이를 8 µs로 맞춘다). Coded는 프리앰블 뒤를 두 FEC 블록으로 나눈다. 접근 주소와 CI는 늘 S=8로 튼튼하게 보내고, 본문은 CI가 고른 S=2 또는 S=8로 보낸다. 그래서 같은 PDU라도 Coded S=8에서는 1M보다 8배 오래 걸린다. CTE는 1M·2M에만 붙는다.</figcaption>
+    </figure>
 
     <div class="sim" id="sim-fec">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>LE Coded 부호기 들여다보기: 비트 하나가 심볼 8개가 되기까지</h3></div>
