@@ -1,15 +1,15 @@
-"""장면별 나레이션을 타입캐스트로 만들고, 문장이 바뀌는 시점을 찾는다(src/afh/script.ts의 say).
+"""장면별 나레이션을 타입캐스트로 만들고, 문장이 바뀌는 시점을 찾는다(src/<영상>/script.ts의 say).
 
-- 없는 public/audio/<id>.wav만 만든다. 다시 만들 장면은 --redo로 직접 지정한다.
+- 없는 장면 음성만 만든다(afh는 public/audio/<id>.wav, 다른 영상은 public/audio/<영상>/<id>.wav). 다시 만들 장면은 --redo로 직접 지정한다.
 - 타입캐스트는 무료 계정이라 실패해도 다시 부르지 않고 바로 멈춘다.
 - 새로 만들 문장에 아라비아 숫자가 있으면 만들지 않는다. 숫자는 한글로 소리 나는 대로 적는다(video/RULES.md).
 - 감정은 장면마다 자동으로 고르지 않고 프리셋으로 고정한다(기본 normal, 장면마다 톤이 튀지 않게).
 - 문장이 바뀌었는데 음성이 옛 문장이면 멈추고 알린다(--redo로 지정해야 다시 만든다).
-- 끝나면 src/afh/durations.json에 장면별 {dur: 음성 길이, cues: 둘째 문장부터의 시작 시각, text}를 쓴다.
+- 끝나면 src/<영상>/durations.json에 장면별 {dur: 음성 길이, cues: 둘째 문장부터의 시작 시각, text}를 쓴다.
 
 실행(키는 k-history-video-agent의 .env, SDK는 그 가상환경):
   set -a; . /volume1/dev/k-history-video-agent/.env; set +a
-  /volume1/dev/k-history-video-agent/.venv/bin/python scripts/narrate.py [--redo hop,map] [--emotion hop:tonedown]
+  /volume1/dev/k-history-video-agent/.venv/bin/python scripts/narrate.py [--video discover] [--redo hop,map] [--emotion hop:tonedown]
 
 음성은 만든 그대로 쓴다(높이·속도를 후처리로 바꾸지 않는다). 한 장면의 톤이 튀면 --redo로 다시 만들고,
 필요하면 --emotion <id>:<프리셋>으로 그 장면의 감정 프리셋(normal, toneup, tonedown …)을 고른다.
@@ -24,9 +24,10 @@ import wave
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SCRIPT = ROOT / "src/afh/script.ts"
-AUDIO = ROOT / "public/audio"
-OUT = ROOT / "src/afh/durations.json"
+VIDEO = sys.argv[sys.argv.index("--video") + 1] if "--video" in sys.argv else "afh"
+SCRIPT = ROOT / f"src/{VIDEO}/script.ts"
+AUDIO = ROOT / "public/audio" if VIDEO == "afh" else ROOT / f"public/audio/{VIDEO}"
+OUT = ROOT / f"src/{VIDEO}/durations.json"
 MODEL, TEMPO = "ssfm-v30", 1.07  # k-history-video-agent의 TypecastSpeech와 같은 값
 # 책 영상의 목소리: 예슬. KHVA_BOOK_VOICE_ID로 바꿀 수 있다 (.env의 TYPECAST_VOICE_ID는 한국사 영상용이라 쓰지 않는다)
 VOICE = os.environ.get("KHVA_BOOK_VOICE_ID", "tc_66ab0e26ec23f325b7ad51df")

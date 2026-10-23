@@ -81,3 +81,43 @@ export function simulate(n: number, afh: boolean, seed = 42): Event[] {
   }
   return out;
 }
+
+/* ---------------------------------------------------------------- 광고와 발견 (입문 5장 advertising.html) */
+
+/** 레거시 광고 패킷의 공중 시간(µs, LE 1M): 프리앰블 1 + 접근 주소 4 + 헤더 2 + AdvA 6 + AdvData + CRC 3 */
+export function advAirtimeUs(advDataLen: number): number { return (1 + 4 + 2 + 6 + advDataLen + 3) * 8; }
+
+/** 책 시뮬레이터의 의사 난수(xorshift32, common.js의 BT.rng) */
+export function bookRng(seed = 1): () => number {
+  let x = seed >>> 0 || 1;
+  return () => { x ^= x << 13; x >>>= 0; x ^= x >>> 17; x ^= x << 5; x >>>= 0; return x / 4294967296; };
+}
+
+export type DiscParams = { ta: number; ts: number; tw: number; pkt: number; gap: number; limit: number };
+/** 광고자가 스캐너에게 처음 발견되는 시각(ms). 책의 discoveryLatency와 같은 식 */
+export function discoveryLatency(p: DiscParams, rnd: () => number): number {
+  const pkt = p.pkt, gap = p.gap, limit = p.limit;
+  const scanPhase = rnd() * p.ts, chOffset = Math.floor(rnd() * 3);
+  let t = rnd() * (p.ta + 10);
+  while (t < limit) {
+    for (let k = 0; k < 3; k++) {
+      const s = t + k * gap, e = s + pkt;
+      const i = Math.floor((s - scanPhase) / p.ts);
+      const ws = scanPhase + i * p.ts, we = ws + p.tw;
+      const scanCh = (((i + chOffset) % 3) + 3) % 3;
+      if (s >= ws && e <= we && scanCh === k) return e;
+    }
+    t += p.ta + rnd() * 10;
+  }
+  return Infinity;
+}
+
+/** 조건 하나의 평균 발견 시간(ms): 책 시뮬레이터처럼 같은 씨앗으로 600번 */
+export const PKT = advAirtimeUs(31) / 1000, GAP = 0.6;
+export function meanDiscovery(ta: number, ts: number, windowPct: number): number {
+  const p: DiscParams = { ta, ts, tw: Math.max(PKT + 0.05, (ts * windowPct) / 100), pkt: PKT, gap: GAP, limit: 60000 };
+  const r = bookRng(2024), res: number[] = [];
+  for (let i = 0; i < 600; i++) res.push(discoveryLatency(p, r));
+  const fin = res.filter((x) => Number.isFinite(x));
+  return fin.reduce((a, b) => a + b, 0) / fin.length;
+}
