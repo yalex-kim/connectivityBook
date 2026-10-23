@@ -92,6 +92,26 @@
       <div class="sim-note">처음 값은 부록 D.7 샘플(IRK ec0234a3…, prand 708194 → hash 0dfbaa)이다. 해볼 것: ① prand의 위 두 비트가 01인지 보자(0x70 = 0111 0000). ② “새 prand” → “받은 주소로”를 누르면 해석된다. ③ “남의 RPA 받기”는 다른 IRK로 만든 RPA다. 종류는 RPA지만 내 IRK로는 풀리지 않는다. ④ 받은 주소의 첫 바이트를 C0 이상으로 바꾸면 정적 주소, 3F 이하면 NRPA로 분류된다.</div>
     </div>
     <p class="spec-ref">RPA 생성(prand 조건, prand ‖ hash): <b>[Vol 6] Part B §1.3.2.2</b> · 해석(localHash 비교): <b>§1.3.2.3</b> · ah: <b>[Vol 3] Part H §2.2.2</b> · 샘플: <b>Appendix D.7</b></p>
+    <figure class="diagram">
+      <div style="overflow-x:auto">
+      <svg viewBox="0 0 760 230" role="img" aria-label="RPA 48비트의 구조: 위 24비트 prand(맨 위 두 비트 01)와 아래 24비트 hash. 받는 쪽은 해석 목록의 IRK마다 ah를 계산해 hash와 비교한다" style="min-width:640px">
+        <defs><marker id="pv-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--accent)"/></marker></defs>
+        <text x="10" y="22" class="t-mono">RPA 48비트 (MSB → LSB)</text>
+        <rect x="10" y="32" width="40" height="36" rx="4" class="f-acc"/><text x="30" y="55" text-anchor="middle" class="t-mono" fill="#fff" style="fill:#fff">01</text>
+        <rect x="52" y="32" width="320" height="36" rx="4" class="f-acc-soft"/><text x="212" y="55" text-anchor="middle" class="t">prand 나머지 22비트 (무작위)</text>
+        <rect x="376" y="32" width="374" height="36" rx="4" class="f-acc2-soft"/><text x="563" y="55" text-anchor="middle" class="t">hash 24비트 = ah(IRK, prand)</text>
+        <path d="M10 76 H372" class="s-line"/><text x="191" y="92" text-anchor="middle" class="t-dim">prand 24비트</text>
+        <rect x="10" y="120" width="230" height="96" rx="10" class="f-surface"/><text x="125" y="142" text-anchor="middle" class="t-acc">해석 목록 (컨트롤러)</text>
+        <text x="125" y="164" text-anchor="middle" class="t-mono">신원 주소 A · IRK_A</text><text x="125" y="182" text-anchor="middle" class="t-mono">신원 주소 B · IRK_B</text><text x="125" y="200" text-anchor="middle" class="t-mono">…</text>
+        <path d="M244 168 H296" class="s-acc" marker-end="url(#pv-ar)"/>
+        <rect x="300" y="120" width="240" height="96" rx="10" class="f-elev"/><text x="420" y="146" text-anchor="middle" class="t">IRK마다 ah(IRK, prand)</text><text x="420" y="168" text-anchor="middle" class="t-mono">= 받은 hash 인가?</text><text x="420" y="196" text-anchor="middle" class="t-dim">호스트를 깨우지 않는다</text>
+        <path d="M544 150 H596" class="s-acc" marker-end="url(#pv-ar)"/><path d="M544 190 H596" class="s-line" stroke-dasharray="4 3" marker-end="url(#pv-ar)"/>
+        <text x="604" y="146" class="t">같다 → 신원 주소로</text><text x="604" y="164" class="t-mono">필터는 신원 주소에 적용</text>
+        <text x="604" y="194" class="t-dim">모두 다르다 → 모르는 기기</text>
+      </svg>
+      </div>
+      <figcaption><b>그림 8-1.</b> RPA를 만들고 알아보기. 위 24비트 prand는 맨 위 두 비트가 01(RPA 표시)이고 나머지는 무작위, 아래 24비트 hash는 IRK로 prand를 계산한 값이다. 받는 쪽 컨트롤러는 해석 목록의 IRK마다 같은 계산을 해서 맞는 것을 찾고, 찾으면 그 신원 주소로 바꿔 필터를 적용한다.</figcaption>
+    </figure>
   </section>
 
   <!-- ============================================================ -->

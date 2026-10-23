@@ -64,6 +64,35 @@
     </table></div>
     <p>한 번의 측정은 <b>CS 프로시저</b>이고, 프로시저는 <span class="term">연결 이벤트</span>에 맞춰 들어가는 <b>서브이벤트</b>로, 서브이벤트는 <b>스텝</b>으로 나뉜다. 서브이벤트는 모드 0 스텝 몇 개로 시작하고, 이어서 주 모드(Main_Mode, 예: 2) 스텝을 여러 번 하다가 가끔 부 모드(Sub_Mode, 예: 3)를 끼워 넣는다. 무엇을 언제 끼울지도 아래 DRBG가 정한다.</p>
     <p class="spec-ref">CS 채널(Table 1.1): <b>[Vol 6] Part H §1</b> · CS_SYNC 형식: <b>§2</b> · 스텝 모드 0~3: <b>§4.3.1~§4.3.4</b> · 서브이벤트 구조·Sub_Mode 끼우기: <b>§4.4</b></p>
+    <figure class="diagram">
+      <div style="overflow-x:auto">
+      <svg viewBox="0 0 760 220" role="img" aria-label="CS 프로시저는 연결 이벤트에 맞춘 서브이벤트들로, 서브이벤트는 모드 0 스텝 몇 개와 주 모드 스텝, 가끔 끼우는 부 모드 스텝으로 이루어진다. 스텝마다 CS 채널이 바뀐다" style="min-width:640px">
+        <text x="10" y="30" class="t-mono">프로시저</text>
+        <rect x="100" y="14" width="650" height="28" rx="6" class="f-surface"/><text x="425" y="33" text-anchor="middle" class="t">한 번의 거리 측정</text>
+        <text x="10" y="86" class="t-mono">서브이벤트</text>
+        <rect x="100" y="70" width="200" height="28" rx="6" class="f-acc2-soft"/><text x="200" y="89" text-anchor="middle" class="t-mono">서브이벤트 1</text>
+        <rect x="310" y="70" width="200" height="28" rx="6" class="f-acc2-soft"/><text x="410" y="89" text-anchor="middle" class="t-mono">서브이벤트 2</text>
+        <rect x="520" y="70" width="230" height="28" rx="6" class="f-acc2-soft"/><text x="635" y="89" text-anchor="middle" class="t-mono">…</text>
+        <text x="425" y="62" text-anchor="middle" class="t-dim">연결 이벤트에 맞춰 들어간다</text>
+        <path d="M100 102 L100 128 M300 102 L750 128" class="s-line" stroke-dasharray="3 3"/>
+        <text x="10" y="150" class="t-mono">스텝</text>
+        <g>
+          <rect x="100" y="134" width="48" height="32" rx="4" class="f-elev"/><text x="124" y="155" text-anchor="middle" class="t-mono">0</text>
+          <rect x="152" y="134" width="48" height="32" rx="4" class="f-elev"/><text x="176" y="155" text-anchor="middle" class="t-mono">0</text>
+          <rect x="204" y="134" width="64" height="32" rx="4" class="f-acc-soft"/><text x="236" y="155" text-anchor="middle" class="t-mono">주 2</text>
+          <rect x="272" y="134" width="64" height="32" rx="4" class="f-acc-soft"/><text x="304" y="155" text-anchor="middle" class="t-mono">주 2</text>
+          <rect x="340" y="134" width="64" height="32" rx="4" class="f-acc-soft" stroke-width="2"/><text x="372" y="155" text-anchor="middle" class="t-mono">부 3</text>
+          <rect x="408" y="134" width="64" height="32" rx="4" class="f-acc-soft"/><text x="440" y="155" text-anchor="middle" class="t-mono">주 2</text>
+          <rect x="476" y="134" width="64" height="32" rx="4" class="f-acc-soft"/><text x="508" y="155" text-anchor="middle" class="t-mono">주 2</text>
+          <text x="560" y="155" class="t-mono">…</text>
+        </g>
+        <text x="100" y="186" class="t-mono">모드 0: 주파수 오차 맞추기</text>
+        <text x="300" y="186" class="t-mono">주 모드(예: 2 = 톤, 위상) 사이에 가끔 부 모드(예: 3 = RTT + 톤)</text>
+        <text x="10" y="210" class="t-dim">스텝마다 CS 채널(79개 중 72개 사용, 1 MHz 간격)이 바뀌고, 순서와 끼울 자리는 두 기기가 같은 CS DRBG로 정한다</text>
+      </svg>
+      </div>
+      <figcaption><b>그림 16-1.</b> CS 측정의 구조. 한 번의 측정(프로시저)은 연결 이벤트에 맞춰 들어가는 서브이벤트들로 나뉘고, 서브이벤트는 스텝으로 나뉜다. 서브이벤트는 모드 0 스텝(주파수 오차 보정)으로 시작해 주 모드 스텝을 이어 가고, 가끔 부 모드 스텝을 끼운다. 스텝마다 다른 CS 채널을 쓰며, 채널 순서와 부 모드를 끼울 자리는 두 기기가 같은 난수 생성기(CS DRBG)로 정한다.</figcaption>
+    </figure>
   </section>
 
   <!-- ============================================================ -->

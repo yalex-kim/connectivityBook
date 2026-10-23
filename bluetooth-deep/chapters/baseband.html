@@ -123,6 +123,29 @@
       <button class="opt">항상 3-DH5</button>
     </div><div class="quiz-exp">4비트 TYPE은 논리 전송과 ptt에 따라 뜻이 달라진다. 다만 구간이 같아 슬롯 수(5)는 코드만 보고도 안다(§6.5).</div></div>
     <p class="spec-ref">패킷 종류와 TYPE 코드(Table 6.2): <b>[Vol 2] Part B §6.5</b> · 링크 제어 패킷: <b>§6.5.1</b> · SCO·eSCO 패킷: <b>§6.5.2, §6.5.3</b> · ACL 패킷: <b>§6.5.4</b> · 요약 표(Table 6.7~6.9): <b>§6.7</b></p>
+    <figure class="diagram">
+      <div style="overflow-x:auto">
+      <svg viewBox="0 0 760 210" role="img" aria-label="BR 패킷은 접근 코드 72 또는 68비트, 헤더 54비트, 페이로드 0~2790비트. EDR 패킷은 같은 접근 코드와 헤더 뒤에 보호 구간, 동기 신호, EDR 페이로드, 트레일러가 온다" style="min-width:640px">
+        <text x="10" y="24" class="t-acc">BR</text><text x="10" y="42" class="t-mono">GFSK 1 Mb/s</text>
+        <rect x="110" y="12" width="40" height="34" rx="4" class="f-surface"/><text x="130" y="26" text-anchor="middle" class="t-mono">프리</text><text x="130" y="40" text-anchor="middle" class="t-mono">4</text>
+        <rect x="152" y="12" width="150" height="34" rx="4" class="f-acc2-soft"/><text x="227" y="26" text-anchor="middle" class="t-mono">동기어 64</text><text x="227" y="40" text-anchor="middle" class="t-mono">LAP에서 만든 부호어</text>
+        <rect x="304" y="12" width="40" height="34" rx="4" class="f-surface"/><text x="324" y="26" text-anchor="middle" class="t-mono">트레</text><text x="324" y="40" text-anchor="middle" class="t-mono">4</text>
+        <rect x="346" y="12" width="130" height="34" rx="4" class="f-elev" stroke="var(--accent)"/><text x="411" y="26" text-anchor="middle" class="t-mono">헤더 54</text><text x="411" y="40" text-anchor="middle" class="t-mono">18비트 × 3번</text>
+        <rect x="478" y="12" width="272" height="34" rx="4" class="f-acc-soft"/><text x="614" y="26" text-anchor="middle" class="t-mono">페이로드 0~2,790</text><text x="614" y="40" text-anchor="middle" class="t-mono">ACL: 페이로드 헤더 · 데이터 · CRC-16</text>
+        <path d="M110 56 H344" class="s-line"/><text x="227" y="72" text-anchor="middle" class="t-dim">접근 코드 72 (헤더 없으면 트레일러 없이 68)</text>
+        <text x="346" y="88" class="t-mono">LT_ADDR 3 · TYPE 4 · FLOW · ARQN · SEQN · HEC 8</text>
+        <text x="10" y="138" class="t-acc">EDR</text><text x="10" y="156" class="t-mono">2·3 Mb/s</text>
+        <rect x="110" y="126" width="234" height="34" rx="4" class="f-acc2-soft"/><text x="227" y="147" text-anchor="middle" class="t-mono">접근 코드 (GFSK)</text>
+        <rect x="346" y="126" width="100" height="34" rx="4" class="f-elev" stroke="var(--accent)"/><text x="396" y="147" text-anchor="middle" class="t-mono">헤더 (GFSK)</text>
+        <rect x="448" y="126" width="34" height="34" rx="4" class="f-surface" stroke-dasharray="3 3"/><text x="465" y="147" text-anchor="middle" class="t-mono">보호</text>
+        <rect x="484" y="126" width="44" height="34" rx="4" class="f-surface"/><text x="506" y="147" text-anchor="middle" class="t-mono">동기</text>
+        <rect x="530" y="126" width="180" height="34" rx="4" class="f-acc-soft"/><text x="620" y="141" text-anchor="middle" class="t-mono">EDR 페이로드</text><text x="620" y="155" text-anchor="middle" class="t-mono">π/4-DQPSK · 8DPSK</text>
+        <rect x="712" y="126" width="38" height="34" rx="4" class="f-surface"/><text x="731" y="147" text-anchor="middle" class="t-mono">트레</text>
+        <path d="M448 170 H750" class="s-line"/><text x="599" y="188" text-anchor="middle" class="t-dim">여기부터 EDR 변조 (보호 약 5 µs, 동기 11 µs)</text>
+      </svg>
+      </div>
+      <figcaption><b>그림 12-1.</b> BR/EDR 패킷의 모양(단위: 비트). 접근 코드는 LAP에서 만든 64비트 동기어를 프리앰블·트레일러가 감싼 72비트(헤더가 없는 패킷은 68비트)다. 헤더 18비트는 세 번 반복해 54비트로 보낸다. EDR 패킷은 접근 코드와 헤더까지 BR과 같은 GFSK로 보내고, 보호 구간에서 변조를 바꾼 뒤 동기 신호, 위상 변조 페이로드, 트레일러를 보낸다.</figcaption>
+    </figure>
   </section>
 
   <!-- ============================================================ -->

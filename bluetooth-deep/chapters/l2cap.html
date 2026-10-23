@@ -111,6 +111,40 @@
       <button class="opt">연결을 끊고 다시 맺는다</button>
     </div><div class="quiz-exp">크레딧 0에서 K-frame을 보내면 상대가 채널을 끊는다. 크레딧은 수신 버퍼의 약속이므로 기다려야 한다. 이때 다른 채널(예: ATT)은 따로 흐르므로 막히지 않는다. 다만 2장에서 본 HCI 버퍼 크레딧은 연결 전체가 함께 쓰므로, 호스트 스택은 L2CAP 채널 크레딧과 HCI 크레딧을 둘 다 관리한다.</div></div>
     <p class="spec-ref">K-frame과 SDU 길이·MTU·MPS 위반 시 끊기: <b>[Vol 3] Part A §3.4</b> · MTU·MPS 최소 23, 초기 크레딧 0~65535: <b>§4.22</b> · 크레딧 규칙(65535, 0 크레딧, 0 값 IND): <b>§10.1</b> · 크레딧 IND: <b>§4.24</b> · 조각내기: <b>§7.2</b></p>
+    <figure class="diagram">
+      <div style="overflow-x:auto">
+      <svg viewBox="0 0 760 250" role="img" aria-label="SDU 하나가 K-frame들로 나뉘고, 각 K-frame이 링크 계층 PDU에 실리는 모습. 첫 K-frame에만 SDU 길이 2바이트가 붙는다" style="min-width:640px">
+        <text x="10" y="24" class="t-mono">SDU (≤ MTU)</text>
+        <rect x="120" y="10" width="630" height="26" rx="5" class="f-acc-soft"/><text x="435" y="28" text-anchor="middle" class="t">앱 데이터 한 덩어리</text>
+        <path d="M120 40 L120 70 M330 40 L330 70 M540 40 L540 70 M750 40 L750 70" class="s-line" stroke-dasharray="3 3"/>
+        <text x="10" y="96" class="t-mono">K-frame</text>
+        <g>
+          <rect x="120" y="76" width="34" height="34" rx="4" class="f-elev"/><text x="137" y="90" text-anchor="middle" class="t-mono">길이</text><text x="137" y="103" text-anchor="middle" class="t-mono">2</text>
+          <rect x="156" y="76" width="34" height="34" rx="4" class="f-elev"/><text x="173" y="90" text-anchor="middle" class="t-mono">CID</text><text x="173" y="103" text-anchor="middle" class="t-mono">2</text>
+          <rect x="192" y="76" width="40" height="34" rx="4" class="f-acc2-soft"/><text x="212" y="90" text-anchor="middle" class="t-mono">SDU</text><text x="212" y="103" text-anchor="middle" class="t-mono">길이 2</text>
+          <rect x="234" y="76" width="92" height="34" rx="4" class="f-acc-soft"/><text x="280" y="98" text-anchor="middle" class="t-mono">≤ MPS</text>
+        </g>
+        <g>
+          <rect x="334" y="76" width="34" height="34" rx="4" class="f-elev"/><text x="351" y="90" text-anchor="middle" class="t-mono">길이</text><text x="351" y="103" text-anchor="middle" class="t-mono">2</text>
+          <rect x="370" y="76" width="34" height="34" rx="4" class="f-elev"/><text x="387" y="90" text-anchor="middle" class="t-mono">CID</text><text x="387" y="103" text-anchor="middle" class="t-mono">2</text>
+          <rect x="406" y="76" width="130" height="34" rx="4" class="f-acc-soft"/><text x="471" y="98" text-anchor="middle" class="t-mono">≤ MPS</text>
+        </g>
+        <g>
+          <rect x="544" y="76" width="34" height="34" rx="4" class="f-elev"/><text x="561" y="90" text-anchor="middle" class="t-mono">길이</text><text x="561" y="103" text-anchor="middle" class="t-mono">2</text>
+          <rect x="580" y="76" width="34" height="34" rx="4" class="f-elev"/><text x="597" y="90" text-anchor="middle" class="t-mono">CID</text><text x="597" y="103" text-anchor="middle" class="t-mono">2</text>
+          <rect x="616" y="76" width="134" height="34" rx="4" class="f-acc-soft"/><text x="683" y="98" text-anchor="middle" class="t-mono">≤ MPS</text>
+        </g>
+        <text x="435" y="132" text-anchor="middle" class="t-dim">K-frame 하나 = 크레딧 하나 · SDU 길이는 첫 K-frame에만</text>
+        <path d="M120 140 L120 166 M330 140 L330 166" class="s-line" stroke-dasharray="3 3"/>
+        <text x="10" y="190" class="t-mono">LL PDU</text>
+        <rect x="120" y="172" width="40" height="34" rx="4" class="f-surface"/><text x="140" y="186" text-anchor="middle" class="t-mono">헤더</text><text x="140" y="199" text-anchor="middle" class="t-mono">2</text>
+        <rect x="162" y="172" width="168" height="34" rx="4" class="f-elev" stroke="var(--accent)"/><text x="246" y="194" text-anchor="middle" class="t-mono">페이로드 ≤ 27 또는 251</text>
+        <text x="345" y="194" class="t-dim">← K-frame이 크면 LL PDU 여러 개로 (LLID 10 시작, 01 이어짐)</text>
+        <text x="10" y="236" class="t-dim">MPS 247 · LL 251이면 K-frame 하나(4 + 247)가 LL PDU 하나에 딱 맞는다</text>
+      </svg>
+      </div>
+      <figcaption><b>그림 10-1.</b> SDU가 공중으로 나가는 모양. L2CAP은 SDU를 상대가 정한 MPS 이하의 K-frame으로 나누고, 첫 K-frame에만 SDU 길이 2바이트를 붙인다. K-frame 하나를 보낼 때마다 크레딧 하나를 쓴다. 각 K-frame은 다시 링크 계층 PDU에 실리고, LL 페이로드보다 크면 여러 PDU로 나뉜다(그 사이의 HCI ACL 조각은 공중에 나가지 않아 그리지 않았다).</figcaption>
+    </figure>
   </section>
 
   <!-- ============================================================ -->
