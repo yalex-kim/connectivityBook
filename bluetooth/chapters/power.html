@@ -82,6 +82,27 @@
     <div class="formula">창 넓히기 = (상대 시계 오차 ppm ÷ 10⁶) × (마지막 동기 이후 시간) + 16 µs &nbsp;(+ 내 시계 오차분)
       <div class="where">사양의 예: 연결 간격 2 s, 센트럴 수면 시계 500 ppm이면 앵커 포인트 앞뒤로 각각 1 ms + 16 µs를 더 들어야 한다. 실제 패킷(빈 PDU 80 µs)보다 수신 대기가 25배 길다.</div>
     </div>
+    <figure class="diagram">
+      <div style="overflow-x:auto">
+      <svg viewBox="0 0 760 240" role="img" aria-label="창 넓히기: 연결 간격 2초, 수면 시계 500 ppm일 때 앵커 포인트 앞뒤로 1 ms씩 더 듣는 수신 창" style="min-width:620px">
+        <defs><marker id="ww-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--text-dim)"/></marker></defs>
+        <path d="M20 150 H740" class="s-axis"/>
+        <path d="M70 60 V150" class="s-acc"/><text x="70" y="50" text-anchor="middle" class="t-acc">⚓ 마지막 동기</text>
+        <path d="M80 175 H446" class="s-line" marker-start="url(#ww-ar)" marker-end="url(#ww-ar)"/><text x="263" y="195" text-anchor="middle" class="t-dim">연결 간격 2 s (그림은 줄여 그림)</text>
+        <path d="M110 120 L135 105 L160 120 L185 105 L210 120 L235 105 L260 120" class="s-line" stroke-dasharray="2 4"/>
+        <text x="185" y="96" text-anchor="middle" class="t-mono">잠: 수면 시계로 시간을 잰다 (±500 ppm)</text>
+        <rect x="470" y="70" width="220" height="80" rx="6" class="f-acc2-soft"/>
+        <text x="580" y="62" text-anchor="middle" class="t">수신 창 = 2 × (1 ms + 16 µs) + 패킷</text>
+        <path d="M580 70 V150" class="s-acc" stroke-dasharray="4 3"/><text x="600" y="172" text-anchor="end" class="t-acc">⚓ 예상 앵커 포인트</text>
+        <path d="M474 112 H576" class="s-line" marker-start="url(#ww-ar)" marker-end="url(#ww-ar)"/><text x="525" y="104" text-anchor="middle" class="t-mono">1 ms + 16 µs</text>
+        <path d="M584 112 H686" class="s-line" marker-start="url(#ww-ar)" marker-end="url(#ww-ar)"/><text x="635" y="104" text-anchor="middle" class="t-mono">1 ms + 16 µs</text>
+        <rect x="612" y="124" width="22" height="26" rx="3" class="f-acc"/><text x="623" y="218" text-anchor="middle" class="t-mono">실제 패킷 (빈 PDU 80 µs)</text>
+        <path d="M623 152 V206" class="s-line" stroke-dasharray="2 3"/>
+        <text x="20" y="226" class="t-dim">창 넓히기 = (상대 시계 오차 ppm ÷ 10⁶) × (마지막 동기 이후 시간) + 16 µs</text>
+      </svg>
+      </div>
+      <figcaption><b>그림 9-1.</b> 창 넓히기. 페리페럴은 마지막으로 동기를 맞춘 뒤 수면 시계로 다음 앵커 포인트를 기다린다. 상대 시계가 500 ppm까지 틀릴 수 있으므로, 2초 뒤에는 상대가 앞뒤로 1 ms까지 어긋나 말할 수 있다. 그래서 그만큼 일찍 깨어나 늦게까지 듣는다. 실제 패킷은 80 µs인데 수신 창은 2 ms가 넘는다.</figcaption>
+    </figure>
     <p class="spec-ref">활성 시계 ±50 ppm, 수면 시계 ±500 ppm, 2 s·500 ppm 예: <b>[Vol 6] Part B §4.2.1·§4.2.2</b> · 창 넓히기 식(J = 수면 시계 16 µs, 활성 시계 2 µs): <b>§4.2.4</b> · 수면 시계 정확도 갱신 절차: <b>§5.1.14</b></p>
     <p>그래서 <span class="term">페리페럴 지연</span>이나 <span class="term">연결 간격</span>을 아주 크게 하면 이벤트 수는 줄지만, 이벤트마다 수신 창이 길어진다. 저렴한 RC 발진기(수백 ppm) 대신 32.768 kHz 수정 발진기(±20~50 ppm)를 다는 이유가 여기에 있다. 몇십 원짜리 부품 하나가 긴 간격에서 배터리 수명을 크게 바꾼다. <span class="term">CONNECT_IND</span>의 SCA 필드와 5.1의 <span class="term">수면 시계 정확도</span> 갱신 절차는 이 오차를 상대에게 알려 창을 필요한 만큼만 넓히게 하는 장치다.</p>
   </section>

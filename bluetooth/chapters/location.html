@@ -82,6 +82,35 @@
       <li><b>AoD</b>(Angle of Departure): 보내는 쪽이 배열을 갖고 바꿔 가며 보낸다. 받는 휴대폰은 안테나 하나로 각 안테나에서 온 위상을 비교해 자기가 어느 방향에 있는지 계산한다. 실내 내비게이션처럼 수신자가 많을 때 쓴다.</li>
     </ul>
     <p class="spec-ref">CTE 16~160 µs, 보호 4 µs, 기준 8 µs, 1 µs·2 µs 슬롯, 화이트닝 없음: <b>[Vol 6] Part B §2.5.1</b> · AoA/AoD 안테나 전환: <b>[Vol 6] Part A §5.1</b> · CTE 요청 절차: <b>[Vol 6] Part B §5.1.12</b></p>
+    <figure class="diagram">
+      <div style="overflow-x:auto">
+      <svg viewBox="0 0 760 220" role="img" aria-label="CTE의 구조: CRC 뒤에 보호 구간 4 µs, 기준 구간 8 µs, 전환 슬롯과 표본 슬롯이 번갈아 온다" style="min-width:620px">
+        <rect x="10" y="40" width="60" height="40" rx="5" class="f-surface"/><text x="40" y="65" text-anchor="middle" class="t-mono">PDU</text>
+        <rect x="74" y="40" width="56" height="40" rx="5" class="f-surface"/><text x="102" y="65" text-anchor="middle" class="t-mono">CRC</text>
+        <rect x="134" y="40" width="44" height="40" rx="5" class="f-elev"/><text x="156" y="58" text-anchor="middle" class="t-mono">보호</text><text x="156" y="73" text-anchor="middle" class="t-mono">4 µs</text>
+        <rect x="182" y="40" width="88" height="40" rx="5" class="f-acc2-soft"/><text x="226" y="58" text-anchor="middle" class="t-mono">기준</text><text x="226" y="73" text-anchor="middle" class="t-mono">8 µs</text>
+        <g>
+          <rect x="274" y="40" width="40" height="40" rx="4" class="f-elev"/><text x="294" y="65" text-anchor="middle" class="t-mono">전환</text>
+          <rect x="318" y="40" width="40" height="40" rx="4" class="f-acc-soft"/><text x="338" y="65" text-anchor="middle" class="t-mono">표본</text>
+          <rect x="362" y="40" width="40" height="40" rx="4" class="f-elev"/><text x="382" y="65" text-anchor="middle" class="t-mono">전환</text>
+          <rect x="406" y="40" width="40" height="40" rx="4" class="f-acc-soft"/><text x="426" y="65" text-anchor="middle" class="t-mono">표본</text>
+          <rect x="450" y="40" width="40" height="40" rx="4" class="f-elev"/><text x="470" y="65" text-anchor="middle" class="t-mono">전환</text>
+          <rect x="494" y="40" width="40" height="40" rx="4" class="f-acc-soft"/><text x="514" y="65" text-anchor="middle" class="t-mono">표본</text>
+          <text x="560" y="65" class="t-mono">…</text>
+          <rect x="586" y="40" width="40" height="40" rx="4" class="f-elev"/><text x="606" y="65" text-anchor="middle" class="t-mono">전환</text>
+          <rect x="630" y="40" width="40" height="40" rx="4" class="f-acc-soft"/><text x="650" y="65" text-anchor="middle" class="t-mono">표본</text>
+        </g>
+        <path d="M134 98 H670" class="s-acc"/><path d="M134 92 V104 M670 92 V104" class="s-acc"/>
+        <text x="402" y="120" text-anchor="middle" class="t-acc">CTE 16~160 µs: 화이트닝 없이 1만 보내는 한 음</text>
+        <text x="402" y="22" text-anchor="middle" class="t-dim">슬롯은 1 µs 또는 2 µs</text>
+        <path d="M274 140 H670" class="s-line"/><path d="M274 134 V146 M670 134 V146" class="s-line"/>
+        <text x="472" y="164" text-anchor="middle" class="t">안테나를 바꾸고(전환) → 그 안테나로 IQ 표본을 찍는다(표본)</text>
+        <text x="472" y="188" text-anchor="middle" class="t-dim">AoA: 받는 쪽이 안테나를 바꾼다 · AoD: 보내는 쪽이 바꾼다</text>
+        <text x="10" y="210" class="t-mono">시간 →</text>
+      </svg>
+      </div>
+      <figcaption><b>그림 11-1.</b> 일정 톤 확장(CTE)의 구조. 패킷의 CRC 뒤에 변조 없는 한 음을 16~160 µs 붙인다. 처음 4 µs는 보호 구간, 다음 8 µs는 기준 구간이고, 그 뒤로 전환 슬롯과 표본 슬롯이 번갈아 온다. 안테나를 바꿔 가며 찍은 IQ 표본들의 위상 차이에서 방향을 계산한다.</figcaption>
+    </figure>
     <div class="sim" id="sim-aoa">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>두 안테나의 위상 차이로 방향 재기</h3></div>
       <div class="sim-body side">

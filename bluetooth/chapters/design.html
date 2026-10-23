@@ -99,6 +99,35 @@
       </tbody>
     </table></div>
     <div class="callout warn"><strong>“둘 다 지원해야 한다”를 잊지 말 것</strong><p>표의 기능 대부분은 선택 사항이다(1장). 내 제품이 지원해도 상대(대개 사용자의 휴대폰)가 지원하지 않으면 쓸 수 없다. 그래서 제품은 기본 경로(<span class="term">LE 1M</span>, 레거시 광고, 7.5 ms 이상 간격)로도 동작하게 만들고, 상대가 지원할 때만 더 나은 경로로 올라가도록 설계한다. 연결 직후의 <span class="term">기능 교환</span>(Feature Exchange 절차, [Vol 6] Part B §5.1.4)이 그 출발점이다.</p></div>
+    <figure class="diagram">
+      <div style="overflow-x:auto">
+      <svg viewBox="0 0 760 220" role="img" aria-label="기본 경로로 연결한 뒤 기능 교환으로 둘 다 지원하는 기능만 켜는 설계 흐름" style="min-width:620px">
+        <defs><marker id="dz-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--accent)"/></marker></defs>
+        <rect x="10" y="60" width="200" height="90" rx="10" class="f-surface"/>
+        <text x="110" y="84" text-anchor="middle" class="t-acc">① 기본 경로로 연결</text>
+        <text x="110" y="106" text-anchor="middle" class="t-mono">LE 1M · 레거시 광고</text>
+        <text x="110" y="124" text-anchor="middle" class="t-mono">간격 7.5 ms 이상 (BCV)</text>
+        <text x="110" y="142" text-anchor="middle" class="t-dim">모든 기기가 지원</text>
+        <path d="M214 105 H262" class="s-acc" marker-end="url(#dz-ar)"/>
+        <rect x="266" y="60" width="210" height="90" rx="10" class="f-acc-soft"/>
+        <text x="371" y="84" text-anchor="middle" class="t-acc">② 기능 교환</text>
+        <text x="371" y="106" text-anchor="middle" class="t-mono">Feature Exchange</text>
+        <text x="371" y="124" text-anchor="middle" class="t-dim">내 기능 ∩ 상대 기능</text>
+        <text x="371" y="142" text-anchor="middle" class="t-mono">[Vol 6] Part B §5.1.4</text>
+        <path d="M480 85 L528 46" class="s-acc" marker-end="url(#dz-ar)"/>
+        <path d="M480 125 L528 164" class="s-line" stroke-dasharray="4 3" marker-end="url(#dz-ar)"/>
+        <rect x="532" y="12" width="218" height="72" rx="10" class="f-acc2-soft"/>
+        <text x="641" y="34" text-anchor="middle" class="t-acc">③ 둘 다 지원하면 올라간다</text>
+        <text x="641" y="56" text-anchor="middle" class="t-mono">2M · Coded · DLE · SCI</text>
+        <text x="641" y="74" text-anchor="middle" class="t-mono">서브레이팅 · 등시성 채널 …</text>
+        <rect x="532" y="128" width="218" height="72" rx="10" class="f-elev"/>
+        <text x="641" y="152" text-anchor="middle" class="t">한쪽만 지원하면</text>
+        <text x="641" y="174" text-anchor="middle" class="t-dim">기본 경로 그대로 동작</text>
+        <text x="10" y="200" class="t-dim">제품이 지원해도 사용자의 휴대폰이 지원해야 쓴다</text>
+      </svg>
+      </div>
+      <figcaption><b>그림 14-1.</b> "둘 다 지원해야 한다"를 설계에 넣는 법. 표의 기능 대부분은 선택 사항이라, 제품은 모든 기기가 지원하는 기본 경로로 먼저 동작하게 만든다. 연결 직후 기능 교환으로 두 기기가 함께 지원하는 기능을 확인하고, 그때만 더 나은 경로로 올라간다.</figcaption>
+    </figure>
   </section>
 
   <div class="callout related"><strong>더 깊이</strong><ul><li><a href="../../bluetooth-deep/chapters/debugging.html">BluetoothBook 심화 18장 · 사례로 배우는 디버깅: HCI 로그에서 원인까지</a> — 현장 문제를 HCI 로그로 진단하기</li><li><a href="../../bluetooth-deep/chapters/intro.html">BluetoothBook 심화 01장 · 들어가며: 사양을 직접 읽는 책</a> — 사양 읽는 법</li></ul></div>

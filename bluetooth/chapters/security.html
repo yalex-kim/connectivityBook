@@ -74,6 +74,41 @@
       <div><b>③ 키 배포</b>링크를 암호화한 뒤 오래 쓸 키를 나눈다. 주소 해석용 IRK와 신원 주소, (레거시면) LTK. 예전에는 서명용 CSRK도 나눴지만 6.3에서 데이터 서명이 삭제되었다.</div>
     </div>
     <p>③에서 받은 키를 저장해 두는 것이 <span class="term">본딩</span><span class="en">(bonding)</span>이다. 본딩한 두 기기는 다음 연결 때 페어링 없이 저장된 <span class="term">LTK</span>로 바로 암호화를 시작한다(<span class="term">링크 계층</span>의 Encryption Start, 6장). 휴대폰 블루투스 설정의 “등록된 기기” 목록이 본딩 목록이다. 암호화는 <span class="term">컨트롤러</span>가 <span class="term">AES-CCM</span>으로 하며, 패킷마다 4바이트 <span class="term">MIC</span>(메시지 무결성 코드)를 붙여 위조를 막는다.</p>
+    <figure class="diagram">
+      <div style="overflow-x:auto">
+      <svg viewBox="0 0 760 270" role="img" aria-label="LE 페어링의 세 단계와 본딩: 기능 교환, 키 생성, 키 배포, 그리고 다음 연결의 바로 암호화" style="min-width:620px">
+        <defs><marker id="sp-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--accent)"/></marker></defs>
+        <rect x="10" y="20" width="230" height="150" rx="10" class="f-acc-soft"/>
+        <text x="125" y="44" text-anchor="middle" class="t-acc">① 기능 교환</text>
+        <text x="125" y="68" text-anchor="middle" class="t-mono">Pairing Request / Response</text>
+        <text x="125" y="92" text-anchor="middle" class="t-dim">입출력 능력 · OOB 유무</text>
+        <text x="125" y="112" text-anchor="middle" class="t-dim">MITM 요구 · SC 지원</text>
+        <text x="125" y="132" text-anchor="middle" class="t-dim">본딩 여부 · 키 길이 7~16 B</text>
+        <text x="125" y="156" text-anchor="middle" class="t-mono">아직 암호화 전</text>
+        <path d="M244 95 H272" class="s-acc" marker-end="url(#sp-ar)"/>
+        <rect x="276" y="20" width="230" height="150" rx="10" class="f-acc-soft"/>
+        <text x="391" y="44" text-anchor="middle" class="t-acc">② 키 생성</text>
+        <text x="391" y="68" text-anchor="middle" class="t-mono">방식 판정</text>
+        <text x="391" y="88" text-anchor="middle" class="t-dim">Just Works · 숫자 비교</text>
+        <text x="391" y="106" text-anchor="middle" class="t-dim">패스키 입력 · OOB</text>
+        <text x="391" y="130" text-anchor="middle" class="t-mono">레거시: TK → STK</text>
+        <text x="391" y="148" text-anchor="middle" class="t-mono">Secure Connections: ECDH → LTK</text>
+        <path d="M510 95 H538" class="s-acc" marker-end="url(#sp-ar)"/>
+        <rect x="542" y="20" width="208" height="150" rx="10" class="f-acc2-soft"/>
+        <text x="646" y="44" text-anchor="middle" class="t-acc">③ 키 배포</text>
+        <text x="646" y="68" text-anchor="middle" class="t-mono">링크를 암호화한 뒤</text>
+        <text x="646" y="92" text-anchor="middle" class="t-dim">IRK + 신원 주소</text>
+        <text x="646" y="112" text-anchor="middle" class="t-dim">(레거시면) LTK</text>
+        <text x="646" y="140" text-anchor="middle" class="t-mono">저장하면 = 본딩</text>
+        <rect x="396" y="206" width="354" height="40" rx="8" class="f-elev" stroke="var(--accent)"/>
+        <text x="573" y="231" text-anchor="middle" class="t">다음 연결: 저장한 LTK로 바로 암호화 시작</text>
+        <path d="M646 174 V202" class="s-acc" marker-end="url(#sp-ar)"/>
+        <text x="10" y="222" class="t-dim">암호화는 컨트롤러의 AES-CCM,</text>
+        <text x="10" y="242" class="t-dim">패킷마다 MIC 4바이트</text>
+      </svg>
+      </div>
+      <figcaption><b>그림 8-1.</b> LE 페어링의 세 단계. ①에서 두 기기가 능력을 알리면 ②에서 확인 방식이 정해지고 키가 만들어진다. 그 키로 링크를 암호화한 뒤 ③에서 오래 쓸 키를 나눈다. ③의 키를 저장해 두는 것이 본딩이고, 본딩한 기기는 다음 연결 때 페어링 없이 저장한 LTK로 바로 암호화를 시작한다.</figcaption>
+    </figure>
     <p class="spec-ref">페어링 방식·키 생성·배포: <b>[Vol 3] Part H §2.3·§2.4</b> · 키 길이 7~16바이트: <b>§2.3.4</b> · AES-CCM 링크 암호화와 MIC: <b>[Vol 6] Part E §1</b> · LE 보안 모드 1의 네 단계(보안 없음 / 미인증 암호화 / 인증 암호화 / 128비트 LE Secure Connections 인증): <b>[Vol 3] Part C §10.2.1</b></p>
   </section>
 

@@ -79,6 +79,33 @@
       <li><b><span class="term">저전력 노드</span></b><span class="en">(LPN)</span>와 <b><span class="term">프렌드</span></b><span class="en">(friend)</span>: 배터리로 도는 센서(LPN)는 늘 깨어 있을 수 없다. 이웃의 전원 노드(프렌드)가 LPN 앞으로 온 메시지를 대신 받아 두었다가, LPN이 가끔 깨어나 “내 것 있어?”라고 물으면 건넨다. 9장의 원리를 메시에 적용한 것이다.</li>
     </ul>
     <p>메시지는 특정 노드가 아니라 <b>주소</b>로 보낸다. 노드마다 고유한 유니캐스트 주소가 있고, 여럿이 함께 듣는 <b>그룹 주소</b>가 있다. 스위치는 “3층 회의실 조명” 그룹 주소로 <b>발행</b>(publish)하고, 조명들은 그 그룹을 <b>구독</b>(subscribe)한다. 조명을 새로 달면 그 조명이 그룹을 구독하게 설정하기만 하면 되고, 스위치는 바꿀 필요가 없다.</p>
+    <figure class="diagram">
+      <div style="overflow-x:auto">
+      <svg viewBox="0 0 760 260" role="img" aria-label="메시 노드의 역할: 스위치가 그룹 주소로 발행하고 조명들이 구독하며, 릴레이가 중계하고 프록시가 휴대폰을 잇고 프렌드가 저전력 노드의 메시지를 맡아 둔다" style="min-width:640px">
+        <defs><marker id="ms-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--accent)"/></marker></defs>
+        <rect x="20" y="96" width="110" height="44" rx="10" class="f-acc-soft"/><text x="75" y="116" text-anchor="middle" class="t">스위치</text><text x="75" y="132" text-anchor="middle" class="t-mono">발행</text>
+        <path d="M134 118 H216" class="s-acc" marker-end="url(#ms-ar)"/><text x="175" y="108" text-anchor="middle" class="t-mono">→ 그룹 주소</text>
+        <circle cx="260" cy="118" r="36" class="f-elev" stroke="var(--accent)"/><text x="260" y="114" text-anchor="middle" class="t">릴레이</text><text x="260" y="130" text-anchor="middle" class="t-mono">TTL − 1</text>
+        <path d="M296 104 L386 62" class="s-acc" marker-end="url(#ms-ar)"/><path d="M296 132 L386 176" class="s-acc" marker-end="url(#ms-ar)"/>
+        <rect x="390" y="20" width="350" height="96" rx="10" class="f-surface" stroke-dasharray="5 4"/>
+        <text x="565" y="40" text-anchor="middle" class="t-dim">그룹 "3층 회의실 조명"을 구독</text>
+        <circle cx="440" cy="76" r="20" class="f-acc2-soft"/><text x="440" y="81" text-anchor="middle" class="t-mono">조명</text>
+        <circle cx="510" cy="76" r="20" class="f-acc2-soft"/><text x="510" y="81" text-anchor="middle" class="t-mono">조명</text>
+        <circle cx="580" cy="76" r="20" class="f-acc2-soft"/><text x="580" y="81" text-anchor="middle" class="t-mono">조명</text>
+        <circle cx="650" cy="76" r="20" class="f-acc2-soft" stroke-dasharray="3 3"/><text x="650" y="81" text-anchor="middle" class="t-mono">새것</text>
+        <text x="700" y="108" text-anchor="end" class="t-mono">구독만 추가, 스위치는 그대로</text>
+        <rect x="390" y="150" width="140" height="50" rx="10" class="f-elev" stroke="var(--accent-2)"/><text x="460" y="171" text-anchor="middle" class="t">프렌드</text><text x="460" y="188" text-anchor="middle" class="t-mono">메시지를 맡아 둠</text>
+        <path d="M534 175 H592" class="s-line" stroke-dasharray="4 3" marker-end="url(#ms-ar)"/>
+        <rect x="596" y="150" width="144" height="50" rx="10" class="f-surface"/><text x="668" y="171" text-anchor="middle" class="t">저전력 노드</text><text x="668" y="188" text-anchor="middle" class="t-mono">가끔 깨어 "내 것?"</text>
+        <rect x="20" y="186" width="110" height="44" rx="10" class="f-surface"/><text x="75" y="213" text-anchor="middle" class="t">휴대폰</text>
+        <path d="M134 208 H186" class="s-line"/><text x="160" y="200" text-anchor="middle" class="t-mono">GATT</text>
+        <rect x="190" y="186" width="140" height="44" rx="10" class="f-elev" stroke="var(--accent)"/><text x="260" y="206" text-anchor="middle" class="t">프록시</text><text x="260" y="222" text-anchor="middle" class="t-mono">GATT ↔ 메시</text>
+        <path d="M260 182 V158" class="s-line"/>
+        <text x="20" y="252" class="t-dim">메시지는 네트워크 키로, 다시 애플리케이션 키로 암호화된다 → 릴레이는 전달만 하고 내용은 못 본다</text>
+      </svg>
+      </div>
+      <figcaption><b>그림 12-1.</b> 메시 노드의 역할과 주소. 스위치는 특정 조명이 아니라 그룹 주소로 발행하고, 그 그룹을 구독한 조명들이 받는다. 릴레이는 TTL을 줄이며 다시 퍼뜨리고, 프록시는 메시 기능이 없는 휴대폰을 GATT 연결로 잇는다. 프렌드는 저전력 노드 앞으로 온 메시지를 맡아 두었다가 건넨다. 이 역할과 주소 규칙은 Core 밖의 Mesh Protocol 사양에 있다.</figcaption>
+    </figure>
     <p>새 기기를 메시에 들이는 과정은 <b><span class="term">프로비저닝</span></b>이다. 휴대폰 같은 프로비저너가 기기와 <span class="term">ECDH</span>(8장)로 키를 맺고 네트워크 키와 주소를 건넨다. 메시의 모든 메시지는 네트워크 키로 암호화되고 애플리케이션 키로 한 번 더 암호화되므로, 중계 노드는 메시지를 전달하되 내용(예: 도어락 명령)은 볼 수 없게 할 수 있다.</p>
     <p class="spec-ref">메시의 플러딩·TTL·역할·프로비저닝·키는 Core 밖의 <b>Mesh Protocol</b> 사양에 있다. 메시가 쓰는 Core 기능: 비연결 광고와 AD 구조(<b>[Vol 3] Part C §11</b>), GATT(<b>[Vol 3] Part G</b>), ECDH와 AES-CMAC(<b>[Vol 3] Part H §2.2</b>)</p>
     <div class="callout deep"><strong>Matter와 블루투스</strong><p>스마트홈 표준 Matter는 기기가 Wi-Fi나 Thread로 동작하지만, 처음 설정할 때(커미셔닝) 휴대폰과 기기 사이의 통로로 블루투스 <span class="term">LE</span>를 쓰는 경우가 많다. 아직 네트워크에 붙지 않은 기기도 LE 광고로 “설정 대기 중”을 알릴 수 있고, 휴대폰은 거의 모두 LE를 지원하기 때문이다. 블루투스는 여기서 메시가 아니라 5~7장의 광고·연결·GATT로 일한다.</p></div>
