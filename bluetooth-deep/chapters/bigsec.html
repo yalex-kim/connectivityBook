@@ -37,7 +37,7 @@
   <header class="chapter-hero">
     <div class="eyebrow">Chapter 09</div>
     <h1>BIG 보안과 BIS: 방송 코드에서 그룹 세션 키까지</h1>
-    <p class="lead">Auracast 방송(1권 10장)은 연결도 페어링도 없다. 송신기 하나가 수백 개의 이어폰에 같은 소리를 뿌린다. 그런데 “우리 강의실 사람만 듣게” 하려면 어떻게 잠글까? 답은 사람이 아는 비밀 하나, <b>방송 코드</b>다. 이 장은 그 문자열이 128비트 키가 되고, 패킷마다 다른 <span class="term">nonce</span>가 되기까지를 따라가고, BIS마다 접근 주소를 만드는 규칙도 함께 계산한다.</p>
+    <p class="lead">Auracast 방송(1권 10장)은 연결도 <span class="term">페어링</span>도 없다. 송신기 하나가 수백 개의 이어폰에 같은 소리를 뿌린다. 그런데 “우리 강의실 사람만 듣게” 하려면 어떻게 잠글까? 답은 사람이 아는 비밀 하나, <b>방송 코드</b>다. 이 장은 그 문자열이 128비트 키가 되고, 패킷마다 다른 <span class="term">nonce</span>가 되기까지를 따라가고, <span class="term">BIS</span>마다 <span class="term">접근 주소</span>를 만드는 규칙도 함께 계산한다.</p>
     <ul class="objectives">
       <li>방송 코드 문자열을 128비트 값으로 바꾸는 규칙(UTF-8, 작은 쪽부터 채움)을 적용할 수 있다.</li>
       <li>IGLTK = h7(“BIG1”, 코드) → GLTK = h6(IGLTK, “BIG2”) → GSK = h8(GLTK, GSKD, “BIG3”)를 계산하고, GSKD가 무엇을 바꾸는지 설명할 수 있다.</li>
@@ -50,7 +50,7 @@
   <section id="code">
     <h2>방송 코드: 모두가 아는 하나의 비밀</h2>
     <p>연결이 있으면 두 기기가 키를 협상하지만(6·7장), 방송에는 돌아오는 신호가 없다. 그래서 키의 출발점을 사람이 미리 나눠 갖는다. 사양은 이것을 <span class="term">방송 코드</span><span class="en">(Broadcast_Code)</span>라 하고, 화면에서는 “Bluetooth Privacy Code”라 부르라고 권한다. 강의실 칠판에 적힌 문자열, 공항 게이트의 QR 코드, 휴대폰 앱이 이어폰에 대신 넣어 주는 값이 모두 이것이다.</p>
-    <div class="callout analogy"><strong>강의실 문의 번호 자물쇠</strong><p>강의실 문 번호 자물쇠는 수강생 모두가 같은 번호를 안다. 누가 들어왔는지 하나하나 확인하지는 못하지만, 번호를 모르는 사람은 막는다. 매 학기 번호를 바꾸면 지난 학기 수강생은 못 들어온다. BIG 암호화가 딱 이 수준이다. 코드를 아는 모두가 들을 수 있고, 코드를 모르는 사람만 막는다.</p></div>
+    <div class="callout analogy"><strong>강의실 문의 번호 자물쇠</strong><p>강의실 문 번호 자물쇠는 수강생 모두가 같은 번호를 안다. 누가 들어왔는지 하나하나 확인하지는 못하지만, 번호를 모르는 사람은 막는다. 매 학기 번호를 바꾸면 지난 학기 수강생은 못 들어온다. <span class="term">BIG</span> 암호화가 딱 이 수준이다. 코드를 아는 모두가 들을 수 있고, 코드를 모르는 사람만 막는다.</p></div>
     <p>화면 단계에서 방송 코드는 UTF-8로 4~16옥텟의 문자열이다. 그 아래 모든 단계에서는 128비트 값이고, 변환 규칙은 이렇다. 문자열을 UTF-8 바이트로 바꾼 뒤 <b>가장 작은 바이트 자리부터</b> 차례로 채우고, 남는 큰 쪽은 0으로 채운다. 사양의 예 “Børne House”(ø가 2바이트라 12옥텟)는 0x00000000_6573756F_4820656E_72B8C342가 된다. 거꾸로 읽으면 B(42) ø(C3 B8) r(72)…다. 보안을 위해 16옥텟을 쓰라고 권한다.</p>
     <p class="spec-ref">방송 코드의 정의·화면 용어·표현과 “Børne House” 예: <b>[Vol 3] Part C §3.2.6</b> · BIG의 Broadcast_Code·GIV·GSKD: <b>[Vol 6] Part B §4.4.6.10</b></p>
   </section>
@@ -58,9 +58,9 @@
   <!-- ============================================================ -->
   <section id="gsk">
     <h2>세 번 걸러 그룹 세션 키로</h2>
-    <p>방송 코드는 사람이 고른 값이라 그대로 키로 쓰기엔 고르지 않고, 다른 BIG에서도 같은 값이 나올 수 있다. 그래서 세 단계를 거친다. 7장의 h7·h6에, 링크 계층 보안 부분이 정의한 <b>h8</b>을 더한다.</p>
+    <p>방송 코드는 사람이 고른 값이라 그대로 키로 쓰기엔 고르지 않고, 다른 BIG에서도 같은 값이 나올 수 있다. 그래서 세 단계를 거친다. 7장의 h7·h6에, <span class="term">링크 계층</span> 보안 부분이 정의한 <b>h8</b>을 더한다.</p>
     <div class="formula">IGLTK = h7(“BIG1”, Broadcast_Code) · GLTK = h6(IGLTK, “BIG2”) · <b>GSK = h8(GLTK, GSKD, “BIG3”)</b><br>h8(K, S, keyID): IK = AES-CMAC<sub>S</sub>(K), h8 = AES-CMAC<sub>IK</sub>(keyID)</div>
-    <p>GLTK까지는 방송 코드만으로 정해지는 값이다. 마지막 단계의 <b><span class="term">GSKD</span></b>(Group Session Key Diversifier, 128비트)는 송신기의 컨트롤러가 <b>암호화된 BIG를 만들 때마다 새로</b> 뽑아 BIGInfo에 실어 보낸다. 그래서 어제와 오늘 같은 방송 코드를 써도 그룹 <span class="term">세션 키</span>는 다르다. 수신기는 주기적 광고의 BIGInfo에서 GSKD를 읽고, 호스트가 넣어 준 방송 코드와 합쳐 같은 <span class="term">GSK</span>를 만든다(이 과정은 수신기의 컨트롤러 안에서 일어난다).</p>
+    <p><span class="term">GLTK</span>까지는 방송 코드만으로 정해지는 값이다. 마지막 단계의 <b><span class="term">GSKD</span></b>(Group Session Key Diversifier, 128비트)는 송신기의 <span class="term">컨트롤러</span>가 <b>암호화된 BIG를 만들 때마다 새로</b> 뽑아 BIGInfo에 실어 보낸다. 그래서 어제와 오늘 같은 방송 코드를 써도 그룹 <span class="term">세션 키</span>는 다르다. 수신기는 <span class="term">주기적 광고</span>의 BIGInfo에서 GSKD를 읽고, <span class="term">호스트</span>가 넣어 준 방송 코드와 합쳐 같은 <span class="term">GSK</span>를 만든다(이 과정은 수신기의 컨트롤러 안에서 일어난다).</p>
     <div class="sim" id="sim-gsk">
       <div class="sim-head"><span class="sim-tag">WORKBENCH</span><h3>방송 코드 → GSK, 사양 샘플 그대로</h3></div>
       <div class="sim-view" style="padding:14px 16px">
@@ -101,14 +101,14 @@
         <tr><td>MIC 실패</td><td>연결 끊김 (0x3D)</td><td>동기 상실, 그 BIS를 더 받지 않음 (0x3D)</td></tr>
       </tbody>
     </table></div>
-    <p>BIS마다 접근 주소가 다르므로 <span class="term">IV</span>도 BIS마다 달라져, 같은 GSK와 같은 페이로드 카운터로도 nonce가 겹치지 않는다. 방송자가 하나뿐이니 방향 비트는 늘 1이다. BIG 제어 <span class="term">PDU</span>(BIG 종료, 채널 맵 갱신)도 같은 방식으로, 자기 접근 주소로 IV를 만들어 암호화한다.</p>
+    <p>BIS마다 접근 주소가 다르므로 <span class="term">IV</span>도 BIS마다 달라져, 같은 GSK와 같은 페이로드 카운터로도 nonce가 겹치지 않는다. 방송자가 하나뿐이니 방향 비트는 늘 1이다. BIG 제어 <span class="term">PDU</span>(BIG 종료, <span class="term">채널 맵</span> 갱신)도 같은 방식으로, 자기 접근 주소로 IV를 만들어 암호화한다.</p>
     <p class="spec-ref">BIS의 nonce·IV·방향 비트: <b>[Vol 6] Part E §2.1</b> · 가리는 비트(Table 2.3): <b>§2.2</b> · BIS 세션 키 = GSK: <b>§2.4</b> · BIS MIC 실패: <b>§1</b></p>
   </section>
 
   <!-- ============================================================ -->
   <section id="aa">
     <h2>시드 접근 주소에서 BIS마다 접근 주소를</h2>
-    <p>연결은 접근 주소를 CONNECT_IND로 알려 주지만, BIG는 BIGInfo에 <b><span class="term">시드 접근 주소</span></b>(SAA) 하나만 싣는다. 수신기는 BIS 번호 n마다 다이버시파이어 D = (35·n + 42) mod 128을 구해 7비트를 정해진 자리에 흩어 놓은 다이버시파이어 워드 DW와 SAA를 XOR한다. n = 0은 BIG 제어 링크다. 덕분에 BIS가 31개여도 BIGInfo에는 4바이트만 있으면 된다.</p>
+    <p>연결은 접근 주소를 <span class="term">CONNECT_IND</span>로 알려 주지만, BIG는 BIGInfo에 <b><span class="term">시드 접근 주소</span></b>(SAA) 하나만 싣는다. 수신기는 BIS 번호 n마다 다이버시파이어 D = (35·n + 42) mod 128을 구해 7비트를 정해진 자리에 흩어 놓은 다이버시파이어 워드 <span class="term">DW</span>와 SAA를 XOR한다. n = 0은 BIG 제어 링크다. 덕분에 BIS가 31개여도 BIGInfo에는 4바이트만 있으면 된다.</p>
     <div class="formula">DW[31:16] = D₀ D₀ D₀ D₀ D₀ D₀ D₁ D₆ · D₁ 0 D₅ D₄ 0 D₃ D₂ 0 · DW[15:0] = 0 · AA = SAA ⊕ DW</div>
     <p>SAA는 무작위지만 조건이 있다. 비트 19 = 비트 15, 비트 22 = 비트 16 ≠ 비트 15, 비트 25 = 0, 비트 23 = 1. 이 조건과 DW의 모양 덕분에, 만들어진 BIS 접근 주소들이 일반 접근 주소 규칙(연속 0·1이 6개 이하, 전환 수 등)을 지키기 쉬워진다. 그래도 어긋나면 SAA를 다시 뽑는다.</p>
     <div class="sim" id="sim-aa">

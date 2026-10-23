@@ -10,7 +10,7 @@ import re, sys, pathlib
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 # 코드가 실행 중에 불러오는 파일들 (바뀌면 여기를 고친다. 못 찾으면 실패한다)
 DYNAMIC = {
-    'js/common.js': ['root + "js/terms.js"', '`${root}../assets/videos.js`', '`${root}../assets/bt-spec.js`'],
+    'js/common.js': ['root + "js/terms.js"', 'root + "../" + ALSO.dir + "/js/terms.js"', '`${root}../assets/videos.js`', '`${root}../assets/bt-spec.js`'],
     'index.html': ['"assets/search-index.js"'],
 }
 

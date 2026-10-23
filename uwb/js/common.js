@@ -953,8 +953,11 @@
 
     // 용어 툴팁: 본문의 .term에 용어집 설명을 붙인다
     if (main && curSlug !== "glossary" && main.querySelector(".term")) {
+      // 이어지는 책(심화편)은 앞 책(입문편)의 용어집도 찾는다. 같은 말이면 이 책의 항목이 먼저다
+      const ALSO = null;
       const bind = () => {
-        const T = window.UW_TERMS, AL = window.UW_TERM_ALIAS || {};
+        const AT = ALSO ? (window[ALSO.ns + "_TERMS"] || []).map((t) => Object.assign([...t], { also: ALSO })) : [];
+        const T = window.UW_TERMS && window.UW_TERMS.concat(AT), AL = Object.assign({}, ALSO && window[ALSO.ns + "_TERM_ALIAS"], window.UW_TERM_ALIAS);
         if (!T) return;
         const norm = (x) => x.replace(/\s+/g, "").toLowerCase();
         const idx = new Map();
@@ -962,7 +965,7 @@
         T.forEach((t) => { [t[0], t[0].replace(/\(.*?\)/g, ""), t[1], t[1].replace(/\(.*?\)/g, "")].forEach((k) => put(k, t)); t[0].split(/[\/·]/).forEach((k) => put(k, t));
           // 영문 이름의 약어: "Channel Sounding (CS)", "ISI, Inter-Symbol ..." (tools/mark_terms.py와 같은 규칙)
           for (const m of t[1].matchAll(/\(([A-Z][A-Za-z0-9]*[A-Z0-9])\)|^([A-Z][A-Za-z0-9]*[A-Z0-9]),/g)) put(m[1] || m[2], t); });
-        const find = (txt) => { const a = AL[txt.trim()]; const l = idx.get(norm(a || txt)); if (!l) return null; return l.find((t) => t[3] === curSlug) || l[0]; };
+        const find = (txt) => { const a = AL[txt.trim()]; const l = idx.get(norm(a || txt)); if (!l) return null; return l.find((t) => !t.also && t[3] === curSlug) || l.find((t) => !t.also) || l[0]; };
         const tip = document.createElement("div"); tip.className = "sb-tip"; tip.id = "sb-tip"; tip.setAttribute("role", "tooltip"); body.appendChild(tip);
         let cur = null, hideT = 0;
         const esc = (x) => x.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -970,10 +973,11 @@
         const show = (el, t) => {
           if (cur !== el || !tip.classList.contains("show")) shownAt = Date.now();
           clearTimeout(hideT); cur = el;
-          const c = CHAPTERS.find((x) => x.slug === t[3]);
+          const c = !t.also && CHAPTERS.find((x) => x.slug === t[3]), q = encodeURIComponent(t[0].replace(/\(.*?\)/g, ""));
+          const other = (slug) => `${root}../${t.also.dir}/chapters/${slug}.html`;
           tip.innerHTML = `<div class="tt-h"><b>${esc(t[0])}</b><span>${esc(t[1])}</span></div><p>${esc(t[2])}</p><div class="tt-l">` +
-            (c && c.slug !== curSlug ? `<a href="${href(c.slug)}">${c.num}장 ${esc(c.title)}에서 자세히 →</a>` : "") +
-            `<a href="${href("glossary")}?q=${encodeURIComponent(t[0].replace(/\(.*?\)/g, ""))}">용어집</a></div>`;
+            (t.also ? `<a href="${other(t[3])}">${esc(t.also.label)}에서 자세히 →</a><a href="${other("glossary")}?q=${q}">${esc(t.also.label)} 용어집</a>`
+              : (c && c.slug !== curSlug ? `<a href="${href(c.slug)}">${c.num}장 ${esc(c.title)}에서 자세히 →</a>` : "") + `<a href="${href("glossary")}?q=${q}">용어집</a>`) + `</div>`;
           if (specLink) specLink(tip.querySelector("p"));
           tip.classList.add("show"); el.setAttribute("aria-describedby", "sb-tip");
           const r = el.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
@@ -1000,8 +1004,9 @@
         document.addEventListener("keydown", (e) => { if (e.key === "Escape") hide(true); });
         addEventListener("scroll", () => { if (cur) hide(true); }, { passive: true });
       };
-      if (window.UW_TERMS) bind();
-      else { const sc = document.createElement("script"); sc.src = root + "js/terms.js"; sc.onload = bind; document.head.appendChild(sc); }
+      const load = (src, done) => { const sc = document.createElement("script"); sc.src = src; sc.onload = done; sc.onerror = done; document.head.appendChild(sc); };
+      const withAlso = () => (ALSO && !window[ALSO.ns + "_TERMS"] ? load(root + "../" + ALSO.dir + "/js/terms.js", bind) : bind());
+      if (window.UW_TERMS) withAlso(); else load(root + "js/terms.js", withAlso);
     }
 
     // KaTeX

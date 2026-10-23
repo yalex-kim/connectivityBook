@@ -33,7 +33,7 @@ def render(book):
     cfg = json.loads((book / 'book.json').read_text()); ui = cfg['ui']
     common = {'@@BOOK@@': cfg['title'], '@@SHORT@@': ui['short'], '@@NS@@': ui['ns'], '@@ns@@': ui['prefix'], '@@DIR@@': book.name}
     js = (SHARED / 'common.js').read_text()
-    for k, v in {**common, '@@FOOTER@@': ui['footer'], '@@LOGO@@': ui['logo'], '@@SERIES@@': json.dumps(ui.get('series'), ensure_ascii=False)}.items():
+    for k, v in {**common, '@@FOOTER@@': ui['footer'], '@@LOGO@@': ui['logo'], '@@SERIES@@': json.dumps(ui.get('series'), ensure_ascii=False), '@@TERMS_ALSO@@': json.dumps(ui.get('termsAlso'), ensure_ascii=False)}.items():
         js = js.replace(k, v)
     cur = (book / 'js/common.js').read_text()
     i = js.index(BEGIN); i = js.index('\n', i) + 1

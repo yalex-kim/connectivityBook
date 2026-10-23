@@ -74,7 +74,7 @@
   <!-- ============================================================ -->
   <section id="spec">
     <h2>사양 읽는 법</h2>
-    <p>Core 사양은 권(Vol)과 부(Part), 절(§)로 나뉜다. 이 책의 인용 <b>[Vol 6] Part B §4.5.2</b>는 “6권(LE 컨트롤러) B부(링크 계층) 4.5.2절”이다. 자주 가는 곳은 이렇다.</p>
+    <p>Core 사양은 권(Vol)과 부(Part), 절(§)로 나뉜다. 이 책의 인용 <b>[Vol 6] Part B §4.5.2</b>는 “6권(<span class="term">LE</span> <span class="term">컨트롤러</span>) B부(<span class="term">링크 계층</span>) 4.5.2절”이다. 자주 가는 곳은 이렇다.</p>
     <div class="table-wrap"><table>
       <thead><tr><th>권</th><th>내용</th><th>이 책에서</th></tr></thead>
       <tbody>
@@ -86,7 +86,7 @@
       </tbody>
     </table></div>
     <p>요구의 세기는 낱말로 정해져 있다. <b><span class="term">shall</span></b>(= mandatory)은 그대로 구현해야 하는 것, <b>shall not</b>은 금지, <b>should</b>는 권장, <b>may</b>(= optional)는 허용이다. should와 may는 둘 다 “필수가 아니다”. <b>must</b>는 요구가 아니라 언제나 참인 사실이나 다른 요구의 당연한 결과를, <b>can</b>은 가능성을 말한다. 그래서 “should allow a minimum of 6 connection events”(4·18장)는 어겨도 규격 위반은 아니지만, 어기면 현장에서 끊김을 부른다.</p>
-    <p><b>예제 데이터</b>는 [Vol 2] Part G, [Vol 3] Part H 부록 D, [Vol 6] Part C에 있다. 사양은 이것을 “참고용”이라 하면서, 본문과 다르면 정오표가 나올 때까지 <b>예제 쪽이 틀렸다고 보라</b>고 한다. 이 책은 예제를 모두 다시 계산해 맞췄고, 맞지 않은 두 곳(5장의 AUX_ADV_IND CRC, 13장의 g() P-256)은 경고 상자와 검증 스크립트에 그대로 기록했다. LE 오디오 프로파일처럼 <b>Core 밖</b>의 사양은 본문에 그렇게 밝혔다.</p>
+    <p><b>예제 데이터</b>는 [Vol 2] Part G, [Vol 3] Part H 부록 D, [Vol 6] Part C에 있다. 사양은 이것을 “참고용”이라 하면서, 본문과 다르면 정오표가 나올 때까지 <b>예제 쪽이 틀렸다고 보라</b>고 한다. 이 책은 예제를 모두 다시 계산해 맞췄고, 맞지 않은 두 곳(5장의 AUX_ADV_IND <span class="term">CRC</span>, 13장의 g() P-256)은 경고 상자와 검증 스크립트에 그대로 기록했다. LE 오디오 <span class="term">프로파일</span>처럼 <b>Core 밖</b>의 사양은 본문에 그렇게 밝혔다.</p>
     <div class="callout analogy"><strong>법전과 판례집</strong><p>사양 본문은 법전이다. shall은 “하여야 한다”, should는 “하는 것이 바람직하다”, may는 “할 수 있다”. 예제 데이터는 판례집과 비슷하지만 위계는 반대다. 둘이 어긋나면 법전(본문)이 이긴다. 그래서 계산이 예제와 다르면 먼저 내 구현을 의심하고, 그래도 본문대로라면 예제를 의심한다.</p></div>
     <p class="spec-ref">낱말의 뜻(Table 1.1): <b>[Vol 1] Part E §1</b> · 2진·16진 표기: <b>§2.1</b> · 비트 번호와 필드: <b>§2.2</b> · 예약·이전 사용: <b>§2.4.1, §2.4.2</b> · 예제 데이터의 지위: <b>§4</b></p>
   </section>
@@ -96,9 +96,9 @@
     <h2>바이트와 비트의 순서</h2>
     <p>이 책에서 가장 많이 헷갈리는 것은 “같은 값이 어디서는 앞뒤가 뒤집혀 보인다”는 점이다. 규칙은 세 가지뿐이다.</p>
     <ol>
-      <li><b>값</b>을 적을 때는 사람처럼 큰 자리부터(MSO 먼저): 접근 주소 0x8E89BED6.</li>
+      <li><b>값</b>을 적을 때는 사람처럼 큰 자리부터(MSO 먼저): <span class="term">접근 주소</span> 0x8E89BED6.</li>
       <li><b><span class="term">HCI</span>와 대부분의 <span class="term">PDU</span> 필드</b>는 <span class="term">리틀 엔디언</span>: 작은 바이트가 먼저. 0x8E89BED6은 D6 BE 89 8E 순서로 놓인다.</li>
-      <li><b>공중</b>에서는 필드마다 LSB가 먼저 나간다. 3비트 값 3은 1, 1, 0 순서로 보내고 사양은 이것을 “110”이라 적는다.</li>
+      <li><b>공중</b>에서는 필드마다 <span class="term">LSB</span>가 먼저 나간다. 3비트 값 3은 1, 1, 0 순서로 보내고 사양은 이것을 “110”이라 적는다.</li>
     </ol>
     <p>예제 데이터의 표기는 곳마다 다르다. [Vol 2] Part G §10은 “가장 낮은 바이트가 왼쪽”, 같은 Part G의 §7과 [Vol 3] Part H 부록 D는 “큰 바이트가 왼쪽”, Part G §3의 <span class="term">동기어</span>는 전송 순서 그대로 4비트씩 끊은 16진이다. 각 장은 예제를 쓸 때 어느 표기인지 밝혀 두었다.</p>
     <div class="sim" id="sim-order">

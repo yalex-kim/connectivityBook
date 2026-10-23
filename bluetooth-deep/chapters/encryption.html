@@ -45,7 +45,7 @@
   <header class="chapter-hero">
     <div class="eyebrow">Chapter 06</div>
     <h1>링크 계층 암호화: 세션 키와 AES-CCM</h1>
-    <p class="lead">1권 8장은 페어링으로 LTK를 만드는 데서 멈췄다. 이 장은 그 키가 실제로 패킷을 잠그는 과정을 끝까지 따라간다. 연결마다 새로 만드는 세션 키, 패킷마다 바뀌는 13바이트 nonce, 4바이트 MIC와 키스트림까지. 사양에 실린 암호화 샘플 패킷 네 개를 바이트 하나 틀리지 않게 다시 만들어 본다.</p>
+    <p class="lead">1권 8장은 <span class="term">페어링</span>으로 LTK를 만드는 데서 멈췄다. 이 장은 그 키가 실제로 패킷을 잠그는 과정을 끝까지 따라간다. 연결마다 새로 만드는 세션 키, 패킷마다 바뀌는 13바이트 nonce, 4바이트 MIC와 키스트림까지. 사양에 실린 암호화 샘플 패킷 네 개를 바이트 하나 틀리지 않게 다시 만들어 본다.</p>
     <ul class="objectives">
       <li>암호화 시작 절차에서 오가는 PDU와 HCI 명령·이벤트, 세션 키 SK = e(LTK, SKD)를 설명할 수 있다.</li>
       <li>CCM nonce(packetCounter·directionBit·IV)와 B·A 블록을 직접 만들고 MIC와 암호문을 계산할 수 있다.</li>
@@ -57,9 +57,9 @@
   <!-- ============================================================ -->
   <section id="start">
     <h2>세션 키: LTK는 한 번도 공중에 나가지 않는다</h2>
-    <p>페어링이 끝나면 두 기기는 같은 <span class="term">LTK</span><span class="en">(Long Term Key)</span>를 저장해 둔다. 하지만 링크 계층은 LTK로 패킷을 직접 잠그지 않는다. 연결할 때마다 양쪽이 무작위 값을 반씩 내놓아 새 <span class="term">세션 키</span><span class="en">(Session Key, SK)</span>를 만들고 그것으로 잠근다. 같은 LTK로 백 번 연결해도 세션 키는 백 번 다르다.</p>
+    <p>페어링이 끝나면 두 기기는 같은 <span class="term">LTK</span><span class="en">(Long Term Key)</span>를 저장해 둔다. 하지만 <span class="term">링크 계층</span>은 LTK로 패킷을 직접 잠그지 않는다. 연결할 때마다 양쪽이 무작위 값을 반씩 내놓아 새 <span class="term">세션 키</span><span class="en">(Session Key, SK)</span>를 만들고 그것으로 잠근다. 같은 LTK로 백 번 연결해도 세션 키는 백 번 다르다.</p>
     <div class="callout analogy"><strong>금고 열쇠와 오늘의 출입증</strong><p>금고 열쇠(LTK)는 금고에만 두고 들고 다니지 않는다. 매일 아침 두 사람이 각자 주사위를 던져 나온 숫자(SKD_C, SKD_P)를 금고 열쇠로 찍어 그날의 출입증(SK)을 만든다. 출입증을 잃어버려도 그날 하루뿐이고, 한 사람이 주사위를 조작해도 다른 사람의 숫자가 섞이니 혼자서는 출입증을 정할 수 없다.</p></div>
-    <p>절차는 센트럴이 시작한다. 센트럴의 호스트가 <code>HCI_LE_Enable_Encryption</code>으로 LTK와 함께 그 LTK를 찾을 단서(EDIV, Rand)를 건네면, 링크 계층이 자기 몫의 무작위 값 <b>SKD_C</b>(8바이트)와 <b>IV_C</b>(4바이트)를 만들어 <code>LL_ENC_REQ</code>로 보낸다. 페리페럴은 자기 몫 <b>SKD_P</b>·<b>IV_P</b>를 <code>LL_ENC_RSP</code>로 돌려주고, 호스트에 <code>HCI_LE_Long_Term_Key_Request</code> 이벤트로 EDIV와 Rand를 넘겨 맞는 LTK를 달라고 한다. LTK가 있으면 양쪽 모두</p>
+    <p>절차는 <span class="term">센트럴</span>이 시작한다. 센트럴의 <span class="term">호스트</span>가 <code>HCI_LE_Enable_Encryption</code>으로 LTK와 함께 그 LTK를 찾을 단서(EDIV, Rand)를 건네면, 링크 계층이 자기 몫의 무작위 값 <b>SKD_C</b>(8바이트)와 <b>IV_C</b>(4바이트)를 만들어 <code>LL_ENC_REQ</code>로 보낸다. <span class="term">페리페럴</span>은 자기 몫 <b>SKD_P</b>·<b>IV_P</b>를 <code>LL_ENC_RSP</code>로 돌려주고, 호스트에 <code>HCI_LE_Long_Term_Key_Request</code> 이벤트로 EDIV와 Rand를 넘겨 맞는 LTK를 달라고 한다. LTK가 있으면 양쪽 모두</p>
     <div class="formula">SKD = SKD_P ‖ SKD_C (SKD_C가 아래쪽 8바이트) · IV = IV_P ‖ IV_C · <b>SK = e(LTK, SKD)</b></div>
     <p>를 계산한다. e는 AES-128 한 블록 암호화다(1권 8장). 그다음 세 번 악수한다. 페리페럴이 <b>암호화하지 않은</b> <code>LL_START_ENC_REQ</code>를 보내고, 센트럴이 <b>암호화한</b> <code>LL_START_ENC_RSP</code>로 답하고, 페리페럴도 암호화한 <code>LL_START_ENC_RSP</code>로 답하면 연결이 암호화된다. 마지막 두 <span class="term">PDU</span>는 내용이 아니라 “같은 키로 잠그고 풀 수 있다”를 확인하는 용도다. 키가 틀렸다면 MIC가 맞지 않아 여기서 끊긴다.</p>
     <figure class="diagram">
@@ -83,7 +83,7 @@
       </div>
       <figcaption><b>그림 6-1.</b> 암호화 시작 절차. 회색 화살표는 HCI(호스트↔컨트롤러), 색 화살표는 공중의 LL PDU다. LTK는 공중에 한 번도 나가지 않는다.</figcaption>
     </figure>
-    <p>페리페럴의 호스트가 LTK를 주지 못하면(EDIV·Rand에 맞는 키를 잃었거나 본딩을 지웠을 때) 페리페럴은 <code>LL_REJECT_EXT_IND</code>에 <span class="term">오류 코드</span> <b>PIN or Key Missing (0x06)</b>을 실어 거절한다. 휴대폰에서 “기기를 다시 페어링하세요”가 뜨는 흔한 원인이다. 절차 도중 예상하지 않은 데이터 PDU가 오면 양쪽 모두 즉시 연결을 끊고 <b>0x3D(MIC Failure)</b>로 알린다.</p>
+    <p>페리페럴의 호스트가 LTK를 주지 못하면(EDIV·Rand에 맞는 키를 잃었거나 <span class="term">본딩</span>을 지웠을 때) 페리페럴은 <code>LL_REJECT_EXT_IND</code>에 <span class="term">오류 코드</span> <b><span class="term">PIN</span> or Key Missing (0x06)</b>을 실어 거절한다. 휴대폰에서 “기기를 다시 페어링하세요”가 뜨는 흔한 원인이다. 절차 도중 예상하지 않은 데이터 PDU가 오면 양쪽 모두 즉시 연결을 끊고 <b>0x3D(MIC Failure)</b>로 알린다.</p>
     <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">공격자가 LL_ENC_REQ와 LL_ENC_RSP를 모두 엿들었다. SKD_C, SKD_P, IV_C, IV_P를 전부 안다. 세션 키를 계산할 수 있을까?</p><p class="wi-hint">SK = e(LTK, SKD). 공중에 나온 값과 나오지 않은 값을 나눠 보자.</p><div class="opts">
       <button class="opt">그렇다. SKD를 알면 SK도 안다</button>
       <button class="opt" data-correct>아니다. LTK를 모르면 AES 한 블록을 풀 수 없다</button>
@@ -95,7 +95,7 @@
   <!-- ============================================================ -->
   <section id="nonce">
     <h2>13바이트 nonce: 같은 키, 다른 패킷</h2>
-    <p>세션 키 하나로 연결이 끝날 때까지 수만 개의 패킷을 잠근다. 블록 암호를 그대로 쓰면 같은 평문이 같은 암호문이 되어 패턴이 드러나므로, 패킷마다 한 번만 쓰는 값 <span class="term">nonce</span>를 섞는다. LE의 nonce는 13바이트로, 세 부분이다.</p>
+    <p>세션 키 하나로 연결이 끝날 때까지 수만 개의 패킷을 잠근다. 블록 암호를 그대로 쓰면 같은 평문이 같은 암호문이 되어 패턴이 드러나므로, 패킷마다 한 번만 쓰는 값 <span class="term">nonce</span>를 섞는다. <span class="term">LE</span>의 nonce는 13바이트로, 세 부분이다.</p>
     <div class="table-wrap"><table>
       <thead><tr><th>옥텟</th><th>내용</th><th>설명</th></tr></thead>
       <tbody>
@@ -114,12 +114,12 @@
     <p>LE는 <span class="term">AES-CCM</span><span class="en">(Counter with CBC-MAC)</span>을 쓴다. 한 번의 계산으로 두 가지를 한다. ① <b>CBC-MAC</b>으로 헤더 일부와 페이로드를 요약해 4바이트 <span class="term">MIC</span><span class="en">(Message Integrity Check)</span>를 만들고, ② <b>카운터 모드</b>로 키스트림을 만들어 페이로드와 MIC에 XOR한다.</p>
     <ul>
       <li><b>B₀</b> = 0x49 ‖ nonce ‖ 페이로드 길이(2바이트). 0x49는 “MIC 4바이트, 길이 칸 2바이트, 추가 인증 데이터 있음”을 뜻하는 CCM 플래그다.</li>
-      <li><b>B₁</b> = 00 01 ‖ <b>헤더 첫 바이트(NESN·SN·MD를 0으로)</b> ‖ 0 × 13. 추가 인증 데이터(AAD)는 이 1바이트뿐이다.</li>
+      <li><b>B₁</b> = 00 01 ‖ <b>헤더 첫 바이트(NESN·SN·<span class="term">MD</span>를 0으로)</b> ‖ 0 × 13. 추가 인증 데이터(AAD)는 이 1바이트뿐이다.</li>
       <li><b>B₂, B₃, …</b> = 페이로드를 16바이트씩(마지막은 0으로 채움).</li>
       <li>X₁ = e(SK, B₀), Xᵢ₊₁ = e(SK, Xᵢ ⊕ Bᵢ). 마지막 X의 앞 4바이트가 MIC다.</li>
       <li><b>Aᵢ</b> = 0x01 ‖ nonce ‖ i(2바이트), Sᵢ = e(SK, Aᵢ). S₀의 앞 4바이트로 MIC를, S₁, S₂, …로 페이로드를 XOR한다.</li>
     </ul>
-    <p>암호화는 페이로드에만 걸리고 헤더(2바이트)는 평문으로 나간다. 받는 쪽이 길이와 LLID를 먼저 읽어야 하기 때문이다. 대신 헤더 첫 바이트 중 LLID와 CP 비트는 MIC로 보호한다.</p>
+    <p>암호화는 페이로드에만 걸리고 헤더(2바이트)는 평문으로 나간다. 받는 쪽이 길이와 <span class="term">LLID</span>를 먼저 읽어야 하기 때문이다. 대신 헤더 첫 바이트 중 LLID와 <span class="term">CP</span> 비트는 MIC로 보호한다.</p>
     <div class="sim" id="sim-ccm">
       <div class="sim-head"><span class="sim-tag">WORKBENCH</span><h3>패킷 암호화 작업대: 사양 샘플 네 개를 바이트까지</h3></div>
       <div class="sim-controls" style="border-top:0">
@@ -179,7 +179,7 @@
   <section id="rekey">
     <h2>키 바꾸기, 그리고 등시성 링크의 IV</h2>
     <p>연결을 끊지 않고 새 키를 쓰려면 <b>암호화 일시 정지 절차</b>를 쓴다. 센트럴이 <code>LL_PAUSE_ENC_REQ</code>를 보내고, 페리페럴이 암호화된 <code>LL_PAUSE_ENC_RSP</code>로 답하고, 센트럴이 평문 <code>LL_PAUSE_ENC_RSP</code>를 돌려주면 암호화가 꺼진다. 그 사이에는 데이터 PDU를 보내지 않는다. 바로 이어서 위의 시작 절차를 다시 해 <b>새 <span class="term">SKD</span>와 새 <span class="term">IV</span></b>로 새 세션 키를 만든다. 일시 정지 뒤에 페리페럴의 호스트가 LTK를 주지 못하면 거절이 아니라 연결 종료(0x06)다.</p>
-    <p>등시성 채널(14장)에도 같은 CCM을 쓴다. <b>CIS</b>는 연결된 ACL의 세션 키를 그대로 쓰고, IV는 ACL의 IV에서 아래 32비트만 그 CIS의 접근 주소와 XOR해 만든다. CIS마다 접근 주소가 다르므로 같은 키로도 nonce가 겹치지 않는다. packetCounter 자리에는 CIS의 페이로드 카운터를 쓴다. <b>BIS</b>는 연결이 없으니 <span class="term">방송 코드</span>(Broadcast_Code)에서 유도한 그룹 세션 키(<span class="term">GSK</span>)를 쓰고, IV 기준값은 BIGInfo에 실린 <span class="term">GIV</span>다(9장).</p>
+    <p><span class="term">등시성 채널</span>(14장)에도 같은 CCM을 쓴다. <b><span class="term">CIS</span></b>는 연결된 <span class="term">ACL</span>의 세션 키를 그대로 쓰고, IV는 ACL의 IV에서 아래 32비트만 그 CIS의 <span class="term">접근 주소</span>와 XOR해 만든다. CIS마다 접근 주소가 다르므로 같은 키로도 nonce가 겹치지 않는다. packetCounter 자리에는 CIS의 페이로드 카운터를 쓴다. <b><span class="term">BIS</span></b>는 연결이 없으니 <span class="term">방송 코드</span>(Broadcast_Code)에서 유도한 그룹 세션 키(<span class="term">GSK</span>)를 쓰고, IV 기준값은 BIGInfo에 실린 <span class="term">GIV</span>다(9장).</p>
     <div class="formula">CIS·BIS의 IV: IV[31:0] = IV_base[31:0] ⊕ Access Address · IV[63:32] = IV_base[63:32]</div>
     <p class="spec-ref">암호화 일시 정지: <b>[Vol 6] Part B §5.1.3.2</b> · CIS·BIS의 IV(그림 2.1)와 packetCounter: <b>[Vol 6] Part E §2.1</b> · CIS·BIS의 세션 키: <b>Part E §2.4</b> · GSK 유도(h8): <b>Part E §1.1</b></p>
   </section>

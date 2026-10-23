@@ -37,7 +37,7 @@
   <header class="chapter-hero">
     <div class="eyebrow">Chapter 13</div>
     <h1>Classic 보안: 레거시 PIN에서 Secure Connections까지</h1>
-    <p class="lead">BR/EDR 보안은 세 번 바뀌었다. 처음에는 PIN과 <span class="term">SAFER+</span> 블록 암호로 키를 만들고 E0 스트림 암호로 암호화했다. 2.1의 Secure Simple Pairing(<span class="term">SSP</span>)은 타원곡선 Diffie-Hellman과 HMAC-SHA-256으로 키 합의를 바꿨다. 4.1의 Secure Connections는 곡선을 P-256으로 올리고 장치 인증과 암호화를 AES로 바꿨다. 이 장은 세 세대의 함수를 모두 구현해 Part G의 <span class="term">예제 데이터</span>와 맞춘다. 공격 절차가 아니라 각 방식이 무엇을 지키고 왜 바뀌었는지가 목표다.</p>
+    <p class="lead"><span class="term">BR/EDR</span> 보안은 세 번 바뀌었다. 처음에는 <span class="term">PIN</span>과 <span class="term">SAFER+</span> 블록 암호로 키를 만들고 <span class="term">E0</span> 스트림 암호로 암호화했다. 2.1의 Secure Simple Pairing(<span class="term">SSP</span>)은 타원곡선 Diffie-Hellman과 <span class="term">HMAC-SHA-256</span>으로 키 합의를 바꿨다. 4.1의 Secure Connections는 곡선을 P-256으로 올리고 장치 인증과 암호화를 <span class="term">AES</span>로 바꿨다. 이 장은 세 세대의 함수를 모두 구현해 Part G의 <span class="term">예제 데이터</span>와 맞춘다. 공격 절차가 아니라 각 방식이 무엇을 지키고 왜 바뀌었는지가 목표다.</p>
     <ul class="objectives">
       <li>레거시·SSP·Secure Connections가 각각 어떤 키 합의·인증·암호화를 쓰는지 표로 구분할 수 있다.</li>
       <li>SAFER+ 기반 E22·E21·E1·E3의 입력과 출력(K_init, 결합 키, SRES·ACO, K_enc)을 설명할 수 있다.</li>
@@ -58,7 +58,7 @@
         <tr><td>암호화</td><td>E0 스트림 암호</td><td>E0</td><td>AES-CCM (MIC 4바이트)</td></tr>
       </tbody>
     </table></div>
-    <p>바뀐 이유는 한 줄로 말할 수 있다. 레거시는 비밀이 PIN뿐이라 짧은 PIN이면 엿들은 교환으로 PIN을 추측해 볼 수 있었다. SSP는 비밀을 ECDH로 만들어 엿듣는 것만으로는 키를 얻을 수 없게 했고, 사람이 숫자를 비교하거나 패스키를 넣어 중간자를 막는다. Secure Connections는 곡선과 대칭 암호를 현대 표준으로 맞췄다. 그래서 GAP의 <b><span class="term">Secure Connections Only</span> 모드</b>는 BR/EDR의 서비스에 보안 모드 4 레벨 4(인증된 P-256 링크 키와 <span class="term">AES-CCM</span>)를 요구한다.</p>
+    <p>바뀐 이유는 한 줄로 말할 수 있다. 레거시는 비밀이 PIN뿐이라 짧은 PIN이면 엿들은 교환으로 PIN을 추측해 볼 수 있었다. SSP는 비밀을 <span class="term">ECDH</span>로 만들어 엿듣는 것만으로는 키를 얻을 수 없게 했고, 사람이 숫자를 비교하거나 패스키를 넣어 중간자를 막는다. Secure Connections는 곡선과 대칭 암호를 현대 표준으로 맞췄다. 그래서 <span class="term">GAP</span>의 <b><span class="term">Secure Connections Only</span> 모드</b>는 BR/<span class="term">EDR</span>의 서비스에 보안 모드 4 레벨 4(인증된 P-256 링크 키와 <span class="term">AES-CCM</span>)를 요구한다.</p>
     <div class="callout analogy"><strong>열쇠 맞추기</strong><p>레거시는 둘이 미리 정한 짧은 암호(PIN)를 섞어 열쇠를 깎는 것이다. 암호가 짧으면 엿들은 사람이 하나씩 대 보며 같은 열쇠를 깎아 볼 수 있다. SSP는 각자 비밀을 하나씩 갖고 공개된 재료만 주고받아 같은 열쇠를 만드는 방식(ECDH)이라, 엿들어도 열쇠를 못 깎는다. 다만 중간에서 둘 다인 척하는 사람을 막으려고 마지막에 화면의 여섯 자리 숫자를 서로 비교한다.</p></div>
     <p class="spec-ref">보안 개요와 세대: <b>[Vol 2] Part H §1, §1.1</b> · 보안 모드 4와 Secure Connections Only: <b>[Vol 3] Part C §5.2.2</b></p>
   </section>
@@ -89,7 +89,7 @@
   <!-- ============================================================ -->
   <section id="ssp">
     <h2>Secure Simple Pairing: ECDH와 f1·g·f2·f3</h2>
-    <p>SSP는 다섯 단계다. ① 공개 키 교환(PKa, PKb) ② 인증 1단계: 숫자 비교·Just Works·패스키·OOB 중 하나 ③ 인증 2단계: 확인 값 Ea·Eb 교환 ④ 링크 키 계산 ⑤ LMP 인증과 암호화. 함수는 모두 SHA-256 기반이다.</p>
+    <p>SSP는 다섯 단계다. ① 공개 키 교환(PKa, PKb) ② 인증 1단계: <span class="term">숫자 비교</span>·<span class="term">Just Works</span>·패스키·<span class="term">OOB</span> 중 하나 ③ 인증 2단계: 확인 값 Ea·Eb 교환 ④ 링크 키 계산 ⑤ <span class="term">LMP</span> 인증과 암호화. 함수는 모두 SHA-256 기반이다.</p>
     <div class="table-wrap"><table>
       <thead><tr><th>함수</th><th>정의</th><th>쓰임</th></tr></thead>
       <tbody>
@@ -99,7 +99,7 @@
         <tr><td>f3</td><td>HMAC-SHA-256<sub>W</sub>(N1 ‖ N2 ‖ R ‖ IOcap ‖ A1 ‖ A2)의 앞 128비트</td><td>Ea = f3(DHKey, Na, Nb, r, IOcapA, A, B), Eb는 순서를 바꿔서</td></tr>
       </tbody>
     </table></div>
-    <p><b><span class="term">IOcap</span></b>은 3바이트로, 위에서부터 Authentication_Requirements, OOB 데이터 유무, IO 능력이다. 확인 값에 IOcap이 들어가므로 중간자가 “나는 화면이 없다”고 속여 Just Works로 떨어뜨려도 Ea·Eb가 맞지 않는다.</p>
+    <p><b><span class="term">IOcap</span></b>은 3바이트로, 위에서부터 Authentication_Requirements, OOB 데이터 유무, <span class="term">IO</span> 능력이다. 확인 값에 IOcap이 들어가므로 중간자가 “나는 화면이 없다”고 속여 Just Works로 떨어뜨려도 Ea·Eb가 맞지 않는다.</p>
     <div class="sim" id="sim-ssp">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>SSP 계산 체인 (P-192 데이터 세트 1, [Vol 2] Part G §7)</h3></div>
       <div class="sim-controls" style="border-top:0">
@@ -127,8 +127,8 @@
   <section id="sc">
     <h2>Secure Connections: h4·h5·h3과 AES-CCM</h2>
     <p>P-256으로 링크 키를 만든 뒤 장치 인증은 E1 대신 <b>h4</b>(장치 인증 키 = HMAC<sub>LK</sub>("btdk" ‖ A1 ‖ A2)) → <b>h5</b>(HMAC<sub>S</sub>(AU_RAND_C ‖ AU_RAND_P))를 쓴다. h5 출력의 앞 32비트가 SRES_C, 다음 32비트가 SRES_P, 나머지 64비트가 ACO다. 암호화 키는 <b>h3</b> = HMAC<sub>LK</sub>("btak" ‖ A1 ‖ A2 ‖ ACO)의 앞 128비트다.</p>
-    <p>암호화는 AES-CCM(M = 4, L = 2)인데 B1이 표준과 다르다. 연관 데이터 길이를 넣지 않고 바로 패킷 헤더 2바이트(ARQN·SEQN·FLOW를 0으로 가림)와 페이로드 헤더 1바이트(FLOW를 가림)를 넣는다. <span class="term">nonce</span> 13바이트는 ACL이면 <b>PayloadCounter</b> 형식(39비트 카운터 + 길이 0 이어짐 비트 + 방향 비트 + <span class="term">IV</span>), eSCO면 <b>클록</b> 형식(CLK₂₇₋₁ + dayCounter + IV)이다. IV는 암호화 시작 때 마지막 h5의 ACO, 재개 뒤에는 EN_RAND다. eSCO는 <span class="term">MIC</span> 없이 암호화만 한다.</p>
-    <p>키 길이를 줄이기로 협상했으면 키의 하위 바이트를 0으로 바꾼다. 협상 범위는 7~16바이트이고, 호스트는 <span class="term">HCI</span>로 받아들일 최소 길이를 정할 수 있다. 짧은 키는 그만큼 추측 공간이 작으므로 16바이트를 요구하는 것이 안전한 설정이다.</p>
+    <p>암호화는 AES-CCM(M = 4, L = 2)인데 B1이 표준과 다르다. 연관 데이터 길이를 넣지 않고 바로 패킷 헤더 2바이트(ARQN·SEQN·FLOW를 0으로 가림)와 페이로드 헤더 1바이트(FLOW를 가림)를 넣는다. <span class="term">nonce</span> 13바이트는 <span class="term">ACL</span>이면 <b>PayloadCounter</b> 형식(39비트 카운터 + 길이 0 이어짐 비트 + 방향 비트 + <span class="term">IV</span>), <span class="term">eSCO</span>면 <b>클록</b> 형식(<span class="term">CLK</span>₂₇₋₁ + dayCounter + IV)이다. IV는 암호화 시작 때 마지막 h5의 ACO, 재개 뒤에는 EN_RAND다. eSCO는 <span class="term">MIC</span> 없이 암호화만 한다.</p>
+    <p>키 길이를 줄이기로 협상했으면 키의 하위 바이트를 0으로 바꾼다. 협상 범위는 7~16바이트이고, <span class="term">호스트</span>는 <span class="term">HCI</span>로 받아들일 최소 길이를 정할 수 있다. 짧은 키는 그만큼 추측 공간이 작으므로 16바이트를 요구하는 것이 안전한 설정이다.</p>
     <div class="sim" id="sim-ccm">
       <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>BR/EDR AES-CCM ([Vol 2] Part G §1.2)</h3></div>
       <div class="sim-controls" style="border-top:0">

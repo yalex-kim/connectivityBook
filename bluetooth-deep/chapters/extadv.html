@@ -38,7 +38,7 @@
   <header class="chapter-hero">
     <div class="eyebrow">Chapter 05</div>
     <h1>광고 끝까지: 확장 광고 체인, 주기적 광고와 PAwR</h1>
-    <p class="lead">1권 5장의 광고는 세 채널에 31바이트를 외치는 것이었다. 5.0 이후의 광고는 다르다. 주 채널에는 “자세한 건 7번 채널 1.2 ms 뒤에”라는 짧은 안내만 두고, 본문은 데이터 채널로 옮겨 수백 바이트를 체인으로 잇는다. 같은 구조 위에 주기적 광고와 응답 있는 주기적 광고(PAwR)가 올라선다. 이 장은 그 공통 형식을 바이트로 익히고, 사양 샘플 AUX_ADV_IND 하나를 공중 비트까지 다시 만든다.</p>
+    <p class="lead">1권 5장의 광고는 세 채널에 31바이트를 외치는 것이었다. 5.0 이후의 광고는 다르다. 주 채널에는 “자세한 건 7번 채널 1.2 ms 뒤에”라는 짧은 안내만 두고, 본문은 데이터 채널로 옮겨 수백 바이트를 체인으로 잇는다. 같은 구조 위에 <span class="term">주기적 광고</span>와 <span class="term">응답 있는 주기적 광고</span>(PAwR)가 올라선다. 이 장은 그 공통 형식을 바이트로 익히고, 사양 샘플 AUX_ADV_IND 하나를 공중 비트까지 다시 만든다.</p>
     <ul class="objectives">
       <li>ADV_EXT_IND → AUX_ADV_IND → AUX_CHAIN_IND의 역할과, 주 채널·보조 채널의 쓰임을 설명할 수 있다.</li>
       <li>공통 확장 페이로드(확장 헤더 길이·AdvMode·플래그·AdvA·ADI·AuxPtr·SyncInfo·TxPower)를 바이트로 만들고 읽을 수 있다.</li>
@@ -50,7 +50,7 @@
   <!-- ============================================================ -->
   <section id="chain">
     <h2>주 채널은 안내판, 본문은 보조 채널로</h2>
-    <p><span class="term">확장 광고</span>는 광고를 두 층으로 나눈다. 주 채널(37·38·39)에는 <b>ADV_EXT_IND</b>를 보낸다. 데이터 없이 “이 광고 묶음(SID)의 몇 번째 데이터(DID)이고, 본문은 어느 채널에 몇 µs 뒤에 있다(<span class="term">AuxPtr</span>)”만 싣는다. 스캐너는 그 포인터를 따라가 보조 채널(0~36번 데이터 채널 중 하나)의 <b>AUX_ADV_IND</b>를 받는다. 본문이 길면 AUX_ADV_IND에도 AuxPtr을 달아 <b>AUX_CHAIN_IND</b>로 잇는다. 호스트 광고 데이터는 조각내기 전 최대 <b>1650바이트</b>다.</p>
+    <p><span class="term">확장 광고</span>는 광고를 두 층으로 나눈다. 주 채널(37·38·39)에는 <b>ADV_EXT_IND</b>를 보낸다. 데이터 없이 “이 광고 묶음(SID)의 몇 번째 데이터(DID)이고, 본문은 어느 채널에 몇 µs 뒤에 있다(<span class="term">AuxPtr</span>)”만 싣는다. 스캐너는 그 포인터를 따라가 보조 채널(0~36번 데이터 채널 중 하나)의 <b>AUX_ADV_IND</b>를 받는다. 본문이 길면 AUX_ADV_IND에도 AuxPtr을 달아 <b>AUX_CHAIN_IND</b>로 잇는다. <span class="term">호스트</span> 광고 데이터는 조각내기 전 최대 <b>1650바이트</b>다.</p>
     <div class="callout analogy"><strong>역 게시판의 “○번 출구 안내 데스크로”</strong><p>붐비는 역 게시판(주 채널)에는 큰 공지를 다 붙이지 않는다. “○○ 행사 안내는 7번 출구 데스크, 지금부터 1분 뒤”만 붙인다. 관심 있는 사람만 7번 출구로 가서 자세한 안내문(AUX_ADV_IND)을 받고, 안내문이 길면 “다음 장은 옆 데스크에서”(AUX_CHAIN_IND)로 이어진다. 게시판이 덜 붐비고, 긴 안내도 가능하다.</p></div>
     <p><b><span class="term">ADI</span></b>(AdvDataInfo, 2바이트)는 SID 4비트와 DID 12비트다. 한 기기가 광고 묶음 여럿을 동시에 돌릴 때 SID로 구별하고, 스캐너는 DID가 그대로면 같은 데이터라 보고 보조 채널을 다시 따라가지 않을 수 있다. 데이터를 바꾸면 DID를 바꿔야 한다.</p>
     <p class="spec-ref">확장 광고 PDU와 공통 확장 페이로드(Figure 2.17, AdvMode Table 2.15): <b>[Vol 6] Part B §2.3.4</b> · ADI: <b>§2.3.4.4</b> · AuxPtr: <b>§2.3.4.5</b> · 1650바이트: <b>§2.3.4.9</b>(호스트 광고 데이터)</p>
@@ -60,7 +60,7 @@
   <section id="format">
     <h2>공통 확장 페이로드를 바이트로</h2>
     <p>ADV_EXT_IND, AUX_ADV_IND, AUX_CHAIN_IND, AUX_SYNC_IND 등은 모두 같은 페이로드 형식을 쓴다. 첫 바이트는 <b>확장 헤더 길이</b>(아래 6비트, 0~63)와 <b>AdvMode</b>(위 2비트: 00 연결·스캔 불가, 01 연결 가능, 10 스캔 가능). 그 뒤 확장 헤더가 오는데, 첫 바이트 <b>플래그</b>의 비트 0부터 차례로 AdvA(6), TargetA(6), CTEInfo(1), ADI(2), AuxPtr(3), <span class="term">SyncInfo</span>(18), TxPower(1) 칸이 있는지를 표시하고 그 순서대로 이어진다. 남은 자리가 AdvData다(길이 − 확장 헤더 길이 − 1).</p>
-    <p><b>AuxPtr</b> 3바이트: 채널 번호 6비트, 시계 정확도(CA) 1비트, 오프셋 단위 1비트(0 = 30 µs, 1 = 300 µs), Aux 오프셋 13비트, Aux PHY 3비트. 오프셋은 이 패킷의 시작에서 보조 패킷 시작까지이고, 적어도 이 패킷 길이 + <b><span class="term">T_MAFS</span></b>(300 µs)여야 한다. 245,700 µs 미만이면 30 µs 단위를 쓴다. 보조 패킷은 오프셋보다 이르지 않고, 오프셋 + 한 단위보다 늦지 않게 시작한다.</p>
+    <p><b>AuxPtr</b> 3바이트: 채널 번호 6비트, 시계 정확도(CA) 1비트, 오프셋 단위 1비트(0 = 30 µs, 1 = 300 µs), Aux 오프셋 13비트, Aux <span class="term">PHY</span> 3비트. 오프셋은 이 패킷의 시작에서 보조 패킷 시작까지이고, 적어도 이 패킷 길이 + <b><span class="term">T_MAFS</span></b>(300 µs)여야 한다. 245,700 µs 미만이면 30 µs 단위를 쓴다. 보조 패킷은 오프셋보다 이르지 않고, 오프셋 + 한 단위보다 늦지 않게 시작한다.</p>
     <div class="sim" id="sim-pdu">
       <div class="sim-head"><span class="sim-tag">WORKBENCH</span><h3>AUX_ADV_IND 만들기 (사양 4.2.2 샘플)</h3></div>
       <div class="sim-view" style="padding:14px 16px">
@@ -81,7 +81,7 @@
       </div>
       <div class="sim-note">광고 PDU는 접근 주소 0x8E89BED6, CRCInit 0x555555로 보낸다. 해볼 것: ① 처음 값은 사양 [Vol 6] Part C §4.2.2의 샘플이다. PDU와 화이트닝까지는 비트 하나까지 같지만 CRC는 다르다(아래 “사양 샘플의 불일치” 참고). ② AuxPtr에 “12 1500”을 넣으면 플래그 비트 4가 켜지고 3바이트가 붙어 AdvData 자리가 줄어든다. 1500 µs는 30 µs 단위로 50. ③ TxPower를 비우면 1바이트가 빠진다.</div>
     </div>
-    <div class="callout warn"><strong>사양 샘플의 불일치: AUX_ADV_IND의 CRC</strong><p>이 작업대를 만들며 사양 [Vol 6] Part C §4.2.2 샘플의 CRC(00011011 11000100 01110101)가, 같은 절의 <span class="term">PDU</span> 비트에 본문 규칙(광고 채널 PDU는 CRC 레지스터를 0x555555로 시작, [Vol 6] Part B §3.1.1)을 적용한 값과 다르다는 것을 확인했다. 같은 CRC 구현이 레거시 광고(§4.2.1), 데이터 PDU(§4.3.1), 제어 PDU(§4.3.2) 샘플은 모두 그대로 재현하고, 문제의 CRC는 초기값을 0x515555(비트 18 하나 다름)로 두었을 때만 나온다. 샘플을 만들 때의 실수로 보이며, 구현은 본문 규칙(0x555555)을 따라야 한다. 검증 스크립트는 이 불일치를 그대로 기록해 둔다.</p></div>
+    <div class="callout warn"><strong>사양 샘플의 불일치: AUX_ADV_IND의 CRC</strong><p>이 작업대를 만들며 사양 [Vol 6] Part C §4.2.2 샘플의 <span class="term">CRC</span>(00011011 11000100 01110101)가, 같은 절의 <span class="term">PDU</span> 비트에 본문 규칙(<span class="term">광고 채널</span> PDU는 CRC 레지스터를 0x555555로 시작, [Vol 6] Part B §3.1.1)을 적용한 값과 다르다는 것을 확인했다. 같은 CRC 구현이 레거시 광고(§4.2.1), 데이터 PDU(§4.3.1), 제어 PDU(§4.3.2) 샘플은 모두 그대로 재현하고, 문제의 CRC는 초기값을 0x515555(비트 18 하나 다름)로 두었을 때만 나온다. 샘플을 만들 때의 실수로 보이며, 구현은 본문 규칙(0x555555)을 따라야 한다. 검증 스크립트는 이 불일치를 그대로 기록해 둔다.</p></div>
     <p class="spec-ref">확장 헤더 필드 순서와 크기(Figure 2.18): <b>[Vol 6] Part B §2.3.4</b> · AuxPtr(Table 2.17, T_MAFS 조건, 245,700 µs): <b>§2.3.4.5</b> · TxPower: <b>§2.3.4.7</b> · T_MAFS 300 µs: <b>§4.1.2</b> · 샘플: <b>[Vol 6] Part C §4.2.2</b>(레거시는 §4.2.1)</p>
   </section>
 
@@ -114,7 +114,7 @@
   <!-- ============================================================ -->
   <section id="periodic">
     <h2>주기적 광고, PAST, 그리고 PAwR</h2>
-    <p>AUX_ADV_IND에 <b>SyncInfo</b>(18바이트)를 넣으면 “이 광고 묶음에는 주기적 광고 열차가 있다”는 뜻이다. SyncInfo는 첫 AUX_SYNC_IND까지의 오프셋, 주기, 채널 맵, 접근 주소, CRC 초기값, 이벤트 카운터를 담는다. 스캐너는 이것으로 열차에 <b>동기화</b>하고, 그 뒤에는 광고 채널을 스캔하지 않고 정해진 시각에만 깨어 받는다. Auracast의 BIGInfo도 이 열차에 실려 온다(9장).</p>
+    <p>AUX_ADV_IND에 <b>SyncInfo</b>(18바이트)를 넣으면 “이 광고 묶음에는 주기적 광고 열차가 있다”는 뜻이다. SyncInfo는 첫 AUX_SYNC_IND까지의 오프셋, 주기, <span class="term">채널 맵</span>, <span class="term">접근 주소</span>, CRC 초기값, 이벤트 카운터를 담는다. 스캐너는 이것으로 열차에 <b>동기화</b>하고, 그 뒤에는 광고 채널을 스캔하지 않고 정해진 시각에만 깨어 받는다. Auracast의 BIGInfo도 이 열차에 실려 온다(9장).</p>
     <p>동기화하려면 처음 한 번은 스캔해야 하는데, 보청기처럼 전력이 빠듯한 기기에는 부담이다. <b><span class="term">PAST</span></b>(Periodic Advertising Sync Transfer)는 이미 동기화한 휴대폰이 연결을 통해 LL_PERIODIC_SYNC_IND(opcode 0x1C)로 SyncInfo를 건네주는 절차다. 보청기는 스캔 없이 열차에 바로 탄다.</p>
     <p><b>PAwR</b>(5.4)은 주기적 광고에 응답 슬롯을 붙인 것이다. 한 주기 안에 서브이벤트를 최대 128개 두고, 서브이벤트마다 AUX_SYNC_SUBEVENT_IND 뒤에 응답 슬롯 여러 개를 연다. 수천 개의 전자 가격표가 각자 정해진 서브이벤트·슬롯에서만 깨어나 받고 답한다(1권 12장). 시간 규칙은 이렇다.</p>
     <ul>
