@@ -28,6 +28,8 @@ SCRIPT = ROOT / "src/afh/script.ts"
 AUDIO = ROOT / "public/audio"
 OUT = ROOT / "src/afh/durations.json"
 MODEL, TEMPO = "ssfm-v30", 1.07  # k-history-video-agent의 TypecastSpeech와 같은 값
+# 책 영상의 목소리: 예슬. KHVA_BOOK_VOICE_ID로 바꿀 수 있다 (.env의 TYPECAST_VOICE_ID는 한국사 영상용이라 쓰지 않는다)
+VOICE = os.environ.get("KHVA_BOOK_VOICE_ID", "tc_66ab0e26ec23f325b7ad51df")
 
 
 def scenes() -> list[tuple[str, list[str]]]:
@@ -70,7 +72,7 @@ def synthesize(client, text: str, path: Path, preset: str = "normal") -> None:
 
     response = client.text_to_speech(
         TTSRequest(
-            voice_id=os.environ["TYPECAST_VOICE_ID"],
+            voice_id=VOICE,
             text=text,
             model=MODEL,
             language="kor",
