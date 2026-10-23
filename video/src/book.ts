@@ -112,7 +112,15 @@ export function discoveryLatency(p: DiscParams, rnd: () => number): number {
   return Infinity;
 }
 
-/** 조건 하나의 평균 발견 시간(ms): 책 시뮬레이터처럼 같은 씨앗으로 600번 */
+/** 조건 하나의 1분 안에 찾은 비율(0~1): 책 시뮬레이터처럼 같은 씨앗으로 600번 */
+export function foundWithin(ta: number, ts: number, windowPct: number): number {
+  const p: DiscParams = { ta, ts, tw: Math.max(PKT + 0.05, (ts * windowPct) / 100), pkt: PKT, gap: GAP, limit: 60000 };
+  const r = bookRng(2024);
+  let n = 0;
+  for (let i = 0; i < 600; i++) if (Number.isFinite(discoveryLatency(p, r))) n++;
+  return n / 600;
+}
+/** 조건 하나의 평균 발견 시간(ms, 1분 안에 찾은 경우만): 책 시뮬레이터처럼 같은 씨앗으로 600번 */
 export const PKT = advAirtimeUs(31) / 1000, GAP = 0.6;
 export function meanDiscovery(ta: number, ts: number, windowPct: number): number {
   const p: DiscParams = { ta, ts, tw: Math.max(PKT + 0.05, (ts * windowPct) / 100), pkt: PKT, gap: GAP, limit: 60000 };

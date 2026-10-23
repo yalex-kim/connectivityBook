@@ -68,9 +68,11 @@ for (const video of ["afh", "discover"]) {
     assert.equal(V.meanDiscovery(ta, ts, w), mean); n += 2;
   }
   const M = cases.map(([ta, ts, w]) => V.meanDiscovery(ta, ts, w) / 1000);
-  // 나레이션이 말하는 수치: 가장 빠른 조건 0.1초 미만, 가장 느린 조건 '30초 가까이'
-  assert.ok(M[0] < 0.1, `가장 빠른 조건 ${M[0]}`); assert.ok(M[3] > 25 && M[3] < 30, `가장 느린 조건 ${M[3]}`); n += 2;
-  console.log(`discover: 발견 평균 ${M.map((x) => x.toFixed(2) + " s").join(", ")}`);
+  // 나레이션이 말하는 수치: 가장 빠른 조건 0.1초 미만, 가장 느린 조건은 '1분이 지나도 못 찾는 경우가 더 많다'(찾은 비율 < 50%)
+  const F = cases.map(([ta, ts, w]) => V.foundWithin(ta, ts, w));
+  assert.ok(M[0] < 0.1, `가장 빠른 조건 ${M[0]}`); assert.ok(F[3] < 0.5, `가장 느린 조건 1분 안 ${F[3]}`); n += 2;
+  assert.ok(F.slice(0, 3).every((x) => x === 1), "앞의 세 조건은 모두 1분 안에 찾음(평균만 보여 줘도 됨)"); n++;
+  console.log(`discover: 발견 평균 ${M.map((x) => x.toFixed(2) + " s").join(", ")} · 1분 안에 찾은 비율 ${F.map((x) => Math.round(x * 100) + "%").join(", ")}`);
 }
 // 조건별 예시(영상의 막대 셋): 책의 함수로 다시 계산
 const ex = (w, d) => (B.wifiBlocked(w).size / 37) * d * 100;

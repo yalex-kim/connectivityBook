@@ -1,13 +1,14 @@
 import { AbsoluteFill, Audio, interpolate, Sequence, staticFile, useCurrentFrame } from "remotion";
 import { C, FONT } from "../theme";
-import { bookRng, csa2Channel, CH_ID, meanDiscovery } from "../book";
+import { bookRng, csa2Channel, CH_ID, foundWithin, meanDiscovery } from "../book";
 import { CASES } from "./script";
 import { Stage3D, camLerp, chX, fx, ADV_MHZ, type Vec } from "../afh/world3d";
 import { Caption, Title, clamp, fade, useFont } from "../afh/parts";
 import { LEAD, scenesFor, type Timed } from "./timing";
 
 const ALL37 = Array(37).fill(true);
-const MEANS = CASES.map(([, ta, ts, w]) => meanDiscovery(ta, ts, w)); // ms, 책 5장 시뮬레이터와 같은 계산
+const MEANS = CASES.map(([, ta, ts, w]) => meanDiscovery(ta, ts, w)); // ms, 책 5장 시뮬레이터와 같은 계산(1분 안에 찾은 경우의 평균)
+const FOUND = CASES.map(([, ta, ts, w]) => foundWithin(ta, ts, w)); // 1분 안에 찾은 비율
 const ADV_COL = C.accent2, PHONE_COL = C.accent, BUD_COL = C.ok;
 
 /* ---------------------------------------------------------------- 작은 그림들 */
@@ -235,7 +236,7 @@ const Slow: React.FC<{ cues: number[] }> = ({ cues }) => {
   const focus = (i: number) => (i === 0 ? interpolate(f, [cues[1], cues[1] + 15], [0, 1], clamp) : i === 3 ? interpolate(f, [cues[2], cues[2] + 15], [0, 1], clamp) : 0);
   return (
     <>
-      <Title kicker="왜 어떤 때는 오래 걸릴까">조건에 따라 0.1초에서 30초까지</Title>
+      <Title kicker="왜 어떤 때는 오래 걸릴까">조건에 따라 0.1초에서 1분 넘게까지</Title>
       <svg width={1920} height={1080} style={{ position: "absolute", inset: 0 }} fontFamily={FONT}>
         {[0.1, 1, 10, 60].map((s) => (
           <g key={s}>
@@ -249,13 +250,23 @@ const Slow: React.FC<{ cues: number[] }> = ({ cues }) => {
             <g key={name} opacity={interpolate(a, [0, 0.2], [0, 1], clamp)}>
               <text x={110} y={y + 24} fill={C.text} fontSize={30} fontWeight={700}>{name}</text>
               <text x={110} y={y + 60} fill={C.faint} fontSize={20}>광고 {ta >= 1000 ? (ta / 1000).toFixed(1) + " s" : ta + " ms"} · 스캔 {ts >= 1000 ? (ts / 1000).toFixed(2) + " s" : ts + " ms"}마다 {w}%</text>
-              <rect x={690} y={y - 12} width={Math.max(6, L(MEANS[i]) * 1000 * a) + 300} height={80} rx={16} fill="none" stroke={C.text} strokeWidth={4} opacity={focus(i)} />
-              <rect x={700} y={y} width={Math.max(6, L(MEANS[i]) * 1000 * a)} height={56} rx={10} fill={i % 2 ? C.warn : C.accent} opacity={0.85} />
-              <text x={710 + L(MEANS[i]) * 1000 * a + 10} y={y + 40} fill={C.text} fontSize={32} fontWeight={800}>{a > 0.95 ? "평균 " + fmtS(MEANS[i]) : ""}</text>
+              {(() => {
+                // 1분 안에 다 찾으면 평균까지, 못 찾는 경우가 있으면 1분 끝까지 막대를 긋고 찾은 비율을 적는다
+                const all = FOUND[i] > 0.999, end = all ? L(MEANS[i]) : 1, wBar = Math.max(6, end * 1000 * a);
+                const label = all ? "평균 " + fmtS(MEANS[i]) : `1분 안에 ${Math.round(FOUND[i] * 100)}%만 찾음`;
+                return (
+                  <>
+                    <rect x={690} y={y - 12} width={Math.min(wBar + 300, 1130)} height={80} rx={16} fill="none" stroke={C.text} strokeWidth={4} opacity={focus(i)} />
+                    <rect x={700} y={y} width={wBar} height={56} rx={10} fill={i % 2 ? C.warn : C.accent} opacity={0.85} />
+                    {!all && <rect x={700 + L(MEANS[i]) * 1000 * a} y={y} width={Math.max(0, wBar - L(MEANS[i]) * 1000 * a)} height={56} rx={10} fill={C.bad} opacity={0.55} />}
+                    <text x={all ? 710 + wBar + 10 : 700 + wBar - 14} y={y + 40} textAnchor={all ? "start" : "end"} fill={C.text} fontSize={30} fontWeight={800}>{a > 0.95 ? label : ""}</text>
+                  </>
+                );
+              })()}
             </g>
           );
         })}
-        <text x={110} y={850} fill={C.faint} fontSize={22}>입문 5장 시뮬레이터와 같은 계산: 광고 데이터 31바이트, 조건마다 600번 시도한 평균 (로그 눈금). 실제 기기의 설정은 제품마다 다르다.</text>
+        <text x={110} y={850} fill={C.faint} fontSize={22}>입문 5장 시뮬레이터와 같은 계산: 광고 데이터 31바이트, 조건마다 600번 시도 (로그 눈금, 평균은 1분 안에 찾은 경우). 실제 기기의 설정은 제품마다 다르다.</text>
       </svg>
     </>
   );
@@ -270,7 +281,7 @@ const FIELDS: [string, string][] = [
   ["페리페럴 지연", ""],
   ["감독 타임아웃", ""],
   ["채널 맵", "쓸 범용 채널"],
-  ["도약 걸음", "어떤 순서로 옮길지"],
+  ["도약 규칙", "어떤 순서로 옮길지"],
   ["시계 정확도", ""],
 ];
 const HL = new Set([0, 2, 3, 6, 7]);
