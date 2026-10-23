@@ -81,6 +81,34 @@
 
   <!-- ============================================================ -->
   <section id="checklist">
+    <h2 id="cases">사례로 따라가기</h2>
+    <p>설계기의 두 제품을 처음부터 끝까지 따라가 보자. 아래 숫자는 모두 위 설계기에서 같은 값을 넣으면 그대로 나온다.</p>
+    <h3>심박계: 1년을 버티게</h3>
+    <p>요구 사항은 “1초마다 심박 하나, 알림은 1초 안에, 10 m, CR2032급 180 mAh로 1년”이다. 출발점(<span class="term">LE</span> 1M, 0 <span class="term">dBm</span>, 간격 126.25 ms, 지연 0, <span class="term">감독 타임아웃</span> 2 s)에서 수명이 <b>9.0개월</b>로 모자란다. 손잡이는 둘이다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>바꾼 것</th><th>수명</th><th>알림 반응 (심박계 → 휴대폰)</th><th>명령 반응 (휴대폰 → 심박계, 최악)</th></tr></thead>
+      <tbody>
+        <tr><td>출발점</td><td>9.0개월</td><td>126 ms</td><td>126 ms</td></tr>
+        <tr><td>간격 325 ms</td><td>1.6년</td><td>325 ms</td><td>325 ms</td></tr>
+        <tr><td>간격 그대로, 지연 4</td><td>2.6년</td><td>126 ms</td><td>(1 + 4) × 126.25 = 631 ms</td></tr>
+      </tbody>
+    </table></div>
+    <p>심박계는 알림이 주인공이라 <span class="term">페리페럴 지연</span>이 더 낫다. 보낼 것이 없을 때만 이벤트를 건너뛰므로 알림은 그대로 빠르고, 대신 휴대폰이 보내는 설정 명령이 최악 631 ms 늦어진다. 이것은 요구 사항 표에 없던 항목이라, 이 교환을 받아들일지는 제품을 정하는 사람이 고른다. 마지막으로 규칙을 확인한다. 감독 타임아웃은 (1 + 4) × 126.25 ms × 2 = 1,262.5 ms보다 커야 하므로 2 s면 된다. 도달 거리는 몸 손실 12 dB를 넣고도 46 m라 10 m에 넉넉하다.</p>
+    <h3>게임 컨트롤러: 4 ms 안에</h3>
+    <p>요구 사항은 “버튼 반응 4 ms, 5 m, 600 mAh 충전식으로 20일”이다. 출발점(<span class="term">LE 2M</span>, 간격 7.5 ms)은 반응이 <b>7.5 ms</b>다. 7.5 ms는 모든 <span class="term">컨트롤러</span>가 지원하는 <span class="term">BCV</span>의 가장 짧은 값이라, 더 줄이려면 6.2의 <span class="term">짧은 연결 간격</span>(SCI)이 필요하다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>간격 (SCI 켬)</th><th>반응</th><th>수명</th><th>지원 보장</th></tr></thead>
+      <tbody>
+        <tr><td>500 µs</td><td>0.50 ms</td><td>4.8일</td><td>ECV, 선택</td></tr>
+        <tr><td>2.625 ms</td><td>2.63 ms</td><td>25.0일</td><td>ECV, 선택</td></tr>
+        <tr><td>3.5 ms</td><td>3.50 ms</td><td>1.1개월</td><td>ECV, 선택</td></tr>
+        <tr><td><b>3.75 ms</b></td><td><b>3.75 ms</b></td><td><b>1.2개월</b></td><td><b>RCV, SCI면 필수</b></td></tr>
+      </tbody>
+    </table></div>
+    <p>짧을수록 반응은 좋지만 배터리가 급히 준다. 게다가 SCI를 지원하는 컨트롤러가 반드시 받아야 하는 값은 1.25 ms 배수(RCV)뿐이고, 3.5 ms 같은 125 µs 단위 값(ECV)은 상대가 지원할 수도 안 할 수도 있다(6장). 그래서 <b>3.75 ms</b>를 고른다. 반응 4 ms와 수명 20일을 함께 넘는 RCV 값이다. 다만 여유가 0.25 ms뿐이라, 이벤트 하나를 놓치면 그 입력은 7.5 ms 걸린다.</p>
+    <p>남은 일은 그림 14-1이다. 연결은 BCV(7.5 ms)로 맺고, 기능 교환으로 휴대폰도 SCI를 지원하는지 확인한 뒤 Connection Rate 절차로 3.75 ms로 내려간다. 휴대폰이 6.2 이전이면 7.5 ms로 동작한다. 그때 반응은 요구보다 느리므로, 제품 설명에 “SCI 지원 기기에서 4 ms”라고 밝히는 것까지가 설계다.</p>
+    <p class="spec-ref">연결 간격 집합 BCV·RCV·ECV와 SCI 컨트롤러의 필수 지원: <b>[Vol 6] Part B §4.5.1</b> · 감독 타임아웃 하한: §4.5.2 · Connection Rate 절차: §5.1.32</p>
+
     <h2>설계 체크리스트: 요구 사항에서 기능으로</h2>
     <div class="table-wrap"><table>
       <thead><tr><th>요구 사항</th><th>먼저 볼 손잡이</th><th>필요한 Core 기능 (버전)</th><th>이 책</th></tr></thead>
@@ -137,6 +165,7 @@
     <ol>
       <li>블루투스 설계는 <b>배터리 · 반응 · 거리 · 처리량</b>의 교환이다. 간격·지연은 배터리와 반응을, PHY와 송신 전력은 거리와 배터리·처리량을 맞바꾼다.</li>
       <li>요구 사항을 먼저 숫자로 정하고(“1초마다 2바이트, 반응 100 ms, 10 m, 1년”), 그 숫자를 각 장의 식으로 파라미터에 옮긴다.</li>
+      <li>짧은 간격이 필요하면 SCI 컨트롤러가 반드시 지원하는 RCV(1.25 ms 배수)에서 고르고, 상대가 지원하지 않을 때의 기본 경로(BCV)도 정해 둔다.</li>
       <li>사양 규칙(감독 타임아웃 &gt; (1 + 지연) × 간격 × 2 등)과 <b>양쪽의 기능 지원</b>을 함께 점검하고, 기본 경로로도 동작하게 만든다.</li>
     </ol>
   </section>
@@ -153,6 +182,9 @@
       <div class="quiz-q"><p>게임 컨트롤러가 6.2의 짧은 연결 간격을 지원하지만 사용자의 휴대폰은 6.0이다. 어떻게 해야 하나?</p><div class="opts">
         <button class="opt">연결을 거부한다</button><button class="opt" data-correct>7.5 ms 이상(BCV)의 간격으로 동작하고, 상대가 SCI를 지원할 때만 짧은 간격으로 올라간다</button><button class="opt">펌웨어로 휴대폰을 6.2로 바꾼다</button><button class="opt">Coded PHY로 대신한다</button>
       </div><div class="quiz-exp">모든 컨트롤러는 BCV를 지원해야 하고, 연결 생성 시에도 BCV를 쓴다. 짧은 간격은 양쪽이 지원할 때 Connection Rate 절차로 옮겨 간다(6장).</div></div>
+      <div class="quiz-q"><p>6.2 SCI를 지원하는 두 기기 사이에서, 상대가 반드시 지원한다고 믿고 쓸 수 있는 연결 간격은?</p><div class="opts">
+        <button class="opt">3.5 ms</button><button class="opt" data-correct>3.75 ms</button><button class="opt">둘 다</button><button class="opt">둘 다 아니다</button>
+      </div><div class="quiz-exp">SCI 컨트롤러는 RCV(1.25 ms의 배수)를 모두 지원해야 하고, 그 밖의 125 µs 단위 값(ECV)은 지원할 수도 있다. 3.75 ms = 3 × 1.25 ms는 RCV, 3.5 ms는 ECV다([Vol 6] Part B §4.5.1).</div></div>
     </div>
   </section>
 </main>
