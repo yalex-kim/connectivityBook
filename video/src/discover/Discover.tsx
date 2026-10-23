@@ -162,7 +162,7 @@ const Shout: React.FC<{ len: number; cues: number[] }> = ({ len, cues }) => {
   );
   return (
     <>
-      <Title kicker="외치는 쪽: 광고">세 채널에 한 번씩, 간격마다</Title>
+      <Title kicker="외치는 쪽: 광고">간격마다 세 채널에 한 번씩</Title>
       <div style={{ opacity: 1 - two }}>
         <Timeline y0={330} span={SHOUT_SPAN} now={now} events={SHOUT_EV} col={BUD_COL} />
         <svg width={1920} height={1080} style={{ position: "absolute", inset: 0, opacity: d }} fontFamily={FONT}>
@@ -218,7 +218,7 @@ const Listen: React.FC<{ len: number; cues: number[] }> = ({ len, cues }) => {
   const found = FIRST_HIT && now > FIRST_HIT[0] ? interpolate(now, [FIRST_HIT[0], FIRST_HIT[0] + 30], [0, 1], clamp) : 0;
   return (
     <>
-      <Title kicker="듣는 쪽: 스캔">창을 열 때마다 다른 채널을</Title>
+      <Title kicker="듣는 쪽: 스캔">잠깐씩, 채널을 바꿔 가며 듣는다</Title>
       <Timeline y0={330} span={LISTEN_SPAN} now={now} events={LISTEN_EV} col={BUD_COL} windows={WINDOWS} hit={FIRST_HIT && [FIRST_HIT[0], FIRST_HIT[1]]} spread={0} />
       <svg width={1920} height={1080} style={{ position: "absolute", inset: 0 }}>
         <Phone x={1770} y={180} found={found} scale={0.42} />
@@ -286,11 +286,11 @@ const FIELDS: [string, string][] = [
 ];
 const HL = new Set([0, 2, 3, 6, 7]);
 const Request: React.FC<{ cues: number[] }> = ({ cues }) => {
-  const f = useCurrentFrame(), adv = interpolate(f, [15, 30], [0, 1], clamp), req = interpolate(f, [55, 70], [0, 1], clamp);
-  const env = interpolate(f, [cues[1], cues[1] + 25], [0, 1], clamp), hl = interpolate(f, [cues[2], cues[2] + 20], [0, 1], clamp);
+  const f = useCurrentFrame(), adv = interpolate(f, [15, 30], [0, 1], clamp), req = interpolate(f, [cues[1] + 10, cues[1] + 25], [0, 1], clamp);
+  const env = interpolate(f, [cues[2], cues[2] + 25], [0, 1], clamp), hl = interpolate(f, [cues[3], cues[3] + 20], [0, 1], clamp);
   return (
     <>
-      <Title kicker="연결 요청">요청 하나에 약속이 모두</Title>
+      <Title kicker="연결 요청">요청 한 번에 모든 약속을</Title>
       <svg width={1920} height={1080} style={{ position: "absolute", inset: 0 }} fontFamily={FONT}>
         <text x={110} y={330} fill={C.dim} fontSize={28} fontWeight={700}>ch 37</text>
         <line x1={230} x2={1000} y1={320} y2={320} stroke={C.faint} strokeWidth={2} />
@@ -344,7 +344,7 @@ const Leave: React.FC<{ len: number; cues: number[] }> = ({ len, cues }) => {
 
 /* ---------------------------------------------------------------- 8. 정리 */
 const STEPS: [string, string, string][] = [
-  ["외치기", "광고 채널 3곳에\n간격마다", BUD_COL],
+  ["외치기", "간격마다\n광고 채널 3곳에", BUD_COL],
   ["듣기", "스캔 창마다\n다른 채널", PHONE_COL],
   ["연결 요청", "150 µs 뒤 CONNECT_IND\n약속을 한 번에", C.accent2],
   ["연결", "범용 채널에서\n연결 간격마다", C.text],

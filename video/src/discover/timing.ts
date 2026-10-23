@@ -5,7 +5,7 @@ import { SCENES, type Scene } from "./script";
 import DURATIONS from "./durations.json";
 
 /** 장면마다 애니메이션이 다 보이려면 필요한 최소 길이(프레임) */
-const MIN: Record<Scene["id"], number> = { hook: 180, meet: 240, shout: 270, listen: 270, slow: 300, request: 300, leave: 240, outro: 180 };
+const MIN: Record<Scene["id"], number> = { hook: 180, meet: 240, shout: 270, listen: 270, slow: 300, request: 360, leave: 240, outro: 180 };
 export const LEAD = 9; // 음성은 장면 시작 0.3초 뒤에
 export const TAIL = 18; // 음성이 끝나고 0.6초 쉼
 
