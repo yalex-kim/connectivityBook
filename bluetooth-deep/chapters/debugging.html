@@ -181,7 +181,7 @@
         <tr><td>임베디드 칩</td><td>HCI UART 선을 로직 분석기나 칩 제조사 도구로 받는다</td><td>H4 바이트열(이 장의 해석기에 그대로 넣을 수 있다)</td></tr>
       </tbody>
     </table></div>
-    <p>btsnoop 파일은 Wireshark로 열린다. 필터 몇 개만 알면 수천 줄에서 필요한 곳으로 바로 간다. <code>bthci_evt.code == 0x05</code>는 끊김(그림 18-1의 마지막 줄), <code>bthci_evt.code == 0x3e</code>는 LE 이벤트 전체, <code>btatt</code>는 ATT, <code>btsmp</code>는 페어링이다. 끊김을 찾았으면 그 직전 몇 초를 거꾸로 읽으며 지도의 어느 단계에서 멈췄는지 본다.</p>
+    <p>btsnoop 파일은 Wireshark로 열린다. 필터 몇 개만 알면 수천 줄에서 필요한 곳으로 바로 간다. <code>bthci_evt.code == 0x05</code>는 끊김(그림 18-1의 마지막 줄), <code>bthci_evt.code == 0x3e</code>는 LE 이벤트 전체, <code>btatt</code>는 <span class="term">ATT</span>, <code>btsmp</code>는 <span class="term">페어링</span>이다. 끊김을 찾았으면 그 직전 몇 초를 거꾸로 읽으며 지도의 어느 단계에서 멈췄는지 본다.</p>
     <div class="callout tip"><strong>HCI 로그가 못 보는 것</strong> HCI 로그는 호스트와 컨트롤러 사이만 적는다. 재전송, 빈 PDU, 상대가 보냈는데 내가 못 받은 패킷처럼 공중에서만 일어난 일은 없다. 그림 18-1의 가운데 칸이 필요하면 nRF Sniffer 같은 공중 캡처 도구로 연결을 따라가야 한다. 다만 암호화된 연결은 키가 있어야 읽힌다. 레거시 페어링은 페어링 과정을 캡처하면 도구가 키를 풀 수 있지만, LE Secure Connections는 엿들어서는 키를 알 수 없게 만든 방식이라(8장) 기기에서 얻은 LTK를 도구에 넣어 주거나 디버그 키로 페어링해야 한다.</div>
 
   <div class="callout related"><strong>다른 책에서</strong><ul><li><a href="../../bluetooth/chapters/connection.html">BluetoothBook · 연결</a> — 연결 간격·지연·감독 타임아웃의 큰 그림</li></ul></div>
