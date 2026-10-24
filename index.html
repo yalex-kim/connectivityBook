@@ -85,10 +85,8 @@
   .vids-filter { display: flex; flex-wrap: wrap; gap: 6px; }
   .vids-filter button { font: inherit; font-size: 13.5px; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg-elev); color: var(--dim); cursor: pointer; }
   .vids-filter button.on { background: var(--text); color: var(--bg); border-color: var(--text); }
-  .vids { display: grid; gap: 18px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); margin-top: 14px; }
+  .vids { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-top: 14px; }
   .vid { display: grid; gap: 10px; align-content: start; padding: 14px; border: 1px solid var(--border); border-radius: 16px; background: var(--bg-elev); box-shadow: var(--shadow); }
-  .vid.featured { grid-column: 1 / -1; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 22px; align-items: center; }
-  @media (max-width: 760px) { .vid.featured { grid-template-columns: 1fr; } }
   .vid-play { position: relative; display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; border: 0; padding: 0; background: #0b1220; cursor: pointer; }
   .vid-play img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .2s; }
   .vid-play:hover img { transform: scale(1.03); }
@@ -97,7 +95,6 @@
   .vid-play .dur { position: absolute; right: 8px; bottom: 8px; padding: 2px 7px; border-radius: 6px; background: rgba(0,0,0,.78); color: #fff; font-size: 12.5px; font-variant-numeric: tabular-nums; }
   .vid-play iframe { width: 100%; height: 100%; border: 0; display: block; }
   .vid h3 { margin: 0; font-size: 18px; line-height: 1.35; }
-  .vid.featured h3 { font-size: 24px; }
   .vid .sub { color: var(--dim); font-size: 14px; margin-top: 2px; }
   .vid p { margin: 0; font-size: 14px; color: var(--dim); }
   .vid .meta { display: flex; flex-wrap: wrap; gap: 6px; font-size: 12.5px; }
@@ -195,7 +192,7 @@
       const body = `<div><h3>${esc(v.title)}</h3><div class="sub">${esc(v.subtitle || "")}</div></div><p>${esc(v.summary)}</p>
         <div class="meta">${(v.topics || []).map((t) => `<span>${esc(t)}</span>`).join("")}<span>${esc(v.duration)}</span><span>${esc(v.published)}</span></div>
         <div class="links">${(v.chapters || []).map((c) => `<a href="${esc(c.path)}">${esc(c.label)}</a>`).join("")}</div>`;
-      return `<article class="vid${v.featured && topic === "전체" ? " featured" : ""}">${player}<div style="display:grid;gap:10px">${body}</div></article>`;
+      return `<article class="vid">${player}<div style="display:grid;gap:10px">${body}</div></article>`;
     }).join("");
   }
   renderVideos();

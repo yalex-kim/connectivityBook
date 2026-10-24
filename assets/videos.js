@@ -23,7 +23,6 @@ window.YB_VIDEOS = [
     id: "afh-wifi",
     youtube: "U0n4ZyQ5sv4",
     embed: true,
-    featured: true,
     title: "블루투스는 왜 Wi-Fi와 부딪히지 않을까?",
     subtitle: "AFH(적응형 주파수 도약) 쉽게 이해하기",
     summary: "같은 2.4 GHz를 쓰는 Wi-Fi 옆에서 블루투스가 버티는 방법. 주파수 도약, Wi-Fi가 덮는 채널, 깨질 확률 계산, 재전송의 한계, 채널 맵으로 붐비는 채널을 빼는 AFH까지 3D 그림으로 따라갑니다.",
