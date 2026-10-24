@@ -3,6 +3,7 @@
  * 장면 시각은 나레이션판(durations.json)과 같은 계산(src/<영상>/timing.ts)을 쓴다.
  *   npm run youtube                 → AFH 영상, out/youtube/
  *   VIDEO=discover npm run youtube  → 광고에서 연결까지, out/youtube-discover/
+ *   VIDEO=twokinds npm run youtube  → 같은 블루투스인데 왜 다르게 말할까, out/youtube-twokinds/
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -12,9 +13,12 @@ import * as afhY from "../src/afh/youtube";
 import * as disS from "../src/discover/script";
 import * as disT from "../src/discover/timing";
 import * as disY from "../src/discover/youtube";
+import * as tkS from "../src/twokinds/script";
+import * as tkT from "../src/twokinds/timing";
+import * as tkY from "../src/twokinds/youtube";
 
 const VIDEO = process.env.VIDEO || "afh";
-const V = { afh: [afhS, afhT, afhY], discover: [disS, disT, disY] }[VIDEO] as unknown as [typeof afhS, typeof afhT, typeof afhY];
+const V = { afh: [afhS, afhT, afhY], discover: [disS, disT, disY], twokinds: [tkS, tkT, tkY] }[VIDEO] as unknown as [typeof afhS, typeof afhT, typeof afhY];
 if (!V) throw new Error(`모르는 영상: ${VIDEO}`);
 const [{ SCENES }, { scenesFor, startsFor, sentenceEnd, framesFor }, { YOUTUBE }] = V;
 const FPS = 30, OUT = path.join(__dirname, "..", "out", VIDEO === "afh" ? "youtube" : `youtube-${VIDEO}`);
