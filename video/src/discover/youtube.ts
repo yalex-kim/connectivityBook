@@ -24,7 +24,7 @@ export const YOUTUBE = {
   links: [
     ["BluetoothBook 입문 5장 “광고와 스캔” (시뮬레이터)", "https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/advertising.html"],
     ["BluetoothBook 입문 6장 “연결” — 연결 이벤트와 연결 간격", "https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/connection.html"],
-    ["이어지는 영상: 블루투스는 왜 Wi-Fi와 부딪히지 않을까? (AFH)", "https://youtu.be/d2ll02Ogga8"],
+    ["이어지는 영상: 블루투스는 왜 Wi-Fi와 부딪히지 않을까? (AFH)", "https://youtu.be/U0n4ZyQ5sv4"],
     ["ConnectivityBook 서재", "https://yalex-kim.github.io/connectivityBook/"],
   ],
   sources: [
