@@ -22,6 +22,7 @@ export const YOUTUBE = {
     "숫자 예시는 저전력 블루투스(LE) 범용 채널 37개와 Wi-Fi 1·6·11번(각 폭 20 MHz)을 기준으로 했습니다.",
   ],
   links: [
+    ["앞 이야기: 처음 보는 두 블루투스 기기는 어떻게 만날까?", "https://youtu.be/do1whEDnMOY"],
     ["BluetoothBook 입문 4장 “주파수 도약” (시뮬레이터)", "https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/hopping.html"],
     ["더 깊이 · BluetoothBook 심화 12장(Classic 도약 커널과 AFH)", "https://yalex-kim.github.io/connectivityBook/bluetooth-deep/chapters/baseband.html"],
     ["ConnectivityBook 서재", "https://yalex-kim.github.io/connectivityBook/"],
@@ -29,6 +30,6 @@ export const YOUTUBE = {
   sources: [
     "Bluetooth Core Specification 6.3 — [Vol 6] Part B §4.5.8(LE 채널 선택, AFH), [Vol 2] Part B §2.6.3(Classic AFH), [Vol 6] Part B Table 1.3(LE 채널 주파수)",
   ],
-  credits: ["나레이션: Typecast AI 음성", "만든 도구: Remotion, three.js"],
+  credits: ["나레이션: Typecast AI 음성(예슬)", "만든 도구: Remotion, three.js"],
   tags: ["블루투스", "Bluetooth", "AFH", "적응형 주파수 도약", "주파수 도약", "Wi-Fi", "와이파이", "2.4GHz", "무선 통신", "BLE", "저전력 블루투스", "채널 맵", "간섭", "공존", "ConnectivityBook"],
 };

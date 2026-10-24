@@ -1,15 +1,23 @@
 /**
- * 유튜브 업로드 자료를 만든다: out/youtube/youtube.txt(제목·설명·태그), subtitles.ko.srt(문장별 자막).
- * 장면 시각은 나레이션판(durations.json)과 같은 계산(src/afh/timing.ts)을 쓴다.
- *   npm run youtube   (esbuild로 묶어 node로 실행)
+ * 유튜브 업로드 자료를 만든다: youtube.txt(제목·설명·태그), subtitles.ko.srt(문장별 자막).
+ * 장면 시각은 나레이션판(durations.json)과 같은 계산(src/<영상>/timing.ts)을 쓴다.
+ *   npm run youtube                 → AFH 영상, out/youtube/
+ *   VIDEO=discover npm run youtube  → 광고에서 연결까지, out/youtube-discover/
  */
 import fs from "node:fs";
 import path from "node:path";
-import { SCENES } from "../src/afh/script";
-import { scenesFor, startsFor, sentenceEnd, framesFor } from "../src/afh/timing";
-import { YOUTUBE } from "../src/afh/youtube";
+import * as afhS from "../src/afh/script";
+import * as afhT from "../src/afh/timing";
+import * as afhY from "../src/afh/youtube";
+import * as disS from "../src/discover/script";
+import * as disT from "../src/discover/timing";
+import * as disY from "../src/discover/youtube";
 
-const FPS = 30, OUT = path.join(__dirname, "..", "out", "youtube");
+const VIDEO = process.env.VIDEO || "afh";
+const V = { afh: [afhS, afhT, afhY], discover: [disS, disT, disY] }[VIDEO] as unknown as [typeof afhS, typeof afhT, typeof afhY];
+if (!V) throw new Error(`모르는 영상: ${VIDEO}`);
+const [{ SCENES }, { scenesFor, startsFor, sentenceEnd, framesFor }, { YOUTUBE }] = V;
+const FPS = 30, OUT = path.join(__dirname, "..", "out", VIDEO === "afh" ? "youtube" : `youtube-${VIDEO}`);
 const scenes = scenesFor(true), starts = startsFor(true), total = framesFor(true) / FPS;
 
 const mmss = (sec: number) => `${Math.floor(sec / 60)}:${String(Math.floor(sec % 60)).padStart(2, "0")}`;
@@ -51,4 +59,4 @@ if (tags.length > 500) throw new Error("태그는 합쳐서 500자 이하");
 fs.mkdirSync(OUT, { recursive: true });
 fs.writeFileSync(path.join(OUT, "subtitles.ko.srt"), srt.join("\n"));
 fs.writeFileSync(path.join(OUT, "youtube.txt"), `[제목]\n${YOUTUBE.title}\n\n[설명]\n${desc}\n\n[태그]\n${tags}\n`);
-console.log(`영상 ${mmss(total)} · 챕터 ${chapters.length}개 · 자막 ${srt.length}개 · 장면 ${SCENES.length}개 → out/youtube/`);
+console.log(`영상 ${mmss(total)} · 챕터 ${chapters.length}개 · 자막 ${srt.length}개 · 장면 ${SCENES.length}개 → ${path.relative(path.join(__dirname, ".."), OUT)}/`);

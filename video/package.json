@@ -11,7 +11,8 @@
     "narrate": "python3 scripts/narrate.py",
     "loudnorm": "ffmpeg -y -i out/afh-explainer.mp4 -c:v copy -af loudnorm=I=-16:TP=-1.5:LRA=11 -c:a aac -b:a 192k out/afh-explainer-final.mp4",
     "youtube": "esbuild scripts/youtube.ts --bundle --platform=node --log-level=warning --outfile=out/youtube.cjs && node out/youtube.cjs",
-    "thumbnail": "remotion still AfhThumbnail out/youtube/thumbnail.png"
+    "thumbnail": "remotion still AfhThumbnail out/youtube/thumbnail.png",
+    "thumbnail:discover": "remotion still DiscoverThumbnail out/youtube-discover/thumbnail.png"
   },
   "dependencies": {
     "@react-three/fiber": "9.8.2",

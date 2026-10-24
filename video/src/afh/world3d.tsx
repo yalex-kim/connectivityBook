@@ -61,9 +61,13 @@ type StageProps = {
   ball?: Vec | null; // 도약 중인 패킷
   trail?: Vec[];
   removed?: (c: number) => number; // 채널 맵에서 뺀 정도 0~1 (기둥이 가라앉음)
+  adv?: number; // 광고 채널 37·38·39 기둥 등장 0~1 (2402·2426·2480 MHz)
+  advGlow?: number; // 광고 채널을 빛나게 0~1
+  dim?: number; // 범용 채널 기둥을 어둡게 0~1
 };
+export const ADV_MHZ = [2402, 2426, 2480];
 
-export const Stage3D: React.FC<StageProps> = ({ cam, wifi, pillars, color, ism = 0, microwave = 0, ball = null, trail = [], removed = () => 0 }) => (
+export const Stage3D: React.FC<StageProps> = ({ cam, wifi, pillars, color, ism = 0, microwave = 0, ball = null, trail = [], removed = () => 0, adv = 0, advGlow = 0, dim = 0 }) => (
   <Scene3D cam={cam}>
     <Floor />
     {ism > 0 &&
@@ -93,10 +97,20 @@ export const Stage3D: React.FC<StageProps> = ({ cam, wifi, pillars, color, ism =
       return a > 0 ? (
         <mesh key={c} position={[chX(c), h / 2, 0]}>
           <boxGeometry args={[1.25, Math.max(h, 0.05), 1.25]} />
-          <meshStandardMaterial color={color(c)} emissive={color(c)} emissiveIntensity={0.25} transparent opacity={1 - 0.6 * r} />
+          <meshStandardMaterial color={color(c)} emissive={color(c)} emissiveIntensity={0.25} transparent opacity={(1 - 0.6 * r) * (1 - 0.75 * dim)} />
         </mesh>
       ) : null;
     })}
+    {adv > 0 &&
+      ADV_MHZ.map((m) => {
+        const h = 10 * adv;
+        return (
+          <mesh key={m} position={[fx(m), h / 2, 0]}>
+            <boxGeometry args={[1.6, Math.max(h, 0.05), 1.6]} />
+            <meshStandardMaterial color={C.accent2} emissive={C.accent2} emissiveIntensity={0.3 + 0.9 * advGlow} />
+          </mesh>
+        );
+      })}
     {trail.map((p, i) => (
       <mesh key={i} position={p}>
         <sphereGeometry args={[0.9, 16, 12]} />
