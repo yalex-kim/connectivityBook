@@ -28,7 +28,7 @@ const big = V.simulate(20000, false), lossHop = big.filter((e) => e.hit).length 
 assert.ok(Math.abs(lossHop - 31 / 74) < 0.02, `무작위 도약 손실 ${lossHop}`);
 assert.equal(V.simulate(2000, true).filter((e) => e.hit).length, 0, "적응형 도약은 손실 0");
 // 대본: say와 caption의 문장 수가 같고, say에 숫자가 없고, 나레이션 음성(durations.json)이 지금 문장으로 만든 것인지
-for (const video of ["afh", "discover", "twokinds", "range"]) {
+for (const video of ["afh", "discover", "twokinds", "range", "connection"]) {
   const src = fs.readFileSync(new URL(`../src/${video}/script.ts`, import.meta.url), "utf8");
   const dur = JSON.parse(fs.readFileSync(new URL(`../src/${video}/durations.json`, import.meta.url), "utf8"));
   const voiced = Object.keys(dur).length > 0; // 무음판 단계면 음성 검사는 건너뛴다
@@ -92,6 +92,21 @@ for (const video of ["afh", "discover", "twokinds", "range"]) {
   assert.ok(Math.abs(r(12, 2) - 3.98) < 0.01, "트인 곳 4배"); assert.ok(r(12, 2.7) > 2 && r(12, 3.3) < 3, "실내 2~3배");
   for (const [db, nn] of [[12, 2], [12, 2.7], [-12, 2.7]]) { assert.ok(Math.abs(V.rangeFactor(db, nn) - r(db, nn)) < 1e-9); n++; }
   console.log(`range: 1 m ${fs1.toFixed(1)} dB · S=8 거리 배율 트인 곳 ${r(12, 2).toFixed(2)} · 집 ${r(12, 2.7).toFixed(2)} · 사무실 ${r(12, 3.3).toFixed(2)} · 몸(−12 dB, 집) ${r(-12, 2.7).toFixed(2)}`);
+}
+// 켜 두면 배터리 닳을까: 연결 파라미터 규칙이 책 6장(connection.html)과 같은가, 그리고 나레이션이 말하는 수치
+{
+  const conn = fs.readFileSync(new URL("../../bluetooth/chapters/connection.html", import.meta.url), "utf8");
+  const fn6 = (name) => { const i = conn.indexOf(`  function ${name}(`); let d = 0, j = conn.indexOf("{", i); for (; j < conn.length; j++) { if (conn[j] === "{") d++; else if (conn[j] === "}" && --d === 0) break; } return conn.slice(i, j + 1); };
+  const c6 = vm.createContext({});
+  vm.runInContext(fn6("checkConnParams") + "\nthis.B6 = { checkConnParams };", c6);
+  for (const iv of [375, 1250, 7500, 50000, 100000, 4e6]) for (const lat of [0, 4, 9, 499]) for (const to of [100, 500, 510, 2000, 32000]) for (const sci of [true, false]) { assert.equal(JSON.stringify(V.checkConnParams(iv, lat, 1, to, sci)), JSON.stringify(c6.B6.checkConnParams(iv, lat, 1, to, sci))); n++; }
+  assert.equal(V.EMPTY_PDU_US, 80); assert.equal(V.EMPTY_EVENT_US, 310);
+  assert.ok(V.EMPTY_EVENT_US < 1000 && 1000 / 50000 <= 0.02, "50 ms마다 1 ms도 안 되는 순간 → 98% 넘게 잔다");
+  assert.equal(Math.floor(1000 / 7.5), 133); assert.equal(1000 / 100, 10); // 1초에 백서른세 번 · 열 번
+  assert.equal((4 + 1) * 50, 250); // 지연 4, 간격 50 ms: 휴대폰 → 워치 최대 250 ms
+  assert.equal(V.checkConnParams(50000, 4, 1, 2000, false).length, 0, "예시 파라미터(50 ms, 지연 4, 타임아웃 2 s)는 유효");
+  assert.ok(V.checkConnParams(50000, 4, 1, 500, false).length > 0, "타임아웃 500 ms는 규칙 위반(쉬는 시간 250 ms × 2와 같음)");
+  console.log(`connection: 빈 이벤트 ${V.EMPTY_EVENT_US} µs, 50 ms 간격에서 깨어 있는 비율 ${(V.EMPTY_EVENT_US / 50000 * 100).toFixed(2)}%`);
 }
 // 조건별 예시(영상의 막대 셋): 책의 함수로 다시 계산
 const ex = (w, d) => (B.wifiBlocked(w).size / 37) * d * 100;

@@ -8,6 +8,9 @@ import { framesFor as discoverFrames } from "./discover/timing";
 import { TwoKinds } from "./twokinds/TwoKinds";
 import { framesFor as twoKindsFrames } from "./twokinds/timing";
 import { Range } from "./range/Range";
+import { Connection } from "./connection/Connection";
+import { framesFor as connFrames } from "./connection/timing";
+import { ConnectionThumbnail } from "./connection/Thumbnail";
 import { RangeThumbnail } from "./range/Thumbnail";
 import { TwoKindsThumbnail } from "./twokinds/Thumbnail";
 import { framesFor as rangeFrames } from "./range/timing";
@@ -22,6 +25,9 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="TwoKindsVoice" component={TwoKinds} defaultProps={{ voice: true }} durationInFrames={twoKindsFrames(true)} fps={30} width={1920} height={1080} />
     <Composition id="Range" component={Range} defaultProps={{ voice: false }} durationInFrames={rangeFrames(false)} fps={30} width={1920} height={1080} />
     <Composition id="RangeVoice" component={Range} defaultProps={{ voice: true }} durationInFrames={rangeFrames(true)} fps={30} width={1920} height={1080} />
+    <Composition id="Connection" component={Connection} defaultProps={{ voice: false }} durationInFrames={connFrames(false)} fps={30} width={1920} height={1080} />
+    <Composition id="ConnectionVoice" component={Connection} defaultProps={{ voice: true }} durationInFrames={connFrames(true)} fps={30} width={1920} height={1080} />
+    <Composition id="ConnectionThumbnail" component={ConnectionThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
     <Composition id="TwoKindsThumbnail" component={TwoKindsThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
     <Composition id="RangeThumbnail" component={RangeThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
     <Composition id="DiscoverThumbnail" component={DiscoverThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
