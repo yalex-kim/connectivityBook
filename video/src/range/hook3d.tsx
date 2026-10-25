@@ -6,14 +6,16 @@ import { clamp } from "../afh/parts";
 
 /* 훅 장면(3D): 뒷주머니에 휴대폰을 넣은 사람, 몸을 지나 귀의 이어폰으로 가는 신호, 바닥의 10 m 자, 그 너머의 분실물 태그.
    글자는 3D에 넣지 않고, 3D 좌표를 화면에 투영해 2D로 겹친다. 1 m = 4 단위. */
-const M = 4, PX = -26; // 사람의 위치(x)
-const EAR: Vec = [PX + 0.2, 17.2, 1.75], POCKET: Vec = [PX - 2.3, 8.4, 0.9];
+const M = 4;
+export const PX = -26; // 사람의 위치(x)
+export const EAR: Vec = [PX + 0.2, 17.2, 1.75];
+export const POCKET: Vec = [PX - 2.3, 8.4, 0.9];
 const TAG: Vec = [PX + 19 * M, 1.2, 0];
 const CL = C.accent2, LE = C.accent, BAD = C.bad;
 const at = (f: number, c: number, d = 20) => interpolate(f, [c, c + d], [0, 1], clamp);
 
 /** 화면 좌표(1920×1080)로 투영: Scene3D와 같은 카메라 */
-const project = (cam: Cam, p: Vec): [number, number] => {
+export const project = (cam: Cam, p: Vec): [number, number] => {
   const c = new THREE.PerspectiveCamera(cam.fov ?? 40, 1920 / 1080, 0.5, 600);
   c.position.set(...cam.pos);
   c.lookAt(...cam.look);
@@ -26,8 +28,12 @@ const project = (cam: Cam, p: Vec): [number, number] => {
 const mat = (color: string, emissive = 0.35) => <meshStandardMaterial color={color} emissive={color} emissiveIntensity={emissive} roughness={0.4} metalness={0.1} transparent opacity={0.5} depthWrite={false} />;
 
 /** 사람: 캡슐 몸통·팔·다리, 공 머리. 오른쪽(+x)을 본다 */
-const Person3D: React.FC = () => {
-  const skin = "#7fa6dc", cloth = "#5f86c4", pants = "#4a6aa0";
+/** 두 색 사이(0~1) */
+const mix = (a: string, b: string, k: number) => "#" + new THREE.Color(a).lerp(new THREE.Color(b), k).getHexString();
+const WATER = "#2f9bff";
+
+export const Person3D: React.FC<{ water?: number }> = ({ water = 0 }) => {
+  const skin = mix("#7fa6dc", WATER, water), cloth = mix("#5f86c4", WATER, water), pants = mix("#4a6aa0", WATER, 0.6 * water);
   return (
     <group position={[PX, 0, 0]}>
       {[-0.9, 0.9].map((z) => (
@@ -63,7 +69,7 @@ const Person3D: React.FC = () => {
   );
 };
 
-const Phone3D: React.FC<{ glow: number }> = ({ glow }) => (
+export const Phone3D: React.FC<{ glow: number }> = ({ glow }) => (
   <group position={POCKET} rotation={[0, 0, 0.08]}>
     <mesh>
       <boxGeometry args={[0.35, 2.4, 1.25]} />
@@ -115,7 +121,8 @@ const Tag3D: React.FC<{ f: number; a: number }> = ({ f, a }) => {
 };
 
 /** A→B를 흐르는 빛나는 점들 */
-const Dots: React.FC<{ a: Vec; b: Vec; f: number; col: string; on: number; n?: number; speed?: number; r?: number; flicker?: boolean }> = ({ a, b, f, col, on, n = 10, speed = 0.02, r = 0.32, flicker = false }) =>
+/** fade: 끝으로 갈수록 흐려지는 정도(0~1), 몸에 흡수되는 신호 */
+export const Dots: React.FC<{ a: Vec; b: Vec; f: number; col: string; on: number; n?: number; speed?: number; r?: number; flicker?: boolean; fade?: number }> = ({ a, b, f, col, on, n = 10, speed = 0.02, r = 0.32, flicker = false, fade = 0 }) =>
   on <= 0 ? null : (
     <group>
       {Array.from({ length: n }, (_, i) => {
@@ -123,7 +130,7 @@ const Dots: React.FC<{ a: Vec; b: Vec; f: number; col: string; on: number; n?: n
         return gone ? null : (
           <mesh key={i} position={[a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]}>
             <sphereGeometry args={[r, 12, 10]} />
-            <meshStandardMaterial color={col} emissive={col} emissiveIntensity={1.4} transparent opacity={on} />
+            <meshStandardMaterial color={col} emissive={col} emissiveIntensity={1.4} transparent opacity={on * (1 - fade * Math.min(1, t * 1.6))} />
           </mesh>
         );
       })}
@@ -179,6 +186,69 @@ export const Hook3D: React.FC<{ cues: number[]; len: number }> = ({ cues, len })
           <text x={tg[0]} y={tg[1] - 40} textAnchor="middle" fill={LE} fontSize={32} fontWeight={800}>훨씬 먼 곳에서도</text>
         </g>
         <text x={960} y={300} textAnchor="middle" fill={C.accent} opacity={q} fontSize={140} fontWeight={900}>?</text>
+      </svg>
+    </>
+  );
+};
+
+/* ---------------------------------------------------------------- 4번 장면(3D): 몸은 대부분 물 */
+const Microwave3D: React.FC<{ f: number; a: number }> = ({ f, a }) => (
+  <group position={MW} rotation={[0, -0.5, 0]} scale={a}>
+    <mesh>
+      <boxGeometry args={[9, 5.5, 5.5]} />
+      <meshStandardMaterial color="#c9d3e3" metalness={0.4} roughness={0.35} />
+    </mesh>
+    <mesh position={[-1, 0, 2.77]}>
+      <boxGeometry args={[6, 4.2, 0.05]} />
+      <meshStandardMaterial color={C.warn} emissive={C.warn} emissiveIntensity={0.6 + 0.3 * Math.sin(f / 5)} transparent opacity={0.85} />
+    </mesh>
+    {[1.3, 0, -1.3].map((y) => (
+      <mesh key={y} position={[3.2, y, 2.77]}>
+        <cylinderGeometry args={[0.35, 0.35, 0.1, 16]} />
+        <meshStandardMaterial color="#56647c" />
+      </mesh>
+    ))}
+  </group>
+);
+const MW: Vec = [PX + 34, 19, -10];
+/** 반사파가 튕기는 벽(사람 앞쪽, x = WALL_X인 면)과 튕기는 점 */
+const WALL_X = PX + 13, BOUNCE: Vec = [WALL_X - 0.3, 12.5, 1.2];
+
+export const Body3D: React.FC<{ cues: number[]; len: number }> = ({ cues, len }) => {
+  const f = useCurrentFrame();
+  const water = at(f, cues[1], 30), mw = at(f, cues[2]), cut = at(f, cues[3], 30), refl = at(f, cues[4]);
+  const cam = camLerp({ pos: [PX + 8, 16, 44], look: [PX + 13, 11, 0], fov: 40 }, { pos: [PX - 2, 18, 46], look: [PX + 13, 11, 0], fov: 40 }, f / len);
+  const L = (p: Vec) => project(cam, p);
+  const [torso, mwp, bnc] = [L([PX + 3, 13, 0]), L([MW[0], MW[1] + 3.5, MW[2]]), L(BOUNCE)];
+  return (
+    <>
+      <Scene3D cam={cam}>
+        <fog attach="fog" args={[C.bg, 70, 200]} />
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[20, -0.03, 0]}>
+          <planeGeometry args={[500, 500]} />
+          <meshStandardMaterial color="#0d1729" />
+        </mesh>
+        <gridHelper args={[300, 150, "#24395a", "#172640"]} position={[20, 0, 0]} />
+        <pointLight position={[PX + 10, 22, 14]} intensity={250} color="#9cc8ff" distance={60} />
+        <Person3D water={water} />
+        <Phone3D glow={0.8} />
+        <Dots a={POCKET} b={EAR} f={f} col={C.accent2} on={1} fade={0.95 * cut} />
+        <Microwave3D f={f} a={mw} />
+        {refl > 0 && (
+          <>
+            <mesh position={[WALL_X, 10, 0]}>
+              <boxGeometry args={[0.4, 20, 18]} />
+              <meshStandardMaterial color="#8fa3c4" transparent opacity={0.18 * refl} />
+            </mesh>
+            <Dots a={POCKET} b={BOUNCE} f={f} col={C.warn} on={refl} n={6} />
+            <Dots a={BOUNCE} b={EAR} f={f + 25} col={C.warn} on={refl} n={6} />
+          </>
+        )}
+      </Scene3D>
+      <svg width={1920} height={1080} style={{ position: "absolute", inset: 0 }} fontFamily={FONT}>
+        <text x={torso[0] + 40} y={torso[1]} fill={C.accent} fontSize={30} fontWeight={800} opacity={water * (1 - mw)}>몸 = 대부분 물</text>
+        <text x={mwp[0]} y={mwp[1] - 16} textAnchor="middle" fill={C.dim} fontSize={26} fontWeight={700} opacity={mw}>전자레인지: 약 2.45 GHz로 물을 데운다</text>
+        <text x={bnc[0] + 24} y={bnc[1] - 60} fill={C.warn} fontSize={28} fontWeight={800} opacity={refl}>벽에서 튕겨 온 전파</text>
       </svg>
     </>
   );

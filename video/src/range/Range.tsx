@@ -4,34 +4,13 @@ import { F_BT, pathLoss, rangeFactor } from "../book";
 import { Caption, Title, clamp, fade, useFont } from "../afh/parts";
 import { CL, LE, S, at, Chip } from "../twokinds/TwoKinds";
 import { LEAD, scenesFor, type Timed } from "./timing";
-import { Hook3D } from "./hook3d";
+import { Hook3D, Body3D } from "./hook3d";
 
 /* 링크 버짓 예시 조건(책 2장 시뮬레이터와 같은 모델): 송신 0 dBm, 집(n = 2.7), 10 m, 벽·몸 각 −12 dB, 칩 감도 −95 dBm(대표값) */
 const N_HOME = 2.7, D_EX = 10, WALL = 12, BODY = 12, SENS_CHIP = -95, SENS_SPEC = -70, SENS_S8 = -82, FADE = 10;
 const LOSS_EX = pathLoss(D_EX, N_HOME, F_BT); // ≈ 67.2 dB
 const OK = C.ok, BAD = C.bad;
 
-/* ---------------------------------------------------------------- 사람(옆모습, 오른쪽을 본다) */
-const Person: React.FC<{ x: number; y: number; scale?: number; water?: number }> = ({ x, y, scale = 1, water = 0 }) => (
-  <g transform={`translate(${x},${y}) scale(${scale})`}>
-    <rect x={-34} y={300} width={30} height={250} rx={14} fill="#24324a" stroke={C.text} strokeWidth={4} />
-    <rect x={4} y={300} width={30} height={250} rx={14} fill="#24324a" stroke={C.text} strokeWidth={4} />
-    <rect x={-62} y={60} width={124} height={270} rx={50} fill="#24324a" stroke={C.text} strokeWidth={4} />
-    <rect x={-62} y={60} width={124} height={270} rx={50} fill={LE} opacity={0.35 * water} />
-    <circle cx={0} cy={0} r={52} fill="#24324a" stroke={C.text} strokeWidth={4} />
-    <circle cx={0} cy={0} r={52} fill={LE} opacity={0.35 * water} />
-    <circle cx={-4} cy={4} r={11} fill={CL} stroke={C.text} strokeWidth={3} />
-  </g>
-);
-/** 사람 그림 기준 위치: 귀(이어폰)와 뒷주머니(휴대폰) */
-const ear = (x: number, y: number, s = 1): [number, number] => [x - 4 * s, y + 4 * s];
-const pocket = (x: number, y: number, s = 1): [number, number] => [x - 72 * s, y + 290 * s];
-const MiniPhone: React.FC<{ x: number; y: number; scale?: number }> = ({ x, y, scale = 1 }) => (
-  <g transform={`translate(${x},${y}) scale(${scale})`}>
-    <rect x={-22} y={-40} width={44} height={80} rx={9} {...S} />
-    <rect x={-16} y={-32} width={32} height={60} rx={4} fill="#1d3557" />
-  </g>
-);
 const Cross: React.FC<{ x: number; y: number; a: number; r?: number }> = ({ x, y, a, r = 22 }) => (
   <path d={`M${x - r} ${y - r} L${x + r} ${y + r} M${x + r} ${y - r} L${x - r} ${y + r}`} stroke={BAD} strokeWidth={9} strokeLinecap="round" opacity={a} />
 );
@@ -152,36 +131,18 @@ const Distance: React.FC<{ cues: number[]; len: number }> = ({ cues, len }) => {
 };
 
 /* ---------------------------------------------------------------- 4. 사람 몸 */
-const Microwave: React.FC<{ x: number; y: number }> = ({ x, y }) => (
-  <g transform={`translate(${x},${y})`}>
-    <rect x={-110} y={-70} width={220} height={140} rx={16} {...S} />
-    <rect x={-92} y={-52} width={140} height={104} rx={8} fill="#1d3557" />
-    <path d="M-50 10 q 8 -14 0 -28 M-25 10 q 8 -14 0 -28 M0 10 q 8 -14 0 -28" stroke={C.warn} strokeWidth={4} fill="none" />
-    {[-30, 0, 30].map((dy) => <circle key={dy} cx={80} cy={dy} r={7} fill={C.faint} />)}
-  </g>
-);
 /** 순간 세기: 페이딩으로 출렁이는 선(예시 곡선)과 감도 선 */
 const fadingAt = (t: number) => -5 * Math.sin(t * 1.3) - 3 * Math.sin(t * 3.1 + 1) - 26 * Math.exp(-((t - 6) ** 2) / 0.4) - 24 * Math.exp(-((t - 15) ** 2) / 0.3);
 const Body: React.FC<{ cues: number[]; len: number }> = ({ cues, len }) => {
-  const f = useCurrentFrame(), px = 420, py = 330, e = ear(px, py), p = pocket(px, py);
-  const water = at(f, cues[1]), cut = at(f, cues[3]), refl = at(f, cues[4]);
+  const f = useCurrentFrame();
+  const cut = at(f, cues[3]), refl = at(f, cues[4]);
   const strength = 1 - 0.99 * cut; // 몸이 가리면 1/100
   const span = interpolate(f, [cues[4], len - 10], [0, 1], clamp);
   return (
     <>
+      <Body3D cues={cues} len={len} />
       <Title kicker="깎이는 몫 ② 사람 몸">몸은 대부분 물이다</Title>
       <svg width={1920} height={1080} style={{ position: "absolute", inset: 0 }} fontFamily={FONT}>
-        <line x1={p[0]} y1={p[1]} x2={e[0]} y2={e[1]} stroke={CL} strokeWidth={6} strokeDasharray="12 10" opacity={0.25 + 0.75 * strength} />
-        <Person x={px} y={py} water={water} />
-        <MiniPhone x={p[0]} y={p[1]} scale={0.9} />
-        <g opacity={water}>
-          <path d="M1000 300 C 1000 300, 960 360, 960 390 a40 40 0 0 0 80 0 C 1040 360, 1000 300, 1000 300 Z" fill={LE} opacity={0.8} />
-          <text x={1000} y={480} textAnchor="middle" fill={C.dim} fontSize={26} fontWeight={700}>물 → 2.4 GHz를 흡수</text>
-        </g>
-        <g opacity={at(f, cues[2])}>
-          <Microwave x={1320} y={380} />
-          <text x={1320} y={500} textAnchor="middle" fill={C.dim} fontSize={26} fontWeight={700}>전자레인지: 약 2.45 GHz</text>
-        </g>
         <g opacity={cut * (1 - refl)}>
           <text x={760} y={620} fill={C.text} fontSize={30} fontWeight={800}>몸이 가린 신호</text>
           <rect x={760} y={650} width={640} height={40} rx={12} fill="#1b2840" />
