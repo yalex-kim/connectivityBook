@@ -28,7 +28,7 @@ const big = V.simulate(20000, false), lossHop = big.filter((e) => e.hit).length 
 assert.ok(Math.abs(lossHop - 31 / 74) < 0.02, `무작위 도약 손실 ${lossHop}`);
 assert.equal(V.simulate(2000, true).filter((e) => e.hit).length, 0, "적응형 도약은 손실 0");
 // 대본: say와 caption의 문장 수가 같고, say에 숫자가 없고, 나레이션 음성(durations.json)이 지금 문장으로 만든 것인지
-for (const video of ["afh", "discover", "twokinds", "range", "connection"]) {
+for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt", "pairing", "power", "audio", "locate"]) {
   const src = fs.readFileSync(new URL(`../src/${video}/script.ts`, import.meta.url), "utf8");
   const dur = JSON.parse(fs.readFileSync(new URL(`../src/${video}/durations.json`, import.meta.url), "utf8"));
   const voiced = Object.keys(dur).length > 0; // 무음판 단계면 음성 검사는 건너뛴다
@@ -107,6 +107,58 @@ for (const video of ["afh", "discover", "twokinds", "range", "connection"]) {
   assert.equal(V.checkConnParams(50000, 4, 1, 2000, false).length, 0, "예시 파라미터(50 ms, 지연 4, 타임아웃 2 s)는 유효");
   assert.ok(V.checkConnParams(50000, 4, 1, 500, false).length > 0, "타임아웃 500 ms는 규칙 위반(쉬는 시간 250 ms × 2와 같음)");
   console.log(`connection: 빈 이벤트 ${V.EMPTY_EVENT_US} µs, 50 ms 간격에서 깨어 있는 비율 ${(V.EMPTY_EVENT_US / 50000 * 100).toFixed(2)}%`);
+}
+// 처음 보는 심박계: 심박 측정값 해석이 책 7장(gatt.html)과 같은가, 그리고 영상의 바이트
+{
+  const g = fs.readFileSync(new URL("../../bluetooth/chapters/gatt.html", import.meta.url), "utf8");
+  const fn7 = (name) => { const i = g.indexOf(`  function ${name}(`); let d = 0, j = g.indexOf("{", i); for (; j < g.length; j++) { if (g[j] === "{") d++; else if (g[j] === "}" && --d === 0) break; } return g.slice(i, j + 1); };
+  const c7 = vm.createContext({});
+  vm.runInContext(fn7("parseHeartRate") + "\nthis.B7 = { parseHeartRate };", c7);
+  const samples = [[0x00, 0x48], [0x01, 0x2c, 0x01], [0x16, 0x50, 0x00, 0x04, 0x10, 0x04], [0x19, 0x48, 0x00, 0x0a, 0x00, 0x00, 0x04], [0x06, 0xb4]];
+  for (const s of samples) { assert.equal(JSON.stringify(V.parseHeartRate(s)), JSON.stringify(c7.B7.parseHeartRate(s))); n++; }
+  assert.equal(V.parseHeartRate([0x00, 0x48]).bpm, 72); assert.equal(0x48, 72); // 영상: 00 48 → 72
+  // 영상의 A사 메뉴판 = 책 시뮬레이터의 DB: 심박 서비스 0x0008, 심박 측정값 값 0x000A, CCCD 0x000B
+  assert.ok(g.includes("[0x0008, 0x2800") && g.includes("[0x000a, 0x2a37") && g.includes("[0x000b, 0x2902"));
+  console.log(`gatt: 00 48 → ${V.parseHeartRate([0x00, 0x48]).bpm} bpm`);
+}
+// 입문 7~10편: 책 8~11장의 함수와 영상이 말하는 수치
+{
+  const read = (ch) => fs.readFileSync(new URL(`../../bluetooth/chapters/${ch}.html`, import.meta.url), "utf8");
+  const pick = (src, name) => { const i = src.indexOf(`  function ${name}(`); let d = 0, j = src.indexOf("{", i); for (; j < src.length; j++) { if (src[j] === "{") d++; else if (src[j] === "}" && --d === 0) break; } return src.slice(i, j + 1); };
+  const load = (ch, names, extra = {}) => { const s = read(ch), c = vm.createContext({ Math, ...extra }); vm.runInContext(names.map((x) => pick(s, x)).join("\n") + `\nthis.F = { ${names.join(", ")} };`, c); return c.F; };
+  // 7편 페어링: 방식 표(MITM 요구, OOB 없음, Secure Connections)
+  const S = load("security", ["pairingMethod"]);
+  assert.equal(S.pairingMethod("DisplayYesNo", "DisplayYesNo", true, false, false, true, true).method, "숫자 비교");
+  assert.equal(S.pairingMethod("KeyboardDisplay", "KeyboardOnly", true, false, false, true, true).method, "패스키 입력");
+  assert.equal(S.pairingMethod("DisplayYesNo", "NoInputNoOutput", true, false, false, true, true).method, "Just Works");
+  assert.equal(S.pairingMethod("DisplayYesNo", "NoInputNoOutput", true, false, false, true, true).auth, "미인증");
+  assert.ok(fs.readFileSync(new URL("../../bluetooth/scripts/verify-factcheck.cjs", import.meta.url), "utf8").includes("0x2f9ed5ba, 'g2 sample D.5'"));
+  assert.equal(0x2f9ed5ba % 1e6, 938554); // 사양 샘플 D.5의 g2 → 화면 숫자
+  // 8편 전력
+  const P = load("power", ["averageCurrentUa", "windowWideningUs"]);
+  for (const a of [[2, 15, 1], [2, 15, 0.1], [2, 30, 0.5]]) { assert.equal(V.averageCurrentUa(...a), P.averageCurrentUa(...a)); n++; }
+  assert.equal(V.windowWideningUs(500, 2e6), P.windowWideningUs(500, 2e6));
+  const yrs = (ua) => 220 / (ua / 1000) / 24 / 365;
+  assert.equal(V.averageCurrentUa(2, 15, 1), 17); assert.ok(Math.abs(yrs(17) - 1.48) < 0.03, "약 1년 반");
+  assert.ok(Math.abs(220 / 0.152 / 24 / 30.4 - 2) < 0.1, "100 ms → 약 2달"); assert.equal(Math.round(V.averageCurrentUa(2, 15, 0.1)), 152);
+  assert.ok(yrs(2) > 12 && yrs(2) < 13, "수면 2 µA → 12년 남짓"); assert.ok(220 / 5 < 48, "5 mA 계속 → 이틀도 못 감");
+  assert.ok(Math.abs(V.windowWideningUs(500, 2e6) - 1016) < 1, "2 s · 500 ppm → 약 1 ms");
+  // 9편 오디오: 지연 예산 대표값(audio.html의 모델 수치)
+  const A = load("audio", ["cisDelivery"]);
+  const au = read("audio");
+  assert.ok(au.includes("클래식 = 프레임 20 ms + 인코딩 5 + 전송 10 + 버퍼 + 디코딩 5 + DAC 5 ms") && au.includes('id="lt-buf" min="20" max="300" step="10" value="150"'));
+  assert.ok(au.includes("LE = LC3 10 ms 프레임 + 인코딩 2.5 + (ISO_Interval × FT) + 표시 지연 + 디코딩 2.5 ms") && au.includes('id="lt-iso" min="4" max="24" value="8"') && au.includes('id="lt-ft" min="1" max="6" value="2"') && au.includes('id="lt-pd" min="0" max="40" value="10"'));
+  assert.equal(20 + 5 + 10 + 150 + 5 + 5, 195); assert.equal(10 + 2.5 + 8 * 1.25 * 2 + 10 + 2.5, 45);
+  assert.equal(V.cisDelivery(0.2, 3, 1, 1), A.cisDelivery(0.2, 3, 1, 1)); assert.ok(Math.abs((1 - V.cisDelivery(0.2, 3, 1, 1)) * 100 - 0.8) < 1e-9, "실패 0.8%");
+  // 10편 위치
+  const L = load("location", ["rssiToDistance", "aoaAngle"]);
+  assert.equal(V.rssiToDistance(-71, -59, 2), L.rssiToDistance(-71, -59, 2)); assert.ok(Math.abs(V.rssiToDistance(-71, -59, 2) - 3.98) < 0.01, "−71 dBm → 약 4 m");
+  assert.ok(Math.abs(V.rssiToDistance(-71 - 6, -59, 2) / V.rssiToDistance(-71, -59, 2) - 2) < 0.01, "6 dB → 2배");
+  const lam = 299792458 / 2.44e9; assert.ok(Math.abs(lam / 2 - 0.0614) < 0.001, "반 파장 약 6 cm");
+  assert.ok(Math.abs((V.aoaAngle(Math.PI / 2, lam / 2, lam) * 180) / Math.PI - 30) < 1e-9); assert.equal(V.aoaAngle(Math.PI / 2, lam / 2, lam), L.aoaAngle(Math.PI / 2, lam / 2, lam));
+  let cs = 0; for (let k = 2; k <= 76; k++) if (k <= 22 || k >= 26) cs++; assert.equal(cs, 72, "채널 사운딩 72채널");
+  assert.ok(Math.abs(299792458 / (2 * 1e6) - 150) < 0.2, "1 MHz 간격 → 150 m마다 되풀이");
+  console.log(`intro 7~10: g2 샘플 → ${0x2f9ed5ba % 1e6}, 15 µC/1 s → ${V.averageCurrentUa(2, 15, 1)} µA(${yrs(17).toFixed(2)}년), 창 넓히기 ${V.windowWideningUs(500, 2e6)} µs, 지연 195/45 ms, −71 dBm → ${V.rssiToDistance(-71, -59, 2).toFixed(2)} m`);
 }
 // 조건별 예시(영상의 막대 셋): 책의 함수로 다시 계산
 const ex = (w, d) => (B.wifiBlocked(w).size / 37) * d * 100;

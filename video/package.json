@@ -15,7 +15,12 @@
     "thumbnail:discover": "remotion still DiscoverThumbnail out/youtube-discover/thumbnail.png",
     "thumbnail:twokinds": "remotion still TwoKindsThumbnail out/youtube-twokinds/thumbnail.png",
     "thumbnail:range": "remotion still RangeThumbnail out/youtube-range/thumbnail.png",
-    "thumbnail:connection": "remotion still ConnectionThumbnail out/youtube-connection/thumbnail.png"
+    "thumbnail:connection": "remotion still ConnectionThumbnail out/youtube-connection/thumbnail.png",
+    "thumbnail:gatt": "remotion still GattThumbnail out/youtube-gatt/thumbnail.png",
+    "thumbnail:pairing": "remotion still PairingThumbnail out/youtube-pairing/thumbnail.png",
+    "thumbnail:power": "remotion still PowerThumbnail out/youtube-power/thumbnail.png",
+    "thumbnail:audio": "remotion still AudioThumbnail out/youtube-audio/thumbnail.png",
+    "thumbnail:locate": "remotion still LocateThumbnail out/youtube-locate/thumbnail.png"
   },
   "dependencies": {
     "@react-three/fiber": "9.8.2",
