@@ -40,6 +40,23 @@ window.YB_VIDEOS = [
     ],
   },
   {
+    id: "connection",
+    series: "블루투스 입문",
+    no: 5,
+    youtube: "EJ7lrAhbpAU",
+    embed: true,
+    title: "블루투스 켜 두면 배터리 닳을까?",
+    subtitle: "연결 간격·페리페럴 지연 쉽게 이해하기",
+    summary: "스마트워치는 하루 종일 휴대폰과 연결돼 있지만, LE의 연결은 끊기지 않는 선이 아니라 정확한 시간 약속이다. 연결 간격마다 1 ms도 안 되는 순간만 깨어나는 연결 이벤트, 반응 속도와 배터리를 맞바꾸는 간격, 약속을 건너뛰는 페리페럴 지연, 깨진 패킷을 한 비트(NESN)로 확인하고 다시 보내는 방법과 감독 타임아웃까지 따라갑니다.",
+    duration: "1:50",
+    published: "2026-10-25",
+    topics: ["블루투스"],
+    thumb: "assets/videos/connection.jpg",
+    chapters: [
+      { path: "bluetooth/chapters/connection.html", label: "BluetoothBook 입문 6장 · 연결: 약속된 시각의 짧은 만남", short: "입문 6장" },
+    ],
+  },
+  {
     id: "discover",
     series: "블루투스 입문",
     no: 3,

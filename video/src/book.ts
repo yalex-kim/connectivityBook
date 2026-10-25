@@ -147,3 +147,19 @@ export function maxRange(txDbm: number, extraLossDb: number, sensDbm: number, n:
 export const F_BT = 2.44e9; // 책 시뮬레이터와 같은 중심 주파수
 /** 같은 조건에서 dB만큼 예산이 늘거나 줄 때 도달 거리 배율 (maxRange의 비) */
 export const rangeFactor = (db: number, n: number) => Math.pow(10, db / (10 * n));
+
+/* ---------------------------------------------------------------- 입문 6장(connection.html)의 연결 파라미터 규칙 */
+/** 사양 규칙 검사. 시간 단위 µs. [Vol 6] Part B §4.5.1·§4.5.2 */
+export function checkConnParams(intervalUs: number, latency: number, subrate: number, timeoutMs: number, sci: boolean): string[] {
+  const errs: string[] = [];
+  if (intervalUs < 375 || intervalUs > 4e6 || intervalUs % 125) errs.push("간격은 125 µs 단위 375 µs ~ 4 s");
+  else if (!sci && (intervalUs < 7500 || intervalUs % 1250)) errs.push("SCI 미지원: 1.25 ms 단위 7.5 ms 이상(BCV)만");
+  if (subrate * (latency + 1) > 500) errs.push("subrate × (지연 + 1) ≤ 500");
+  if (timeoutMs < 100 || timeoutMs > 32000 || timeoutMs % 10) errs.push("타임아웃은 10 ms 단위 100 ms ~ 32 s");
+  if (!(timeoutMs * 1000 > (1 + latency) * subrate * intervalUs * 2)) errs.push("타임아웃 > (1 + 지연) × subrate × 간격 × 2");
+  return errs;
+}
+/** 빈 PDU 하나의 공중 시간(µs, LE 1M): 프리앰블 1 + 접근 주소 4 + 헤더 2 + CRC 3바이트. [Vol 6] Part B §2.1·§2.4 */
+export const EMPTY_PDU_US = (1 + 4 + 2 + 3) * 8;
+/** 빈 PDU를 한 번 주고받는 연결 이벤트의 길이(µs): 센트럴 → T_IFS 150 µs → 페리페럴 */
+export const EMPTY_EVENT_US = EMPTY_PDU_US + 150 + EMPTY_PDU_US;
