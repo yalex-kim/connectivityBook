@@ -26,6 +26,9 @@ import { ConnectionThumbnail } from "./connection/Thumbnail";
 import { Scheduling } from "./scheduling/Scheduling";
 import { framesFor as schedFrames } from "./scheduling/timing";
 import { SchedulingThumbnail } from "./scheduling/Thumbnail";
+import { Instant } from "./instant/Instant";
+import { framesFor as instantFrames } from "./instant/timing";
+import { InstantThumbnail } from "./instant/Thumbnail";
 import { RangeThumbnail } from "./range/Thumbnail";
 import { TwoKindsThumbnail } from "./twokinds/Thumbnail";
 import { framesFor as rangeFrames } from "./range/timing";
@@ -55,6 +58,9 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="Scheduling" component={Scheduling} defaultProps={{ voice: false }} durationInFrames={schedFrames(false)} fps={30} width={1920} height={1080} />
     <Composition id="SchedulingVoice" component={Scheduling} defaultProps={{ voice: true }} durationInFrames={schedFrames(true)} fps={30} width={1920} height={1080} />
     <Composition id="SchedulingThumbnail" component={SchedulingThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
+    <Composition id="Instant" component={Instant} defaultProps={{ voice: false }} durationInFrames={instantFrames(false)} fps={30} width={1920} height={1080} />
+    <Composition id="InstantVoice" component={Instant} defaultProps={{ voice: true }} durationInFrames={instantFrames(true)} fps={30} width={1920} height={1080} />
+    <Composition id="InstantThumbnail" component={InstantThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
     <Composition id="PairingThumbnail" component={PairingThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
     <Composition id="PowerThumbnail" component={PowerThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
     <Composition id="AudioThumbnail" component={AudioThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
