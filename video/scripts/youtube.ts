@@ -38,11 +38,13 @@ const srtTime = (sec: number) => {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")},${String(ms % 1000).padStart(3, "0")}`;
 };
 
-// 챕터: 장면 묶음의 시작 시각. 유튜브 규칙(0:00 시작, 3개 이상, 각 10초 이상)을 검사한다
+// 챕터: 장면 묶음의 시작 시각. 적는 시각은 초 단위로 올림한다(장면이 시작한 뒤를 가리키게).
+// 유튜브 규칙(0:00 시작, 3개 이상, 각 10초 이상)을 적힌 시각으로 검사하되, 딱 10초는 인식되지 않은 적이 있어 10초보다 길어야 통과시킨다.
 const at = (id: string) => starts[scenes.findIndex((s) => s.id === id)] / FPS;
-const chapters = YOUTUBE.chapters.map(([title, id], i) => {
-  const from = at(id), to = i + 1 < YOUTUBE.chapters.length ? at(YOUTUBE.chapters[i + 1][1]) : total;
-  if (to - from < 10) throw new Error(`챕터 "${title}"이 10초보다 짧다 (${(to - from).toFixed(1)}초)`);
+const stamps = YOUTUBE.chapters.map(([, id], i) => (i === 0 ? 0 : Math.ceil(at(id) - 1e-6)));
+const chapters = YOUTUBE.chapters.map(([title], i) => {
+  const from = stamps[i], to = i + 1 < stamps.length ? stamps[i + 1] : Math.floor(total);
+  if (to - from <= 10) throw new Error(`챕터 "${title}"이 10초보다 길지 않다 (${to - from}초)`);
   return `${mmss(from)} ${title}`;
 });
 if (!chapters[0].startsWith("0:00") || chapters.length < 3) throw new Error("챕터는 0:00에서 시작하고 3개 이상이어야 한다");
