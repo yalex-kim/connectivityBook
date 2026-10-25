@@ -1,10 +1,48 @@
 /* ConnectivityBook 영상 목록. 새 영상을 올리면 여기에 한 줄을 더한다(순서 = 서재에 보이는 순서).
    - embed: 유튜브에서 "퍼가기 허용"이 켜져 있으면 true(서재 안에서 재생), 꺼져 있으면 false(유튜브로 이동)
-   - chapters: 이 영상과 이어지는 책의 장. 그 장 본문에 "영상으로 보기" 상자가 자동으로 붙는다.
+   - series·no: 서재에서 묶음(시리즈)과 편 번호. 묶음 안에서는 편 번호 순으로 보인다.
+   - chapters: 이 영상과 이어지는 책의 장. 그 장 본문에 "영상으로 보기" 상자가 자동으로 붙는다. short는 서재 카드에 쓰는 짧은 이름.
    file:// 로 열어도 동작하도록 JSON fetch 대신 classic script로 둔다. */
 window.YB_VIDEOS = [
   {
+    id: "twokinds",
+    series: "블루투스 입문",
+    no: 1,
+    youtube: "dxuov0EbenM",
+    embed: true,
+    title: "같은 블루투스인데 왜 다르게 말할까?",
+    subtitle: "클래식과 LE 쉽게 이해하기",
+    summary: "무선 이어폰은 쉬지 않고 음악을 받는데, 분실물 태그는 거의 잠만 자다가 가끔 외친다. 블루투스라는 이름 아래 들어 있는 두 시스템, 선을 없애려고 만든 클래식(BR/EDR)과 작은 전지로 오래 버티려고 더한 LE를 그림과 3D로 비교합니다.",
+    duration: "1:26",
+    published: "2026-10-25",
+    topics: ["블루투스"],
+    thumb: "assets/videos/twokinds.jpg",
+    chapters: [
+      { path: "bluetooth/chapters/intro.html", label: "BluetoothBook 입문 1장 · 블루투스란 무엇인가", short: "입문 1장" },
+    ],
+  },
+  {
+    id: "range",
+    series: "블루투스 입문",
+    no: 2,
+    youtube: "hfWt2VxwBE4",
+    embed: true,
+    title: "블루투스는 몇 미터까지 될까?",
+    subtitle: "신호 세기의 예산, 링크 버짓 쉽게 이해하기",
+    summary: "10미터라던 블루투스가 뒷주머니에서는 1미터 남짓에서 끊기고, 어떤 기기는 훨씬 멀리서도 잡힌다. 거리·벽·사람 몸이 깎는 몫, 받는 쪽의 수신 감도, 느리고 꼼꼼하게 말해 더 멀리 가는 LE Coded까지 신호 세기의 예산으로 따라갑니다.",
+    duration: "2:02",
+    published: "2026-10-25",
+    topics: ["블루투스"],
+    thumb: "assets/videos/range.jpg",
+    chapters: [
+      { path: "bluetooth/chapters/radio.html", label: "BluetoothBook 입문 2장 · 2.4 GHz 전파와 데시벨", short: "입문 2장" },
+      { path: "bluetooth/chapters/phy.html", label: "BluetoothBook 입문 3장 · GFSK와 PHY", short: "입문 3장" },
+    ],
+  },
+  {
     id: "discover",
+    series: "블루투스 입문",
+    no: 3,
     youtube: "do1whEDnMOY",
     embed: true,
     title: "처음 보는 두 블루투스 기기는 어떻게 만날까?",
@@ -15,12 +53,14 @@ window.YB_VIDEOS = [
     topics: ["블루투스"],
     thumb: "assets/videos/discover.jpg",
     chapters: [
-      { path: "bluetooth/chapters/advertising.html", label: "BluetoothBook 입문 5장 · 광고와 스캔" },
-      { path: "bluetooth/chapters/connection.html", label: "BluetoothBook 입문 6장 · 연결" },
+      { path: "bluetooth/chapters/advertising.html", label: "BluetoothBook 입문 5장 · 광고와 스캔", short: "입문 5장" },
+      { path: "bluetooth/chapters/connection.html", label: "BluetoothBook 입문 6장 · 연결", short: "입문 6장" },
     ],
   },
   {
     id: "afh-wifi",
+    series: "블루투스 입문",
+    no: 4,
     youtube: "U0n4ZyQ5sv4",
     embed: true,
     title: "블루투스는 왜 Wi-Fi와 부딪히지 않을까?",
@@ -31,8 +71,8 @@ window.YB_VIDEOS = [
     topics: ["블루투스", "Wi-Fi"],
     thumb: "assets/videos/afh-wifi.jpg",
     chapters: [
-      { path: "bluetooth/chapters/hopping.html", label: "BluetoothBook 입문 4장 · 주파수 도약" },
-      { path: "bluetooth-deep/chapters/baseband.html", label: "BluetoothBook 심화 12장 · Classic 기저대역" },
+      { path: "bluetooth/chapters/hopping.html", label: "BluetoothBook 입문 4장 · 주파수 도약", short: "입문 4장" },
+      { path: "bluetooth-deep/chapters/baseband.html", label: "BluetoothBook 심화 12장 · Classic 기저대역", short: "심화 12장" },
     ],
   },
 ];
