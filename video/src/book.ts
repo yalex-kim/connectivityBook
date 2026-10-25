@@ -129,3 +129,21 @@ export function meanDiscovery(ta: number, ts: number, windowPct: number): number
   const fin = res.filter((x) => Number.isFinite(x));
   return fin.reduce((a, b) => a + b, 0) / fin.length;
 }
+
+/* ---------------------------------------------------------------- 입문 2장(radio.html)의 링크 버짓 */
+const LIGHT = 299792458;
+/** 자유 공간 경로 손실(dB) */
+export function fspl(dMeters: number, fHz: number): number {
+  return 20 * Math.log10((4 * Math.PI * dMeters * fHz) / LIGHT);
+}
+/** 실내 로그 거리 모델: 1 m까지 자유 공간, 그 뒤 10·n·log10(d) */
+export function pathLoss(dMeters: number, n: number, fHz: number): number {
+  return fspl(1, fHz) + 10 * n * Math.log10(Math.max(dMeters, 0.01));
+}
+/** 마진이 0이 되는 거리(m) */
+export function maxRange(txDbm: number, extraLossDb: number, sensDbm: number, n: number, fHz: number): number {
+  return Math.pow(10, (txDbm - extraLossDb - sensDbm - fspl(1, fHz)) / (10 * n));
+}
+export const F_BT = 2.44e9; // 책 시뮬레이터와 같은 중심 주파수
+/** 같은 조건에서 dB만큼 예산이 늘거나 줄 때 도달 거리 배율 (maxRange의 비) */
+export const rangeFactor = (db: number, n: number) => Math.pow(10, db / (10 * n));

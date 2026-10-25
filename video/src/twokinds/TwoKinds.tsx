@@ -5,12 +5,12 @@ import { Caption, Title, clamp, fade, useFont } from "../afh/parts";
 import { LEAD, scenesFor, type Timed } from "./timing";
 
 /* 색: 책 1장 그림과 같이 클래식(BR/EDR) = 청록, LE = 파랑 */
-const CL = C.accent2, LE = C.accent;
-const S = { fill: C.panel, stroke: C.text, strokeWidth: 4, strokeLinejoin: "round" as const };
-const at = (f: number, c: number, d = 20) => interpolate(f, [c, c + d], [0, 1], clamp);
+export const CL = C.accent2, LE = C.accent;
+export const S = { fill: C.panel, stroke: C.text, strokeWidth: 4, strokeLinejoin: "round" as const };
+export const at = (f: number, c: number, d = 20) => interpolate(f, [c, c + d], [0, 1], clamp);
 
 /* ---------------------------------------------------------------- 작은 그림들 */
-const Phone: React.FC<{ x: number; y: number; scale?: number }> = ({ x, y, scale = 1 }) => (
+export const Phone: React.FC<{ x: number; y: number; scale?: number }> = ({ x, y, scale = 1 }) => (
   <g transform={`translate(${x},${y}) scale(${scale})`}>
     <rect x={-62} y={-115} width={124} height={230} rx={20} {...S} />
     <rect x={-50} y={-96} width={100} height={180} rx={8} fill="#1d3557" />
@@ -18,7 +18,7 @@ const Phone: React.FC<{ x: number; y: number; scale?: number }> = ({ x, y, scale
   </g>
 );
 
-const Bud: React.FC<{ x: number; y: number; scale?: number }> = ({ x, y, scale = 1 }) => (
+export const Bud: React.FC<{ x: number; y: number; scale?: number }> = ({ x, y, scale = 1 }) => (
   <g transform={`translate(${x},${y}) scale(${scale})`}>
     {[-34, 34].map((bx) => (
       <g key={bx} transform={`translate(${bx},0) rotate(${bx < 0 ? 12 : -12})`}>
@@ -31,7 +31,7 @@ const Bud: React.FC<{ x: number; y: number; scale?: number }> = ({ x, y, scale =
 );
 
 /** 분실물 태그: on 0~1이면 불이 켜진다 */
-const Tag: React.FC<{ x: number; y: number; on: number; scale?: number }> = ({ x, y, on, scale = 1 }) => (
+export const Tag: React.FC<{ x: number; y: number; on: number; scale?: number }> = ({ x, y, on, scale = 1 }) => (
   <g transform={`translate(${x},${y}) scale(${scale})`}>
     <rect x={-48} y={-48} width={96} height={96} rx={26} {...S} />
     <circle cx={-24} cy={-24} r={9} fill={C.bg} stroke={C.text} strokeWidth={3} />
@@ -57,7 +57,7 @@ const Zzz: React.FC<{ x: number; y: number; f: number; a: number }> = ({ x, y, f
 );
 
 /** A→B 줄 위로 끊임없이 흐르는 점들 */
-const Stream: React.FC<{ a: [number, number]; b: [number, number]; f: number; col: string; on: number; n?: number; speed?: number; r?: number }> = ({ a, b, f, col, on, n = 8, speed = 0.025, r = 9 }) => (
+export const Stream: React.FC<{ a: [number, number]; b: [number, number]; f: number; col: string; on: number; n?: number; speed?: number; r?: number }> = ({ a, b, f, col, on, n = 8, speed = 0.025, r = 9 }) => (
   <g opacity={on}>
     <line x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} stroke={col} strokeWidth={3} opacity={0.35} />
     {Array.from({ length: n }, (_, i) => {
@@ -68,11 +68,11 @@ const Stream: React.FC<{ a: [number, number]; b: [number, number]; f: number; co
 );
 
 /** 가끔 한 번: period 프레임마다 점 하나가 A→B로 간다. 돌려주는 값 = 지금 깨어 있는 정도 */
-const pulseAt = (f: number, period: number, phase = 0) => {
+export const pulseAt = (f: number, period: number, phase = 0) => {
   const t = (f + phase) % period;
   return t < 24 ? t / 24 : -1;
 };
-const Pulse: React.FC<{ a: [number, number]; b: [number, number]; f: number; col: string; on: number; period?: number; phase?: number }> = ({ a, b, f, col, on, period = 80, phase = 0 }) => {
+export const Pulse: React.FC<{ a: [number, number]; b: [number, number]; f: number; col: string; on: number; period?: number; phase?: number }> = ({ a, b, f, col, on, period = 80, phase = 0 }) => {
   const p = pulseAt(f, period, phase);
   return (
     <g opacity={on}>
@@ -97,7 +97,7 @@ const Talk: React.FC<{ x: number; y: number; w: number; kind: "classic" | "le"; 
   );
 };
 
-const Chip: React.FC<{ x: number; y: number; col: string; children: string; a?: number; size?: number }> = ({ x, y, col, children, a = 1, size = 30 }) => {
+export const Chip: React.FC<{ x: number; y: number; col: string; children: string; a?: number; size?: number }> = ({ x, y, col, children, a = 1, size = 30 }) => {
   const w = children.length * size * 0.62 + 44;
   return (
     <g opacity={a} transform={`translate(${x},${y})`} fontFamily={FONT}>
@@ -107,7 +107,7 @@ const Chip: React.FC<{ x: number; y: number; col: string; children: string; a?: 
   );
 };
 
-const Label: React.FC<{ x: number; y: number; children: string; a?: number }> = ({ x, y, children, a = 1 }) => (
+export const Label: React.FC<{ x: number; y: number; children: string; a?: number }> = ({ x, y, children, a = 1 }) => (
   <text x={x} y={y} textAnchor="middle" fill={C.dim} fontFamily={FONT} fontSize={28} fontWeight={700} opacity={a}>{children}</text>
 );
 
