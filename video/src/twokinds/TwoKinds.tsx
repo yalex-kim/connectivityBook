@@ -279,7 +279,7 @@ const LeScene: React.FC<{ cues: number[]; len: number }> = ({ cues, len }) => {
 /* ---------------------------------------------------------------- 5. 채널 (3D) */
 // 가로 = 주파수(1 MHz = 1, 2441 MHz가 가운데). 앞줄 = 클래식 79채널(2402 + k, 낮게), 뒷줄 = LE 40채널(2402 + 2k, 높게)
 const X = (mhz: number) => mhz - 2441;
-const Lanes3D: React.FC<{ f: number; len: number; cues: number[] }> = ({ f, len, cues }) => {
+export const Lanes3D: React.FC<{ f: number; len: number; cues: number[] }> = ({ f, len, cues }) => {
   const cl = interpolate(f, [cues[1], cues[1] + 50], [0, 1], clamp), le = interpolate(f, [cues[2], cues[2] + 40], [0, 1], clamp);
   const cam = camLerp({ pos: [0, 52, 96], look: [0, 0, 0], fov: 40 }, { pos: [-34, 40, 74], look: [-2, 2, 0], fov: 40 }, f / len);
   return (
