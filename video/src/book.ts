@@ -174,3 +174,15 @@ export function parseHeartRate(bytes: number[]): HeartRate {
   out.rrs = []; if (out.rr) while (i + 1 < bytes.length) { out.rrs.push((bytes[i] | (bytes[i + 1] << 8)) / 1024); i += 2; }
   return out;
 }
+
+/* ---------------------------------------------------------------- 입문 9·10·11장의 계산 (power.html, audio.html, location.html) */
+/** 평균 전류(µA) = 수면 전류 + 이벤트 전하(µC) ÷ 간격(s) */
+export function averageCurrentUa(sleepUa: number, eventQuC: number, intervalS: number): number { return sleepUa + eventQuC / intervalS; }
+/** 창 넓히기(µs): 마지막 동기 이후 시간 × 시계 오차 + 16 µs. [Vol 6] Part B §4.5.7 */
+export function windowWideningUs(ppm: number, sinceSyncUs: number): number { return (ppm / 1e6) * sinceSyncUs + 16; }
+/** CIS 전달 확률: 서브이벤트 NSE, 버스트 BN, 기한 FT, 한 번 보낼 때 손실 p */
+export function cisDelivery(p: number, nse: number, bn: number, ft: number): number { return 1 - Math.pow(p, (nse / bn) * ft); }
+/** RSSI → 거리(m) */
+export function rssiToDistance(rssi: number, p1m: number, n: number): number { return Math.pow(10, (p1m - rssi) / (10 * n)); }
+/** 두 안테나의 위상 차 → 도래각(rad) */
+export function aoaAngle(dphi: number, d: number, lambda: number): number { const s = (dphi * lambda) / (2 * Math.PI * d); return Math.abs(s) <= 1 ? Math.asin(s) : NaN; }

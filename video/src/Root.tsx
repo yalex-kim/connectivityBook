@@ -10,6 +10,15 @@ import { framesFor as twoKindsFrames } from "./twokinds/timing";
 import { Range } from "./range/Range";
 import { Connection } from "./connection/Connection";
 import { Gatt } from "./gatt/Gatt";
+import { Pairing } from "./pairing/Pairing";
+import { framesFor as pairingFrames } from "./pairing/timing";
+import { Power } from "./power/Power";
+import { framesFor as powerFrames } from "./power/timing";
+import { AudioVideo } from "./audio/Audio";
+import { framesFor as audioFrames } from "./audio/timing";
+import { Locate } from "./locate/Locate";
+import { framesFor as locateFrames } from "./locate/timing";
+import { PairingThumbnail, PowerThumbnail, AudioThumbnail, LocateThumbnail } from "./common/Thumbs";
 import { framesFor as gattFrames } from "./gatt/timing";
 import { GattThumbnail } from "./gatt/Thumbnail";
 import { framesFor as connFrames } from "./connection/timing";
@@ -32,6 +41,18 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="ConnectionVoice" component={Connection} defaultProps={{ voice: true }} durationInFrames={connFrames(true)} fps={30} width={1920} height={1080} />
     <Composition id="Gatt" component={Gatt} defaultProps={{ voice: false }} durationInFrames={gattFrames(false)} fps={30} width={1920} height={1080} />
     <Composition id="GattVoice" component={Gatt} defaultProps={{ voice: true }} durationInFrames={gattFrames(true)} fps={30} width={1920} height={1080} />
+    <Composition id="Pairing" component={Pairing} defaultProps={{ voice: false }} durationInFrames={pairingFrames(false)} fps={30} width={1920} height={1080} />
+    <Composition id="PairingVoice" component={Pairing} defaultProps={{ voice: true }} durationInFrames={pairingFrames(true)} fps={30} width={1920} height={1080} />
+    <Composition id="Power" component={Power} defaultProps={{ voice: false }} durationInFrames={powerFrames(false)} fps={30} width={1920} height={1080} />
+    <Composition id="PowerVoice" component={Power} defaultProps={{ voice: true }} durationInFrames={powerFrames(true)} fps={30} width={1920} height={1080} />
+    <Composition id="Audio" component={AudioVideo} defaultProps={{ voice: false }} durationInFrames={audioFrames(false)} fps={30} width={1920} height={1080} />
+    <Composition id="AudioVoice" component={AudioVideo} defaultProps={{ voice: true }} durationInFrames={audioFrames(true)} fps={30} width={1920} height={1080} />
+    <Composition id="Locate" component={Locate} defaultProps={{ voice: false }} durationInFrames={locateFrames(false)} fps={30} width={1920} height={1080} />
+    <Composition id="LocateVoice" component={Locate} defaultProps={{ voice: true }} durationInFrames={locateFrames(true)} fps={30} width={1920} height={1080} />
+    <Composition id="PairingThumbnail" component={PairingThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
+    <Composition id="PowerThumbnail" component={PowerThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
+    <Composition id="AudioThumbnail" component={AudioThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
+    <Composition id="LocateThumbnail" component={LocateThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
     <Composition id="GattThumbnail" component={GattThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
     <Composition id="ConnectionThumbnail" component={ConnectionThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
     <Composition id="TwoKindsThumbnail" component={TwoKindsThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
