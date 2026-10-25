@@ -6,6 +6,7 @@
  *   VIDEO=twokinds npm run youtube  → 같은 블루투스인데 왜 다르게 말할까, out/youtube-twokinds/
  *   VIDEO=range npm run youtube     → 블루투스는 몇 미터까지 될까, out/youtube-range/
  *   VIDEO=connection npm run youtube → 블루투스 켜 두면 배터리 닳을까, out/youtube-connection/
+ *   VIDEO=gatt npm run youtube       → 처음 보는 심박계인데 앱은 어떻게 심박수를 읽을까, out/youtube-gatt/
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -24,9 +25,12 @@ import * as rgY from "../src/range/youtube";
 import * as cnS from "../src/connection/script";
 import * as cnT from "../src/connection/timing";
 import * as cnY from "../src/connection/youtube";
+import * as gtS from "../src/gatt/script";
+import * as gtT from "../src/gatt/timing";
+import * as gtY from "../src/gatt/youtube";
 
 const VIDEO = process.env.VIDEO || "afh";
-const V = { afh: [afhS, afhT, afhY], discover: [disS, disT, disY], twokinds: [tkS, tkT, tkY], range: [rgS, rgT, rgY], connection: [cnS, cnT, cnY] }[VIDEO] as unknown as [typeof afhS, typeof afhT, typeof afhY];
+const V = { afh: [afhS, afhT, afhY], discover: [disS, disT, disY], twokinds: [tkS, tkT, tkY], range: [rgS, rgT, rgY], connection: [cnS, cnT, cnY], gatt: [gtS, gtT, gtY] }[VIDEO] as unknown as [typeof afhS, typeof afhT, typeof afhY];
 if (!V) throw new Error(`모르는 영상: ${VIDEO}`);
 const [{ SCENES }, { scenesFor, startsFor, sentenceEnd, framesFor }, { YOUTUBE }] = V;
 const FPS = 30, OUT = path.join(__dirname, "..", "out", VIDEO === "afh" ? "youtube" : `youtube-${VIDEO}`);

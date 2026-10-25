@@ -15,7 +15,8 @@
     "thumbnail:discover": "remotion still DiscoverThumbnail out/youtube-discover/thumbnail.png",
     "thumbnail:twokinds": "remotion still TwoKindsThumbnail out/youtube-twokinds/thumbnail.png",
     "thumbnail:range": "remotion still RangeThumbnail out/youtube-range/thumbnail.png",
-    "thumbnail:connection": "remotion still ConnectionThumbnail out/youtube-connection/thumbnail.png"
+    "thumbnail:connection": "remotion still ConnectionThumbnail out/youtube-connection/thumbnail.png",
+    "thumbnail:gatt": "remotion still GattThumbnail out/youtube-gatt/thumbnail.png"
   },
   "dependencies": {
     "@react-three/fiber": "9.8.2",

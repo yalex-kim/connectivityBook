@@ -28,7 +28,7 @@ const big = V.simulate(20000, false), lossHop = big.filter((e) => e.hit).length 
 assert.ok(Math.abs(lossHop - 31 / 74) < 0.02, `무작위 도약 손실 ${lossHop}`);
 assert.equal(V.simulate(2000, true).filter((e) => e.hit).length, 0, "적응형 도약은 손실 0");
 // 대본: say와 caption의 문장 수가 같고, say에 숫자가 없고, 나레이션 음성(durations.json)이 지금 문장으로 만든 것인지
-for (const video of ["afh", "discover", "twokinds", "range", "connection"]) {
+for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt"]) {
   const src = fs.readFileSync(new URL(`../src/${video}/script.ts`, import.meta.url), "utf8");
   const dur = JSON.parse(fs.readFileSync(new URL(`../src/${video}/durations.json`, import.meta.url), "utf8"));
   const voiced = Object.keys(dur).length > 0; // 무음판 단계면 음성 검사는 건너뛴다
@@ -107,6 +107,19 @@ for (const video of ["afh", "discover", "twokinds", "range", "connection"]) {
   assert.equal(V.checkConnParams(50000, 4, 1, 2000, false).length, 0, "예시 파라미터(50 ms, 지연 4, 타임아웃 2 s)는 유효");
   assert.ok(V.checkConnParams(50000, 4, 1, 500, false).length > 0, "타임아웃 500 ms는 규칙 위반(쉬는 시간 250 ms × 2와 같음)");
   console.log(`connection: 빈 이벤트 ${V.EMPTY_EVENT_US} µs, 50 ms 간격에서 깨어 있는 비율 ${(V.EMPTY_EVENT_US / 50000 * 100).toFixed(2)}%`);
+}
+// 처음 보는 심박계: 심박 측정값 해석이 책 7장(gatt.html)과 같은가, 그리고 영상의 바이트
+{
+  const g = fs.readFileSync(new URL("../../bluetooth/chapters/gatt.html", import.meta.url), "utf8");
+  const fn7 = (name) => { const i = g.indexOf(`  function ${name}(`); let d = 0, j = g.indexOf("{", i); for (; j < g.length; j++) { if (g[j] === "{") d++; else if (g[j] === "}" && --d === 0) break; } return g.slice(i, j + 1); };
+  const c7 = vm.createContext({});
+  vm.runInContext(fn7("parseHeartRate") + "\nthis.B7 = { parseHeartRate };", c7);
+  const samples = [[0x00, 0x48], [0x01, 0x2c, 0x01], [0x16, 0x50, 0x00, 0x04, 0x10, 0x04], [0x19, 0x48, 0x00, 0x0a, 0x00, 0x00, 0x04], [0x06, 0xb4]];
+  for (const s of samples) { assert.equal(JSON.stringify(V.parseHeartRate(s)), JSON.stringify(c7.B7.parseHeartRate(s))); n++; }
+  assert.equal(V.parseHeartRate([0x00, 0x48]).bpm, 72); assert.equal(0x48, 72); // 영상: 00 48 → 72
+  // 영상의 A사 메뉴판 = 책 시뮬레이터의 DB: 심박 서비스 0x0008, 심박 측정값 값 0x000A, CCCD 0x000B
+  assert.ok(g.includes("[0x0008, 0x2800") && g.includes("[0x000a, 0x2a37") && g.includes("[0x000b, 0x2902"));
+  console.log(`gatt: 00 48 → ${V.parseHeartRate([0x00, 0x48]).bpm} bpm`);
 }
 // 조건별 예시(영상의 막대 셋): 책의 함수로 다시 계산
 const ex = (w, d) => (B.wifiBlocked(w).size / 37) * d * 100;

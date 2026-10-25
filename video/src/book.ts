@@ -163,3 +163,14 @@ export function checkConnParams(intervalUs: number, latency: number, subrate: nu
 export const EMPTY_PDU_US = (1 + 4 + 2 + 3) * 8;
 /** 빈 PDU를 한 번 주고받는 연결 이벤트의 길이(µs): 센트럴 → T_IFS 150 µs → 페리페럴 */
 export const EMPTY_EVENT_US = EMPTY_PDU_US + 150 + EMPTY_PDU_US;
+
+/* ---------------------------------------------------------------- 입문 7장(gatt.html)의 심박 측정값 해석 (Heart Rate Service 사양, Core 밖) */
+export type HeartRate = { u16: boolean; contact: number; energy: boolean; rr: boolean; bpm: number; kj?: number; rrs: number[] };
+export function parseHeartRate(bytes: number[]): HeartRate {
+  const f = bytes[0], out = { u16: !!(f & 1), contact: (f >> 1) & 3, energy: !!(f & 8), rr: !!(f & 16) } as HeartRate;
+  let i = 1;
+  out.bpm = out.u16 ? bytes[i] | (bytes[i + 1] << 8) : bytes[i]; i += out.u16 ? 2 : 1;
+  if (out.energy) { out.kj = bytes[i] | (bytes[i + 1] << 8); i += 2; }
+  out.rrs = []; if (out.rr) while (i + 1 < bytes.length) { out.rrs.push((bytes[i] | (bytes[i + 1] << 8)) / 1024); i += 2; }
+  return out;
+}
