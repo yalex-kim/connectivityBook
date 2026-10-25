@@ -2,8 +2,9 @@ import { AbsoluteFill, Audio, interpolate, Sequence, staticFile, useCurrentFrame
 import { C, FONT } from "../theme";
 import { F_BT, pathLoss, rangeFactor } from "../book";
 import { Caption, Title, clamp, fade, useFont } from "../afh/parts";
-import { CL, LE, S, at, Phone, Bud, Tag, Pulse, Chip, Label } from "../twokinds/TwoKinds";
+import { CL, LE, S, at, Chip } from "../twokinds/TwoKinds";
 import { LEAD, scenesFor, type Timed } from "./timing";
+import { Hook3D } from "./hook3d";
 
 /* 링크 버짓 예시 조건(책 2장 시뮬레이터와 같은 모델): 송신 0 dBm, 집(n = 2.7), 10 m, 벽·몸 각 −12 dB, 칩 감도 −95 dBm(대표값) */
 const N_HOME = 2.7, D_EX = 10, WALL = 12, BODY = 12, SENS_CHIP = -95, SENS_SPEC = -70, SENS_S8 = -82, FADE = 10;
@@ -34,38 +35,6 @@ const MiniPhone: React.FC<{ x: number; y: number; scale?: number }> = ({ x, y, s
 const Cross: React.FC<{ x: number; y: number; a: number; r?: number }> = ({ x, y, a, r = 22 }) => (
   <path d={`M${x - r} ${y - r} L${x + r} ${y + r} M${x + r} ${y - r} L${x - r} ${y + r}`} stroke={BAD} strokeWidth={9} strokeLinecap="round" opacity={a} />
 );
-
-/* ---------------------------------------------------------------- 1. 훅 */
-const Hook: React.FC<{ cues: number[] }> = ({ cues }) => {
-  const f = useCurrentFrame(), px = 430, py = 330, e = ear(px, py), p = pocket(px, py);
-  const broke = at(f, cues[1] + 30), far = at(f, cues[2]), q = at(f, cues[3]);
-  const flicker = broke > 0 ? (Math.floor(f / 6) % 3 === 0 ? 0.2 : 1) : 1;
-  return (
-    <svg width={1920} height={1080} viewBox="0 0 1920 1080" style={{ position: "absolute", inset: 0 }} fontFamily={FONT}>
-      <g opacity={at(f, 0)}>
-        <line x1={760} x2={1760} y1={200} y2={200} stroke={C.dim} strokeWidth={4} />
-        {Array.from({ length: 11 }, (_, i) => <line key={i} x1={760 + i * 100} x2={760 + i * 100} y1={200} y2={i % 5 ? 220 : 236} stroke={C.dim} strokeWidth={4} />)}
-        <text x={760} y={180} textAnchor="middle" fill={C.dim} fontSize={26} fontWeight={700}>0</text>
-        <text x={1760} y={180} textAnchor="middle" fill={C.text} fontSize={34} fontWeight={900}>10 m ?</text>
-      </g>
-      <g opacity={at(f, cues[1])}>
-        <line x1={p[0]} y1={p[1]} x2={e[0]} y2={e[1]} stroke={CL} strokeWidth={5} strokeDasharray="12 10" opacity={flicker} />
-        <Cross x={(p[0] + e[0]) / 2 - 10} y={(p[1] + e[1]) / 2} a={broke} />
-        <text x={px - 190} y={py + 230} textAnchor="middle" fill={BAD} fontSize={28} fontWeight={800} opacity={broke}>뚝뚝</text>
-      </g>
-      <Person x={px} y={py} />
-      <MiniPhone x={p[0]} y={p[1]} scale={0.9} />
-      <Label x={px} y={py + 620} a={at(f, cues[1])}>뒷주머니 → 귀: 약 1 m</Label>
-      <g opacity={far}>
-        <Phone x={900} y={560} scale={0.8} />
-        <Pulse a={[1690, 560]} b={[970, 560]} f={f} col={LE} on={1} period={70} />
-        <Tag x={1750} y={560} on={1} scale={0.9} />
-        <Label x={1325} y={640}>훨씬 먼 곳</Label>
-      </g>
-      <text x={1325} y={800} textAnchor="middle" fill={C.accent} opacity={q} fontSize={120} fontWeight={900}>?</text>
-    </svg>
-  );
-};
 
 /* ---------------------------------------------------------------- 세기 눈금(dBm) */
 const Y0 = 250, PX_DB = 5.2; // 0 dBm의 화면 y, 1 dB의 높이
@@ -380,7 +349,7 @@ const Outro: React.FC<{ cues: number[] }> = ({ cues }) => {
 
 const body = (s: Timed) => {
   switch (s.id) {
-    case "hook": return <Hook cues={s.cues} />;
+    case "hook": return <Hook3D cues={s.cues} len={s.frames} />;
     case "budget": return <Budget cues={s.cues} />;
     case "distance": return <Distance cues={s.cues} len={s.frames} />;
     case "body": return <Body cues={s.cues} len={s.frames} />;
