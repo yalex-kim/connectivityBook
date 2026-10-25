@@ -30,7 +30,7 @@ const Rig: React.FC<{ cam: Cam }> = ({ cam }) => {
   return null;
 };
 
-const Scene3D: React.FC<{ cam: Cam; children: React.ReactNode }> = ({ cam, children }) => (
+export const Scene3D: React.FC<{ cam: Cam; children: React.ReactNode }> = ({ cam, children }) => (
   <ThreeCanvas width={1920} height={1080} style={{ position: "absolute", inset: 0 }} camera={{ fov: 40, near: 0.5, far: 600, position: cam.pos }} gl={{ antialias: true }}>
     <Rig cam={cam} />
     <ambientLight intensity={0.55} />
@@ -40,7 +40,7 @@ const Scene3D: React.FC<{ cam: Cam; children: React.ReactNode }> = ({ cam, child
   </ThreeCanvas>
 );
 
-const Floor: React.FC<{ depth?: number; z?: number }> = ({ depth = 40, z = 0 }) => (
+export const Floor: React.FC<{ depth?: number; z?: number }> = ({ depth = 40, z = 0 }) => (
   <group position={[0, 0, z]}>
     <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, 0]}>
       <planeGeometry args={[110, depth]} />

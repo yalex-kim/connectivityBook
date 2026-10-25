@@ -28,7 +28,7 @@ const big = V.simulate(20000, false), lossHop = big.filter((e) => e.hit).length 
 assert.ok(Math.abs(lossHop - 31 / 74) < 0.02, `무작위 도약 손실 ${lossHop}`);
 assert.equal(V.simulate(2000, true).filter((e) => e.hit).length, 0, "적응형 도약은 손실 0");
 // 대본: say와 caption의 문장 수가 같고, say에 숫자가 없고, 나레이션 음성(durations.json)이 지금 문장으로 만든 것인지
-for (const video of ["afh", "discover"]) {
+for (const video of ["afh", "discover", "twokinds", "range"]) {
   const src = fs.readFileSync(new URL(`../src/${video}/script.ts`, import.meta.url), "utf8");
   const dur = JSON.parse(fs.readFileSync(new URL(`../src/${video}/durations.json`, import.meta.url), "utf8"));
   const voiced = Object.keys(dur).length > 0; // 무음판 단계면 음성 검사는 건너뛴다
@@ -73,6 +73,25 @@ for (const video of ["afh", "discover"]) {
   assert.ok(M[0] < 0.1, `가장 빠른 조건 ${M[0]}`); assert.ok(F[3] < 0.5, `가장 느린 조건 1분 안 ${F[3]}`); n += 2;
   assert.ok(F.slice(0, 3).every((x) => x === 1), "앞의 세 조건은 모두 1분 안에 찾음(평균만 보여 줘도 됨)"); n++;
   console.log(`discover: 발견 평균 ${M.map((x) => x.toFixed(2) + " s").join(", ")} · 1분 안에 찾은 비율 ${F.map((x) => Math.round(x * 100) + "%").join(", ")}`);
+}
+// 몇 미터까지 될까: 링크 버짓 계산이 책 2장(radio.html)과 같은가, 그리고 나레이션이 말하는 수치
+{
+  const radio = fs.readFileSync(new URL("../../bluetooth/chapters/radio.html", import.meta.url), "utf8");
+  const fn2 = (name) => { const i = radio.indexOf(`  function ${name}(`); let d = 0, j = radio.indexOf("{", i); for (; j < radio.length; j++) { if (radio[j] === "{") d++; else if (radio[j] === "}" && --d === 0) break; } return radio.slice(i, j + 1); };
+  const c2 = vm.createContext({ Math, C: 299792458 });
+  vm.runInContext(["fspl", "pathLoss", "maxRange"].map(fn2).join("\n") + "\nthis.B2 = { fspl, pathLoss, maxRange };", c2);
+  const B2 = c2.B2, F = 2.44e9;
+  assert.ok(radio.includes("const C = 299792458;"));
+  for (const d of [0.3, 1, 2, 7.5, 40, 300]) for (const nn of [2, 2.7, 3.3]) { assert.equal(V.pathLoss(d, nn, F), B2.pathLoss(d, nn, F)); assert.equal(V.maxRange(0, 12, -97, nn, F), B2.maxRange(0, 12, -97, nn, F)); n += 2; }
+  const fs1 = V.fspl(1, F);
+  assert.ok(Math.abs(fs1 - 40) < 0.5, `1 m 손실 ${fs1} ≈ 40 dB(만분의 일)`);
+  assert.ok(Math.abs(V.fspl(2, F) - fs1 - 6.02) < 0.01, "거리 두 배 = 6 dB(사분의 일)");
+  assert.ok(Math.abs(10 ** ((-70 - -95) / 10) - 316) < 1, "사양 −70 vs 칩 −95 dBm = 수백 배");
+  assert.ok(Math.abs(10 ** ((-70 - -82) / 10) - 15.85) < 0.01, "Coded S=8 감도 요구 12 dB = 약 16배");
+  const r = (db, nn) => V.maxRange(0, -db, -97, nn, F) / V.maxRange(0, 0, -97, nn, F);
+  assert.ok(Math.abs(r(12, 2) - 3.98) < 0.01, "트인 곳 4배"); assert.ok(r(12, 2.7) > 2 && r(12, 3.3) < 3, "실내 2~3배");
+  for (const [db, nn] of [[12, 2], [12, 2.7], [-12, 2.7]]) { assert.ok(Math.abs(V.rangeFactor(db, nn) - r(db, nn)) < 1e-9); n++; }
+  console.log(`range: 1 m ${fs1.toFixed(1)} dB · S=8 거리 배율 트인 곳 ${r(12, 2).toFixed(2)} · 집 ${r(12, 2.7).toFixed(2)} · 사무실 ${r(12, 3.3).toFixed(2)} · 몸(−12 dB, 집) ${r(-12, 2.7).toFixed(2)}`);
 }
 // 조건별 예시(영상의 막대 셋): 책의 함수로 다시 계산
 const ex = (w, d) => (B.wifiBlocked(w).size / 37) * d * 100;
