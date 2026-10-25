@@ -288,7 +288,13 @@ const Lost: React.FC<{ cues: number[]; len: number }> = ({ cues, len }) => {
       <rect x={x} y={y} width={200} height={64} rx={10} fill={col} />
       <text x={x + 100} y={y + 28} textAnchor="middle" fill={C.bg} fontSize={22} fontWeight={900}>{top}</text>
       <text x={x + 100} y={y + 54} textAnchor="middle" fill={C.bg} fontSize={18} fontWeight={700}>{sub}</text>
-      {bad > 0 && <path d={`M${x + 70} ${y + 4} l60 56 M${x + 130} ${y + 4} l-60 56`} stroke={BAD} strokeWidth={9} strokeLinecap="round" opacity={bad} />}
+      {bad > 0 && (
+        <g opacity={bad}>
+          <circle cx={x + 196} cy={y + 2} r={24} fill={BAD} />
+          <path d={`M${x + 186} ${y - 8} l20 20 M${x + 206} ${y - 8} l-20 20`} stroke="#fff" strokeWidth={5} strokeLinecap="round" />
+          <text x={x + 230} y={y + 10} fill={BAD} fontSize={24} fontWeight={800}>깨짐</text>
+        </g>
+      )}
     </g>
   );
   const fill = interpolate(f, [cues[3] + 10, cues[4] - 10], [0, 1], clamp);
@@ -311,6 +317,13 @@ const Lost: React.FC<{ cues: number[]; len: number }> = ({ cues, len }) => {
           {pkt(1250, 470, WT, "대답", "NESN 1 (뒤집힘)", re)}
           <text x={1350} y={590} textAnchor="middle" fill={OK} fontSize={24} fontWeight={800} opacity={re}>✓ 받음 → 다음 메시지로</text>
           <path d="M760 400 H960 M940 386 L962 400 L940 414" stroke={C.faint} strokeWidth={4} fill="none" opacity={re} />
+          {/* SN·NESN 설명 상자: 패킷 머리(헤더)의 1비트 두 개. [Vol 6] Part B §4.5.9 */}
+          <g opacity={bit}>
+            <rect x={220} y={640} width={1480} height={190} rx={20} fill={C.panel} stroke={C.warn} strokeWidth={3} />
+            <text x={250} y={690} fill={C.text} fontSize={28} fontWeight={800}><tspan fill={PH}>SN</tspan> = 이 패킷의 번호. 새 패킷을 보낼 때마다 0 ↔ 1로 바꾼다</text>
+            <text x={250} y={740} fill={C.text} fontSize={28} fontWeight={800}><tspan fill={C.warn}>NESN</tspan> = 다음에 받고 싶은 번호. 잘 받으면 뒤집어서 대답에 싣는다</text>
+            <text x={250} y={790} fill={C.dim} fontSize={26} fontWeight={700}>대답의 NESN이 뒤집혀 오면 <tspan fill={OK}>“받았다”</tspan> → 다음 패킷 · 그대로면 <tspan fill={BAD}>“못 받았다”</tspan> → 같은 패킷을 다시</text>
+          </g>
         </g>
         <g opacity={sto}>
           <text x={220} y={320} fill={C.text} fontSize={28} fontWeight={800}>아무것도 받지 못한 시간</text>
