@@ -189,6 +189,13 @@ for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt
   assert.ok(sch.includes("센트럴이 연결 여섯 개를 7.5 ms 간격으로 유지하고, 각 연결이 매 이벤트에 2.5 ms씩 쓴다"));
   assert.ok(scr.includes("SHORT = { period: 7.5, dur: 2.5, n: 6 }")); assert.equal(2.5 * 6, 15); assert.equal(Math.floor(7.5 / 2.5), 3);
   assert.ok(sch.includes("감독 타임아웃 안에 적어도 한 번은 보내야") && sch.includes("감독 타임아웃 안에 적어도 한 번은 들어야 한다") && sch.includes("0x08"));
+  // 몇 개까지: 이어폰(20%) + 30 ms마다 4 ms 연결 6개 = 100%, FIT 자리면 건너뜀 0, 7번째는 자리가 없다
+  const FIT = JSON.parse(scr.match(/FIT = (\[[^\]]*\])/)[1]);
+  const fitT = (k) => [{ name: "ear", period: EAR.period, dur: EAR.dur, prio: 9, offset: 0 }, ...[...FIT, 8].slice(0, k).map((o, i) => ({ name: "c" + i, period: CONN.period, dur: CONN.dur, prio: 8 - i, offset: o }))];
+  assert.equal(FIT.length, 6); assert.ok(Math.abs(EAR.dur / EAR.period + 6 * CONN.dur / CONN.period - 1) < 1e-12, "20% + 6 × 13.3% = 100%");
+  assert.ok(Object.values(cs.sched(fitT(6), 1000, "fixed").stats).every((x) => x.skipped === 0), "6개는 건너뜀 0");
+  for (let o = 0; o < 30; o += 0.5) { const T = fitT(6); T.push({ name: "c6", period: CONN.period, dur: CONN.dur, prio: 1, offset: o }); assert.ok(cs.sched(T, 1000, "fixed").stats.c6.skipped > 0, `7번째(${o} ms)는 자리가 없다`); }
+  assert.equal(Math.round(EAR.dur / EAR.period * 100), 20); assert.equal(Math.round(CONN.dur / CONN.period * 100), 13);
   n += 8;
   console.log(`scheduling: 엇갈림 건너뜀 ${["ear", "watch", "kb"].map((k) => stag[k].skipped).join("/")}, 고정 키보드 ${fixed.kb.skipped}번 건너뜀, 굶은 만큼 공백 ${fair.watch.maxGap}/${fair.kb.maxGap} ms`);
 }

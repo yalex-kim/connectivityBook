@@ -8,7 +8,7 @@ import { project, Dots } from "../range/hook3d";
 import { Phone3D, Watch3D } from "../connection/Connection";
 import { Buds } from "../pairing/Pairing";
 import { Ground, Note, makeVideo } from "../common/kit";
-import { CLASH, CONN, EAR, SHORT, STAGGER } from "./script";
+import { CLASH, CONN, EAR, FIT, SHORT, STAGGER } from "./script";
 import { LEAD, scenesFor, type Timed } from "./timing";
 
 /* 색: 이어폰(LE 오디오) = 분홍, 워치 = 청록, 키보드 = 노랑, 건너뜀 = 빨강 */
@@ -297,7 +297,60 @@ const Short: React.FC<{ cues: number[] }> = ({ cues }) => {
   );
 };
 
-/* ---------------------------------------------------------------- 7. 정리 (3D 위에 정리 문장) */
+/* ---------------------------------------------------------------- 7. 그래서 몇 개까지? */
+const FIT_RUN = schedule([{ name: "ear", period: EAR.period, dur: EAR.dur, prio: 9, offset: 0 }, ...FIT.map((o, i) => ({ name: `c${i}`, period: CONN.period, dur: CONN.dur, prio: 8 - i, offset: o }))], 1000, "fixed");
+const Count: React.FC<{ cues: number[] }> = ({ cues }) => {
+  const f = useCurrentFrame(), spec = at(f, cues[1]), sum = at(f, cues[2]), ex = interpolate(f, [cues[3], cues[3] + 70], [0, FIT.length + 2], clamp), real = at(f, cues[4]);
+  const X0 = 360, W = 1200, U = (p: number) => (p / 100) * W, earU = (EAR.dur / EAR.period) * 100, cU = (CONN.dur / CONN.period) * 100;
+  const segCol = (i: number) => (i % 2 ? KBC : WATC);
+  const box = (x: number, title: string, body: string, col: string) => (
+    <g transform={`translate(${x},230)`}>
+      <rect x={0} y={0} width={580} height={120} rx={20} fill={C.panel} stroke={col} strokeWidth={3} />
+      <text x={30} y={50} fill={col} fontSize={30} fontWeight={900}>{title}</text>
+      <text x={30} y={92} fill={C.text} fontSize={24} fontWeight={700}>{body}</text>
+    </g>
+  );
+  const TX = (t: number) => X0 + (t / CONN.period) * W;
+  return (
+    <>
+      <Title kicker="그래서 몇 개까지?">개수가 아니라 시간이 상한</Title>
+      <svg width={1920} height={1080} style={{ position: "absolute", inset: 0 }} fontFamily={FONT}>
+        <g opacity={spec}>
+          {box(X0, "Classic", "한 피코넷에 활성 기기 7대까지", C.dim)}
+          {box(X0 + 620, "LE", "사양에 정해진 개수 없음", DEEP)}
+        </g>
+        <g opacity={sum}>
+          <text x={X0} y={418} fill={C.text} fontSize={26} fontWeight={800}>간격 중 쓰는 시간의 합</text>
+          <rect x={X0} y={436} width={W} height={70} rx={10} fill="none" stroke={C.text} strokeWidth={3} />
+          <text x={X0 + W} y={418} textAnchor="end" fill={C.text} fontSize={24} fontWeight={800}>100%</text>
+          {ex > 0 && <rect x={X0} y={436} width={U(earU)} height={70} rx={8} fill={EARC} />}
+          {ex > 0 && <text x={X0 + U(earU) / 2} y={480} textAnchor="middle" fill={C.bg} fontSize={22} fontWeight={900}>이어폰 20%</text>}
+          {Array.from({ length: FIT.length + 1 }, (_, i) => {
+            const a = Math.max(0, Math.min(1, ex - 1 - i)), x = X0 + U(earU + i * cU), over = i >= FIT.length;
+            return (
+              <g key={i} opacity={a}>
+                <rect x={x + 2} y={over ? 440 : 438} width={U(cU) - 4} height={over ? 62 : 66} rx={8} fill={over ? "none" : segCol(i)} stroke={over ? BAD : "none"} strokeWidth={3} strokeDasharray="8 6" />
+                <text x={x + U(cU) / 2} y={480} textAnchor="middle" fill={over ? BAD : C.bg} fontSize={22} fontWeight={900}>{over ? "✕ 7번째" : `${i + 1}`}</text>
+              </g>
+            );
+          })}
+          <text x={X0} y={548} fill={C.dim} fontSize={22} opacity={at(f, cues[3])}>이어폰 2 ÷ 10 = 20% · 연결 하나 4 ÷ 30 ≈ 13% · 20% + 6 × 13.3% = 100%</text>
+        </g>
+        <g opacity={at(f, cues[3] + 40)}>
+          <text x={X0 - 20} y={640} textAnchor="end" fill={C.text} fontSize={26} fontWeight={800}>30 ms</text>
+          {FIT_RUN.runs.filter((r) => r.t < CONN.period).map((r, i) => (
+            <rect key={i} x={TX(r.t) + 1} y={604} width={TX(r.t + r.dur) - TX(r.t) - 2} height={56} rx={6} fill={r.task === "ear" ? EARC : segCol(Number(r.task.slice(1)))} />
+          ))}
+          {[0, 10, 20, 30].map((t) => <text key={t} x={TX(t)} y={694} textAnchor="middle" fill={C.faint} fontSize={20}>{t} ms</text>)}
+          <text x={X0 + W + 20} y={640} fill={OK} fontSize={24} fontWeight={900}>빈틈 없음</text>
+        </g>
+        <Note x={X0} y={730} w={1200} a={real} col={DEEP} lines={[["실제로는", "광고·스캔에 쓸 시간을 남긴다. 몇 개까지 받을지는 칩(컨트롤러 구현)마다 다르다"]]} />
+      </svg>
+    </>
+  );
+};
+
+/* ---------------------------------------------------------------- 8. 정리 (3D 위에 정리 문장) */
 const Outro: React.FC<{ cues: number[]; len: number }> = ({ cues, len }) => {
   const f = useCurrentFrame(), cam = camLerp(HookCam[1], { pos: [16, 20, 44], look: [-4, 4, 2], fov: 40 }, f / len);
   const L: [string, string][] = [["무선은 하나", "한 번에 한 약속만"], ["엇갈려 놓고, 굶은 쪽 먼저", "감독 타임아웃 안에 한 번은"], ["소리는 기한이 있다", "놓치면 바로 끊긴다"], ["다 연결해도 된다", "만나는 시간이 간격 안에 들어오면"]];
@@ -326,6 +379,7 @@ const body = (s: Timed) => {
     case "stagger": return <Stagger cues={s.cues} len={s.frames} />;
     case "starve": return <Starve cues={s.cues} />;
     case "short": return <Short cues={s.cues} />;
+    case "count": return <Count cues={s.cues} />;
     case "outro": return <Outro cues={s.cues} len={s.frames} />;
   }
 };
