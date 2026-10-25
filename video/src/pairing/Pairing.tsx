@@ -38,36 +38,47 @@ const Buds: React.FC<{ p: Vec }> = ({ p }) => (
     ))}
   </group>
 );
-const KB_P: Vec = [-26, 0, 0], PA: Vec = [-3, 5.6, 0], PB: Vec = [5, 5.6, 0], BUDS_P: Vec = [26, 0, 0];
 
-/* ---------------------------------------------------------------- 1. 훅 (3D) */
+/* ---------------------------------------------------------------- 1. 훅 (3D): 차는 숫자 확인, 이어폰은 그냥 연결 */
+const Car: React.FC<{ p: Vec }> = ({ p }) => (
+  <group position={p} rotation={[0, 0.5, 0]}>
+    <mesh position={[0, 2.4, 0]}><boxGeometry args={[16, 3, 7]} /><meshStandardMaterial color="#3d5a8a" metalness={0.3} roughness={0.45} /></mesh>
+    <mesh position={[-1, 5.2, 0]}><boxGeometry args={[9, 2.8, 6.4]} /><meshStandardMaterial color="#2e4670" metalness={0.3} roughness={0.45} /></mesh>
+    <mesh position={[-1, 5.2, 0]}><boxGeometry args={[9.1, 2.2, 6.5]} /><meshStandardMaterial color="#9cc8ff" transparent opacity={0.35} /></mesh>
+    {[[-5.5, 3.6], [5.5, 3.6], [-5.5, -3.6], [5.5, -3.6]].map(([x, z], k) => (
+      <mesh key={k} position={[x, 1.1, z]} rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[1.3, 1.3, 0.8, 24]} /><meshStandardMaterial color="#141c2c" /></mesh>
+    ))}
+  </group>
+);
+const CAR_P: Vec = [-26, 0, -2], PH_P: Vec = [-6, 5.6, 4], BUDS_P: Vec = [22, 0, 0];
 const Hook: React.FC<{ cues: number[]; len: number }> = ({ cues, len }) => {
-  const f = useCurrentFrame(), kb = at(f, 5), ph = at(f, cues[1]), bd = at(f, cues[2]), q = at(f, cues[3]);
-  const cam = camLerp({ pos: [-16, 22, 54], look: [-6, 4, 0], fov: 42 }, { pos: [10, 22, 56], look: [4, 4, 0], fov: 42 }, f / len);
+  const f = useCurrentFrame(), car = at(f, 10), bd = at(f, cues[1]), q = at(f, cues[2]), hl = at(f, cues[3]);
+  const cam = camLerp({ pos: [-16, 22, 56], look: [-8, 4, 0], fov: 42 }, { pos: [8, 22, 58], look: [0, 4, 0], fov: 42 }, f / len);
   const L = (p: Vec) => project(cam, p);
-  const [lp, pa, pb, bp] = [L([KB_P[0], 4.5, -3]), L([PA[0], PA[1], 0.4]), L([PB[0], PB[1], 0.4]), L([BUDS_P[0], 6.5, 0])];
+  const [cp, pp, bp] = [L([CAR_P[0], 9, CAR_P[2]]), L([PH_P[0], PH_P[1], PH_P[2] + 0.4]), L([BUDS_P[0], 6.5, 0])];
+  const box = (x: number, y: number, title: string) => (
+    <g opacity={car}>
+      <rect x={x - 120} y={y - 70} width={240} height={140} rx={16} fill={C.panel} stroke={hl > 0 ? C.warn : "#3a4a66"} strokeWidth={hl > 0 ? 4 : 2} />
+      <text x={x} y={y - 34} textAnchor="middle" fill={C.dim} fontSize={18}>{title}</text>
+      <text x={x} y={y + 10} textAnchor="middle" fill={C.text} fontSize={38} fontWeight={900} letterSpacing={3}>{SIX}</text>
+      <rect x={x - 50} y={y + 26} width={100} height={30} rx={8} fill={OK} opacity={0.8} />
+      <text x={x} y={y + 47} textAnchor="middle" fill={C.bg} fontSize={16} fontWeight={800}>확인</text>
+    </g>
+  );
   return (
     <>
       <Scene3D cam={cam}>
         <Ground />
-        <Laptop p={KB_P} />
-        <Phone p={PA} ry={0.25} />
-        <Phone p={PB} ry={-0.25} />
+        <Car p={CAR_P} />
+        <Phone p={PH_P} ry={0.15} />
         <Buds p={BUDS_P} />
       </Scene3D>
       <svg width={1920} height={1080} style={{ position: "absolute", inset: 0 }} fontFamily={FONT}>
-        <g opacity={kb}>
-          <text x={lp[0]} y={lp[1] - 10} textAnchor="middle" fill={C.dim} fontSize={18}>키보드로 입력하세요</text>
-          <text x={lp[0]} y={lp[1] + 28} textAnchor="middle" fill={C.text} fontSize={36} fontWeight={900} letterSpacing={4}>{SIX}</text>
+        {box(cp[0], cp[1] - 60, "차 화면: 숫자가 같습니까?")}
+        <g opacity={car}>
+          <text x={pp[0]} y={pp[1] - 20} textAnchor="middle" fill={C.text} fontSize={30} fontWeight={900} letterSpacing={2}>{SIX}</text>
+          <text x={pp[0]} y={pp[1] + 14} textAnchor="middle" fill={C.dim} fontSize={16}>숫자가 같습니까?</text>
         </g>
-        {[pa, pb].map(([x, y], i) => (
-          <g key={i} opacity={ph}>
-            <text x={x} y={y - 20} textAnchor="middle" fill={C.text} fontSize={30} fontWeight={900} letterSpacing={2}>{SIX}</text>
-            <text x={x} y={y + 14} textAnchor="middle" fill={C.dim} fontSize={16}>숫자가 같습니까?</text>
-            <rect x={x - 46} y={y + 30} width={92} height={30} rx={8} fill={OK} opacity={0.8} />
-            <text x={x} y={y + 51} textAnchor="middle" fill={C.bg} fontSize={16} fontWeight={800}>예</text>
-          </g>
-        ))}
         <text x={bp[0]} y={bp[1] - 40} textAnchor="middle" fill={OK} fontSize={28} fontWeight={800} opacity={bd}>연결됨 (묻지 않음)</text>
         <text x={960} y={250} textAnchor="middle" fill={C.accent} fontSize={130} fontWeight={900} opacity={q}>?</text>
       </svg>
@@ -242,30 +253,30 @@ const Compare: React.FC<{ cues: number[] }> = ({ cues }) => {
 
 /* ---------------------------------------------------------------- 6. 기기가 정하는 방식 */
 const ROWS: [string, string, string, string, string][] = [
-  ["휴대폰 ↔ 휴대폰", "화면 + 예/아니요 버튼 양쪽", "숫자 비교", "인증", A_COL],
+  ["휴대폰 ↔ 차", "화면 + 확인 버튼 양쪽", "숫자 비교", "인증", A_COL],
   ["노트북 ↔ 키보드", "한쪽 화면, 한쪽 키보드", "숫자 입력 (패스키)", "인증", B_COL],
   ["휴대폰 ↔ 이어폰", "숫자를 보여 주거나 입력할 수단 없음", "Just Works", "미인증", C.warn],
 ];
 const Methods: React.FC<{ cues: number[] }> = ({ cues }) => {
-  const f = useCurrentFrame(), r = [at(f, cues[1]), at(f, cues[1] + 50), at(f, cues[2])], jw = at(f, cues[3]);
+  const f = useCurrentFrame(), r = [at(f, cues[1]), at(f, cues[1] + 60), at(f, cues[2])], jw = at(f, cues[3]);
   return (
     <>
       <Title kicker="어떤 확인을 할까">두 기기의 입출력 능력이 정한다</Title>
       <svg width={1920} height={1080} style={{ position: "absolute", inset: 0 }} fontFamily={FONT}>
         {ROWS.map(([pair, io, m, auth, col], i) => (
-          <g key={pair} opacity={r[i]} transform={`translate(150,${280 + i * 150})`}>
-            <rect x={0} y={0} width={1620} height={120} rx={20} fill={C.panel} stroke={col} strokeWidth={3} />
-            <text x={36} y={72} fill={C.text} fontSize={34} fontWeight={900}>{pair}</text>
-            <text x={430} y={72} fill={C.dim} fontSize={26}>{io}</text>
-            <text x={1060} y={72} fill={col} fontSize={34} fontWeight={900}>→ {m}</text>
-            <text x={1580} y={72} textAnchor="end" fill={auth === "인증" ? OK : BAD} fontSize={26} fontWeight={800}>{auth}</text>
+          <g key={pair} opacity={r[i]} transform={`translate(150,${250 + i * 118})`}>
+            <rect x={0} y={0} width={1620} height={100} rx={20} fill={C.panel} stroke={col} strokeWidth={3} />
+            <text x={36} y={62} fill={C.text} fontSize={34} fontWeight={900}>{pair}</text>
+            <text x={430} y={62} fill={C.dim} fontSize={26}>{io}</text>
+            <text x={1060} y={62} fill={col} fontSize={34} fontWeight={900}>→ {m}</text>
+            <text x={1580} y={62} textAnchor="end" fill={auth === "인증" ? OK : BAD} fontSize={26} fontWeight={800}>{auth}</text>
           </g>
         ))}
         <g opacity={jw}>
-          <text x={1060} y={760} fill={OK} fontSize={28} fontWeight={800}>✓ 엿듣기 막음 (ECDH)</text>
-          <text x={1400} y={760} fill={BAD} fontSize={28} fontWeight={800}>✕ 끼어들기 못 막음</text>
+          <text x={1060} y={640} fill={OK} fontSize={26} fontWeight={800}>✓ 엿듣기 막음 (ECDH)</text>
+          <text x={1390} y={640} fill={BAD} fontSize={26} fontWeight={800}>✕ 끼어들기 못 막음</text>
         </g>
-        <Note x={150} y={800} w={1620} a={r[0]} lines={[["입출력 능력", "= 화면·버튼·키보드가 있는지. 사양의 표가 두 기기의 조합으로 방식을 정한다 (Secure Connections 기준)"]]} />
+        <Note x={150} y={780} w={1620} a={r[0]} lines={[["입출력 능력", "= 화면·버튼·키보드가 있는지. 사양의 표가 두 기기의 조합으로 방식을 정한다 (Secure Connections 기준)"], ["차", "는 보통 클래식 블루투스로 연결되지만, 클래식도 2.1의 SSP부터 같은 방식을 쓴다 (오래된 차는 PIN 입력)"]]} />
       </svg>
     </>
   );

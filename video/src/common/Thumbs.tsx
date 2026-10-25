@@ -16,7 +16,7 @@ export const PairingThumbnail: React.FC = () => {
   const cam: Cam = { pos: [-22, 14, 36], look: [-10, 5, 0], fov: 40 };
   const [x, y] = project(cam, [1, 5.6, 0.4]), [x2, y2] = project(cam, [9, 5.6, 0.4]);
   return (
-    <ThumbCard kicker="BLUETOOTH 입문 7" chip="페어링 · 숫자 비교" lines={<>페어링할 때<br />왜 {hi("숫자 6자리")}를<br />비교할까?</>}
+    <ThumbCard kicker="BLUETOOTH 입문 7" chip="블루투스 페어링" lines={<>차는 {hi("숫자 확인")},<br />이어폰은 왜<br />그냥 연결될까?</>}
       overlay={<svg width={1920} height={1080} style={{ position: "absolute", inset: 0 }}>{[[x, y], [x2, y2]].map(([a, b], i) => <text key={i} x={a} y={b} textAnchor="middle" fill={C.text} fontFamily="Pretendard" fontSize={40} fontWeight={900}>{PAIR_SIX}</text>)}</svg>}>
       <Scene3D cam={cam}><Ground /><PairPhone p={[1, 5.6, 0]} ry={0.2} /><PairPhone p={[9, 5.6, 0]} ry={-0.2} /><Laptop p={[24, 0, -6]} /></Scene3D>
     </ThumbCard>
