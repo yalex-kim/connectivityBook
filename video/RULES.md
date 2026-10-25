@@ -72,7 +72,7 @@ ConnectivityBook 내용으로 영상을 만들 때 따르는 규칙이다. 첫 �
 
 - 한 영상 = `src/<영상>/` 폴더 하나: `script.ts`(장면, `say`·`caption`), 장면 조립 컴포넌트, `timing.ts`(장면 길이·문장 시각, 영상과 업로드 자료가 함께 씀), `durations.json`(음성 길이·문장 시각·문장, `narrate.py`가 씀), `youtube.ts`(제목·설명·챕터 묶음·태그), `Thumbnail.tsx`.
 - 유튜브 챕터는 장면을 묶어 정한다. 첫 챕터 0:00, 3개 이상이어야 한다. 적는 시각은 초 단위로 올림하고, 각 구간은 **10초보다 길어야** 한다. 딱 10초인 첫 구간은 유튜브가 챕터로 인식하지 않았다. `npm run youtube`가 검사하니, 짧은 장면은 다음 장면과 한 챕터로 묶는다.
-- 공통: `src/book.ts`(책 계산), `src/theme.ts`(색·글꼴), `src/common/kit.tsx`(3D 바닥 `Ground`, 설명 상자 `Note`, 장면 틀 `makeVideo`, 썸네일 틀 `ThumbCard`), `public/fonts/`(Pretendard, OFL). 새 영상은 `makeVideo`로 장면을 이어 붙인다.
+- 공통: `src/book.ts`(책 계산), `src/theme.ts`(색·글꼴), `src/common/kit.tsx`(3D 바닥 `Ground`, 설명 상자 `Note`, 장면 틀 `makeVideo`, 썸네일 틀 `ThumbCard`. 심화 시리즈는 `deep`을 켠다: 배치는 입문과 같고, 심화 책의 인디고색·왼쪽 세로 띠·"심화" 표지로 구분한다), `public/fonts/`(Pretendard, OFL). 새 영상은 `makeVideo`로 장면을 이어 붙인다.
 - `npm run check`: 책과의 대조, 영상이 말하는 수치, `say`·`caption` 문장 수, 음성이 지금 대본으로 만든 것인지 확인한다.
 - 3D는 GPU 없는 NAS에서 SwiftShader(`swangle`)로 그린다. 렌더링이 느리므로 정지 화면(`remotion still`)으로 장면을 먼저 확인한 뒤 전체를 렌더한다.
 - 무음판(`<영상>`)과 나레이션판(`<영상>Voice`) 컴포지션을 둘 다 둔다.

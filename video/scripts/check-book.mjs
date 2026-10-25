@@ -28,7 +28,7 @@ const big = V.simulate(20000, false), lossHop = big.filter((e) => e.hit).length 
 assert.ok(Math.abs(lossHop - 31 / 74) < 0.02, `무작위 도약 손실 ${lossHop}`);
 assert.equal(V.simulate(2000, true).filter((e) => e.hit).length, 0, "적응형 도약은 손실 0");
 // 대본: say와 caption의 문장 수가 같고, say에 숫자가 없고, 나레이션 음성(durations.json)이 지금 문장으로 만든 것인지
-for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt", "pairing", "power", "audio", "locate"]) {
+for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt", "pairing", "power", "audio", "locate", "scheduling"]) {
   const src = fs.readFileSync(new URL(`../src/${video}/script.ts`, import.meta.url), "utf8");
   const dur = JSON.parse(fs.readFileSync(new URL(`../src/${video}/durations.json`, import.meta.url), "utf8"));
   const voiced = Object.keys(dur).length > 0; // 무음판 단계면 음성 검사는 건너뛴다
@@ -159,6 +159,38 @@ for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt
   let cs = 0; for (let k = 2; k <= 76; k++) if (k <= 22 || k >= 26) cs++; assert.equal(cs, 72, "채널 사운딩 72채널");
   assert.ok(Math.abs(299792458 / (2 * 1e6) - 150) < 0.2, "1 MHz 간격 → 150 m마다 되풀이");
   console.log(`intro 7~10: g2 샘플 → ${0x2f9ed5ba % 1e6}, 15 µC/1 s → ${V.averageCurrentUa(2, 15, 1)} µA(${yrs(17).toFixed(2)}년), 창 넓히기 ${V.windowWideningUs(500, 2e6)} µs, 지연 195/45 ms, −71 dBm → ${V.rssiToDistance(-71, -59, 2).toFixed(2)} m`);
+}
+// 심화 1편 스케줄링: 스케줄러 예시 모델이 심화 3장(scheduling.html)과 같은가, 그리고 영상이 말하는 수치
+{
+  const sch = fs.readFileSync(new URL("../../bluetooth-deep/chapters/scheduling.html", import.meta.url), "utf8");
+  const i = sch.indexOf("  function schedule("); let d = 0, j = sch.indexOf("{", i); for (; j < sch.length; j++) { if (sch[j] === "{") d++; else if (sch[j] === "}" && --d === 0) break; }
+  const cs = vm.createContext({ Math }); vm.runInContext(sch.slice(i, j + 1) + "\nthis.sched = schedule;", cs);
+  const same = (T, rule) => { assert.equal(JSON.stringify(V.schedule(T, 1000, rule)), JSON.stringify(cs.sched(T, 1000, rule)), `schedule ${rule}`); n++; };
+  // 책 시뮬레이터의 과제 모양으로 무작위 비교
+  const r = V.bookRng(7);
+  for (let k = 0; k < 40; k++) {
+    const T = [{ name: "A", period: 8 + Math.round(r() * 40), dur: 4, prio: 4 }, { name: "B", period: 8 + Math.round(r() * 40), dur: 4, prio: 3, offset: Math.round(r() * 10) }, { name: "광고", period: 100, dur: 3, prio: 2, offset: 2 }, { name: "스캔", period: 100, dur: 30, prio: 1, offset: 5, background: true }];
+    same(T, "fixed"); same(T, "starve");
+  }
+  const scr = fs.readFileSync(new URL("../src/scheduling/script.ts", import.meta.url), "utf8");
+  const num = (re) => Number(scr.match(re)[1]);
+  const EAR = { period: num(/EAR = \{ period: ([\d.]+)/), dur: num(/EAR = \{ period: [\d.]+, dur: ([\d.]+)/) }, CONN = { period: num(/CONN = \{ period: ([\d.]+)/), dur: num(/CONN = \{ period: [\d.]+, dur: ([\d.]+)/) };
+  const ST = { ear: num(/STAGGER = \{ ear: ([\d.]+)/), watch: num(/STAGGER = \{[^}]*watch: ([\d.]+)/), kb: num(/STAGGER = \{[^}]*kb: ([\d.]+)/) }, CL = { watch: num(/CLASH = \{ watch: ([\d.]+)/), kb: num(/CLASH = \{[^}]*kb: ([\d.]+)/) };
+  const tasks = (o) => [...(o.ear === undefined ? [] : [{ name: "ear", period: EAR.period, dur: EAR.dur, prio: 5, offset: o.ear }]), { name: "watch", period: CONN.period, dur: CONN.dur, prio: 4, offset: o.watch }, { name: "kb", period: CONN.period, dur: CONN.dur, prio: 3, offset: o.kb }];
+  assert.equal(CONN.period % EAR.period, 0, "30은 10의 배수");
+  const stag = cs.sched(tasks(ST), 1000, "fixed").stats;
+  assert.ok(["ear", "watch", "kb"].every((k) => stag[k].skipped === 0), "엇갈리면 1초 동안 셋 다 건너뜀 0");
+  const fixed = cs.sched(tasks(CL), 1000, "fixed").stats, fair = cs.sched(tasks(CL), 1000, "starve").stats;
+  assert.equal(fixed.kb.skipped, Math.ceil(1000 / CONN.period), "고정 우선순위: 키보드는 1초 동안 모두 건너뜀"); assert.equal(fixed.kb.maxGap, 1000);
+  assert.ok(fair.watch.maxGap <= 60 && fair.kb.maxGap <= 60 && Math.max(fair.watch.maxGap, fair.kb.maxGap) === 60, "굶은 만큼 올림: 가장 긴 공백 60 ms");
+  const cl3 = cs.sched(tasks({ ear: 0, watch: CL.watch + 0.5, kb: CL.kb + 0.5 }), 1000, "fixed").runs;
+  assert.ok(cl3.filter((x) => x.t < 6 && !x.ok).length === 2, "2장면: 같은 순간 셋 중 둘이 건너뜀");
+  // 시간이 모자라면(책의 예측해 보기): 7.5 ms 간격에 2.5 ms × 6 = 15 ms, 많아야 절반
+  assert.ok(sch.includes("센트럴이 연결 여섯 개를 7.5 ms 간격으로 유지하고, 각 연결이 매 이벤트에 2.5 ms씩 쓴다"));
+  assert.ok(scr.includes("SHORT = { period: 7.5, dur: 2.5, n: 6 }")); assert.equal(2.5 * 6, 15); assert.equal(Math.floor(7.5 / 2.5), 3);
+  assert.ok(sch.includes("감독 타임아웃 안에 적어도 한 번은 보내야") && sch.includes("감독 타임아웃 안에 적어도 한 번은 들어야 한다") && sch.includes("0x08"));
+  n += 8;
+  console.log(`scheduling: 엇갈림 건너뜀 ${["ear", "watch", "kb"].map((k) => stag[k].skipped).join("/")}, 고정 키보드 ${fixed.kb.skipped}번 건너뜀, 굶은 만큼 공백 ${fair.watch.maxGap}/${fair.kb.maxGap} ms`);
 }
 // 조건별 예시(영상의 막대 셋): 책의 함수로 다시 계산
 const ex = (w, d) => (B.wifiBlocked(w).size / 37) * d * 100;
