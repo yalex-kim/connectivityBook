@@ -28,7 +28,7 @@ const big = V.simulate(20000, false), lossHop = big.filter((e) => e.hit).length 
 assert.ok(Math.abs(lossHop - 31 / 74) < 0.02, `무작위 도약 손실 ${lossHop}`);
 assert.equal(V.simulate(2000, true).filter((e) => e.hit).length, 0, "적응형 도약은 손실 0");
 // 대본: say와 caption의 문장 수가 같고, say에 숫자가 없고, 나레이션 음성(durations.json)이 지금 문장으로 만든 것인지
-for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt", "pairing", "power", "audio", "locate", "scheduling", "instant"]) {
+for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt", "pairing", "power", "audio", "locate", "scheduling", "instant", "hopping"]) {
   const src = fs.readFileSync(new URL(`../src/${video}/script.ts`, import.meta.url), "utf8");
   const dur = JSON.parse(fs.readFileSync(new URL(`../src/${video}/durations.json`, import.meta.url), "utf8"));
   const voiced = Object.keys(dur).length > 0; // 무음판 단계면 음성 검사는 건너뛴다
@@ -216,6 +216,27 @@ for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt
   assert.ok(pr.includes("6번의 기회") && pr.includes("Instant Passed(0x28)") && pr.includes("앵커 포인트 이동"));
   n += 4;
   console.log(`instant: 기회 6 → ${(a.miss * 100).toFixed(3)}%, 6번에 한 번 듣는 워치 6번째 → ${(b.miss * 100).toFixed(0)}%, 36번째 → ${(c.miss * 100).toFixed(3)}%`);
+}
+// 심화 3편 Classic 도약: basicHop·adaptedHop이 심화 12장(baseband.html)과 같은가, 그리고 영상이 말하는 것
+{
+  const bb = fs.readFileSync(new URL("../../bluetooth-deep/chapters/baseband.html", import.meta.url), "utf8");
+  const pick = (name) => { const i = bb.indexOf(`  function ${name}(`); let d = 0, j = bb.indexOf("{", i); for (; j < bb.length; j++) { if (bb[j] === "{") d++; else if (bb[j] === "}" && --d === 0) break; } return bb.slice(i, j + 1); };
+  const ch = vm.createContext({ Math }); vm.runInContext(["perm5", "hopInputs", "basicHop", "adaptedHop"].map(pick).join("\n") + "\nthis.H = { basicHop, adaptedHop };", ch);
+  const scr = fs.readFileSync(new URL("../src/hopping/script.ts", import.meta.url), "utf8");
+  assert.ok(scr.includes("export const ADDR = 0x2a96ef25, CLK0 = 0x10;") && scr.includes("export const UNUSED_TO = 21;"));
+  assert.ok(bb.includes("0x2a96ef25"), "사양 예제의 주소");
+  const maps = [Array(79).fill(true), Array.from({ length: 79 }, (_, c) => c > 21), Array.from({ length: 79 }, (_, c) => c % 2 === 0)];
+  for (const addr of [0x00000000, 0x2a96ef25, 0x6587cba9]) for (let clk = 0; clk < 4096; clk += 2) {
+    assert.equal(V.basicHop(addr, clk).ch, ch.H.basicHop(addr, clk).ch); n++;
+    for (const m of maps) { assert.equal(V.adaptedHop(addr, clk, m), ch.H.adaptedHop(addr, clk, m)); n++; }
+  }
+  // 32번 뛰는 동안 서로 다른 32개 채널: 여러 주소·구간에서 확인(PERM5가 일대일이라 늘 성립)
+  for (const addr of [0x00000000, 0x2a96ef25, 0x6587cba9, 0x12345678]) for (let s = 0; s < 64; s++) { const set = new Set(Array.from({ length: 32 }, (_, k) => V.basicHop(addr, s * 128 + 4 * k).ch)); assert.equal(set.size, 32, `구간 ${s}`); n++; }
+  assert.equal(1 / 625e-6, 1600); assert.equal(625 / 2, 312.5); // 1초에 최대 1600번, 시계 한 칸 312.5 µs
+  // AFH: 다시 고른 채널은 모두 쓰는 채널
+  const used = maps[1]; for (let clk = 0; clk < 4096; clk += 4) { assert.ok(used[V.adaptedHop(0x2a96ef25, clk, used)]); n++; }
+  assert.ok(bb.includes("Peripheral은 바로 앞 Central 슬롯과 <b>같은 채널</b>로 답한다"));
+  console.log(`hopping: 사양 예제 주소 첫 슬롯 ${Array.from({ length: 6 }, (_, i) => V.basicHop(0x2a96ef25, 0x10 + 2 * i).ch).join(",")}`);
 }
 // 조건별 예시(영상의 막대 셋): 책의 함수로 다시 계산
 const ex = (w, d) => (B.wifiBlocked(w).size / 37) * d * 100;
