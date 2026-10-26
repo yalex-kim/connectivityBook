@@ -62,3 +62,20 @@ export const FingerGrid: React.FC<{ x: number; y: number; size: number; bytes: n
     </g>
   );
 };
+
+/** 열쇠 모형(고리 + 막대 + 이). 색으로 LTK(인디고)·세션 키(초록) 등을 구별 */
+export const Key3D: React.FC<{ p: Vec; col: string; s?: number; rz?: number; glow?: number; opacity?: number }> = ({ p, col, s = 1, rz = 0, glow = 0.7, opacity = 1 }) => (
+  <group position={p} rotation={[0, 0, rz]} scale={s}>
+    {[<torusGeometry key="t" args={[0.9, 0.28, 14, 28]} />].map((g, i) => <mesh key={i}>{g}<meshStandardMaterial color={col} emissive={col} emissiveIntensity={glow} transparent opacity={opacity} /></mesh>)}
+    <mesh position={[2.3, 0, 0]} rotation={[0, 0, Math.PI / 2]}><cylinderGeometry args={[0.22, 0.22, 2.8, 12]} /><meshStandardMaterial color={col} emissive={col} emissiveIntensity={glow} transparent opacity={opacity} /></mesh>
+    <mesh position={[3.4, -0.45, 0]}><boxGeometry args={[0.35, 0.7, 0.25]} /><meshStandardMaterial color={col} emissive={col} emissiveIntensity={glow} transparent opacity={opacity} /></mesh>
+    <mesh position={[2.8, -0.38, 0]}><boxGeometry args={[0.35, 0.55, 0.25]} /><meshStandardMaterial color={col} emissive={col} emissiveIntensity={glow} transparent opacity={opacity} /></mesh>
+  </group>
+);
+/** 길목의 수신기(엿듣는 쪽) */
+export const Listener3D: React.FC<{ p: Vec; col?: string }> = ({ p, col = C.bad }) => (
+  <group position={p}>
+    <mesh position={[0, 3, 0]}><cylinderGeometry args={[0.35, 0.5, 6, 12]} /><meshStandardMaterial color="#5b6b88" /></mesh>
+    <mesh position={[0, 6.6, 0]}><sphereGeometry args={[0.95, 18, 14]} /><meshStandardMaterial color={col} emissive={col} emissiveIntensity={0.7} /></mesh>
+  </group>
+);
