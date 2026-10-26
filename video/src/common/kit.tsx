@@ -67,16 +67,24 @@ export function makeVideo<S extends TimedScene>(dir: string, scenesFor: (voice: 
   return Video;
 }
 
-/** 유튜브 썸네일 틀(1920×1080로 그리고 1280×720으로 줄여 올린다): 오른쪽 3D 장면 + 왼쪽 큰 질문 */
-export const ThumbCard: React.FC<{ kicker: string; lines: React.ReactNode; chip: string; children: React.ReactNode; overlay?: React.ReactNode }> = ({ kicker, lines, chip, children, overlay }) => (
+/** 심화 시리즈 색(BluetoothBook 심화 책의 다크 강조색) */
+export const DEEP = "#a5b4fc";
+
+/** 유튜브 썸네일 틀(1920×1080로 그리고 1280×720으로 줄여 올린다): 오른쪽 3D 장면 + 왼쪽 큰 질문.
+ *  deep이면 심화 시리즈: 같은 배치에 인디고 색, 왼쪽 세로 띠, "심화" 표지 */
+export const ThumbCard: React.FC<{ kicker: string; lines: React.ReactNode; chip: string; children: React.ReactNode; overlay?: React.ReactNode; deep?: boolean; size?: number }> = ({ kicker, lines, chip, children, overlay, deep = false, size = 116 }) => (
   <AbsoluteFill style={{ background: C.bg }}>
     {children}
     {overlay}
-    <AbsoluteFill style={{ background: "linear-gradient(90deg, rgba(11,18,32,.97) 0%, rgba(11,18,32,.85) 44%, rgba(11,18,32,0) 64%)" }} />
+    <AbsoluteFill style={{ background: deep ? "linear-gradient(90deg, rgba(16,14,44,.97) 0%, rgba(16,14,44,.86) 44%, rgba(16,14,44,0) 64%)" : "linear-gradient(90deg, rgba(11,18,32,.97) 0%, rgba(11,18,32,.85) 44%, rgba(11,18,32,0) 64%)" }} />
+    {deep && <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 26, background: DEEP }} />}
     <div style={{ position: "absolute", left: 110, top: 190, fontFamily: FONT }}>
-      <div style={{ color: C.accent2, fontSize: 46, fontWeight: 800, letterSpacing: 3 }}>{kicker}</div>
-      <div style={{ color: C.text, fontSize: 116, fontWeight: 900, lineHeight: 1.15, marginTop: 20 }}>{lines}</div>
-      <div style={{ display: "inline-block", marginTop: 40, padding: "14px 34px", borderRadius: 999, background: C.accent, color: C.bg, fontSize: 50, fontWeight: 900 }}>{chip}</div>
+      <div style={{ color: deep ? DEEP : C.accent2, fontSize: 46, fontWeight: 800, letterSpacing: 3, display: "flex", alignItems: "center", gap: 22 }}>
+        {deep && <span style={{ background: DEEP, color: "#14123a", padding: "4px 20px", borderRadius: 12, letterSpacing: 0, fontWeight: 900 }}>심화</span>}
+        {kicker}
+      </div>
+      <div style={{ color: C.text, fontSize: size, fontWeight: 900, lineHeight: 1.15, marginTop: 20 }}>{lines}</div>
+      <div style={{ display: "inline-block", marginTop: 40, padding: "14px 34px", borderRadius: 999, background: deep ? DEEP : C.accent, color: deep ? "#14123a" : C.bg, fontSize: 50, fontWeight: 900 }}>{chip}</div>
     </div>
   </AbsoluteFill>
 );

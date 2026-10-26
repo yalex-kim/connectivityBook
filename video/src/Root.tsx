@@ -23,6 +23,9 @@ import { framesFor as gattFrames } from "./gatt/timing";
 import { GattThumbnail } from "./gatt/Thumbnail";
 import { framesFor as connFrames } from "./connection/timing";
 import { ConnectionThumbnail } from "./connection/Thumbnail";
+import { Scheduling } from "./scheduling/Scheduling";
+import { framesFor as schedFrames } from "./scheduling/timing";
+import { SchedulingThumbnail } from "./scheduling/Thumbnail";
 import { RangeThumbnail } from "./range/Thumbnail";
 import { TwoKindsThumbnail } from "./twokinds/Thumbnail";
 import { framesFor as rangeFrames } from "./range/timing";
@@ -49,6 +52,9 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="AudioVoice" component={AudioVideo} defaultProps={{ voice: true }} durationInFrames={audioFrames(true)} fps={30} width={1920} height={1080} />
     <Composition id="Locate" component={Locate} defaultProps={{ voice: false }} durationInFrames={locateFrames(false)} fps={30} width={1920} height={1080} />
     <Composition id="LocateVoice" component={Locate} defaultProps={{ voice: true }} durationInFrames={locateFrames(true)} fps={30} width={1920} height={1080} />
+    <Composition id="Scheduling" component={Scheduling} defaultProps={{ voice: false }} durationInFrames={schedFrames(false)} fps={30} width={1920} height={1080} />
+    <Composition id="SchedulingVoice" component={Scheduling} defaultProps={{ voice: true }} durationInFrames={schedFrames(true)} fps={30} width={1920} height={1080} />
+    <Composition id="SchedulingThumbnail" component={SchedulingThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
     <Composition id="PairingThumbnail" component={PairingThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
     <Composition id="PowerThumbnail" component={PowerThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
     <Composition id="AudioThumbnail" component={AudioThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />

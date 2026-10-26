@@ -20,7 +20,8 @@
     "thumbnail:pairing": "remotion still PairingThumbnail out/youtube-pairing/thumbnail.png",
     "thumbnail:power": "remotion still PowerThumbnail out/youtube-power/thumbnail.png",
     "thumbnail:audio": "remotion still AudioThumbnail out/youtube-audio/thumbnail.png",
-    "thumbnail:locate": "remotion still LocateThumbnail out/youtube-locate/thumbnail.png"
+    "thumbnail:locate": "remotion still LocateThumbnail out/youtube-locate/thumbnail.png",
+    "thumbnail:scheduling": "remotion still SchedulingThumbnail out/youtube-scheduling/thumbnail.png"
   },
   "dependencies": {
     "@react-three/fiber": "9.8.2",

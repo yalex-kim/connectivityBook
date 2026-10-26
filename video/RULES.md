@@ -22,6 +22,7 @@ ConnectivityBook 내용으로 영상을 만들 때 따르는 규칙이다. 첫 �
      - 업로드가 진행 중일 때 YouTube 앱을 강제 종료하지 않는다(업로드가 끊길 수 있다).
      - 올린 영상의 주소는 채널 동영상 페이지에서, 길이는 영상 페이지의 `lengthSeconds`에서 확인한다. 이미 올린 영상의 설명·제목 수정은 YouTube Studio 앱(콘텐츠 → 메뉴 → 수정)으로 한다. 내용이 같으면 저장 버튼이 켜지지 않는다.
    - **서재 등록 필드**: `assets/videos.js`의 `series`(묶음 이름)·`no`(편 번호)로 서재에서 묶고 순서를 정한다. 장 링크의 `short`(예: "입문 6장")가 카드에 보인다.
+   - **앞 영상을 말하면 카드를 단다.** 나레이션이 "입문편 다섯 번째 영상에서…"처럼 다른 영상을 부르면, 그 문장이 시작할 때 오른쪽 위 카드(티저 "지난 영상 보기")로 그 영상을 잇는다. `youtube.ts`의 `cards`에 적으면 `npm run youtube`가 시각을 계산해 `youtube.txt`의 [카드]에 쓴다. 카드는 YouTube Studio(편집기 → 카드)에서 단다. 화면에 같은 글자를 그려 넣지 않는다(카드 티저와 겹친다).
    - **업로드 직후 책 링크 댓글을 단다.** 채널 계정(ConnBook TV)으로 이어지는 책 장 링크를 댓글로 달고 고정한다. 댓글을 다는 앱의 계정이 채널 계정인지 먼저 확인한다(영상 화면에 '구독' 버튼이 보이면 다른 계정이다). 댓글 고정은 채널의 고급 기능 인증이 끝나야 된다.
 8. **PR**: `video/` 아래 코드와 대본을 PR로 올린다. 음성·영상 파일은 저장소에 넣지 않는다.
 
@@ -72,7 +73,7 @@ ConnectivityBook 내용으로 영상을 만들 때 따르는 규칙이다. 첫 �
 
 - 한 영상 = `src/<영상>/` 폴더 하나: `script.ts`(장면, `say`·`caption`), 장면 조립 컴포넌트, `timing.ts`(장면 길이·문장 시각, 영상과 업로드 자료가 함께 씀), `durations.json`(음성 길이·문장 시각·문장, `narrate.py`가 씀), `youtube.ts`(제목·설명·챕터 묶음·태그), `Thumbnail.tsx`.
 - 유튜브 챕터는 장면을 묶어 정한다. 첫 챕터 0:00, 3개 이상이어야 한다. 적는 시각은 초 단위로 올림하고, 각 구간은 **10초보다 길어야** 한다. 딱 10초인 첫 구간은 유튜브가 챕터로 인식하지 않았다. `npm run youtube`가 검사하니, 짧은 장면은 다음 장면과 한 챕터로 묶는다.
-- 공통: `src/book.ts`(책 계산), `src/theme.ts`(색·글꼴), `src/common/kit.tsx`(3D 바닥 `Ground`, 설명 상자 `Note`, 장면 틀 `makeVideo`, 썸네일 틀 `ThumbCard`), `public/fonts/`(Pretendard, OFL). 새 영상은 `makeVideo`로 장면을 이어 붙인다.
+- 공통: `src/book.ts`(책 계산), `src/theme.ts`(색·글꼴), `src/common/kit.tsx`(3D 바닥 `Ground`, 설명 상자 `Note`, 장면 틀 `makeVideo`, 썸네일 틀 `ThumbCard`. 심화 시리즈는 `deep`을 켠다: 배치는 입문과 같고, 심화 책의 인디고색·왼쪽 세로 띠·"심화" 표지로 구분한다), `public/fonts/`(Pretendard, OFL). 새 영상은 `makeVideo`로 장면을 이어 붙인다.
 - `npm run check`: 책과의 대조, 영상이 말하는 수치, `say`·`caption` 문장 수, 음성이 지금 대본으로 만든 것인지 확인한다.
 - 3D는 GPU 없는 NAS에서 SwiftShader(`swangle`)로 그린다. 렌더링이 느리므로 정지 화면(`remotion still`)으로 장면을 먼저 확인한 뒤 전체를 렌더한다.
 - 무음판(`<영상>`)과 나레이션판(`<영상>Voice`) 컴포지션을 둘 다 둔다.

@@ -186,3 +186,30 @@ export function cisDelivery(p: number, nse: number, bn: number, ft: number): num
 export function rssiToDistance(rssi: number, p1m: number, n: number): number { return Math.pow(10, (p1m - rssi) / (10 * n)); }
 /** 두 안테나의 위상 차 → 도래각(rad) */
 export function aoaAngle(dphi: number, d: number, lambda: number): number { const s = (dphi * lambda) / (2 * Math.PI * d); return Math.abs(s) <= 1 ? Math.asin(s) : NaN; }
+
+/* 심화 3장(scheduling.html) 스케줄러 예시 모델: 사양이 아니라 사양의 제약(겹치지 않음, 감독 타임아웃 안에 한 번)을 지키는 한 가지 방식 */
+export type SchedTask = { name: string; period: number; dur: number; prio: number; offset?: number; background?: boolean };
+export type SchedRun = { task: string; t: number; dur: number; ok: boolean; background?: boolean };
+/** 회차들을 시각순으로 놓고, 겹치면 점수(우선순위, rule이 "starve"면 + 10 × 연속으로 진 횟수)가 높은 쪽을 남긴다. 시각은 ms */
+export function schedule(tasks: SchedTask[], horizon: number, rule: string): { runs: SchedRun[]; stats: Record<string, { skipped: number; maxGap: number }> } {
+  type Occ = SchedRun & { prio: number; prev?: number };
+  const occ: Occ[] = [];
+  tasks.forEach((k) => { if (k.background || !(k.period > 0)) return; for (let t = (k.offset || 0) % k.period; t < horizon; t += k.period) occ.push({ task: k.name, t, dur: k.dur, prio: k.prio, ok: false }); });
+  occ.sort((x, y) => x.t - y.t || y.prio - x.prio);
+  const starve: Record<string, number> = {}; tasks.forEach((k) => (starve[k.name] = 0));
+  const score = (o: Occ) => o.prio + (rule === "starve" ? 10 * starve[o.task] : 0);
+  let last: Occ | null = null;
+  for (const o of occ) {
+    if (!last || o.t >= last.t + last.dur) { o.ok = true; o.prev = starve[o.task]; starve[o.task] = 0; last = o; continue; }
+    if (score(o) > last.prio + (rule === "starve" ? 10 * (last.prev ?? 0) : 0)) { last.ok = false; starve[last.task] = (last.prev ?? 0) + 1; o.ok = true; o.prev = starve[o.task]; starve[o.task] = 0; last = o; }
+    else starve[o.task]++;
+  }
+  const runs: SchedRun[] = occ.slice(), stats: Record<string, { skipped: number; maxGap: number }> = {};
+  tasks.forEach((k) => {
+    if (k.background) { for (let t = (k.offset || 0) % k.period; t < horizon; t += k.period) runs.push({ task: k.name, t, dur: k.dur, ok: true, background: true }); return; }
+    const mine = occ.filter((o) => o.task === k.name), okT = mine.filter((o) => o.ok).map((o) => o.t);
+    let gap = 0, prev = 0; okT.forEach((t) => { gap = Math.max(gap, t - prev); prev = t; }); gap = Math.max(gap, horizon - prev);
+    stats[k.name] = { skipped: mine.filter((o) => !o.ok).length, maxGap: gap };
+  });
+  return { runs, stats };
+}

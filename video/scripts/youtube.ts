@@ -7,6 +7,7 @@
  *   VIDEO=range npm run youtube     → 블루투스는 몇 미터까지 될까, out/youtube-range/
  *   VIDEO=connection npm run youtube → 블루투스 켜 두면 배터리 닳을까, out/youtube-connection/
  *   VIDEO=gatt npm run youtube       → 처음 보는 심박계인데 앱은 어떻게 심박수를 읽을까, out/youtube-gatt/
+ *   VIDEO=scheduling npm run youtube → (심화 1) 휴대폰 하나에 이어폰·워치·키보드를 다 연결해도 될까, out/youtube-scheduling/
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -38,11 +39,14 @@ import * as auS from "../src/audio/script";
 import * as auT from "../src/audio/timing";
 import * as auY from "../src/audio/youtube";
 import * as loS from "../src/locate/script";
+import * as scS from "../src/scheduling/script";
+import * as scT from "../src/scheduling/timing";
+import * as scY from "../src/scheduling/youtube";
 import * as loT from "../src/locate/timing";
 import * as loY from "../src/locate/youtube";
 
 const VIDEO = process.env.VIDEO || "afh";
-const V = { afh: [afhS, afhT, afhY], discover: [disS, disT, disY], twokinds: [tkS, tkT, tkY], range: [rgS, rgT, rgY], connection: [cnS, cnT, cnY], gatt: [gtS, gtT, gtY], pairing: [paS, paT, paY], power: [poS, poT, poY], audio: [auS, auT, auY], locate: [loS, loT, loY] }[VIDEO] as unknown as [typeof afhS, typeof afhT, typeof afhY];
+const V = { afh: [afhS, afhT, afhY], discover: [disS, disT, disY], twokinds: [tkS, tkT, tkY], range: [rgS, rgT, rgY], connection: [cnS, cnT, cnY], gatt: [gtS, gtT, gtY], pairing: [paS, paT, paY], power: [poS, poT, poY], audio: [auS, auT, auY], locate: [loS, loT, loY], scheduling: [scS, scT, scY] }[VIDEO] as unknown as [typeof afhS, typeof afhT, typeof afhY];
 if (!V) throw new Error(`모르는 영상: ${VIDEO}`);
 const [{ SCENES }, { scenesFor, startsFor, sentenceEnd, framesFor }, { YOUTUBE }] = V;
 const FPS = 30, OUT = path.join(__dirname, "..", "out", VIDEO === "afh" ? "youtube" : `youtube-${VIDEO}`);
@@ -88,5 +92,12 @@ if (tags.length > 500) throw new Error("태그는 합쳐서 500자 이하");
 
 fs.mkdirSync(OUT, { recursive: true });
 fs.writeFileSync(path.join(OUT, "subtitles.ko.srt"), srt.join("\n"));
-fs.writeFileSync(path.join(OUT, "youtube.txt"), `[제목]\n${YOUTUBE.title}\n\n[설명]\n${desc}\n\n[태그]\n${tags}\n`);
+// 카드(오른쪽 위 티저, YouTube Studio에서 단다): 장면의 n번째 문장이 시작할 때
+type Card = { scene: string; sentence: number; video: string; teaser: string; message: string };
+const cards = (((YOUTUBE as unknown as { cards?: Card[] }).cards) ?? []).map((c) => {
+  const k = scenes.findIndex((s) => s.id === c.scene);
+  if (k < 0) throw new Error(`카드의 장면 없음: ${c.scene}`);
+  return `${mmss(Math.floor((starts[k] + scenes[k].cues[c.sentence]) / FPS))} 영상 카드 → ${c.video}\n  티저 문구: ${c.teaser}\n  맞춤 메시지: ${c.message}`;
+});
+fs.writeFileSync(path.join(OUT, "youtube.txt"), `[제목]\n${YOUTUBE.title}\n\n[설명]\n${desc}\n\n[태그]\n${tags}\n` + (cards.length ? `\n[카드] YouTube Studio → 편집기 → 카드\n${cards.join("\n")}\n` : ""));
 console.log(`영상 ${mmss(total)} · 챕터 ${chapters.length}개 · 자막 ${srt.length}개 · 장면 ${SCENES.length}개 → ${path.relative(path.join(__dirname, ".."), OUT)}/`);
