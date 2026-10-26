@@ -12,7 +12,7 @@ const B = ctx.B;
 // 영상의 book.ts를 그대로 컴파일해 쓴다(타입만 지움)
 const { transformSync } = await import("esbuild");
 const ts = transformSync(fs.readFileSync(new URL("../src/book.ts", import.meta.url), "utf8"), { loader: "ts", format: "cjs" }).code;
-const vctx = vm.createContext({ Math, exports: {}, module: { exports: {} } });
+const vctx = vm.createContext({ Math, TextEncoder, exports: {}, module: { exports: {} } });
 vm.runInContext(ts + "\nthis.V = module.exports;", vctx);
 const V = vctx.V;
 
@@ -28,7 +28,7 @@ const big = V.simulate(20000, false), lossHop = big.filter((e) => e.hit).length 
 assert.ok(Math.abs(lossHop - 31 / 74) < 0.02, `무작위 도약 손실 ${lossHop}`);
 assert.equal(V.simulate(2000, true).filter((e) => e.hit).length, 0, "적응형 도약은 손실 0");
 // 대본: say와 caption의 문장 수가 같고, say에 숫자가 없고, 나레이션 음성(durations.json)이 지금 문장으로 만든 것인지
-for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt", "pairing", "power", "audio", "locate", "scheduling", "instant", "hopping"]) {
+for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt", "pairing", "power", "audio", "locate", "scheduling", "instant", "hopping", "gattcache"]) {
   const src = fs.readFileSync(new URL(`../src/${video}/script.ts`, import.meta.url), "utf8");
   const dur = JSON.parse(fs.readFileSync(new URL(`../src/${video}/durations.json`, import.meta.url), "utf8"));
   const voiced = Object.keys(dur).length > 0; // 무음판 단계면 음성 검사는 건너뛴다
@@ -237,6 +237,33 @@ for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt
   const used = maps[1]; for (let clk = 0; clk < 4096; clk += 4) { assert.ok(used[V.adaptedHop(0x2a96ef25, clk, used)]); n++; }
   assert.ok(bb.includes("Peripheral은 바로 앞 Central 슬롯과 <b>같은 채널</b>로 답한다"));
   console.log(`hopping: 사양 예제 주소 첫 슬롯 ${Array.from({ length: 6 }, (_, i) => V.basicHop(0x2a96ef25, 0x10 + 2 * i).ch).join(",")}`);
+}
+// 심화 5편 GATT 캐시: aesCmac·hashBytes·databaseHash·robust가 심화 11장(gatt.html)과 같은가, 그리고 영상이 말하는 것
+{
+  const g = fs.readFileSync(new URL("../../bluetooth-deep/chapters/gatt.html", import.meta.url), "utf8");
+  const pick = (name) => { const i = g.indexOf(`  function ${name}(`); let d = 0, j = g.indexOf("{", i); for (; j < g.length; j++) { if (g[j] === "{") d++; else if (g[j] === "}" && --d === 0) break; } return g.slice(i, j + 1); };
+  const sbox = g.match(/  const SBOX = [^\n]*\n/)[0], full = g.match(/  const FULL = [^\n]*\n/)[0];
+  const cg = vm.createContext({ Math }); vm.runInContext(sbox + full + ["aes128", "aesCmac", "hashBytes", "databaseHash", "robust"].map(pick).join("\n") + "\nthis.G = { aes128, aesCmac, databaseHash, robust };", cg);
+  // RFC 4493 시험 벡터(키 2b7e1516…, 빈 메시지 → bb1d6929…)
+  const K = [0x2b,0x7e,0x15,0x16,0x28,0xae,0xd2,0xa6,0xab,0xf7,0x15,0x88,0x09,0xcf,0x4f,0x3c];
+  assert.equal(V.aesCmac(K, []).map((b) => b.toString(16).padStart(2, "0")).join(""), "bb1d6929e95937287fa37d129b756746");
+  const variants = [{}, { name: true }, { prop: true }, { bat: true }, { insert: true }];
+  for (const o of variants) { const db = V.gattDb(o); assert.equal(JSON.stringify(V.databaseHash(db)), JSON.stringify(cg.G.databaseHash(db))); n++; }
+  const hx = (o) => V.databaseHash(V.gattDb(o)).hash.join(",");
+  assert.equal(hx({ name: true }), hx({}), "이름 값만 바꾸면 지문 그대로");
+  assert.notEqual(hx({ prop: true }), hx({}), "성질 바꾸면 지문 바뀜"); assert.notEqual(hx({ bat: true }), hx({}), "서비스 더하면 지문 바뀜"); assert.notEqual(hx({ insert: true }), hx({}));
+  const before = V.gattDb(), after = V.gattDb({ insert: true }), hr = before.find((a) => a.label === "심박 측정값").handle;
+  assert.equal(hr, 0x0010); assert.equal(after.find((a) => a.handle === hr).label, "배터리 잔량", "0x0010이 배터리 잔량을 가리킨다");
+  assert.ok(g.includes("클라이언트 → ATT_READ_REQ 0x0010"), "책 시뮬레이터도 0x0010 읽기");
+  // 책 build()와 같은 구조인지: 선언 순서와 UUID
+  assert.ok(g.includes('svc(0x1800); chr(0x02, 0x2a00') && g.includes('svc(0x180d); chr($("hs-prop").checked ? 0x12 : 0x10, 0x2a37'));
+  for (const seq of [["change", "req", "hash", "req"], ["change", "cmd", "req", "req"], ["change", "hash", "req"], ["change", "scCfm", "cmd"]]) {
+    let a = { aware: true, errSent: false, hashRead: false }, b = { ...a };
+    for (const ev of seq) { const r1 = V.robust(a, ev), r2 = cg.G.robust(b, ev); assert.equal(JSON.stringify(r1), JSON.stringify(r2)); a = r1.st; b = r2.st; n++; }
+  }
+  let s = { aware: true, errSent: false, hashRead: false }; s = V.robust(s, "change").st;
+  assert.ok(V.robust(s, "req").rsp.includes("0x12")); assert.ok(V.robust(s, "cmd").rsp.includes("무시"));
+  console.log(`gattcache: 지문 ${V.databaseHash(V.gattDb()).hash.slice(0, 4).map((b) => b.toString(16).padStart(2, "0")).join("")}…, 0x0010 → ${after.find((a) => a.handle === hr).label}`);
 }
 // 조건별 예시(영상의 막대 셋): 책의 함수로 다시 계산
 const ex = (w, d) => (B.wifiBlocked(w).size / 37) * d * 100;
