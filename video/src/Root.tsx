@@ -32,6 +32,9 @@ import { InstantThumbnail } from "./instant/Thumbnail";
 import { Hopping } from "./hopping/Hopping";
 import { framesFor as hoppingFrames } from "./hopping/timing";
 import { HoppingThumbnail } from "./hopping/Thumbnail";
+import { GattCache } from "./gattcache/GattCache";
+import { framesFor as gattCacheFrames } from "./gattcache/timing";
+import { GattCacheThumbnail } from "./gattcache/Thumbnail";
 import { RangeThumbnail } from "./range/Thumbnail";
 import { TwoKindsThumbnail } from "./twokinds/Thumbnail";
 import { framesFor as rangeFrames } from "./range/timing";
@@ -67,6 +70,9 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="Hopping" component={Hopping} defaultProps={{ voice: false }} durationInFrames={hoppingFrames(false)} fps={30} width={1920} height={1080} />
     <Composition id="HoppingVoice" component={Hopping} defaultProps={{ voice: true }} durationInFrames={hoppingFrames(true)} fps={30} width={1920} height={1080} />
     <Composition id="HoppingThumbnail" component={HoppingThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
+    <Composition id="GattCache" component={GattCache} defaultProps={{ voice: false }} durationInFrames={gattCacheFrames(false)} fps={30} width={1920} height={1080} />
+    <Composition id="GattCacheVoice" component={GattCache} defaultProps={{ voice: true }} durationInFrames={gattCacheFrames(true)} fps={30} width={1920} height={1080} />
+    <Composition id="GattCacheThumbnail" component={GattCacheThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
     <Composition id="PairingThumbnail" component={PairingThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
     <Composition id="PowerThumbnail" component={PowerThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
     <Composition id="AudioThumbnail" component={AudioThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />

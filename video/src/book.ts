@@ -244,3 +244,62 @@ export function adaptedHop(addr: number, clk: number, used: boolean[]): number {
   for (let i = 1; i < 79; i += 2) if (used[i]) map.push(i);
   return map[(r.po + r.q.E + ((16 * r.q.seg) % map.length) + 32 * r.q.Y1) % map.length];
 }
+
+/* 심화 11장(gatt.html) Database Hash와 Robust Caching. AES는 책의 구현 그대로(검증 스크립트가 RFC 4493과 맞춘다) */
+const SBOX: number[] = (() => { const s = new Array(256); let p = 1, q = 1; do { p = p ^ ((p << 1) & 0xff) ^ (p & 0x80 ? 0x1b : 0); q ^= q << 1; q ^= q << 2; q ^= q << 4; q &= 0xff; if (q & 0x80) q ^= 0x09; const x = q ^ ((q << 1) | (q >> 7)) ^ ((q << 2) | (q >> 6)) ^ ((q << 3) | (q >> 5)) ^ ((q << 4) | (q >> 4)); s[p] = (x ^ 0x63) & 0xff; } while (p !== 1); s[0] = 0x63; return s; })();
+export function aes128(key: number[], block: number[]): number[] {
+  const xt = (a: number) => ((a << 1) ^ (a & 0x80 ? 0x1b : 0)) & 0xff;
+  const w = key.slice(); let rc = 1;
+  for (let i = 16; i < 176; i += 4) { let t = w.slice(i - 4, i); if (i % 16 === 0) { t = [SBOX[t[1]] ^ rc, SBOX[t[2]], SBOX[t[3]], SBOX[t[0]]]; rc = xt(rc); } for (let j = 0; j < 4; j++) w[i + j] = w[i - 16 + j] ^ t[j]; }
+  let s = block.map((b, i) => b ^ w[i]);
+  for (let r = 1; r <= 10; r++) {
+    s = s.map((b) => SBOX[b]);
+    s = [0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12, 1, 6, 11].map((i) => s[i]);
+    if (r < 10) { const o: number[] = []; for (let c = 0; c < 4; c++) { const a = s.slice(4 * c, 4 * c + 4), x = a[0] ^ a[1] ^ a[2] ^ a[3]; for (let i = 0; i < 4; i++) o.push(a[i] ^ x ^ xt(a[i] ^ a[(i + 1) % 4])); } s = o; }
+    s = s.map((b, i) => b ^ w[16 * r + i]);
+  }
+  return s;
+}
+export function aesCmac(key: number[], msg: number[]): number[] {
+  const L = aes128(key, new Array(16).fill(0));
+  const dbl = (a: number[]) => { const o = a.map((b, i) => ((b << 1) | (i < 15 ? a[i + 1] >> 7 : 0)) & 0xff); if (a[0] & 0x80) o[15] ^= 0x87; return o; };
+  const K1 = dbl(L), K2 = dbl(K1), n = Math.max(1, Math.ceil(msg.length / 16)), full = msg.length > 0 && msg.length % 16 === 0;
+  let last = msg.slice((n - 1) * 16);
+  if (full) last = last.map((b, i) => b ^ K1[i]); else { last = last.concat([0x80]); while (last.length < 16) last.push(0); last = last.map((b, i) => b ^ K2[i]); }
+  let x = new Array(16).fill(0);
+  for (let i = 0; i < n - 1; i++) x = aes128(key, x.map((b, j) => b ^ msg[16 * i + j]));
+  return aes128(key, x.map((b, j) => b ^ last[j]));
+}
+export type Attr = { handle: number; type: number; value: number[] };
+const FULL = [0x2800, 0x2801, 0x2802, 0x2803, 0x2900], TYPE_ONLY = [0x2901, 0x2902, 0x2903, 0x2904, 0x2905];
+export function hashBytes(attr: Attr): number[] {
+  const le = (v: number) => [v & 255, v >> 8];
+  if (FULL.includes(attr.type)) return le(attr.handle).concat(le(attr.type), attr.value);
+  if (TYPE_ONLY.includes(attr.type)) return le(attr.handle).concat(le(attr.type));
+  return [];
+}
+export function databaseHash(db: Attr[]): { m: number[]; hash: number[] } { const m = ([] as number[]).concat(...db.slice().sort((a, b) => a.handle - b.handle).map(hashBytes)); return { m, hash: aesCmac(new Array(16).fill(0), m) }; }
+export function charDecl(props: number, valueHandle: number, uuid: number): number[] { return [props, valueHandle & 255, valueHandle >> 8, uuid & 255, uuid >> 8]; }
+export type RobustState = { aware: boolean; errSent: boolean; hashRead: boolean };
+export function robust(st: RobustState, ev: string): { st: RobustState; rsp: string } {
+  if (ev === "change") return { st: { aware: false, errSent: false, hashRead: false }, rsp: "Service Changed 표시를 보냄" };
+  if (ev === "scCfm") return { st: st.aware ? st : { aware: true, errSent: false, hashRead: false }, rsp: st.aware ? "—" : "change-aware가 됨" };
+  if (ev === "hash") return { st: st.aware ? st : { ...st, hashRead: true }, rsp: "Database Hash 응답" };
+  if (ev === "cmd") return { st, rsp: st.aware ? "쓰기 실행" : "무시(응답 없음)" };
+  if (st.aware) return { st, rsp: "정상 응답" };
+  if (st.hashRead || st.errSent) return { st: { aware: true, errSent: false, hashRead: false }, rsp: "change-aware가 되어 정상 응답" };
+  return { st: { ...st, errSent: true }, rsp: "ATT_ERROR_RSP 0x12 Database Out Of Sync" };
+}
+/** 책 시뮬레이터의 데이터베이스(장치 이름·외형 / GATT 서비스 / 심박 / 배터리). insert = 배터리 서비스를 심박 서비스 앞에 끼운 예(영상의 칸 밀림) */
+export function gattDb(o: { name?: boolean; prop?: boolean; bat?: boolean; insert?: boolean } = {}): (Attr & { label: string })[] {
+  const db: (Attr & { label: string })[] = [], u = (v: number) => [v & 255, v >> 8]; let h = 1;
+  const svc = (uuid: number, label: string) => db.push({ handle: h++, type: 0x2800, value: u(uuid), label });
+  const chr = (props: number, uuid: number, val: number[], label: string, cccd = false) => { const d = h++; db.push({ handle: d, type: 0x2803, value: charDecl(props, d + 1, uuid), label: label + " 선언" }); db.push({ handle: h++, type: uuid, value: val, label }); if (cccd) db.push({ handle: h++, type: 0x2902, value: [0, 0], label: label + " CCCD" }); };
+  const bat = () => { svc(0x180f, "배터리 서비스"); chr(0x12, 0x2a19, [87], "배터리 잔량", true); };
+  svc(0x1800, "GAP 서비스"); chr(0x02, 0x2a00, Array.from(new TextEncoder().encode(o.name ? "My Band 2" : "My Band")), "장치 이름"); chr(0x02, 0x2a01, [0xc1, 0x03], "외형");
+  svc(0x1801, "GATT 서비스"); chr(0x20, 0x2a05, [0, 0, 0, 0], "Service Changed", true); chr(0x02, 0x2b2a, new Array(16).fill(0), "Database Hash"); chr(0x0a, 0x2b29, [1], "클라이언트 지원 기능");
+  if (o.insert) bat();
+  svc(0x180d, "심박 서비스"); chr(o.prop ? 0x12 : 0x10, 0x2a37, [0, 72], "심박 측정값", true); chr(0x02, 0x2a38, [1], "센서 위치");
+  if (o.bat && !o.insert) bat();
+  return db;
+}

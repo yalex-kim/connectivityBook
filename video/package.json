@@ -23,7 +23,8 @@
     "thumbnail:locate": "remotion still LocateThumbnail out/youtube-locate/thumbnail.png",
     "thumbnail:scheduling": "remotion still SchedulingThumbnail out/youtube-scheduling/thumbnail.png",
     "thumbnail:instant": "remotion still InstantThumbnail out/youtube-instant/thumbnail.png",
-    "thumbnail:hopping": "remotion still HoppingThumbnail out/youtube-hopping/thumbnail.png"
+    "thumbnail:hopping": "remotion still HoppingThumbnail out/youtube-hopping/thumbnail.png",
+    "thumbnail:gattcache": "remotion still GattCacheThumbnail out/youtube-gattcache/thumbnail.png"
   },
   "dependencies": {
     "@react-three/fiber": "9.8.2",
