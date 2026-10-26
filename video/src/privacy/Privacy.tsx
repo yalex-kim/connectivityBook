@@ -5,8 +5,8 @@ import { Scene3D, camLerp, type Cam, type Vec } from "../afh/world3d";
 import { Title, clamp } from "../afh/parts";
 import { at } from "../twokinds/TwoKinds";
 import { project, Dots } from "../range/hook3d";
-import { Buds } from "../pairing/Pairing";
-import { DEEP, Ground, Note, makeVideo } from "../common/kit";
+import { DEEP, Earbud3D, Ground, Note, makeVideo } from "../common/kit";
+import { Packet3D } from "../common/deep3d";
 import { SchedStage, SchedCam } from "../scheduling/Scheduling";
 import { D7 } from "./script";
 import { LEAD, scenesFor, type Timed } from "./timing";
@@ -21,6 +21,9 @@ const rnd = bookRng(8);
 const PRANDS = [D7.prand, ...Array.from({ length: 3 }, () => 0x400000 | (Math.floor(rnd() * 0x3ffffe) + 1))];
 const RPA = PRANDS.map((p) => ({ p, h: ah(IRK, p) }));
 const FIXED = "C4:7E:21:9A:03:5B"; // 바뀌지 않는 주소의 예
+
+/** 이어폰 한 쌍(걸어가는 사람의 귀에 있는 것으로) */
+const Pair: React.FC<{ p: Vec }> = ({ p }) => <><Earbud3D p={[p[0] - 0.9, p[1] + 3.6, p[2]]} ry={-1.2} s={0.9} /><Earbud3D p={[p[0] + 0.9, p[1] + 3.6, p[2]]} ry={1.9} s={0.9} /></>;
 
 /* ---------------------------------------------------------------- 1. 훅 (3D): 길목마다 기록하는 수신기 */
 const POSTS: Vec[] = [[-20, 0, -4], [0, 0, -6], [20, 0, -4]];
@@ -39,7 +42,7 @@ const Hook: React.FC<{ cues: number[]; len: number; budX?: number }> = ({ cues, 
       <Scene3D cam={cam}>
         <Ground />
         {POSTS.map((p, i) => <Post key={i} p={p} />)}
-        <Buds p={bud} />
+        <Pair p={bud} />
         {POSTS.map((p, i) => <Dots key={i} a={[bx, 3.5, 8]} b={[p[0], 6.6, p[2]]} f={f + i * 7} col={BD} on={near[i] ? show : 0} n={5} speed={0.05} />)}
       </Scene3D>
       <svg width={1920} height={1080} style={{ position: "absolute", inset: 0 }} fontFamily={FONT}>
@@ -66,26 +69,31 @@ const AddrBar: React.FC<{ x: number; y: number; prand: number; hash: number; a?:
   </g>
 );
 
-/* ---------------------------------------------------------------- 2. 바꿔 쓰는 주소 (RPA) */
-const Rpa: React.FC<{ cues: number[] }> = ({ cues }) => {
-  const f = useCurrentFrame(), parts = at(f, cues[1]), many = at(f, cues[2]);
+/* ---------------------------------------------------------------- 2. 바꿔 쓰는 주소 (RPA, 3D 거리) */
+const STREET: Vec[] = [[-20, 0, -4], [0, 0, -6], [20, 0, -4]];
+const Rpa: React.FC<{ cues: number[]; len: number }> = ({ cues, len }) => {
+  const f = useCurrentFrame(), cam: Cam = { pos: [0, 20, 46], look: [0, 4, 0], fov: 40 };
+  const bx = interpolate(f, [cues[1] - 20, len - 20], [-28, 26], clamp), seg = bx < -10 ? 0 : bx < 10 ? 1 : 2, r = RPA[seg + 1];
+  const parts = at(f, 10), seen = (i: number) => (bx > STREET[i][0] - 2 ? 1 : 0), many = at(f, cues[2]);
+  const [tx, ty] = project(cam, [bx, 7.5, 6]);
   return (
     <>
+      <Scene3D cam={cam}>
+        <Ground />
+        {STREET.map((p, i) => <Post key={i} p={p} />)}
+        <Pair p={[bx, 0, 6]} />
+        {STREET.map((p, i) => <Packet3D key={i} f={f} t0={(STREET[i][0] + 28) / 54 * (len - 20 - (cues[1] - 20)) + cues[1] - 30} t1={(STREET[i][0] + 28) / 54 * (len - 20 - (cues[1] - 20)) + cues[1]} a={[STREET[i][0] - 2, 4, 6]} b={[p[0], 6.6, p[2]]} col={BD} size={0.6} arc={1} />)}
+      </Scene3D>
       <Title kicker="RPA: 해석 가능한 임의 주소">주소를 가면처럼 바꿔 쓴다</Title>
       <svg width={1920} height={1080} style={{ position: "absolute", inset: 0 }} fontFamily={FONT}>
-        <g opacity={parts}>
-          <text x={300} y={262} fill={RND} fontSize={24} fontWeight={900}>무작위 절반 prand</text>
-          <text x={730} y={262} fill={HSH} fontSize={24} fontWeight={900}>계산한 절반 hash = ah(IRK, prand)</text>
-          <AddrBar x={300} y={280} prand={RPA[0].p} hash={RPA[0].h} />
-          <text x={300} y={400} fill={C.dim} fontSize={22}>= {addr(RPA[0].p, RPA[0].h)} · prand 24비트(맨 위 두 비트 01) + hash 24비트 · 부록 D.7 샘플</text>
+        <g opacity={parts} transform="translate(560,190)">
+          <AddrBar x={0} y={0} prand={RPA[0].p} hash={RPA[0].h} />
+          <text x={210} y={100} textAnchor="middle" fill={RND} fontSize={22} fontWeight={800}>무작위 절반 (prand)</text>
+          <text x={640} y={100} textAnchor="middle" fill={HSH} fontSize={22} fontWeight={800}>비밀 키로 계산한 절반 (hash)</text>
         </g>
-        <g opacity={many}>
-          <text x={300} y={490} fill={C.text} fontSize={26} fontWeight={900}>시간이 지나면 (새 prand, 같은 IRK)</text>
-          {RPA.slice(1).map((r, i) => <g key={i}><text x={300} y={560 + i * 90} fill={C.dim} fontSize={22}>{["08:01", "08:13", "08:24"][i]}</text><AddrBar x={400} y={520 + i * 90} prand={r.p} hash={r.h} /></g>)}
-          <text x={1290} y={650} fill={C.text} fontSize={26} fontWeight={800}>모르는 사람에게는</text>
-          <text x={1290} y={690} fill={C.text} fontSize={26} fontWeight={800}>서로 다른 세 기기</text>
-        </g>
-        <Note x={300} y={810} w={1320} a={parts} col={KEY} lines={[["IRK", "= 주소를 알아보는 비밀 키(Identity Resolving Key). ah = AES-128 한 블록의 아래 24비트"]]} />
+        <g opacity={at(f, cues[1])} transform={`translate(${tx - 160},${ty - 30}) scale(0.38)`}><AddrBar x={0} y={0} prand={r.p} hash={r.h} /></g>
+        {STREET.map((p, i) => { const [x, y] = project(cam, [p[0], 0, p[2]]); const rr = RPA[i + 1]; return <g key={i} opacity={seen(i) * at(f, cues[1])}><rect x={x - 120} y={y + 20} width={240} height={46} rx={10} fill={C.panel} stroke={many > 0.5 ? OK : RND} strokeWidth={3} /><text x={x} y={y + 51} textAnchor="middle" fill={C.text} fontSize={20} fontFamily="monospace" fontWeight={800}>{addr(rr.p, rr.h).slice(0, 11)}…</text></g>; })}
+        <text x={960} y={870} textAnchor="middle" fill={OK} fontSize={30} fontWeight={900} opacity={many}>길목마다 다른 주소 → 서로 다른 기기로 보인다</text>
       </svg>
     </>
   );
@@ -145,25 +153,30 @@ const When: React.FC<{ cues: number[] }> = ({ cues }) => {
   );
 };
 
-/* ---------------------------------------------------------------- 5. 광고 내용도 함께 */
-const Data: React.FC<{ cues: number[] }> = ({ cues }) => {
-  const f = useCurrentFrame(), tag = at(f, cues[1]), fix = at(f, cues[2]);
-  const pkt = (y: number, a: string, sn: string, bad: boolean, op: number) => (
-    <g opacity={op} transform={`translate(260,${y})`}>
-      <rect x={0} y={0} width={420} height={64} rx={10} fill={RND} opacity={0.9} /><text x={210} y={42} textAnchor="middle" fill={C.bg} fontSize={22} fontWeight={900} fontFamily="monospace">주소 {a}</text>
-      <rect x={430} y={0} width={480} height={64} rx={10} fill={bad ? BAD : "#334155"} opacity={0.9} /><text x={670} y={42} textAnchor="middle" fill={C.text} fontSize={22} fontWeight={900} fontFamily="monospace">일련번호 {sn}</text>
-    </g>
-  );
+/* ---------------------------------------------------------------- 5. 광고 내용도 함께 (3D 거리) */
+const Data: React.FC<{ cues: number[]; len: number }> = ({ cues, len }) => {
+  const f = useCurrentFrame(), cam: Cam = { pos: [0, 20, 46], look: [0, 4, 0], fov: 40 };
+  const fixed = f < cues[2], t0 = fixed ? 10 : cues[2], t1 = fixed ? cues[2] - 10 : len - 20;
+  const bx = interpolate(f, [t0, t1], [-28, 26], clamp), tag = at(f, cues[1]);
+  const SN = fixed ? ["7F3A-91C2", "7F3A-91C2", "7F3A-91C2"] : ["2C81-E04B", "9D17-5A6F", "41BE-0C93"];
+  const pts = STREET.map((p) => project(cam, [p[0], 0, p[2]]));
   return (
     <>
+      <Scene3D cam={cam}>
+        <Ground />
+        {STREET.map((p, i) => <Post key={i} p={p} />)}
+        <Pair p={[bx, 0, 6]} />
+      </Scene3D>
       <Title kicker="주소만으로는 부족하다">바뀌지 않는 광고 내용이 이름표가 된다</Title>
       <svg width={1920} height={1080} style={{ position: "absolute", inset: 0 }} fontFamily={FONT}>
-        <text x={260} y={250} fill={C.text} fontSize={26} fontWeight={900} opacity={at(f, 10)}>주소만 바꾼 광고</text>
-        {RPA.slice(1).map((r, i) => pkt(280 + i * 84, addr(r.p, r.h).slice(0, 8) + "…", "7F3A-91C2", tag > 0.5, at(f, 10)))}
-        <text x={1210} y={360} fill={BAD} fontSize={28} fontWeight={900} opacity={tag}>← 늘 같은 값 = 이름표</text>
-        <text x={260} y={580} fill={C.text} fontSize={26} fontWeight={900} opacity={fix}>주소를 바꿀 때 내용도 함께 바꾼 광고</text>
-        {RPA.slice(1).map((r, i) => pkt(610 + i * 84, addr(r.p, r.h).slice(0, 8) + "…", ["2C81-E04B", "9D17-5A6F", "41BE-0C93"][i], false, fix))}
-        <text x={1210} y={690} fill={OK} fontSize={28} fontWeight={900} opacity={fix}>← 이어 붙일 단서가 없다</text>
+        {STREET.map((p, i) => { const [x, y] = pts[i]; const rr = RPA[i + 1]; const vis = bx > p[0] - 2 ? 1 : 0; const bad = fixed && tag > 0.5; return (
+          <g key={i} opacity={vis}>
+            <rect x={x - 130} y={y + 20} width={260} height={96} rx={12} fill={C.panel} stroke={bad ? BAD : RND} strokeWidth={3} />
+            <text x={x} y={y + 52} textAnchor="middle" fill={C.dim} fontSize={18} fontFamily="monospace">주소 {addr(rr.p, rr.h).slice(0, 8)}…</text>
+            <text x={x} y={y + 90} textAnchor="middle" fill={bad ? BAD : OK} fontSize={22} fontFamily="monospace" fontWeight={900}>번호 {SN[i]}</text>
+          </g>); })}
+        {fixed && tag > 0.5 && bx > STREET[2][0] - 2 && <path d={`M${pts[0][0]} ${pts[0][1] + 125} Q${(pts[0][0] + pts[2][0]) / 2} ${pts[0][1] + 200} ${pts[2][0]} ${pts[2][1] + 125} M${pts[1][0]} ${pts[1][1] + 125} V${pts[1][1] + 168}`} stroke={BAD} strokeWidth={4} strokeDasharray="10 8" fill="none" />}
+        <text x={960} y={250} textAnchor="middle" fill={fixed ? BAD : OK} fontSize={30} fontWeight={900} opacity={fixed ? tag : 1}>{fixed ? "늘 같은 번호 → 세 기록이 한 사람으로 이어진다" : "주소를 바꿀 때 번호도 함께 → 이어 붙일 단서가 없다"}</text>
       </svg>
     </>
   );
@@ -193,10 +206,10 @@ const Outro: React.FC<{ cues: number[]; len: number }> = ({ cues, len }) => {
 const body = (s: Timed) => {
   switch (s.id) {
     case "hook": return <Hook cues={s.cues} len={s.frames} />;
-    case "rpa": return <Rpa cues={s.cues} />;
+    case "rpa": return <Rpa cues={s.cues} len={s.frames} />;
     case "resolve": return <Resolve cues={s.cues} />;
     case "when": return <When cues={s.cues} />;
-    case "data": return <Data cues={s.cues} />;
+    case "data": return <Data cues={s.cues} len={s.frames} />;
     case "outro": return <Outro cues={s.cues} len={s.frames} />;
   }
 };
