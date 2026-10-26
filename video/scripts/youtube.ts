@@ -82,6 +82,19 @@ scenes.forEach((s, k) => s.caption.forEach((text, n) => {
   srt.push(`${srt.length + 1}\n${srtTime(a)} --> ${srtTime(b)}\n${text}\n`);
 }));
 
+/** 타입캐스트 무료 플랜으로 만든 음성의 표기(타입캐스트 정책). cast = [한국어 이름, 영문 이름] 모두 */
+function typecastNotice(cast: [string, string][]) {
+  return [
+    "이 콘텐츠는 인공지능 가상 연기자 서비스, 타입캐스트를 활용하여 제작되었습니다.",
+    `출연진: ${cast.map(([k]) => k).join(", ")}`,
+    "https://typecast.ai/kr",
+    "",
+    "This content was produced with Typecast, an AI virtual actor service.",
+    `Characters casted: ${cast.map(([, e]) => e).join(", ")}`,
+    "https://typecast.ai",
+  ].join("\n");
+}
+
 const desc = [
   ...YOUTUBE.summary, "",
   "⏱ 챕터", ...chapters, "",
@@ -89,6 +102,8 @@ const desc = [
   "※ " + YOUTUBE.notes.join("\n※ "), "",
   "근거: " + YOUTUBE.sources.join(" · "),
   YOUTUBE.credits.join(" · "),
+  "",
+  typecastNotice(((YOUTUBE as unknown as { cast?: [string, string][] }).cast) ?? [["예슬", "Yeseul"]]),
 ].join("\n");
 
 if (YOUTUBE.title.length > 100) throw new Error("제목은 100자 이하");
