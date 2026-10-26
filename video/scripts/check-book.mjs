@@ -28,7 +28,7 @@ const big = V.simulate(20000, false), lossHop = big.filter((e) => e.hit).length 
 assert.ok(Math.abs(lossHop - 31 / 74) < 0.02, `무작위 도약 손실 ${lossHop}`);
 assert.equal(V.simulate(2000, true).filter((e) => e.hit).length, 0, "적응형 도약은 손실 0");
 // 대본: say와 caption의 문장 수가 같고, say에 숫자가 없고, 나레이션 음성(durations.json)이 지금 문장으로 만든 것인지
-for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt", "pairing", "power", "audio", "locate", "scheduling", "instant", "hopping", "gattcache"]) {
+for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt", "pairing", "power", "audio", "locate", "scheduling", "instant", "hopping", "gattcache", "encrypt"]) {
   const src = fs.readFileSync(new URL(`../src/${video}/script.ts`, import.meta.url), "utf8");
   const dur = JSON.parse(fs.readFileSync(new URL(`../src/${video}/durations.json`, import.meta.url), "utf8"));
   const voiced = Object.keys(dur).length > 0; // 무음판 단계면 음성 검사는 건너뛴다
@@ -264,6 +264,27 @@ for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt
   let s = { aware: true, errSent: false, hashRead: false }; s = V.robust(s, "change").st;
   assert.ok(V.robust(s, "req").rsp.includes("0x12")); assert.ok(V.robust(s, "cmd").rsp.includes("무시"));
   console.log(`gattcache: 지문 ${V.databaseHash(V.gattDb()).hash.slice(0, 4).map((b) => b.toString(16).padStart(2, "0")).join("")}…, 0x0010 → ${after.find((a) => a.handle === hr).label}`);
+}
+// 심화 6편 암호화: sessionKey·ccmNonce·ccm이 심화 6장(encryption.html)과 같고, 사양 샘플의 암호문과 같은가
+{
+  const e = fs.readFileSync(new URL("../../bluetooth-deep/chapters/encryption.html", import.meta.url), "utf8");
+  const pick = (name) => { const i = e.indexOf(`  function ${name}(`); let d = 0, j = e.indexOf("{", i); for (; j < e.length; j++) { if (e[j] === "{") d++; else if (e[j] === "}" && --d === 0) break; } return e.slice(i, j + 1); };
+  const sbox = e.match(/  const SBOX = [^\n]*\n/)[0];
+  const ce = vm.createContext({ Math }); vm.runInContext(sbox + ["aes128", "sessionKey", "ccmNonce", "aadByte", "ccm"].map(pick).join("\n") + "\nthis.E = { sessionKey, ccmNonce, ccm };", ce);
+  const H = (s) => (s.replace(/[^0-9a-fA-F]/g, "").match(/../g) || []).map((x) => parseInt(x, 16)), X = (a) => a.map((b) => b.toString(16).padStart(2, "0")).join("").toUpperCase();
+  const scr = fs.readFileSync(new URL("../src/encrypt/script.ts", import.meta.url), "utf8");
+  const S = JSON.parse(scr.match(/SAMPLE = (\{[^}]*\})/)[1].replace(/(\w+):/g, '"$1":'));
+  assert.ok(e.includes(`ltk: "${S.ltk}", skdC: "${S.skdC}", skdP: "${S.skdP}", ivC: "${S.ivC}", ivP: "${S.ivP}"`), "영상의 샘플 = 책의 사양 샘플");
+  const sk = V.sessionKey(H(S.ltk), H(S.skdC), H(S.skdP)); assert.equal(X(sk), X(ce.E.sessionKey(H(S.ltk), H(S.skdC), H(S.skdP))));
+  const iv = H(S.ivP + S.ivC);
+  const c = V.ccm(sk, V.ccmNonce(0, 1, iv), 0x0f, [6]), p = V.ccm(sk, V.ccmNonce(0, 0, iv), 0x07, [6]);
+  assert.equal(X(c.cipher) + " " + X(c.encMic), "9F CDA7F448"); assert.equal(X(p.cipher) + " " + X(p.encMic), "A3 4C13A415"); // 사양 샘플 그대로
+  assert.ok(e.includes('rsp1: { hdr: 0x0f, from: "C", ctr: 0, pl: "06", want: "9F CDA7F448" }') && e.includes('rsp2: { hdr: 0x07, from: "P", ctr: 0, pl: "06", want: "A3 4C13A415" }'));
+  const r = V.bookRng(11);
+  for (let k = 0; k < 60; k++) { const pl = Array.from({ length: 1 + Math.floor(r() * 40) }, () => Math.floor(r() * 256)), n1 = V.ccmNonce(Math.floor(r() * 1e6), k % 2, iv), hd = Math.floor(r() * 256); assert.equal(JSON.stringify(V.ccm(sk, n1, hd, pl)), JSON.stringify(ce.E.ccm(sk, n1, hd, pl))); n++; }
+  const sk2 = V.sessionKey(H(S.ltk), H(S.skdC).map((b, i) => (i === 7 ? b ^ 0x5a : b)), H(S.skdP)); assert.notEqual(X(sk2), X(sk), "무작위 값이 다르면 세션 키도 다름");
+  assert.ok(e.includes("2⁻³²") && e.includes("0x3D") && e.includes("LTK는 한 번도 공중에 나가지 않는다"));
+  console.log(`encrypt: SK ${X(sk).slice(0, 8)}…, 06 → C:${X(c.cipher)} P:${X(p.cipher)}`);
 }
 // 조건별 예시(영상의 막대 셋): 책의 함수로 다시 계산
 const ex = (w, d) => (B.wifiBlocked(w).size / 37) * d * 100;

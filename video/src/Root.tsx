@@ -35,6 +35,9 @@ import { HoppingThumbnail } from "./hopping/Thumbnail";
 import { GattCache } from "./gattcache/GattCache";
 import { framesFor as gattCacheFrames } from "./gattcache/timing";
 import { GattCacheThumbnail } from "./gattcache/Thumbnail";
+import { Encrypt } from "./encrypt/Encrypt";
+import { framesFor as encryptFrames } from "./encrypt/timing";
+import { EncryptThumbnail } from "./encrypt/Thumbnail";
 import { RangeThumbnail } from "./range/Thumbnail";
 import { TwoKindsThumbnail } from "./twokinds/Thumbnail";
 import { framesFor as rangeFrames } from "./range/timing";
@@ -73,6 +76,9 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="GattCache" component={GattCache} defaultProps={{ voice: false }} durationInFrames={gattCacheFrames(false)} fps={30} width={1920} height={1080} />
     <Composition id="GattCacheVoice" component={GattCache} defaultProps={{ voice: true }} durationInFrames={gattCacheFrames(true)} fps={30} width={1920} height={1080} />
     <Composition id="GattCacheThumbnail" component={GattCacheThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
+    <Composition id="Encrypt" component={Encrypt} defaultProps={{ voice: false }} durationInFrames={encryptFrames(false)} fps={30} width={1920} height={1080} />
+    <Composition id="EncryptVoice" component={Encrypt} defaultProps={{ voice: true }} durationInFrames={encryptFrames(true)} fps={30} width={1920} height={1080} />
+    <Composition id="EncryptThumbnail" component={EncryptThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
     <Composition id="PairingThumbnail" component={PairingThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
     <Composition id="PowerThumbnail" component={PowerThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
     <Composition id="AudioThumbnail" component={AudioThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />

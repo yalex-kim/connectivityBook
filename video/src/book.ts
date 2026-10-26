@@ -303,3 +303,24 @@ export function gattDb(o: { name?: boolean; prop?: boolean; bat?: boolean; inser
   if (o.bat && !o.insert) bat();
   return db;
 }
+
+/* 심화 6장(encryption.html) 링크 계층 암호화: 세션 키와 AES-CCM. aes128은 위(11장)와 같은 구현 */
+export function sessionKey(ltk: number[], skdC: number[], skdP: number[]): number[] { return aes128(ltk, skdP.concat(skdC)); }
+export function ccmNonce(counter: number, dirBit: number, iv: number[]): number[] {
+  const n: number[] = [];
+  for (let i = 0; i < 4; i++) n.push(Math.floor(counter / 2 ** (8 * i)) & 0xff);
+  n.push((Math.floor(counter / 2 ** 32) & 0x7f) | (dirBit ? 0x80 : 0));
+  return n.concat(iv.slice().reverse());
+}
+export function aadByte(hdr: number): number { return hdr & 0xe3; }
+export function ccm(sk: number[], nonce: number[], hdr: number, payload: number[]) {
+  const x16 = (a: number[], b: number[]) => a.map((v, i) => v ^ b[i]);
+  const B: number[][] = [[0x49].concat(nonce, [0, payload.length]), [0, 1, aadByte(hdr)].concat(new Array(13).fill(0))];
+  for (let i = 0; i < payload.length; i += 16) { const c = payload.slice(i, i + 16); while (c.length < 16) c.push(0); B.push(c); }
+  const X: number[][] = []; let x = new Array(16).fill(0);
+  B.forEach((b) => { x = aes128(sk, x16(x, b)); X.push(x); });
+  const mic = x.slice(0, 4), nA = Math.ceil(payload.length / 16) + 1, A: number[][] = [], S: number[][] = [];
+  for (let i = 0; i < nA; i++) { const a = [0x01].concat(nonce, [0, i]); A.push(a); S.push(aes128(sk, a)); }
+  const ks = ([] as number[]).concat(...S.slice(1));
+  return { B, X, A, S, mic, cipher: payload.map((p, i) => p ^ ks[i]), encMic: mic.map((m, i) => m ^ S[0][i]) };
+}
