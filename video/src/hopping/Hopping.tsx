@@ -6,8 +6,7 @@ import { Title, clamp } from "../afh/parts";
 import { at } from "../twokinds/TwoKinds";
 import { project, Dots } from "../range/hook3d";
 import { Phone3D } from "../connection/Connection";
-import { Buds } from "../pairing/Pairing";
-import { DEEP, Ground, Note, makeVideo } from "../common/kit";
+import { DEEP, Earbud3D, Ground, Note, makeVideo } from "../common/kit";
 import { ADDR, CLK0, UNUSED_TO } from "./script";
 import { LEAD, scenesFor, type Timed } from "./timing";
 
@@ -22,7 +21,7 @@ const USED = Array.from({ length: 79 }, (_, c) => c > UNUSED_TO);
 /* ---------------------------------------------------------------- 3D: 79채널 위를 함께 뛰는 둘 */
 const BX = (k: number) => (k - 39) * 0.55;
 const PHP: Vec = [-30, 0, 6], BDP: Vec = [24, 0, 6];
-const Band3D: React.FC<{ cam: Cam; f: number; ch: number; on: number }> = ({ cam, f, ch, on }) => (
+const Band3D: React.FC<{ cam: Cam; f: number; ch: number; on: number; dir?: number }> = ({ cam, f, ch, on, dir = 0 }) => (
   <Scene3D cam={cam}>
     <Ground light={[0, 22, 14]} />
     {Array.from({ length: 79 }, (_, k) => (
@@ -32,9 +31,9 @@ const Band3D: React.FC<{ cam: Cam; f: number; ch: number; on: number }> = ({ cam
       </mesh>
     ))}
     <group position={[PHP[0] + 12, 0, PHP[2]]}><Phone3D /></group>
-    <Buds p={BDP} />
-    <Dots a={[PHP[0], 7, PHP[2]]} b={[BX(ch), 4.6, 0]} f={f} col={PH} on={on} n={5} speed={0.05} />
-    <Dots a={[BX(ch), 4.6, 0]} b={[BDP[0], 4, BDP[2]]} f={f + 5} col={BD} on={on} n={5} speed={0.05} />
+    <Earbud3D p={[BDP[0] - 1.3, 3.4, BDP[2]]} ry={-1.2} s={1.2} /><Earbud3D p={[BDP[0] + 1.3, 3.4, BDP[2]]} ry={1.9} s={1.2} />
+    {dir >= 0 && <><Dots a={[PHP[0], 7, PHP[2]]} b={[BX(ch), 4.6, 0]} f={f} col={PH} on={on} n={5} speed={0.05} /><Dots a={[BX(ch), 4.6, 0]} b={[BDP[0], 4, BDP[2]]} f={f + 5} col={dir > 0 ? PH : BD} on={on} n={5} speed={0.05} /></>}
+    {dir < 0 && <><Dots a={[BDP[0], 4, BDP[2]]} b={[BX(ch), 4.6, 0]} f={f} col={BD} on={on} n={5} speed={0.05} /><Dots a={[BX(ch), 4.6, 0]} b={[PHP[0], 7, PHP[2]]} f={f + 5} col={BD} on={on} n={5} speed={0.05} /></>}
   </Scene3D>
 );
 const CAM0: Cam = { pos: [-8, 26, 62], look: [0, 3, 2], fov: 40 }, CAM1: Cam = { pos: [8, 30, 58], look: [0, 3, 2], fov: 40 };
@@ -97,34 +96,28 @@ const Same: React.FC<{ cues: number[] }> = ({ cues }) => {
 };
 
 /* ---------------------------------------------------------------- 3. 슬롯마다 */
-const Slots: React.FC<{ cues: number[] }> = ({ cues }) => {
-  const f = useCurrentFrame(), X0 = 260, SW = 120, N = 12, tick = at(f, 10), ch = at(f, cues[1]), talk = at(f, cues[2]);
-  const shown = interpolate(f, [cues[1], cues[2]], [1, N], clamp);
+const Slots: React.FC<{ cues: number[]; len: number }> = ({ cues, len }) => {
+  const f = useCurrentFrame(), X0 = 260, SW = 120, N = 12, ch = at(f, cues[1]), talk = at(f, cues[2]);
+  const per = Math.max(16, Math.floor((len - 40) / N)), slot = Math.min(N - 1, Math.max(0, Math.floor((f - 15) / per))), clk = CLK0 + 2 * slot, central = ((clk >>> 1) & 1) === 0;
+  const cam = camLerp({ pos: [-4, 22, 52], look: [-2, 2, 2], fov: 40 }, { pos: [4, 24, 50], look: [-2, 2, 2], fov: 40 }, f / len);
   return (
     <>
+      <Band3D cam={cam} f={f} ch={chAt(clk)} on={1} dir={talk > 0.5 ? (central ? 1 : -1) : 0} />
       <Title kicker="625 µs마다">슬롯마다 시계가 바뀌고, 채널도 바뀐다</Title>
       <svg width={1920} height={1080} style={{ position: "absolute", inset: 0 }} fontFamily={FONT}>
-        <text x={X0 - 20} y={300} textAnchor="end" fill={C.dim} fontSize={22} opacity={tick}>시계</text>
-        {Array.from({ length: N * 2 + 1 }, (_, i) => <line key={i} x1={X0 + i * SW / 2} x2={X0 + i * SW / 2} y1={282} y2={i % 2 ? 300 : 312} stroke={C.faint} strokeWidth={3} opacity={tick} />)}
         {Array.from({ length: N }, (_, i) => {
-          const clk = CLK0 + 2 * i, central = ((clk >>> 1) & 1) === 0, c = chAt(clk), a = i < shown ? 1 : 0;
+          const c2 = CLK0 + 2 * i, cen = ((c2 >>> 1) & 1) === 0, cur = i === slot;
           return (
-            <g key={i} opacity={a}>
-              <rect x={X0 + i * SW + 4} y={330} width={SW - 8} height={110} rx={12} fill={talk > 0.5 ? (central ? PH : BD) : "#24324a"} opacity={0.9} />
-              <text x={X0 + i * SW + SW / 2} y={366} textAnchor="middle" fill={C.text} fontSize={20} fontWeight={700}>{hex(clk)}</text>
-              <text x={X0 + i * SW + SW / 2} y={418} textAnchor="middle" fill={HOT} fontSize={36} fontWeight={900} opacity={ch}>{c}</text>
-              <text x={X0 + i * SW + SW / 2} y={470} textAnchor="middle" fill={central ? PH : BD} fontSize={22} fontWeight={800} opacity={talk}>{central ? "휴대폰" : "이어폰"}</text>
-              <circle cx={X0 + (c / 78) * (N * SW)} cy={600} r={12} fill={HOT} opacity={ch * (Math.floor(shown) - 1 === i ? 1 : 0.25)} />
+            <g key={i} opacity={i <= slot ? 1 : 0.25}>
+              <rect x={X0 + i * SW + 4} y={190} width={SW - 8} height={86} rx={12} fill={talk > 0.5 ? (cen ? PH : BD) : "#24324a"} opacity={cur ? 1 : 0.6} stroke={cur ? HOT : "none"} strokeWidth={4} />
+              <text x={X0 + i * SW + SW / 2} y={220} textAnchor="middle" fill={C.text} fontSize={18} fontWeight={700}>{hex(c2)}</text>
+              <text x={X0 + i * SW + SW / 2} y={262} textAnchor="middle" fill={HOT} fontSize={32} fontWeight={900} opacity={ch}>{chAt(c2)}</text>
             </g>
           );
         })}
-        <g opacity={ch}>
-          <rect x={X0} y={588} width={N * SW} height={24} rx={8} fill="none" stroke={C.faint} strokeWidth={2} />
-          <text x={X0} y={650} fill={C.faint} fontSize={20}>0번</text>
-          <text x={X0 + N * SW} y={650} textAnchor="end" fill={C.faint} fontSize={20}>78번</text>
-          <text x={X0 + (N * SW) / 2} y={650} textAnchor="middle" fill={C.dim} fontSize={22}>79개 채널에서 지금 슬롯의 채널</text>
-        </g>
-        <Note x={X0} y={700} w={N * SW} a={talk} col={DEEP} lines={[["슬롯", "= 625 µs(시계 두 칸). 시계 값의 둘째 비트가 0이면 휴대폰, 1이면 이어폰이 보낸다"], ["예", "= 사양 예제의 주소 0x2A96EF25로 책의 계산을 돌린 채널"]]} />
+        {(() => { const [x, y] = project(cam, [BX(chAt(clk)), 6.5, 0]); return <text x={x} y={y} textAnchor="middle" fill={HOT} fontSize={30} fontWeight={900}>{chAt(clk)}번</text>; })()}
+        {(() => { const [a, b] = project(cam, [PHP[0], 0, PHP[2] + 3]), [c, d] = project(cam, [BDP[0], 0, BDP[2] + 3]); return <><text x={a} y={b + 30} textAnchor="middle" fill={PH} fontSize={28} fontWeight={800} opacity={talk > 0.5 && central ? 1 : 0.5}>휴대폰{talk > 0.5 && central ? " 말함" : ""}</text><text x={c} y={d + 30} textAnchor="middle" fill={BD} fontSize={28} fontWeight={800} opacity={talk > 0.5 && !central ? 1 : 0.5}>이어폰{talk > 0.5 && !central ? " 말함" : ""}</text></>; })()}
+        <Note x={X0} y={790} w={N * SW} a={talk} col={DEEP} lines={[["슬롯", "= 625 µs(시계 두 칸). 시계 값의 둘째 비트가 0이면 휴대폰, 1이면 이어폰이 보낸다(사양 예제 주소로 계산)"]]} />
       </svg>
     </>
   );
@@ -214,7 +207,7 @@ const body = (s: Timed) => {
   switch (s.id) {
     case "hook": return <Hook cues={s.cues} len={s.frames} />;
     case "same": return <Same cues={s.cues} />;
-    case "slots": return <Slots cues={s.cues} />;
+    case "slots": return <Slots cues={s.cues} len={s.frames} />;
     case "segment": return <Segment cues={s.cues} len={s.frames} />;
     case "afh": return <Afh cues={s.cues} />;
     case "outro": return <Outro cues={s.cues} len={s.frames} />;
