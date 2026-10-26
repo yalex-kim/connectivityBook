@@ -324,3 +324,6 @@ export function ccm(sk: number[], nonce: number[], hdr: number, payload: number[
   const ks = ([] as number[]).concat(...S.slice(1));
   return { B, X, A, S, mic, cipher: payload.map((p, i) => p ^ ks[i]), encMic: mic.map((m, i) => m ^ S[0][i]) };
 }
+
+/* 심화 8장(privacy.html): RPA의 hash = ah(IRK, prand) = e(IRK, 0¹⁰⁴ ‖ prand)의 아래 24비트. [Vol 3] Part H §2.2.2 */
+export function ah(k: number[], r: number): number { const e = aes128(k, new Array(13).fill(0).concat([(r >> 16) & 255, (r >> 8) & 255, r & 255])); return (e[13] << 16) | (e[14] << 8) | e[15]; }

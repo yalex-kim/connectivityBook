@@ -28,7 +28,7 @@ const big = V.simulate(20000, false), lossHop = big.filter((e) => e.hit).length 
 assert.ok(Math.abs(lossHop - 31 / 74) < 0.02, `무작위 도약 손실 ${lossHop}`);
 assert.equal(V.simulate(2000, true).filter((e) => e.hit).length, 0, "적응형 도약은 손실 0");
 // 대본: say와 caption의 문장 수가 같고, say에 숫자가 없고, 나레이션 음성(durations.json)이 지금 문장으로 만든 것인지
-for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt", "pairing", "power", "audio", "locate", "scheduling", "instant", "hopping", "gattcache", "encrypt"]) {
+for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt", "pairing", "power", "audio", "locate", "scheduling", "instant", "hopping", "gattcache", "encrypt", "privacy"]) {
   const src = fs.readFileSync(new URL(`../src/${video}/script.ts`, import.meta.url), "utf8");
   const dur = JSON.parse(fs.readFileSync(new URL(`../src/${video}/durations.json`, import.meta.url), "utf8"));
   const voiced = Object.keys(dur).length > 0; // 무음판 단계면 음성 검사는 건너뛴다
@@ -285,6 +285,20 @@ for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt
   const sk2 = V.sessionKey(H(S.ltk), H(S.skdC).map((b, i) => (i === 7 ? b ^ 0x5a : b)), H(S.skdP)); assert.notEqual(X(sk2), X(sk), "무작위 값이 다르면 세션 키도 다름");
   assert.ok(e.includes("2⁻³²") && e.includes("0x3D") && e.includes("LTK는 한 번도 공중에 나가지 않는다"));
   console.log(`encrypt: SK ${X(sk).slice(0, 8)}…, 06 → C:${X(c.cipher)} P:${X(p.cipher)}`);
+}
+// 심화 6편 프라이버시: ah가 심화 8장(privacy.html)과 같고, 부록 D.7 샘플(prand 708194 → hash 0dfbaa)을 재현하는가
+{
+  const pv = fs.readFileSync(new URL("../../bluetooth-deep/chapters/privacy.html", import.meta.url), "utf8");
+  const pick = (name) => { const i = pv.indexOf(`  function ${name}(`); let d = 0, j = pv.indexOf("{", i); for (; j < pv.length; j++) { if (pv[j] === "{") d++; else if (pv[j] === "}" && --d === 0) break; } return pv.slice(i, j + 1); };
+  const sbox = pv.match(/  const SBOX = [^\n]*\n/)[0];
+  const cp = vm.createContext({ Math }); vm.runInContext(sbox + ["aes128", "ah"].map(pick).join("\n") + "\nthis.ah = ah;", cp);
+  const scr = fs.readFileSync(new URL("../src/privacy/script.ts", import.meta.url), "utf8");
+  assert.ok(scr.includes('D7 = { irk: "ec0234a357c8ad05341010a60a397d9b", prand: 0x708194, hash: 0x0dfbaa }') && pv.includes("ec0234a357c8ad05341010a60a397d9b"));
+  const irk = "ec0234a357c8ad05341010a60a397d9b".match(/../g).map((x) => parseInt(x, 16));
+  assert.equal(V.ah(irk, 0x708194), 0x0dfbaa, "부록 D.7"); assert.equal(cp.ah(irk, 0x708194), 0x0dfbaa);
+  const r = V.bookRng(5); for (let k = 0; k < 200; k++) { const p = 0x400000 | (Math.floor(r() * 0x3ffffe) + 1); assert.equal(V.ah(irk, p), cp.ah(irk, p)); n++; }
+  assert.ok(pv.includes("8~15분") && pv.includes("15분"));
+  console.log(`privacy: ah(D.7 IRK, 708194) = ${V.ah(irk, 0x708194).toString(16)}`);
 }
 // 조건별 예시(영상의 막대 셋): 책의 함수로 다시 계산
 const ex = (w, d) => (B.wifiBlocked(w).size / 37) * d * 100;
