@@ -45,11 +45,14 @@ import * as scY from "../src/scheduling/youtube";
 import * as inS from "../src/instant/script";
 import * as inT from "../src/instant/timing";
 import * as inY from "../src/instant/youtube";
+import * as hoS from "../src/hopping/script";
+import * as hoT from "../src/hopping/timing";
+import * as hoY from "../src/hopping/youtube";
 import * as loT from "../src/locate/timing";
 import * as loY from "../src/locate/youtube";
 
 const VIDEO = process.env.VIDEO || "afh";
-const V = { afh: [afhS, afhT, afhY], discover: [disS, disT, disY], twokinds: [tkS, tkT, tkY], range: [rgS, rgT, rgY], connection: [cnS, cnT, cnY], gatt: [gtS, gtT, gtY], pairing: [paS, paT, paY], power: [poS, poT, poY], audio: [auS, auT, auY], locate: [loS, loT, loY], scheduling: [scS, scT, scY], instant: [inS, inT, inY] }[VIDEO] as unknown as [typeof afhS, typeof afhT, typeof afhY];
+const V = { afh: [afhS, afhT, afhY], discover: [disS, disT, disY], twokinds: [tkS, tkT, tkY], range: [rgS, rgT, rgY], connection: [cnS, cnT, cnY], gatt: [gtS, gtT, gtY], pairing: [paS, paT, paY], power: [poS, poT, poY], audio: [auS, auT, auY], locate: [loS, loT, loY], scheduling: [scS, scT, scY], instant: [inS, inT, inY], hopping: [hoS, hoT, hoY] }[VIDEO] as unknown as [typeof afhS, typeof afhT, typeof afhY];
 if (!V) throw new Error(`모르는 영상: ${VIDEO}`);
 const [{ SCENES }, { scenesFor, startsFor, sentenceEnd, framesFor }, { YOUTUBE }] = V;
 const FPS = 30, OUT = path.join(__dirname, "..", "out", VIDEO === "afh" ? "youtube" : `youtube-${VIDEO}`);
@@ -79,6 +82,19 @@ scenes.forEach((s, k) => s.caption.forEach((text, n) => {
   srt.push(`${srt.length + 1}\n${srtTime(a)} --> ${srtTime(b)}\n${text}\n`);
 }));
 
+/** 타입캐스트 무료 플랜으로 만든 음성의 표기(타입캐스트 정책). cast = [한국어 이름, 영문 이름] 모두 */
+function typecastNotice(cast: [string, string][]) {
+  return [
+    "이 콘텐츠는 인공지능 가상 연기자 서비스, 타입캐스트를 활용하여 제작되었습니다.",
+    `출연진: ${cast.map(([k]) => k).join(", ")}`,
+    "https://typecast.ai/kr",
+    "",
+    "This content was produced with Typecast, an AI virtual actor service.",
+    `Characters casted: ${cast.map(([, e]) => e).join(", ")}`,
+    "https://typecast.ai",
+  ].join("\n");
+}
+
 const desc = [
   ...YOUTUBE.summary, "",
   "⏱ 챕터", ...chapters, "",
@@ -86,6 +102,8 @@ const desc = [
   "※ " + YOUTUBE.notes.join("\n※ "), "",
   "근거: " + YOUTUBE.sources.join(" · "),
   YOUTUBE.credits.join(" · "),
+  "",
+  typecastNotice(((YOUTUBE as unknown as { cast?: [string, string][] }).cast) ?? [["예슬", "Yeseul"]]),
 ].join("\n");
 
 if (YOUTUBE.title.length > 100) throw new Error("제목은 100자 이하");

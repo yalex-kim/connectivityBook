@@ -216,3 +216,31 @@ export function schedule(tasks: SchedTask[], horizon: number, rule: string): { r
 
 /* 심화 4장(procedures.html): instant까지 d 이벤트, 페리페럴이 k(= factor × (latency + 1)) 이벤트마다 한 번 들을 때 기회 수와 모두 놓칠 확률 */
 export function instantRisk(d: number, k: number, per: number): { chances: number; miss: number } { const n = Math.floor((d - 1) / k) + 1; return { chances: n, miss: Math.pow(per, n) }; }
+
+/* 심화 12장(baseband.html) Classic 도약 선택 커널. addr = LAP | UAP₃₋₀ << 24, clk = Central의 28비트 클록. [Vol 2] Part B §2.6 */
+export function perm5(z: number, p: number): number {
+  const I1 = [0, 2, 1, 3, 0, 1, 0, 3, 1, 0, 2, 1, 0, 1], I2 = [1, 3, 2, 4, 4, 3, 2, 4, 4, 3, 4, 3, 3, 2];
+  for (let i = 13; i >= 0; i--) if ((p >> i) & 1 && ((z >> I1[i]) & 1) !== ((z >> I2[i]) & 1)) z ^= (1 << I1[i]) | (1 << I2[i]);
+  return z;
+}
+export function hopInputs(addr: number, clk: number) {
+  const b = (x: number, i: number) => (x >>> i) & 1;
+  const C = (b(addr, 8) << 4) | (b(addr, 6) << 3) | (b(addr, 4) << 2) | (b(addr, 2) << 1) | b(addr, 0);
+  const E = (b(addr, 13) << 6) | (b(addr, 11) << 5) | (b(addr, 9) << 4) | (b(addr, 7) << 3) | (b(addr, 5) << 2) | (b(addr, 3) << 1) | b(addr, 1);
+  const seg = (clk >>> 7) & 0x1fffff;
+  return { X: (clk >>> 2) & 31, Y1: (clk >>> 1) & 1, A: ((addr >>> 23) & 31) ^ ((clk >>> 21) & 31), B: (addr >>> 19) & 15, C: C ^ ((clk >>> 16) & 31), D: ((addr >>> 10) & 0x1ff) ^ ((clk >>> 7) & 0x1ff), E, F: (16 * seg) % 79, seg };
+}
+export function basicHop(addr: number, clk: number) {
+  const q = hopInputs(addr, clk), z = ((q.X + q.A) % 32) ^ q.B, po = perm5(z, ((q.C ^ (q.Y1 ? 31 : 0)) << 9) | q.D);
+  const idx = (po + q.E + q.F + 32 * q.Y1) % 79;
+  return { ch: idx < 40 ? 2 * idx : 2 * (idx - 40) + 1, po, idx, q };
+}
+export function adaptedHop(addr: number, clk: number, used: boolean[]): number {
+  if ((clk >>> 1) & 1) clk -= 2;
+  const r = basicHop(addr, clk);
+  if (used[r.ch]) return r.ch;
+  const map: number[] = [];
+  for (let i = 0; i < 79; i += 2) if (used[i]) map.push(i);
+  for (let i = 1; i < 79; i += 2) if (used[i]) map.push(i);
+  return map[(r.po + r.q.E + ((16 * r.q.seg) % map.length) + 32 * r.q.Y1) % map.length];
+}

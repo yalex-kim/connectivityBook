@@ -29,6 +29,9 @@ import { SchedulingThumbnail } from "./scheduling/Thumbnail";
 import { Instant } from "./instant/Instant";
 import { framesFor as instantFrames } from "./instant/timing";
 import { InstantThumbnail } from "./instant/Thumbnail";
+import { Hopping } from "./hopping/Hopping";
+import { framesFor as hoppingFrames } from "./hopping/timing";
+import { HoppingThumbnail } from "./hopping/Thumbnail";
 import { RangeThumbnail } from "./range/Thumbnail";
 import { TwoKindsThumbnail } from "./twokinds/Thumbnail";
 import { framesFor as rangeFrames } from "./range/timing";
@@ -61,6 +64,9 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="Instant" component={Instant} defaultProps={{ voice: false }} durationInFrames={instantFrames(false)} fps={30} width={1920} height={1080} />
     <Composition id="InstantVoice" component={Instant} defaultProps={{ voice: true }} durationInFrames={instantFrames(true)} fps={30} width={1920} height={1080} />
     <Composition id="InstantThumbnail" component={InstantThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
+    <Composition id="Hopping" component={Hopping} defaultProps={{ voice: false }} durationInFrames={hoppingFrames(false)} fps={30} width={1920} height={1080} />
+    <Composition id="HoppingVoice" component={Hopping} defaultProps={{ voice: true }} durationInFrames={hoppingFrames(true)} fps={30} width={1920} height={1080} />
+    <Composition id="HoppingThumbnail" component={HoppingThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
     <Composition id="PairingThumbnail" component={PairingThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
     <Composition id="PowerThumbnail" component={PowerThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
     <Composition id="AudioThumbnail" component={AudioThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
