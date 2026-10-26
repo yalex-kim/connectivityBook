@@ -4,7 +4,7 @@
 import type { SceneId } from "./script";
 
 export const YOUTUBE = {
-  title: "기기 펌웨어가 바뀌면, 앱은 어떻게 알아챌까? | 블루투스 심화 5: Database Hash와 Robust Caching",
+  title: "기기 펌웨어가 바뀌면, 앱은 어떻게 알아챌까? | 블루투스 심화 4: Database Hash와 Robust Caching",
   summary: ["앱은 블루투스 기기의 메뉴판(GATT 데이터베이스)을 한 번 훑어 칸 번호를 기억해 둡니다. 그런데 펌웨어를 업데이트해 메뉴판이 바뀌면, 기억해 둔 번호가 엉뚱한 칸을 가리킬 수 있습니다. 앱은 그걸 어떻게 알아챌까요?", "칸 번호(핸들) 캐싱과 그 함정, 메뉴판의 지문인 Database Hash가 무엇으로 만들어지고 언제 바뀌는지, 옛 번호로 물으면 오류(0x12)로 알려 주는 Robust Caching, 그리고 조용히 버려지는 쓰기 명령까지 직접 계산한 그림으로 따라갑니다."],
   chapters: [
     ["메뉴판이 바뀌면", "hook"],
