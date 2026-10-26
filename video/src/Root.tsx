@@ -38,6 +38,9 @@ import { GattCacheThumbnail } from "./gattcache/Thumbnail";
 import { Encrypt } from "./encrypt/Encrypt";
 import { framesFor as encryptFrames } from "./encrypt/timing";
 import { EncryptThumbnail } from "./encrypt/Thumbnail";
+import { Privacy } from "./privacy/Privacy";
+import { framesFor as privacyFrames } from "./privacy/timing";
+import { PrivacyThumbnail } from "./privacy/Thumbnail";
 import { RangeThumbnail } from "./range/Thumbnail";
 import { TwoKindsThumbnail } from "./twokinds/Thumbnail";
 import { framesFor as rangeFrames } from "./range/timing";
@@ -79,6 +82,9 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="Encrypt" component={Encrypt} defaultProps={{ voice: false }} durationInFrames={encryptFrames(false)} fps={30} width={1920} height={1080} />
     <Composition id="EncryptVoice" component={Encrypt} defaultProps={{ voice: true }} durationInFrames={encryptFrames(true)} fps={30} width={1920} height={1080} />
     <Composition id="EncryptThumbnail" component={EncryptThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
+    <Composition id="Privacy" component={Privacy} defaultProps={{ voice: false }} durationInFrames={privacyFrames(false)} fps={30} width={1920} height={1080} />
+    <Composition id="PrivacyVoice" component={Privacy} defaultProps={{ voice: true }} durationInFrames={privacyFrames(true)} fps={30} width={1920} height={1080} />
+    <Composition id="PrivacyThumbnail" component={PrivacyThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
     <Composition id="PairingThumbnail" component={PairingThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
     <Composition id="PowerThumbnail" component={PowerThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
     <Composition id="AudioThumbnail" component={AudioThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
