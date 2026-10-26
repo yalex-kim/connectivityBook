@@ -213,3 +213,6 @@ export function schedule(tasks: SchedTask[], horizon: number, rule: string): { r
   });
   return { runs, stats };
 }
+
+/* 심화 4장(procedures.html): instant까지 d 이벤트, 페리페럴이 k(= factor × (latency + 1)) 이벤트마다 한 번 들을 때 기회 수와 모두 놓칠 확률 */
+export function instantRisk(d: number, k: number, per: number): { chances: number; miss: number } { const n = Math.floor((d - 1) / k) + 1; return { chances: n, miss: Math.pow(per, n) }; }
