@@ -1,10 +1,13 @@
 import { interpolate, useCurrentFrame } from "remotion";
 import { C, FONT } from "../theme";
 import { instantRisk } from "../book";
-import { camLerp, type Cam } from "../afh/world3d";
+import { Scene3D, camLerp, type Cam, type Vec } from "../afh/world3d";
+import { project } from "../range/hook3d";
+import { Phone3D, Watch3D } from "../connection/Connection";
+import { Packet3D, packetPos } from "../common/deep3d";
 import { Title, clamp } from "../afh/parts";
 import { at } from "../twokinds/TwoKinds";
-import { DEEP, Note, makeVideo } from "../common/kit";
+import { DEEP, Ground, Note, makeVideo } from "../common/kit";
 import { SchedStage, SchedCam } from "../scheduling/Scheduling";
 import { EVERY, FAR, NEAR, NOW, PER } from "./script";
 import { LEAD, scenesFor, type Timed } from "./timing";
@@ -43,75 +46,78 @@ const Hook: React.FC<{ cues: number[]; len: number }> = ({ cues, len }) => {
   );
 };
 
-/* ---------------------------------------------------------------- 2. "지금 바로"는 안 된다 */
-const Now: React.FC<{ cues: number[] }> = ({ cues }) => {
-  const f = useCurrentFrame(), X0 = 360, PX = 5.2, W = 26; // 1 ms = 5.2 px, 0~260 ms
-  const lost = at(f, cues[1]), split = at(f, cues[2]), dead = at(f, cues[3]);
-  const X = (t: number) => X0 + t * PX;
-  const old = [0, 30, 60, 90, 120, 150, 180, 210, 240], ph = [0, 30, 80, 130, 180, 230], wt = old;
-  const tSplit = 30 + interpolate(f, [cues[2], cues[3]], [0, 230], clamp);
+/* ---------------------------------------------------------------- 2. "지금 바로"는 안 된다 (3D: 어긋난 박자) */
+const IP: Vec = [-13, 7, 2], IW: Vec = [13, 5, 0];
+const PhoneAt: React.FC<{ x: number; z?: number }> = ({ x, z = 0 }) => <group position={[x + 12, 0, z]}><Phone3D /></group>;
+const WatchAt: React.FC<{ x: number; z?: number }> = ({ x, z = 0 }) => <group position={[x - 12, 0, z]}><Watch3D /></group>;
+/** 약속 시각에 기기 위로 퍼지는 빛 고리 */
+const Ring: React.FC<{ p: Vec; k: number; col: string }> = ({ p, k, col }) => k <= 0 || k >= 1 ? null : <mesh position={p} rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[1 + k * 3, 0.15, 8, 40]} /><meshStandardMaterial color={col} emissive={col} emissiveIntensity={1.4} transparent opacity={1 - k} /></mesh>;
+const Now: React.FC<{ cues: number[]; len: number }> = ({ cues, len }) => {
+  const f = useCurrentFrame(), cam: Cam = camLerp({ pos: [0, 16, 42], look: [0, 5, 0], fov: 40 }, { pos: [3, 17, 40], look: [0, 5, 0], fov: 40 }, f / len);
+  const c1 = cues[1], c2 = cues[2], c3 = cues[3];
+  const ringK = (period: number, phase: number) => ((f - phase) % period + period) % period / 18;
+  const before = f < c2, phK = before ? ringK(30, 0) : ringK(60, 15), wtK = ringK(30, 0);
+  const meet = before && phK < 1 && wtK < 1;
+  const timer = interpolate(f, [c2, c3 + 60], [0, 1], clamp), dead = timer >= 1;
+  const lab = (p: Vec, t: string, col: string, a: number, dy = -30, size = 26) => { const [x, y] = project(cam, p); return <text x={x} y={y + dy} textAnchor="middle" fill={col} fontSize={size} fontWeight={900} opacity={a}>{t}</text>; };
+  const pp = packetPos(f, 25, c1 + 10, IP, IW);
   return (
     <>
+      <Scene3D cam={cam}>
+        <Ground light={[0, 20, 14]} />
+        <PhoneAt x={-15} z={2} /><WatchAt x={15} />
+        <Ring p={[-15, 13.5, 2]} k={phK} col={before ? PH : NEW} />
+        <Ring p={[15, 8.5, 0]} k={wtK} col={WT} />
+        {meet && <mesh position={[0, 6, 1]} rotation={[0, 0, Math.PI / 2]}><cylinderGeometry args={[0.07, 0.07, 26, 8]} /><meshStandardMaterial color={OK} emissive={OK} emissiveIntensity={1.2} /></mesh>}
+        <Packet3D f={f} t0={25} t1={c1 + 10} a={IP} b={IW} col={NEW} drop />
+      </Scene3D>
       <Title kicker="“지금 바로 바꾸자”라면">한쪽만 먼저 바꾸면 만나지 못한다</Title>
       <svg width={1920} height={1080} style={{ position: "absolute", inset: 0 }} fontFamily={FONT}>
-        <RowLabel y={330} col={PH}>휴대폰</RowLabel>
-        <RowLabel y={470} col={WT}>워치</RowLabel>
-        {ph.map((t, i) => (i < 2 || t <= tSplit) && <Ev key={i} x={X(t)} y={330} w={W} col={i < 2 ? PH : NEW} state={i < 2 ? "ok" : "alone"} a={i < 2 ? 1 : split} />)}
-        {wt.map((t, i) => (i < 2 || t <= tSplit) && <Ev key={i} x={X(t)} y={470} w={W} col={WT} state={i < 2 ? "ok" : "alone"} a={i < 2 ? 1 : split} />)}
-        <g opacity={at(f, 10)}>
-          <path d={`M${X(30) + W / 2} 384 L${X(30) + W / 2 + 30} 452`} stroke={PH} strokeWidth={4} strokeDasharray="8 6" />
-          <rect x={X(30) - 30} y={250} width={260} height={56} rx={14} fill={C.panel} stroke={PH} strokeWidth={3} />
-          <text x={X(30) + 100} y={287} textAnchor="middle" fill={C.text} fontSize={24} fontWeight={800}>“지금부터 60 ms!”</text>
+        {lab(pp, "“지금부터 60 ms!”", NEW, f >= 25 && f < c1 + 10 ? 1 : 0, -40)}
+        {lab([6, 6, 1], "✕ 못 들음", BAD, at(f, c1 - 5) * (1 - at(f, c2)), -30, 30)}
+        {lab([-15, 0, 4], before ? "30 ms" : "60 ms로 바꿈", before ? PH : NEW, 1, 70)}
+        {lab([15, 0, 2], "30 ms 그대로", WT, 1, 70)}
+        {lab([0, 10, 0], "서로 다른 시각에 깨어 혼자 기다린다", BAD, at(f, c2 + 20), -10, 28)}
+        <g opacity={at(f, c3)} transform="translate(560,830)">
+          <text x={0} y={-12} fill={C.dim} fontSize={22}>감독 타이머: 한 번도 못 만남</text>
+          <rect x={0} y={0} width={800} height={26} rx={8} fill="none" stroke={C.faint} strokeWidth={2} />
+          <rect x={0} y={0} width={800 * timer} height={26} rx={8} fill={dead ? BAD : DEEP} />
+          <text x={820} y={22} fill={BAD} fontSize={28} fontWeight={900} opacity={dead ? 1 : 0}>끊김 (0x08)</text>
         </g>
-        <text x={X(30) + W / 2 + 40} y={444} fill={BAD} fontSize={36} fontWeight={900} opacity={lost}>✕ 못 들음</text>
-        <g opacity={split}>
-          <text x={X(255)} y={366} fill={NEW} fontSize={22} fontWeight={800}>60 ms로 바꿈</text>
-          <text x={X(255)} y={506} fill={WT} fontSize={22} fontWeight={800}>30 ms 그대로</text>
-        </g>
-        <g opacity={dead}>
-          <rect x={X0} y={580} width={W * 0 + 230 * PX} height={30} rx={8} fill={BAD} opacity={0.8} />
-          <text x={X0} y={570} fill={C.dim} fontSize={22}>감독 타이머: 한 번도 못 만남</text>
-          <text x={X0 + 230 * PX + 20} y={604} fill={BAD} fontSize={30} fontWeight={900}>끊김 (0x08)</text>
-        </g>
-        <Note x={X0} y={680} w={1300} a={split} col={NEW} lines={[["혼자 기다림", "= 점선 칸. 상대가 오지 않는 시각에 깨어 듣고 있다"]]} />
       </svg>
     </>
   );
 };
 
-/* ---------------------------------------------------------------- 3. instant: 미래의 만남 번호 */
+/* ---------------------------------------------------------------- 3. instant: 미래의 만남 번호 (3D 블록 줄) */
+const ICAM3: Cam = { pos: [4, 24, 24], look: [5, 0, 1], fov: 44 };
+const BXI = (i: number) => (i < 6 ? -13 + i * 3.4 : -13 + 6 * 3.4 + (i - 6) * 6.8);
 const InstantScene: React.FC<{ cues: number[] }> = ({ cues }) => {
-  const f = useCurrentFrame(), X0 = 360, CW = 128, W = 110, I = NOW + 6;
-  const count = at(f, cues[1]), msg = at(f, cues[2]), sw = at(f, cues[3]);
-  const shown = interpolate(f, [cues[1], cues[3]], [3, 6], clamp) + interpolate(f, [cues[3], cues[3] + 60], [0, 3], clamp);
-  const cell = (k: number) => X0 + (k < 6 ? k * CW : 6 * CW + (k - 6) * CW * 2); // instant부터 간격 두 배
-  const watchState = (k: number) => (k === 0 ? "miss" : k === 3 ? "skip" : "ok") as "ok" | "miss" | "skip";
+  const f = useCurrentFrame(), count = at(f, cues[1]), msg = at(f, cues[2]), sw = at(f, cues[3]);
+  const shown = interpolate(f, [10, cues[3]], [3, 6.2], clamp) + interpolate(f, [cues[3], cues[3] + 60], [0, 3], clamp);
+  const lab = (p: Vec, t: string, col: string, a: number, dy = 0, size = 26) => { const [x, y] = project(ICAM3, p); return <text x={x} y={y + dy} textAnchor="middle" fill={col} fontSize={size} fontWeight={900} opacity={a}>{t}</text>; };
+  const state = (row: number, i: number) => (i === 3 ? "skip" : row === 1 && i === 0 ? "miss" : "ok");
   return (
     <>
+      <Scene3D cam={ICAM3}>
+        <Ground light={[0, 18, 12]} />
+        {[0, 1].map((row) => Array.from({ length: 9 }, (_, i) => {
+          if (i >= shown) return null;
+          const st = state(row, i), on = i >= 6 && sw > 0.5, col = st !== "ok" ? BAD : on ? NEW : row === 0 ? PH : WT;
+          return <mesh key={row + "-" + i} position={[BXI(i), 1.1, row === 0 ? -2.6 : 2.6]}><boxGeometry args={[2.6, 2.2, 2.6]} /><meshStandardMaterial color={col} emissive={col} emissiveIntensity={on ? 0.8 : 0.25} transparent opacity={st === "ok" ? 0.95 : 0.35} /></mesh>;
+        }))}
+        {sw > 0 && <mesh position={[BXI(6) - 1.9, 2.4, 0]}><boxGeometry args={[0.2, 4.8, 9]} /><meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={1.4} transparent opacity={0.6 * sw} /></mesh>}
+        <Packet3D f={f} t0={cues[2]} t1={cues[2] + 30} a={[BXI(1), 4, -2.6]} b={[BXI(1), 4, 2.6]} col={NEW} arc={2.5} />
+      </Scene3D>
       <Title kicker="instant">“몇 번째 만남부터”로 약속한다</Title>
       <svg width={1920} height={1080} style={{ position: "absolute", inset: 0 }} fontFamily={FONT}>
-        <RowLabel y={330} col={PH}>휴대폰</RowLabel>
-        <RowLabel y={450} col={WT}>워치</RowLabel>
-        {Array.from({ length: 9 }, (_, k) => k < shown && (
-          <g key={k}>
-            <Ev x={cell(k)} y={330} w={W} n={NOW + k} col={k >= 6 ? NEW : PH} state={k === 3 ? "skip" : "ok"} />
-            <Ev x={cell(k)} y={450} w={W} n={NOW + k} col={k >= 6 ? NEW : WT} state={watchState(k)} />
-          </g>
-        ))}
-        <g opacity={count}>
-          <text x={cell(3) + W / 2} y={548} textAnchor="middle" fill={BAD} fontSize={22} fontWeight={800}>건너뛰어도</text>
-          <text x={cell(3) + W / 2} y={576} textAnchor="middle" fill={BAD} fontSize={22} fontWeight={800}>번호는 센다</text>
-        </g>
-        <g opacity={msg}>
-          <rect x={cell(0)} y={240} width={360} height={56} rx={14} fill={C.panel} stroke={NEW} strokeWidth={3} />
-          <text x={cell(0) + 180} y={277} textAnchor="middle" fill={C.text} fontSize={24} fontWeight={800}>“{I}번째 만남부터 60 ms”</text>
-          <text x={cell(1) + W / 2} y={548} textAnchor="middle" fill={OK} fontSize={22} fontWeight={800}>다시 보내 받음</text>
-        </g>
-        <g opacity={sw}>
-          <line x1={cell(6) - 9} x2={cell(6) - 9} y1={230} y2={530} stroke={NEW} strokeWidth={5} />
-          <text x={cell(6) - 9} y={218} textAnchor="middle" fill={NEW} fontSize={28} fontWeight={900}>{I}번: 함께 바꿈</text>
-        </g>
-        <Note x={X0} y={640} w={1300} a={count} col={NEW} lines={[["instant", "= 새 값을 쓰기 시작할 만남 번호(connEventCounter). 휴대폰(센트럴)이 고른다"], ["만남 번호", "= 두 기기가 함께 세는 16비트 번호. 건너뛴 만남도 센다(심화 1편)"]]} />
+        {Array.from({ length: 9 }, (_, i) => i < shown && lab([BXI(i), 2.6, -2.6], String(NOW + i), C.text, 1, -26, 24))}
+        {lab([BXI(0) - 3.4, 1, -2.6], "휴대폰", PH, 1, 8)}
+        {lab([BXI(0) - 3.4, 1, 2.6], "워치", WT, 1, 8)}
+        {lab([BXI(3), 0, 4.5], "건너뛰어도 번호는 센다", BAD, count, 40, 22)}
+        {lab([BXI(1), 6.5, 0], `“${NOW + 6}번째 만남부터 60 ms”`, NEW, msg, -10, 26)}
+        {lab([BXI(6) - 1.9, 5.5, 0], `${NOW + 6}번: 함께 바꿈`, NEW, sw, -60, 30)}
+        <Note x={360} y={800} w={1200} a={count} col={NEW} lines={[["instant", "= 새 값을 쓰기 시작할 만남 번호(connEventCounter). 휴대폰(센트럴)이 고른다"]]} />
       </svg>
     </>
   );
@@ -239,7 +245,7 @@ const Outro: React.FC<{ cues: number[]; len: number }> = ({ cues, len }) => {
 const body = (s: Timed) => {
   switch (s.id) {
     case "hook": return <Hook cues={s.cues} len={s.frames} />;
-    case "now": return <Now cues={s.cues} />;
+    case "now": return <Now cues={s.cues} len={s.frames} />;
     case "instant": return <InstantScene cues={s.cues} />;
     case "far": return <Far cues={s.cues} />;
     case "odds": return <Odds cues={s.cues} />;
