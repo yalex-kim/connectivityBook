@@ -28,7 +28,7 @@ const big = V.simulate(20000, false), lossHop = big.filter((e) => e.hit).length 
 assert.ok(Math.abs(lossHop - 31 / 74) < 0.02, `무작위 도약 손실 ${lossHop}`);
 assert.equal(V.simulate(2000, true).filter((e) => e.hit).length, 0, "적응형 도약은 손실 0");
 // 대본: say와 caption의 문장 수가 같고, say에 숫자가 없고, 나레이션 음성(durations.json)이 지금 문장으로 만든 것인지
-for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt", "pairing", "power", "audio", "locate", "scheduling", "instant", "hopping", "gattcache", "encrypt", "privacy", "sync", "direction"]) {
+for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt", "pairing", "power", "audio", "locate", "scheduling", "instant", "hopping", "gattcache", "encrypt", "privacy", "sync", "direction", "pin"]) {
   const src = fs.readFileSync(new URL(`../src/${video}/script.ts`, import.meta.url), "utf8");
   const dur = JSON.parse(fs.readFileSync(new URL(`../src/${video}/durations.json`, import.meta.url), "utf8"));
   const voiced = Object.keys(dur).length > 0; // 무음판 단계면 음성 검사는 건너뛴다
@@ -327,6 +327,16 @@ for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt
   { const txt = di.replace(/<[^>]*>/g, ""); assert.ok(txt.includes("16~160 µs") && txt.includes("처음 4 µs 보호 구간, 다음 8 µs 기준 구간"), "CTE 구조"); }
   for (const D of [5, 10, 20]) for (const a of [30, 45, 60, 75]) for (const b of [30, 60, 80]) { const q = V.triangulate(D, a * Math.PI / 180, b * Math.PI / 180); assert.ok(Math.abs(Math.atan2(q.y, q.x) - a * Math.PI / 180) < 1e-9 && Math.abs(Math.atan2(q.y, D - q.x) - b * Math.PI / 180) < 1e-9); n++; }
   console.log(`direction: (${p.x.toFixed(2)}, ${p.y.toFixed(2)}) m`);
+}
+// 심화 9편 PIN: 책 심화 13장(classicsec.html)의 세대 표와 숫자 비교 예
+{
+  const cs = fs.readFileSync(new URL("../../bluetooth-deep/chapters/classicsec.html", import.meta.url), "utf8").replace(/<[^>]*>/g, "");
+  const scr = fs.readFileSync(new URL("../src/pin/script.ts", import.meta.url), "utf8");
+  assert.ok(scr.includes('export const G_OUT = 0x52146a1e, SIX = "069598";'));
+  assert.equal(String(0x52146a1e % 1e6).padStart(6, "0"), "069598"); assert.ok(cs.includes("0x52146a1e") && cs.includes("069598"));
+  assert.ok(cs.includes("레거시는 비밀이 PIN뿐이라 짧은 PIN이면") && cs.includes("레거시 (≤ 2.0)") && cs.includes("SSP (2.1)") && cs.includes("Secure Connections (4.1)"));
+  assert.ok(cs.includes("확인 값에 IOcap이 들어가므로") && cs.includes("P-256"));
+  console.log(`pin: 0x52146a1e → ${String(0x52146a1e % 1e6).padStart(6, "0")}`);
 }
 // 조건별 예시(영상의 막대 셋): 책의 함수로 다시 계산
 const ex = (w, d) => (B.wifiBlocked(w).size / 37) * d * 100;

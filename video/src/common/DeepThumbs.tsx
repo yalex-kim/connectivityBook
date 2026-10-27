@@ -176,4 +176,21 @@ export const DirectionThumbnail: React.FC = () => {
     </DeepCard>
   );
 };
+/* 9. PIN: 숫자 키패드 위 PIN과 6자리 */
+const PCAM9: Cam = { pos: [0, 4, 20], look: [0, 4, 0], fov: 40 };
+export const PinThumbnail: React.FC = () => {
+  useFont();
+  const [px, py] = project(PCAM9, [-3.2, 6.2, 0.6]), [qx, qy] = project(PCAM9, [4, 6.2, 0.6]);
+  return (
+    <DeepCard no={9} shift={430} lines={<>예전엔 {hi("PIN", C.warn)},<br />지금은 왜<br />{hi("숫자")}만 확인할까?</>}
+      overlay={<svg width={1920} height={1080} style={{ position: "absolute", inset: 0 }} fontFamily={FONT}><text x={px} y={py} textAnchor="middle" fill={C.warn} fontSize={70} fontWeight={900} letterSpacing={8}>●●●●</text><text x={qx} y={qy} textAnchor="middle" fill="#fff" fontSize={64} fontWeight={900} letterSpacing={6}>069598</text><text x={(px + qx) / 2} y={py + 10} textAnchor="middle" fill={DEEP} fontSize={80} fontWeight={900}>→</text></svg>}>
+      <Scene3D cam={PCAM9}>
+        <Ground light={[0, 12, 10]} />
+        <mesh position={[-3.2, 5.6, 0]}><boxGeometry args={[5.2, 3.4, 0.6]} />{mat("#3b2c1c", 0.2)}</mesh>
+        <mesh position={[4, 5.6, 0]}><boxGeometry args={[6.4, 3.4, 0.6]} />{mat("#14532d", 0.3)}</mesh>
+        {Array.from({ length: 9 }, (_, i) => <mesh key={i} position={[-4.6 + (i % 3) * 1.4, 1.2 + Math.floor(i / 3) * 1.1, 1]}><boxGeometry args={[1.1, 0.8, 0.3]} />{mat("#cbd5e1", 0.1)}</mesh>)}
+      </Scene3D>
+    </DeepCard>
+  );
+};
 export type { Vec };
