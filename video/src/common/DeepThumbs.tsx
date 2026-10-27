@@ -14,17 +14,17 @@ import { HopBand } from "../hopping/Hopping";
  * 인디고 띠·배경은 시리즈 공통(입문편 ThumbCard와 같은 배치 계열).
  */
 const INK = "#14123a";
-const DeepCard: React.FC<{ no: number; lines: React.ReactNode; children: React.ReactNode; overlay?: React.ReactNode; shift?: number }> = ({ no, lines, children, overlay, shift = 360 }) => (
+const DeepCard: React.FC<{ no: number; lines: React.ReactNode; children: React.ReactNode; overlay?: React.ReactNode; shift?: number }> = ({ no, lines, children, overlay, shift = 360 }) => { shift += 50; return (
   <AbsoluteFill style={{ background: C.bg }}>
     <div style={{ position: "absolute", inset: 0, transform: `translateX(${shift}px)` }}>{children}{overlay}</div>
-    <AbsoluteFill style={{ background: "linear-gradient(90deg, rgba(16,14,44,.97) 0%, rgba(16,14,44,.9) 40%, rgba(16,14,44,0) 58%)" }} />
+    <AbsoluteFill style={{ background: "linear-gradient(90deg, rgba(16,14,44,.97) 0%, rgba(16,14,44,.9) 46%, rgba(16,14,44,0) 64%)" }} />
     <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 30, background: DEEP }} />
-    <div style={{ position: "absolute", left: 100, top: 130, fontFamily: FONT }}>
+    <div style={{ position: "absolute", left: 100, top: 150, fontFamily: FONT }}>
       <div style={{ display: "inline-block", background: DEEP, color: INK, fontSize: 84, fontWeight: 900, padding: "6px 34px", borderRadius: 22, letterSpacing: -1 }}>심화 {no}</div>
-      <div style={{ color: C.text, fontSize: 150, fontWeight: 900, lineHeight: 1.12, marginTop: 44, letterSpacing: -4 }}>{lines}</div>
+      <div style={{ color: C.text, fontSize: 112, fontWeight: 900, lineHeight: 1.16, marginTop: 36, letterSpacing: -3 }}>{lines}</div>
     </div>
   </AbsoluteFill>
-);
+); };
 const hi = (t: string, col = DEEP) => <span style={{ color: col }}>{t}</span>;
 const mat = (col: string, glow = 0) => <meshStandardMaterial color={col} emissive={col} emissiveIntensity={glow} roughness={0.35} metalness={0.3} />;
 
@@ -33,7 +33,7 @@ export const SchedulingThumbnail: React.FC = () => {
   useFont();
   const f = useCurrentFrame();
   return (
-    <DeepCard no={1} lines={<>기기 셋에<br />무선 {hi("하나?")}</>} shift={300}>
+    <DeepCard no={1} lines={<>휴대폰 하나에<br />이어폰·워치·키보드<br />{hi("다 연결")}해도 될까?</>} shift={300}>
       <SchedStage cam={{ pos: [-4, 22, 40], look: [0, 4, 3], fov: 40 }} f={f + 20} watch={1} others={1} />
     </DeepCard>
   );
@@ -45,7 +45,7 @@ const BX = (i: number) => (i < 6 ? -14 + i * 3.2 : -14 + 6 * 3.2 + (i - 6) * 6.4
 export const InstantThumbnail: React.FC = () => {
   useFont();
   return (
-    <DeepCard no={2} shift={430} lines={<>약속은<br />{hi("언제")} 바꿀까?</>}
+    <DeepCard no={2} shift={430} lines={<>연결을 끊지 않고<br />약속을 바꾸려면<br />{hi("언제")} 말해야 할까?</>}
       overlay={<svg width={1920} height={1080} style={{ position: "absolute", inset: 0 }} fontFamily={FONT}>{Array.from({ length: 9 }, (_, i) => { const [x, y] = project(ICAM, [BX(i), i === 6 ? 6.6 : 3.4, 0]); return <text key={i} x={x} y={y} textAnchor="middle" fill={i === 6 ? "#fff" : C.dim} fontSize={i === 6 ? 64 : 34} fontWeight={900}>{100 + i}</text>; })}</svg>}>
       <Scene3D cam={ICAM}>
         <Ground light={[0, 18, 12]} />
@@ -66,7 +66,7 @@ export const HoppingThumbnail: React.FC = () => {
   useFont();
   const f = useCurrentFrame();
   return (
-    <DeepCard no={3} lines={<>1초에<br />{hi("1600번")} 점프</>} shift={320}>
+    <DeepCard no={3} lines={<>1초에 {hi("1600번")}<br />채널을 바꾸는데,<br />이어폰은 어떻게?</>} shift={320}>
       <HopBand cam={{ pos: [2, 9, 21], look: [5, 3, 0], fov: 40 }} f={f + 20} ch={basicHop(0x2a96ef25, 0x10 + 12).ch} on={1} />
     </DeepCard>
   );
@@ -78,7 +78,7 @@ export const GattCacheThumbnail: React.FC = () => {
   useFont();
   const [lx, ly] = project(GCAM, [3.6, 7.4, 3]);
   return (
-    <DeepCard no={4} shift={300} lines={<>펌웨어가<br />{hi("바뀌면?", C.warn)}</>}
+    <DeepCard no={4} shift={300} lines={<>펌웨어가 {hi("바뀌면", C.warn)},<br />앱은 어떻게<br />알아챌까?</>}
       overlay={<svg width={1920} height={1080} style={{ position: "absolute", inset: 0 }} fontFamily={FONT}><text x={lx} y={ly} textAnchor="middle" fill={C.warn} fontSize={64} fontWeight={900}>0x0010</text></svg>}>
       <Scene3D cam={GCAM}>
         <Ground light={[0, 16, 12]} />
@@ -98,7 +98,7 @@ const LCAM: Cam = { pos: [-6, 9, 24], look: [1, 4, 0], fov: 40 };
 export const EncryptThumbnail: React.FC = () => {
   useFont();
   return (
-    <DeepCard no={5} lines={<>열쇠 하나로<br />{hi("몇 년?")}</>}>
+    <DeepCard no={5} shift={280} lines={<>저장한 열쇠 하나로<br />{hi("몇 년")} 잠가도<br />괜찮을까?</>}>
       <Scene3D cam={LCAM}>
         <Ground light={[0, 16, 14]} />
         <group position={[0, 0, 0]}>
@@ -124,7 +124,7 @@ export const PrivacyThumbnail: React.FC = () => {
   useFont();
   const posts: Vec[] = [[-6, 0, -3], [4, 0, -5], [12, 0, -2]];
   return (
-    <DeepCard no={6} lines={<>누가 나를<br />{hi("따라올까?")}</>}>
+    <DeepCard no={6} shift={230} lines={<>외치는 이어폰,<br />누가 나를<br />{hi("따라다닐까?")}</>}>
       <Scene3D cam={PCAM}>
         <Ground light={[0, 16, 12]} />
         {posts.map((p, i) => (
