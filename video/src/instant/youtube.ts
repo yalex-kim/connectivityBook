@@ -22,6 +22,6 @@ export const YOUTUBE = {
   sources: ["Bluetooth Core Specification 6.3 — [Vol 6] Part B §5.5·§5.5.1(instant, 들을 기회 6번, Instant Passed), §5.1.1(연결 갱신, 전송 창, 앵커 포인트 이동), §4.5.1(connEventCounter), [Vol 1] Part F §2(오류 코드 0x08·0x28)"],
   credits: ["나레이션: Typecast AI 음성(예슬)", "만든 도구: Remotion, three.js"],
   /** 오른쪽 위 카드: 훅 첫 문장("심화 일편에서…")이 나올 때 심화 1편으로. */
-  cards: [{ scene: "hook", sentence: 0, video: "https://youtu.be/YatSHHgW-XM", teaser: "지난 영상 보기", message: "심화 1편: 휴대폰 하나에 이어폰·워치·키보드를 다 연결해도 될까?" }],
+  cards: [{ scene: "hook", sentence: 0, video: "https://youtu.be/TgjI2k-Bo0g", teaser: "지난 영상 보기", message: "심화 1편: 휴대폰 하나에 이어폰·워치·키보드를 다 연결해도 될까?" }],
   tags: ["블루투스", "Bluetooth", "BLE", "instant", "연결 갱신", "Connection Update", "링크 계층", "블루투스 심화", "ConnectivityBook"],
 };
