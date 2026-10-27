@@ -333,3 +333,9 @@ export function cisLatency(mode: string, cigSyncDelay: number, ft: number, isoIn
   if (mode === "unframed") return cigSyncDelay + ft * isoInt - sduInt;
   return cigSyncDelay + ft * isoInt + (mode === "segmentable" ? sduInt : 0);
 }
+
+/* 심화 17장(direction.html) 삼각측량: 기준선 길이 D, 두 로케이터에서 기준선으로 잰 내각 α, β(rad) → 태그 위치 {x, y} (사양 밖, 책의 식) */
+export function triangulate(D: number, alpha: number, beta: number): { x: number; y: number } {
+  const ta = Math.tan(alpha), tb = Math.tan(beta), y = (D * ta * tb) / (ta + tb);
+  return { x: y / ta, y };
+}

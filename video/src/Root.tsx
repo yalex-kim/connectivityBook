@@ -44,6 +44,9 @@ import { PrivacyThumbnail } from "./privacy/Thumbnail";
 import { Sync } from "./sync/Sync";
 import { framesFor as syncFrames } from "./sync/timing";
 import { SyncThumbnail } from "./sync/Thumbnail";
+import { Direction } from "./direction/Direction";
+import { framesFor as directionFrames } from "./direction/timing";
+import { DirectionThumbnail } from "./direction/Thumbnail";
 import { RangeThumbnail } from "./range/Thumbnail";
 import { TwoKindsThumbnail } from "./twokinds/Thumbnail";
 import { framesFor as rangeFrames } from "./range/timing";
@@ -91,6 +94,9 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="Sync" component={Sync} defaultProps={{ voice: false }} durationInFrames={syncFrames(false)} fps={30} width={1920} height={1080} />
     <Composition id="SyncVoice" component={Sync} defaultProps={{ voice: true }} durationInFrames={syncFrames(true)} fps={30} width={1920} height={1080} />
     <Composition id="SyncThumbnail" component={SyncThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
+    <Composition id="Direction" component={Direction} defaultProps={{ voice: false }} durationInFrames={directionFrames(false)} fps={30} width={1920} height={1080} />
+    <Composition id="DirectionVoice" component={Direction} defaultProps={{ voice: true }} durationInFrames={directionFrames(true)} fps={30} width={1920} height={1080} />
+    <Composition id="DirectionThumbnail" component={DirectionThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
     <Composition id="PairingThumbnail" component={PairingThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
     <Composition id="PowerThumbnail" component={PowerThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
     <Composition id="AudioThumbnail" component={AudioThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
