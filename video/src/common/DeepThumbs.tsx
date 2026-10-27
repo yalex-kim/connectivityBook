@@ -182,8 +182,8 @@ export const PinThumbnail: React.FC = () => {
   useFont();
   const [px, py] = project(PCAM9, [-3.2, 6.2, 0.6]), [qx, qy] = project(PCAM9, [4, 6.2, 0.6]);
   return (
-    <DeepCard no={9} shift={430} lines={<>예전엔 {hi("PIN", C.warn)},<br />지금은 왜<br />{hi("숫자")}만 확인할까?</>}
-      overlay={<svg width={1920} height={1080} style={{ position: "absolute", inset: 0 }} fontFamily={FONT}><text x={px} y={py} textAnchor="middle" fill={C.warn} fontSize={70} fontWeight={900} letterSpacing={8}>●●●●</text><text x={qx} y={qy} textAnchor="middle" fill="#fff" fontSize={64} fontWeight={900} letterSpacing={6}>069598</text><text x={(px + qx) / 2} y={py + 10} textAnchor="middle" fill={DEEP} fontSize={80} fontWeight={900}>→</text></svg>}>
+    <DeepCard no={9} shift={430} lines={<>블루투스는 어떻게<br />{hi("엿듣기")}와 {hi("끼어들기", C.warn)}를<br />막을까?</>}
+      overlay={<svg width={1920} height={1080} style={{ position: "absolute", inset: 0 }} fontFamily={FONT}><text x={px} y={py} textAnchor="middle" fill={C.warn} fontSize={70} fontWeight={900} letterSpacing={8}>●●●●</text><text x={qx} y={qy} textAnchor="middle" fill="#fff" fontSize={64} fontWeight={900} letterSpacing={6}>▢▢▢▢▢▢</text><text x={(px + qx) / 2} y={py + 10} textAnchor="middle" fill={DEEP} fontSize={80} fontWeight={900}>→</text></svg>}>
       <Scene3D cam={PCAM9}>
         <Ground light={[0, 12, 10]} />
         <mesh position={[-3.2, 5.6, 0]}><boxGeometry args={[5.2, 3.4, 0.6]} />{mat("#3b2c1c", 0.2)}</mesh>

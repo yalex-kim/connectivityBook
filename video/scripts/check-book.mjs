@@ -328,15 +328,20 @@ for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt
   for (const D of [5, 10, 20]) for (const a of [30, 45, 60, 75]) for (const b of [30, 60, 80]) { const q = V.triangulate(D, a * Math.PI / 180, b * Math.PI / 180); assert.ok(Math.abs(Math.atan2(q.y, q.x) - a * Math.PI / 180) < 1e-9 && Math.abs(Math.atan2(q.y, D - q.x) - b * Math.PI / 180) < 1e-9); n++; }
   console.log(`direction: (${p.x.toFixed(2)}, ${p.y.toFixed(2)}) m`);
 }
-// 심화 9편 PIN: 책 심화 13장(classicsec.html)의 세대 표와 숫자 비교 예
+// 심화 9편 보안 총정리: 대본이 기대는 책 문장(심화 13장 classicsec, 7장 smp, 입문 8장 security)
 {
-  const cs = fs.readFileSync(new URL("../../bluetooth-deep/chapters/classicsec.html", import.meta.url), "utf8").replace(/<[^>]*>/g, "");
+  const strip = (p) => fs.readFileSync(new URL(p, import.meta.url), "utf8").replace(/<[^>]*>/g, "");
+  const cs = strip("../../bluetooth-deep/chapters/classicsec.html"), sm = strip("../../bluetooth-deep/chapters/smp.html"), se = strip("../../bluetooth/chapters/security.html");
+  const want = [
+    [cs, "레거시는 비밀이 PIN뿐이라 짧은 PIN이면"], [cs, "레거시 (≤ 2.0)"], [cs, "SSP (2.1)"], [cs, "Secure Connections (4.1)"], [cs, "확인 값에 IOcap이 들어가므로"],
+    [cs, "SRES_C, 다음 32비트가 SRES_P"], [cs, "AES-CCM(M = 4, L = 2)"], [cs, "협상 범위는 7~16바이트"], [cs, "16바이트를 요구하는 것이 안전한 설정"], [cs, "보안 모드 4 레벨 4"],
+    [sm, "TK(0이나 6자리 패스키)"], [sm, "공개 키가 없으니"], [sm, "2018년 공개된 취약점"], [sm, "디버그 키"], [sm, "LE 보안 모드 1 레벨 4"], [sm, "CTKD"], [sm, "약속값 Cb = f4"],
+    [se, "4.2의 LE Secure Connections"],
+  ];
+  for (const [txt, w] of want) { assert.ok(txt.includes(w), `책 문장: ${w}`); n++; }
   const scr = fs.readFileSync(new URL("../src/pin/script.ts", import.meta.url), "utf8");
-  assert.ok(scr.includes('export const G_OUT = 0x52146a1e, SIX = "069598";'));
-  assert.equal(String(0x52146a1e % 1e6).padStart(6, "0"), "069598"); assert.ok(cs.includes("0x52146a1e") && cs.includes("069598"));
-  assert.ok(cs.includes("레거시는 비밀이 PIN뿐이라 짧은 PIN이면") && cs.includes("레거시 (≤ 2.0)") && cs.includes("SSP (2.1)") && cs.includes("Secure Connections (4.1)"));
-  assert.ok(cs.includes("확인 값에 IOcap이 들어가므로") && cs.includes("P-256"));
-  console.log(`pin: 0x52146a1e → ${String(0x52146a1e % 1e6).padStart(6, "0")}`);
+  assert.ok(!scr.includes("069598") && !scr.includes("영 육 구 오 구 팔"), "예시 숫자는 뺐다");
+  console.log(`pin(보안 총정리): 책 문장 ${want.length}개 확인`);
 }
 // 조건별 예시(영상의 막대 셋): 책의 함수로 다시 계산
 const ex = (w, d) => (B.wifiBlocked(w).size / 37) * d * 100;
