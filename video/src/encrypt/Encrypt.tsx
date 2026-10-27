@@ -1,10 +1,13 @@
 import { useCurrentFrame } from "remotion";
 import { C, FONT } from "../theme";
 import { ccm, ccmNonce, sessionKey } from "../book";
-import { camLerp } from "../afh/world3d";
+import { Scene3D, camLerp, type Cam, type Vec } from "../afh/world3d";
+import { project } from "../range/hook3d";
+import { Phone3D, Watch3D } from "../connection/Connection";
+import { Key3D, Listener3D, Packet3D, packetPos } from "../common/deep3d";
 import { Title } from "../afh/parts";
 import { at } from "../twokinds/TwoKinds";
-import { DEEP, Note, makeVideo } from "../common/kit";
+import { DEEP, Ground, Note, makeVideo } from "../common/kit";
 import { SchedStage, SchedCam } from "../scheduling/Scheduling";
 import { SAMPLE } from "./script";
 import { LEAD, scenesFor, type Timed } from "./timing";
@@ -48,65 +51,71 @@ const Hook: React.FC<{ cues: number[]; len: number }> = ({ cues, len }) => {
   );
 };
 
-/* ---------------------------------------------------------------- 2. 세션 키 */
-const Session: React.FC<{ cues: number[] }> = ({ cues }) => {
-  const f = useCurrentFrame(), not = at(f, 10), skd = at(f, cues[1]), make = at(f, cues[2]), again = at(f, cues[3]);
+/* ---------------------------------------------------------------- 2·3. 세션 키와 엿듣기 (3D) */
+const EP: Vec = [-13, 7, 2], EW: Vec = [13, 5, 0], LIS: Vec = [0, 0, -9];
+const PhoneAt: React.FC<{ x: number; z?: number }> = ({ x, z = 0 }) => <group position={[x + 12, 0, z]}><Phone3D /></group>;
+const WatchAt: React.FC<{ x: number; z?: number }> = ({ x, z = 0 }) => <group position={[x - 12, 0, z]}><Watch3D /></group>;
+const Session: React.FC<{ cues: number[]; len: number }> = ({ cues, len }) => {
+  const f = useCurrentFrame(), cam: Cam = camLerp({ pos: [0, 14, 42], look: [0, 6, 0], fov: 40 }, { pos: [3, 15, 40], look: [0, 6, 0], fov: 40 }, f / len);
+  const ltk = at(f, 10), c1 = cues[1], c2 = cues[2], c3 = cues[3], sk = at(f, c2 + 20), again = at(f, c3 + 30);
+  const skCol = again > 0.5 ? C.warn : OK;
+  const lab = (p: Vec, t: string, col: string, a: number, dy = -30, size = 24) => { const [x, y] = project(cam, p); return <text x={x} y={y + dy} textAnchor="middle" fill={col} fontSize={size} fontWeight={900} opacity={a}>{t}</text>; };
   return (
     <>
+      <Scene3D cam={cam}>
+        <Ground light={[0, 20, 14]} />
+        <PhoneAt x={-15} z={2} /><WatchAt x={15} />
+        {ltk > 0 && <><Key3D p={[-19, 1.6, 4]} col={KEY} s={0.8} opacity={ltk} /><Key3D p={[12, 1.2, 3]} col={KEY} s={0.8} opacity={ltk} /></>}
+        <Packet3D f={f} t0={c1} t1={c1 + 45} a={EP} b={EW} col={PUB} />
+        <Packet3D f={f} t0={c1 + 10} t1={c1 + 55} a={EW} b={EP} col={PUB} />
+        {sk > 0 && <><Key3D p={[-19, 13, 2]} col={skCol} s={0.9} opacity={sk} /><Key3D p={[12, 11, 0]} col={skCol} s={0.9} opacity={sk} /></>}
+        <Packet3D f={f} t0={c3} t1={c3 + 40} a={EP} b={EW} col="#64748b" />
+        <Packet3D f={f} t0={c3 + 8} t1={c3 + 48} a={EW} b={EP} col="#64748b" />
+      </Scene3D>
       <Title kicker="세션 키">저장한 키로 직접 잠그지 않는다</Title>
       <svg width={1920} height={1080} style={{ position: "absolute", inset: 0 }} fontFamily={FONT}>
-        <text x={330} y={250} textAnchor="middle" fill={PH} fontSize={30} fontWeight={900}>휴대폰</text>
-        <text x={1590} y={250} textAnchor="middle" fill={WT} fontSize={30} fontWeight={900}>워치</text>
-        <Box x={120} y={280} w={420} col={KEY} title="저장한 키 LTK" value={hx(LTK).slice(0, 16) + "…"} sub="공중에 나가지 않음" a={not} />
-        <Box x={1380} y={280} w={420} col={KEY} title="저장한 키 LTK" value={hx(LTK).slice(0, 16) + "…"} sub="공중에 나가지 않음" a={not} />
-        <Box x={120} y={440} w={420} col={PUB} title="무작위 값 SKD_C" value={hx(SKDC)} sub="공중으로 보냄" a={skd} dash />
-        <Box x={1380} y={440} w={420} col={PUB} title="무작위 값 SKD_P" value={hx(SKDP)} sub="공중으로 보냄" a={skd} dash />
-        <g opacity={skd}>
-          <path d="M540 485 C700 485 760 470 800 470" stroke={PUB} strokeWidth={3} fill="none" strokeDasharray="8 6" />
-          <path d="M1380 485 C1220 485 1160 470 1120 470" stroke={PUB} strokeWidth={3} fill="none" strokeDasharray="8 6" />
-        </g>
-        <g opacity={make}>
-          <rect x={800} y={420} width={320} height={100} rx={18} fill="#1b2840" stroke={KEY} strokeWidth={3} />
-          <text x={960} y={466} textAnchor="middle" fill={KEY} fontSize={26} fontWeight={900}>e(LTK, SKD)</text>
-          <text x={960} y={500} textAnchor="middle" fill={C.dim} fontSize={18}>AES-128 한 블록</text>
-          <path d="M960 520 V580" stroke={C.faint} strokeWidth={4} />
-          <Box x={600} y={590} w={720} col={OK} title="이 연결의 세션 키 SK" value={hx(SK)} sub="양쪽이 각자 같은 값을 계산" />
-        </g>
-        <g opacity={again}>
-          <Box x={600} y={750} w={720} col={C.warn} title="다음 연결 (무작위 값이 다르면)" value={hx(SK2)} sub="같은 LTK라도 전혀 다른 세션 키" />
-        </g>
-        <text x={110} y={880} fill={C.dim} fontSize={20} opacity={make}>값: 사양 샘플 [Vol 6] Part C §1 · 다음 연결은 무작위 값 한 바이트만 바꾼 예</text>
+        {lab([-17, 1.6, 4], "LTK (안에만)", KEY, ltk, 60)}
+        {lab([14, 1.2, 3], "LTK (안에만)", KEY, ltk, 60)}
+        {lab([0, 9, 1], "무작위 값 SKD_C · SKD_P", C.dim, at(f, c1) * (1 - at(f, c2 + 40)), -10)}
+        {lab([-17, 13, 2], "세션 키", skCol, sk, -40)}
+        {lab([14, 11, 0], "세션 키", skCol, sk, -40)}
+        <g opacity={sk}><text x={960} y={860} textAnchor="middle" fill={skCol} fontSize={26} fontFamily="monospace" fontWeight={800}>SK = e(LTK, SKD) = {hx(again > 0.5 ? SK2 : SK)}</text></g>
+        {lab([0, 9, 1], "다음 연결: 새 무작위 값 → 다른 세션 키", C.warn, again, -10)}
       </svg>
     </>
   );
 };
 
-/* ---------------------------------------------------------------- 3. 엿듣는 사람 */
-const Listen: React.FC<{ cues: number[] }> = ({ cues }) => {
-  const f = useCurrentFrame(), heard = at(f, 10), no = at(f, cues[1]), pair = at(f, cues[2]);
+const Listen: React.FC<{ cues: number[]; len: number }> = ({ cues, len }) => {
+  const f = useCurrentFrame(), cam: Cam = camLerp({ pos: [0, 18, 44], look: [0, 5, -2], fov: 40 }, { pos: [-3, 19, 42], look: [0, 5, -2], fov: 40 }, f / len);
+  const copy = (t0: number, a: Vec) => <Packet3D f={f} t0={t0} t1={t0 + 40} a={a} b={[LIS[0], 6.6, LIS[2]]} col={PUB} size={0.7} arc={1} />;
+  const no = at(f, cues[1]), pair = at(f, cues[2]);
+  const lab = (p: Vec, t: string, col: string, a: number, dy = -30, size = 24) => { const [x, y] = project(cam, p); return <text x={x} y={y + dy} textAnchor="middle" fill={col} fontSize={size} fontWeight={900} opacity={a}>{t}</text>; };
   return (
     <>
-      <Title kicker="엿듣는 사람이 아는 것">공중에 나온 값만으로는 세션 키를 못 만든다</Title>
+      <Scene3D cam={cam}>
+        <Ground light={[0, 20, 14]} />
+        <PhoneAt x={-15} z={2} /><WatchAt x={15} />
+        <Listener3D p={LIS} />
+        <Key3D p={[-19, 1.6, 4]} col={KEY} s={0.8} /><Key3D p={[12, 1.2, 3]} col={KEY} s={0.8} />
+        <Packet3D f={f} t0={10} t1={50} a={EP} b={EW} col={PUB} />
+        <Packet3D f={f} t0={20} t1={60} a={EW} b={EP} col={PUB} />
+        {copy(25, [0, 9, 1])}{copy(35, [0, 9, 1])}
+        {no > 0 && <mesh position={[0, 9.4, -9]}><sphereGeometry args={[0.01, 4, 4]} /><meshBasicMaterial /></mesh>}
+      </Scene3D>
+      <Title kicker="엿듣는 사람이 아는 것">공중의 값만으로는 세션 키를 못 만든다</Title>
       <svg width={1920} height={1080} style={{ position: "absolute", inset: 0 }} fontFamily={FONT}>
-        <g transform="translate(160,260)">
-          <circle cx={90} cy={90} r={80} fill={C.panel} stroke={BAD} strokeWidth={4} />
-          <path d="M60 70 q30 -40 60 0 M60 110 q30 40 60 0" stroke={BAD} strokeWidth={5} fill="none" />
-          <text x={90} y={210} textAnchor="middle" fill={BAD} fontSize={26} fontWeight={900}>엿듣는 사람</text>
-        </g>
-        {[["SKD_C", hx(SKDC), true], ["SKD_P", hx(SKDP), true], ["IV", hx(IV), true], ["LTK", "?", false]].map(([k, v, ok], i) => (
-          <g key={i} opacity={i < 3 ? heard : no} transform={`translate(520,${260 + i * 100})`}>
-            <rect x={0} y={0} width={760} height={78} rx={14} fill={C.panel} stroke={ok ? PUB : KEY} strokeWidth={3} />
-            <text x={24} y={50} fill={ok ? C.text : KEY} fontSize={26} fontWeight={900}>{k as string}</text>
-            <text x={170} y={50} fill={ok ? C.text : KEY} fontSize={24} fontFamily="monospace">{v as string}</text>
-            <text x={736} y={50} textAnchor="end" fill={ok ? OK : BAD} fontSize={26} fontWeight={900}>{ok ? "들림" : "공중에 없음"}</text>
-          </g>
-        ))}
-        <g opacity={no} transform="translate(1340,420)">
-          <rect x={0} y={0} width={420} height={110} rx={18} fill={C.panel} stroke={BAD} strokeWidth={3} />
-          <text x={210} y={48} textAnchor="middle" fill={C.text} fontSize={26} fontWeight={900}>SK = e(LTK, SKD)</text>
-          <text x={210} y={88} textAnchor="middle" fill={BAD} fontSize={26} fontWeight={900}>LTK 없이 계산 불가</text>
-        </g>
-        <Note x={520} y={700} w={1240} a={pair} col={KEY} lines={[["그래서", "안전은 페어링이 LTK를 얼마나 안전하게 만들었느냐에 달려 있다(입문 7편: 시큐어 커넥션)"]]} />
+        {lab([LIS[0], 6.6, LIS[2]], "엿듣는 수신기", BAD, 1, -40)}
+        {(() => { const [x, y] = project(cam, [LIS[0], 6.6, LIS[2]]); return (
+          <g transform={`translate(${x + 60},${y - 70})`}>
+            <rect x={0} y={0} width={330} height={150} rx={16} fill={C.panel} stroke={BAD} strokeWidth={3} />
+            <text x={20} y={40} fill={OK} fontSize={22} fontWeight={800} opacity={at(f, 70)}>✓ SKD_C · SKD_P · IV</text>
+            <text x={20} y={84} fill={BAD} fontSize={22} fontWeight={800} opacity={no}>✗ LTK (공중에 없음)</text>
+            <text x={20} y={128} fill={BAD} fontSize={22} fontWeight={900} opacity={no}>→ 세션 키 계산 불가</text>
+          </g>); })()}
+        {lab([-17, 1.6, 4], "LTK", KEY, 1, 60)}
+        {lab([14, 1.2, 3], "LTK", KEY, 1, 60)}
+        <Note x={360} y={830} w={1200} a={pair} col={KEY} lines={[["그래서", "안전은 페어링이 LTK를 얼마나 안전하게 만들었느냐에 달려 있다(입문 7편)"]]} />
       </svg>
     </>
   );
@@ -152,29 +161,33 @@ const Nonce: React.FC<{ cues: number[] }> = ({ cues }) => {
   );
 };
 
-/* ---------------------------------------------------------------- 5. MIC와 재생 */
-const Mic: React.FC<{ cues: number[] }> = ({ cues }) => {
-  const f = useCurrentFrame(), add = at(f, 10), flip = at(f, cues[1]), replay = at(f, cues[2]);
-  const cells = (x: number, y: number, bad: number) => (
-    <g transform={`translate(${x},${y})`}>
-      <rect x={0} y={0} width={160} height={70} rx={10} fill={C.dim} opacity={0.5} /><text x={80} y={44} textAnchor="middle" fill={C.text} fontSize={22} fontWeight={800}>헤더</text>
-      {Array.from({ length: 6 }, (_, i) => <g key={i}><rect x={170 + i * 90} y={0} width={80} height={70} rx={10} fill={i === bad ? BAD : C.accent} opacity={0.85} /><text x={210 + i * 90} y={44} textAnchor="middle" fill={C.bg} fontSize={18} fontWeight={900}>{i === bad ? "1비트↯" : "암호문"}</text></g>)}
-      <rect x={720} y={0} width={240} height={70} rx={10} fill={C.warn} opacity={0.9} /><text x={840} y={44} textAnchor="middle" fill={C.bg} fontSize={22} fontWeight={900}>MIC 4바이트</text>
-    </g>
-  );
+/* ---------------------------------------------------------------- 5. MIC와 재생 (3D) */
+const Mic: React.FC<{ cues: number[]; len: number }> = ({ cues, len }) => {
+  const f = useCurrentFrame(), cam: Cam = camLerp({ pos: [0, 16, 42], look: [0, 5, -2], fov: 40 }, { pos: [3, 17, 40], look: [0, 5, -2], fov: 40 }, f / len);
+  const c1 = cues[1], c2 = cues[2];
+  const flip = f >= c1 + 25, cut = at(f, c1 + 50), replay = at(f, c2);
+  const lab = (p: Vec, t: string, col: string, a: number, dy = -30, size = 24) => { const [x, y] = project(cam, p); return <text x={x} y={y + dy} textAnchor="middle" fill={col} fontSize={size} fontWeight={900} opacity={a}>{t}</text>; };
+  const mid = packetPos(f, c1, c1 + 50, EP, EW);
   return (
     <>
+      <Scene3D cam={cam}>
+        <Ground light={[0, 20, 14]} />
+        <PhoneAt x={-15} z={2} /><WatchAt x={15} />
+        <Listener3D p={LIS} />
+        <mesh position={[0, 6, 1]} rotation={[0, 0, Math.PI / 2]}><cylinderGeometry args={[0.06, 0.06, 26, 8]} /><meshStandardMaterial color={cut > 0.5 ? BAD : OK} emissive={cut > 0.5 ? BAD : OK} emissiveIntensity={1} transparent opacity={cut > 0.5 ? 1 - (cut - 0.5) * 2 : 0.8} /></mesh>
+        <Packet3D f={f} t0={10} t1={50} a={EP} b={EW} col={C.accent} />
+        <Packet3D f={f} t0={c1} t1={c1 + 50} a={EP} b={EW} col={flip ? BAD : C.accent} />
+        {f > c1 + 18 && f < c1 + 32 && <mesh position={[mid[0], mid[1] + 3, mid[2]]}><coneGeometry args={[0.5, 3, 6]} /><meshStandardMaterial color="#facc15" emissive="#facc15" emissiveIntensity={1.5} /></mesh>}
+        <Packet3D f={f} t0={c2 + 10} t1={c2 + 55} a={[LIS[0], 6.6, LIS[2]]} b={EW} col="#94a3b8" drop />
+      </Scene3D>
       <Title kicker="MIC: 확인값">바꾸면 끊기고, 다시 틀어도 안 통한다</Title>
       <svg width={1920} height={1080} style={{ position: "absolute", inset: 0 }} fontFamily={FONT}>
-        <g opacity={add}>{cells(240, 260, -1)}<text x={1230} y={306} fill={OK} fontSize={26} fontWeight={900}>받는 쪽: MIC 맞음 ✓</text></g>
-        <g opacity={flip}>{cells(240, 420, 2)}<text x={1230} y={466} fill={BAD} fontSize={26} fontWeight={900}>MIC 틀림 → 연결 끊김 (0x3D)</text></g>
-        <g opacity={replay} transform="translate(240,600)">
-          <rect x={0} y={0} width={1440} height={150} rx={18} fill={C.panel} stroke={BAD} strokeWidth={3} />
-          <text x={28} y={50} fill={C.text} fontSize={26} fontWeight={900}>녹음해 둔 옛 패킷을 다시 틀면</text>
-          <text x={28} y={98} fill={C.dim} fontSize={24}>옛 패킷: 번호 1로 잠금 · 받는 쪽이 기대하는 번호: 5</text>
-          <text x={28} y={134} fill={BAD} fontSize={24} fontWeight={800}>→ nonce가 달라 엉뚱한 평문, MIC도 틀림 → 통하지 않음</text>
-        </g>
-        <Note x={240} y={780} w={1440} a={flip} col={KEY} lines={[["MIC", "= 헤더 일부와 내용을 세션 키로 요약한 4바이트. 맞힐 확률은 한 번에 2⁻³², 틀리면 연결이 사라진다"]]} />
+        {lab([0, 9, 1], "암호문 + MIC 4바이트", C.accent, at(f, 10) * (1 - at(f, c1)), -10)}
+        {lab(mid, "1비트를 바꾸면", "#facc15", f > c1 + 15 && f < c1 + 50 ? 1 : 0, -50)}
+        {lab([15, 9, 0], "MIC 틀림 → 연결 끊김 (0x3D)", BAD, cut, -40, 26)}
+        {lab([LIS[0], 6.6, LIS[2]], "녹음해 둔 옛 패킷", "#94a3b8", replay, -40)}
+        {lab([8, 3, 0], "번호가 이미 지남 → 버림", BAD, at(f, c2 + 50), 70, 24)}
+        <Note x={360} y={830} w={1200} a={at(f, 10)} col={KEY} lines={[["MIC", "= 헤더 일부와 내용을 세션 키로 요약한 4바이트. 맞힐 확률은 한 번에 2⁻³²"]]} />
       </svg>
     </>
   );
@@ -204,10 +217,10 @@ const Outro: React.FC<{ cues: number[]; len: number }> = ({ cues, len }) => {
 const body = (s: Timed) => {
   switch (s.id) {
     case "hook": return <Hook cues={s.cues} len={s.frames} />;
-    case "session": return <Session cues={s.cues} />;
-    case "listen": return <Listen cues={s.cues} />;
+    case "session": return <Session cues={s.cues} len={s.frames} />;
+    case "listen": return <Listen cues={s.cues} len={s.frames} />;
     case "nonce": return <Nonce cues={s.cues} />;
-    case "mic": return <Mic cues={s.cues} />;
+    case "mic": return <Mic cues={s.cues} len={s.frames} />;
     case "outro": return <Outro cues={s.cues} len={s.frames} />;
   }
 };

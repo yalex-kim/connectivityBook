@@ -6,8 +6,7 @@ import { Title, clamp } from "../afh/parts";
 import { at } from "../twokinds/TwoKinds";
 import { project, Dots } from "../range/hook3d";
 import { Phone3D, Watch3D } from "../connection/Connection";
-import { Buds } from "../pairing/Pairing";
-import { Ground, Note, makeVideo } from "../common/kit";
+import { Earbud3D, Ground, Note, makeVideo } from "../common/kit";
 import { CLASH, CONN, EAR, FIT, SHORT, STAGGER } from "./script";
 import { LEAD, scenesFor, type Timed } from "./timing";
 
@@ -68,7 +67,7 @@ const Stage: React.FC<{ cam: Cam; f: number; watch: number; others: number; clas
     <Ground />
     <group position={[12, 0, 0]}><Phone3D /></group>
     <group position={[3, 0, -2]}><Watch3D /></group>
-    {others > 0 && <Buds p={[BD[0], 0, BD[2]]} />}
+    {others > 0 && <><Earbud3D p={[BD[0] - 1.2, 3.4, BD[2]]} ry={-1.2} s={1.1} /><Earbud3D p={[BD[0] + 1.2, 3.4, BD[2]]} ry={1.9} s={1.1} /></>}
     {others > 0 && <Keyboard3D p={[KB[0], 0, KB[2]]} />}
     <Dots a={PH} b={WT} f={f} col={clash > 0 && Math.floor(f / 8) % 2 ? BAD : WATC} on={watch} n={6} />
     <Dots a={PH} b={BD} f={f + 7} col={clash > 0 && Math.floor(f / 8) % 2 ? BAD : EARC} on={others} n={6} />
@@ -100,22 +99,24 @@ const Hook: React.FC<{ cues: number[]; len: number }> = ({ cues, len }) => {
   );
 };
 
-/* ---------------------------------------------------------------- 2. 한 번에 하나 */
-const One: React.FC<{ cues: number[] }> = ({ cues }) => {
+/* ---------------------------------------------------------------- 2. 한 번에 하나 (3D 시간 블록 + 지나가는 시간 커서) */
+const One: React.FC<{ cues: number[]; len: number }> = ({ cues, len }) => {
   const f = useCurrentFrame(), skip = at(f, cues[1]), rule = at(f, cues[2]);
-  const X0 = 400, W = 1300, T1 = 40, runs = CLASH3.runs.map((r) => (skip < 0.5 ? { ...r, ok: true } : r));
-  const X = (t: number) => X0 + (t / T1) * W;
+  const cam = camLerp({ pos: [-14, 22, 30], look: [-14, 0, 1], fov: 40 }, { pos: [-12, 24, 28], look: [-13, 0, 1], fov: 40 }, f / len);
+  const tc = interpolate(f, [10, cues[1]], [-2, 8], clamp); // 시간 커서(ms)
+  const sx = (t: number, row: string): [number, number] => project(cam, [t * S3 - (T3 * S3) / 2, 0, ROW[row]]);
   return (
     <>
+      <Scene3D cam={cam}>
+        <Ground light={[0, 26, 10]} />
+        <Blocks3D mix={0} redOn={skip} />
+        <mesh position={[tc * S3 - (T3 * S3) / 2, 2.2, 0]}><boxGeometry args={[0.15, 4.4, 22]} /><meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={1.2} transparent opacity={0.55} /></mesh>
+      </Scene3D>
       <Title kicker="심화 · 무선 하나, 일 여럿">한 순간에는 한 가지 일만</Title>
       <svg width={1920} height={1080} style={{ position: "absolute", inset: 0 }} fontFamily={FONT}>
-        {(["ear", "watch", "kb"] as const).map((k, i) => <Lane key={k} x={X0} y={300 + i * 120} w={W} h={64} t0={0} t1={T1} runs={runs} task={k} label={NAME[k]} upto={interpolate(f, [10, 70], [0, T1], clamp)} />)}
-        <Axis x={X0} y={690} w={W} t0={0} t1={T1} step={10} />
-        <g opacity={skip}>
-          <rect x={X(0) - 10} y={270} width={X(6) - X(0) + 20} height={380} rx={14} fill="none" stroke={DEEP} strokeWidth={3} strokeDasharray="10 8" />
-          <text x={X(0) - 4} y={258} fill={DEEP} fontSize={24} fontWeight={800}>같은 순간: 하나만 실행, 나머지는 건너뜀</text>
-        </g>
-        <Note x={X0} y={730} w={1300} a={rule} col={DEEP} lines={[["스케줄러", "= 겹칠 때 무엇을 먼저 할지 고르는 컨트롤러의 부분. 사양은 고르는 법을 정하지 않는다"]]} />
+        {(["ear", "watch", "kb"] as const).map((k) => { const [x, y] = sx(-3, k); return <text key={k} x={x} y={y + 10} textAnchor="end" fill={COL[k]} fontSize={28} fontWeight={800}>{NAME[k]}</text>; })}
+        {(() => { const [x, y] = sx(3, "ear"); return <text x={x} y={y - 70} textAnchor="middle" fill={DEEP} fontSize={26} fontWeight={900} opacity={skip}>같은 순간 → 하나만, 나머지 ✕</text>; })()}
+        <Note x={400} y={820} w={1200} a={rule} col={DEEP} lines={[["스케줄러", "= 겹칠 때 무엇을 먼저 할지 고르는 컨트롤러의 부분. 사양은 고르는 법을 정하지 않는다"]]} />
       </svg>
     </>
   );
@@ -174,12 +175,12 @@ const S3 = 0.55, T3 = 90; // 1 ms = 0.55 단위, 0~90 ms
 const ROW: Record<string, number> = { ear: -7, watch: 0, kb: 7 };
 const CLASH_OFF: Record<string, number> = { ear: 0, watch: CLASH.watch + 0.5, kb: CLASH.kb + 0.5 }, STAG_OFF: Record<string, number> = STAGGER;
 /** 거리낌 없이 겹친 배치(CLASH3)에서 엇갈린 배치(STAG)로 mix만큼 옮긴 블록들. 겹친 배치에서 건너뛴 회차는 빨강 */
-const Blocks3D: React.FC<{ mix: number }> = ({ mix }) => (
+const Blocks3D: React.FC<{ mix: number; redOn?: number }> = ({ mix, redOn = 1 }) => (
   <group position={[-(T3 * S3) / 2, 0, 0]}>
     {(["ear", "watch", "kb"] as const).flatMap((k) => {
       const P = k === "ear" ? EAR.period : CONN.period, d = k === "ear" ? EAR.dur : CONN.dur, mine = CLASH3.runs.filter((r) => r.task === k);
       return Array.from({ length: Math.ceil(T3 / P) }, (_, i) => {
-        const t = i * P + CLASH_OFF[k] + (STAG_OFF[k] - CLASH_OFF[k]) * mix, bad = mix < 0.5 && mine[i] && !mine[i].ok;
+        const t = i * P + CLASH_OFF[k] + (STAG_OFF[k] - CLASH_OFF[k]) * mix, bad = mix < 0.5 && redOn > 0.5 && mine[i] && !mine[i].ok;
         return (
           <mesh key={`${k}${i}`} position={[(t + d / 2) * S3, 0.9, ROW[k]]}>
             <boxGeometry args={[d * S3, 1.8, 4]} />
@@ -257,41 +258,32 @@ const Starve: React.FC<{ cues: number[] }> = ({ cues }) => {
   );
 };
 
-/* ---------------------------------------------------------------- 6. 시간이 모자라면 */
-const Short: React.FC<{ cues: number[] }> = ({ cues }) => {
-  const f = useCurrentFrame(), X0 = 360, PX = 80; // 1 ms = 80 px
+/* ---------------------------------------------------------------- 6. 시간이 모자라면 (3D: 7.5 ms 상자에 2.5 ms 블록 여섯) */
+const Short: React.FC<{ cues: number[]; len: number }> = ({ cues, len }) => {
+  const f = useCurrentFrame(), U = 1.6; // 1 ms = 1.6 단위
   const fill = interpolate(f, [cues[1], cues[1] + 80], [0, SHORT.n], clamp), half = at(f, cues[3]), fix = at(f, cues[4]);
-  const need = SHORT.n * SHORT.dur, cols = [EARC, WATC, KBC, "#a78bfa", "#60a5fa", "#fb923c"];
+  const cam = camLerp({ pos: [4, 13, 32], look: [12, 1, 0], fov: 40 }, { pos: [8, 15, 30], look: [13, 1, 0], fov: 40 }, f / len);
+  const cols = [EARC, WATC, KBC, "#a78bfa", "#60a5fa", "#fb923c"], box = SHORT.period * U, grow = fix > 0.5 ? (20 - SHORT.period) * U * at(f, cues[4] + 10) : 0;
+  const lab = (p: Vec, t: string, col: string, a: number, dy = 0, size = 26) => { const [x, y] = project(cam, p); return <text x={x} y={y + dy} textAnchor="middle" fill={col} fontSize={size} fontWeight={900} opacity={a}>{t}</text>; };
   return (
     <>
+      <Scene3D cam={cam}>
+        <Ground light={[0, 20, 12]} />
+        <mesh position={[(box + grow) / 2, 1.6, 0]}><boxGeometry args={[box + grow, 3.2, 4.2]} /><meshStandardMaterial color={DEEP} transparent opacity={0.1} depthWrite={false} /></mesh>
+        {[[0, 1.6, 2.1], [0, 1.6, -2.1]].map(([_, y, z], i) => <mesh key={i} position={[(box + grow) / 2, y + 1.6, z]}><boxGeometry args={[box + grow, 0.1, 0.1]} /><meshStandardMaterial color={DEEP} emissive={DEEP} emissiveIntensity={1} /></mesh>)}
+        {[0, box + grow].map((x, i) => <mesh key={"v" + i} position={[x, 1.6, 0]}><boxGeometry args={[0.12, 3.4, 4.3]} /><meshStandardMaterial color={DEEP} emissive={DEEP} emissiveIntensity={1} transparent opacity={0.7} /></mesh>)}
+        {Array.from({ length: SHORT.n }, (_, i) => {
+          const a = Math.max(0, Math.min(1, fill - i)), over = (i + 1) * SHORT.dur > SHORT.period && fix < 0.5;
+          return a > 0 ? <mesh key={i} position={[(i + 0.5) * SHORT.dur * U, 1.4 * a, 0]} scale={[0.92, a, 1]}><boxGeometry args={[SHORT.dur * U, 2.8, 3.4]} /><meshStandardMaterial color={over ? BAD : cols[i]} emissive={over ? BAD : cols[i]} emissiveIntensity={0.35} transparent opacity={over ? 0.45 : 0.95} /></mesh> : null;
+        })}
+      </Scene3D>
       <Title kicker="그래도 시간이 모자라면">필요한 시간이 간격보다 길면</Title>
       <svg width={1920} height={1080} style={{ position: "absolute", inset: 0 }} fontFamily={FONT}>
-        <rect x={X0} y={330} width={SHORT.period * PX} height={140} rx={16} fill={C.panel} stroke={C.text} strokeWidth={3} />
-        <text x={X0} y={312} fill={C.text} fontSize={26} fontWeight={800}>연결 간격 7.5 ms</text>
-        {Array.from({ length: SHORT.n }, (_, i) => {
-          const a = Math.max(0, Math.min(1, fill - i)), x = X0 + i * SHORT.dur * PX, over = (i + 1) * SHORT.dur > SHORT.period;
-          return (
-            <g key={i} opacity={a}>
-              <rect x={x + 3} y={350} width={SHORT.dur * PX - 6} height={100} rx={10} fill={cols[i]} opacity={over ? 0.35 : 0.9} stroke={over ? BAD : "none"} strokeWidth={3} strokeDasharray="8 6" />
-              <text x={x + (SHORT.dur * PX) / 2} y={410} textAnchor="middle" fill={over ? BAD : C.bg} fontSize={24} fontWeight={900}>{over ? "✕" : `연결 ${i + 1}`}</text>
-            </g>
-          );
-        })}
-        <text x={X0 + need * PX + 20} y={410} fill={BAD} fontSize={28} fontWeight={900} opacity={at(f, cues[2])}>2.5 × 6 = 15 ms</text>
-        <g opacity={half}>
-          <path d={`M${X0} 500 H${X0 + SHORT.period * PX}`} stroke={OK} strokeWidth={4} />
-          <text x={X0 + (SHORT.period * PX) / 2} y={540} textAnchor="middle" fill={OK} fontSize={26} fontWeight={800}>한 간격에 들어가는 건 많아야 3개</text>
-          <path d={`M${X0 + SHORT.period * PX} 500 H${X0 + need * PX}`} stroke={BAD} strokeWidth={4} />
-          <text x={X0 + ((SHORT.period + need) / 2) * PX} y={540} textAnchor="middle" fill={BAD} fontSize={26} fontWeight={800}>나머지 절반은 건너뜀</text>
-        </g>
-        <g opacity={fix} transform="translate(360,620)">
-          <rect x={0} y={0} width={560} height={140} rx={20} fill={C.panel} stroke={DEEP} strokeWidth={3} />
-          <text x={30} y={56} fill={DEEP} fontSize={28} fontWeight={900}>간격을 늘린다</text>
-          <text x={30} y={100} fill={C.text} fontSize={22}>연결 갱신으로 약속 주기를 바꾼다</text>
-          <rect x={620} y={0} width={560} height={140} rx={20} fill={C.panel} stroke={DEEP} strokeWidth={3} />
-          <text x={650} y={56} fill={DEEP} fontSize={28} fontWeight={900}>한 번에 쓰는 시간을 줄인다</text>
-          <text x={650} y={100} fill={C.text} fontSize={22}>주고받는 데이터 양을 줄인다</text>
-        </g>
+        {lab([box / 2, 4.6, 0], fix > 0.5 ? "간격을 늘린 상자" : "연결 간격 7.5 ms", DEEP, at(f, 10), -10)}
+        {lab([SHORT.n * SHORT.dur * U - 2, 3.4, 2], "2.5 ms × 6 = 15 ms", BAD, at(f, cues[2]), -40)}
+        {lab([box / 2, 0, 3], "들어가는 건 많아야 3개", OK, half * (1 - fix), 60)}
+        {lab([box * 1.5, 0, 3], "나머지 절반은 건너뜀", BAD, half * (1 - fix), 60)}
+        {lab([box, 0, 3], "또는 한 번에 쓰는 시간을 줄인다", C.dim, fix, 100, 24)}
       </svg>
     </>
   );
@@ -374,11 +366,11 @@ const Outro: React.FC<{ cues: number[]; len: number }> = ({ cues, len }) => {
 const body = (s: Timed) => {
   switch (s.id) {
     case "hook": return <Hook cues={s.cues} len={s.frames} />;
-    case "one": return <One cues={s.cues} />;
+    case "one": return <One cues={s.cues} len={s.frames} />;
     case "limit": return <Limit cues={s.cues} />;
     case "stagger": return <Stagger cues={s.cues} len={s.frames} />;
     case "starve": return <Starve cues={s.cues} />;
-    case "short": return <Short cues={s.cues} />;
+    case "short": return <Short cues={s.cues} len={s.frames} />;
     case "count": return <Count cues={s.cues} />;
     case "outro": return <Outro cues={s.cues} len={s.frames} />;
   }

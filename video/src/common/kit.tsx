@@ -88,3 +88,23 @@ export const ThumbCard: React.FC<{ kicker: string; lines: React.ReactNode; chip:
     </div>
   </AbsoluteFill>
 );
+
+/** 무선 이어폰(스템형) 한 쪽: 둥근 머리, 귀 쪽 돌기, 아래로 뻗은 막대. 심화 시리즈 공용 */
+export const Earbud3D: React.FC<{ p: [number, number, number]; ry?: number; s?: number; col?: string }> = ({ p, ry = 0, s = 1, col = "#f1f4f9" }) => (
+  <group position={p} rotation={[0, ry, 0]} scale={s}>
+    <mesh scale={[1, 0.92, 1.05]}><sphereGeometry args={[1, 28, 20]} /><meshStandardMaterial color={col} roughness={0.25} metalness={0.05} /></mesh>
+    <mesh position={[0.15, 0.1, 0.95]} rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.38, 0.45, 0.5, 20]} /><meshStandardMaterial color="#d6dbe4" roughness={0.4} /></mesh>
+    <mesh position={[0.05, 0.05, 1.2]} rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.3, 0.3, 0.08, 20]} /><meshStandardMaterial color="#3b4252" roughness={0.6} /></mesh>
+    <mesh position={[-0.25, -1.55, -0.05]} rotation={[0, 0, 0.16]}><capsuleGeometry args={[0.32, 2.4, 8, 16]} /><meshStandardMaterial color={col} roughness={0.25} metalness={0.05} /></mesh>
+    <mesh position={[-0.47, -2.95, -0.05]} rotation={[0, 0, 0.16]}><cylinderGeometry args={[0.2, 0.2, 0.06, 16]} /><meshStandardMaterial color="#9aa3b2" metalness={0.6} roughness={0.3} /></mesh>
+  </group>
+);
+/** 이어폰 한 쌍과 충전 케이스(납작한 알약 모양). p = 케이스 바닥 중앙, 이어폰은 케이스 옆에 세워 막대가 보이게 */
+export const EarbudsCase3D: React.FC<{ p: [number, number, number]; s?: number }> = ({ p, s = 1 }) => (
+  <group position={p} scale={s}>
+    <mesh position={[0, 1.7, 0]} rotation={[0, 0, Math.PI / 2]} scale={[1, 1, 0.62]}><capsuleGeometry args={[1.7, 1.6, 12, 24]} /><meshStandardMaterial color="#f1f4f9" roughness={0.3} /></mesh>
+    <mesh position={[0, 2.5, 1.06]}><boxGeometry args={[0.5, 0.14, 0.05]} /><meshStandardMaterial color="#9aa3b2" /></mesh>
+    <Earbud3D p={[3.6, 3.3, 0.6]} ry={-1.25} s={0.95} />
+    <Earbud3D p={[5.8, 3.3, -0.2]} ry={1.9} s={0.95} />
+  </group>
+);
