@@ -84,44 +84,61 @@ const Tone: React.FC<{ cues: number[]; len: number }> = ({ cues, len }) => {
   );
 };
 
-/* ---------------------------------------------------------------- 3. 도는 위상을 재서 뺀다 (IQ 도식) */
-const Spin: React.FC<{ cues: number[] }> = ({ cues }) => {
-  const f = useCurrentFrame(), rot = at(f, 10), ref = at(f, cues[1]), sub = at(f, cues[2]);
-  const CX = 640, CY = 560, R = 220, dpsi = 90; // 이웃 안테나 위상차(°), 회전 90°/µs(250 kHz)
-  const P = (a: number, r = R): [number, number] => [CX + r * Math.cos(rad(a)), CY - r * Math.sin(rad(a))];
-  const spinA = (f * 9) % 360;
-  const refDots = Array.from({ length: 8 }, (_, i) => i * 90);
-  const ant = [0, 1, 2, 3].map((i) => -i * dpsi); // 안테나 위치 때문에 남는 위상: 30°·반 파장이면 이웃마다 90°
+/* ---------------------------------------------------------------- 3. 도는 위상을 재서 뺀다
+ * 위: 비스듬히 오는 전파가 안테나 줄을 지나가고, 지금 표본을 찍는 안테나가 빛난다(3D)
+ * 아래: CTE 시간표(보호 4 µs · 기준 8 µs · 2 µs 전환/표본 반복)와 시간 커서, 안테나별 줄에 찍힌 표본
+ * 오른쪽: IQ 원. 찍은 위상(회색) → 기준 구간에서 잰 회전 ω·t를 뺀 위상(안테나 색)
+ * 예: 실제 회전 95°/µs(톤 약 264 kHz, 허용 225~275 kHz 안), 30°·반 파장 → 이웃 안테나 위상차 90° */
+const W_US = 95, PSI = [0, -90, -180, -270], ACOL = [LOC, "#60a5fa", "#a78bfa", TAG];
+type Smp = { t: number; ant: number; ref: boolean };
+const SAMPLES: Smp[] = [
+  ...Array.from({ length: 8 }, (_, i) => ({ t: 4.5 + i, ant: 0, ref: true })),
+  ...Array.from({ length: 8 }, (_, i) => ({ t: 12 + 4 * i + 3, ant: (i + 1) % 4, ref: false })),
+];
+const T_END = 44;
+const Spin: React.FC<{ cues: number[]; len: number }> = ({ cues, len }) => {
+  const f = useCurrentFrame();
+  const us = f < cues[1] ? interpolate(f, [10, cues[1]], [0, 4], clamp) : f < cues[2] ? interpolate(f, [cues[1], cues[2] - 10], [4, 12], clamp) : interpolate(f, [cues[2], len - 30], [12, T_END], clamp);
+  const sub = at(f, cues[2] + 60);
+  const raw = (sm: Smp) => ((W_US * sm.t + PSI[sm.ant]) % 360 + 360) % 360;
+  const fixd = (sm: Smp) => ((PSI[sm.ant] % 360) + 360) % 360;
+  const cur = SAMPLES.filter((sm) => sm.t <= us).slice(-1)[0];
+  const curAnt = us < 4 ? -1 : us < 12 ? 0 : (() => { const k = Math.floor((us - 12) / 4); return (k + 1) % 4; })();
+  // 3D: 안테나 줄과 비스듬히 오는 물결
+  const cam: Cam = { pos: [-4, 11, 20], look: [-4, -3, -5], fov: 38 }, th = rad(30), S = 2.4, AX = -4;
+  const X0 = 160, W = 1180, Y0 = 740, X = (t: number) => X0 + (t / T_END) * W, ROWH = 30;
+  const CX = 1640, CY = 470, R = 170, P = (a: number, r = R): [number, number] => [CX + r * Math.cos(rad(a)), CY - r * Math.sin(rad(a))];
   return (
     <>
-      <Title kicker="회전 지우기">도는 만큼 재서, 빼고 나면</Title>
+      <div style={{ position: "absolute", left: 0, top: 0, width: 1920, height: 1080 }}>
+        <Scene3D cam={cam}>
+          <Ground light={[0, 16, 10]} />
+          {[0, 1, 2, 3].map((i) => <mesh key={i} position={[(i - 1.5) * S + AX, 1, 0]}><cylinderGeometry args={[0.2, 0.2, 2, 10]} />{mat(i === curAnt ? TONE : ACOL[i], i === curAnt ? 1.6 : 0.4)}</mesh>)}
+          {Array.from({ length: 6 }, (_, k) => { const d = ((f * 0.1 + k * 2.4) % 12) + 1.5; return <mesh key={k} position={[AX - Math.sin(th) * d, 1.2, -Math.cos(th) * d]} rotation={[0, th, 0]}><boxGeometry args={[8, 0.08, 0.08]} />{mat(TONE, 1, 0.7)}</mesh>; })}
+        </Scene3D>
+      </div>
+      <Title kicker="회전 지우기">기준 구간에서 잰 회전을, 표본마다 뺀다</Title>
       <svg width={1920} height={1080} style={{ position: "absolute", inset: 0 }} fontFamily={FONT}>
-        <circle cx={CX} cy={CY} r={R} fill="none" stroke={C.faint} strokeWidth={3} />
-        <line x1={CX - R - 30} x2={CX + R + 30} y1={CY} y2={CY} stroke={C.faint} strokeWidth={2} />
-        <line x1={CX} x2={CX} y1={CY - R - 30} y2={CY + R + 30} stroke={C.faint} strokeWidth={2} />
-        <text x={CX + R + 40} y={CY + 8} fill={C.dim} fontSize={22}>I</text>
-        <text x={CX - 8} y={CY - R - 40} fill={C.dim} fontSize={22}>Q</text>
-        <g opacity={rot * (1 - sub)}>
-          {(() => { const [x, y] = P(spinA); return <><line x1={CX} y1={CY} x2={x} y2={y} stroke={TONE} strokeWidth={6} /><circle cx={x} cy={y} r={12} fill={TONE} /></>; })()}
-          <text x={CX} y={CY + R + 70} textAnchor="middle" fill={TONE} fontSize={26} fontWeight={800}>같은 안테나인데도 계속 돈다</text>
-        </g>
-        <g opacity={ref * (1 - sub)}>
-          {refDots.map((a, i) => { const [x, y] = P(a, R - 30 + i * 4); return <circle key={i} cx={x} cy={y} r={10} fill="none" stroke={C.text} strokeWidth={3} />; })}
-        </g>
-        <g opacity={sub}>
-          {ant.map((a, i) => { const [x, y] = P(a); return <g key={i}><line x1={CX} y1={CY} x2={x} y2={y} stroke={[LOC, "#60a5fa", "#a78bfa", TAG][i]} strokeWidth={5} /><circle cx={x} cy={y} r={14} fill={[LOC, "#60a5fa", "#a78bfa", TAG][i]} /><text x={x + (x > CX ? 24 : -24)} y={y + 8} textAnchor={x > CX ? "start" : "end"} fill={C.text} fontSize={22} fontWeight={800}>안테나 {i + 1}</text></g>; })}
-          <text x={CX} y={CY + R + 70} textAnchor="middle" fill={OK} fontSize={26} fontWeight={800}>안테나 위치 때문에 생긴 차이만 남는다</text>
-        </g>
-        <g transform="translate(1100,380)">
-          <rect x={0} y={0} width={640} height={330} rx={20} fill={C.panel} stroke={C.faint} strokeWidth={2} />
-          <rect x={30} y={40} width={60} height={46} rx={6} fill="#475569" /><text x={60} y={110} textAnchor="middle" fill={C.dim} fontSize={18}>보호 4 µs</text>
-          <rect x={100} y={40} width={150} height={46} rx={6} fill={C.text} opacity={0.3 + 0.7 * ref} /><text x={175} y={110} textAnchor="middle" fill={C.text} fontSize={18}>기준 8 µs (안테나 1)</text>
-          {Array.from({ length: 8 }, (_, i) => <rect key={i} x={260 + i * 44} y={40} width={36} height={46} rx={6} fill={[LOC, "#60a5fa", "#a78bfa", TAG][i % 4]} opacity={0.4 + 0.6 * sub} />)}
-          <text x={430} y={110} textAnchor="middle" fill={C.dim} fontSize={18}>안테나 1→2→3→4 반복</text>
-          <text x={30} y={180} fill={C.text} fontSize={24} fontWeight={800} opacity={ref}>① 기준 구간: 같은 안테나 → 회전만 보인다</text>
-          <text x={30} y={226} fill={C.text} fontSize={24} fontWeight={800} opacity={ref}>   1 µs마다 도는 각도를 잰다</text>
-          <text x={30} y={286} fill={OK} fontSize={24} fontWeight={800} opacity={sub}>② 표본마다 잰 회전을 빼면 → 위치 차이만</text>
-        </g>
+        {[0, 1, 2, 3].map((i) => { const [x, y] = project(cam, [(i - 1.5) * S + AX, 0, 0.6]); return <text key={i} x={x} y={y + 30} textAnchor="middle" fill={i === curAnt ? TONE : ACOL[i]} fontSize={22} fontWeight={900}>안테나 {i + 1}</text>; })}
+        {/* CTE 시간표 */}
+        <rect x={X0 - 20} y={Y0 - 90} width={W + 40} height={ROWH * 4 + 130} rx={18} fill={C.panel} opacity={0.94} />
+        <rect x={X(0)} y={Y0 - 70} width={X(4) - X(0)} height={30} rx={6} fill="#475569" />
+        <text x={(X(0) + X(4)) / 2} y={Y0 - 49} textAnchor="middle" fill={C.text} fontSize={16} fontWeight={800}>보호 4 µs</text>
+        <rect x={X(4)} y={Y0 - 70} width={X(12) - X(4)} height={30} rx={6} fill={C.text} opacity={0.85} />
+        <text x={(X(4) + X(12)) / 2} y={Y0 - 49} textAnchor="middle" fill={C.bg} fontSize={16} fontWeight={900}>기준 8 µs (안테나 1)</text>
+        {Array.from({ length: 8 }, (_, k) => <g key={k}><rect x={X(12 + 4 * k)} y={Y0 - 70} width={X(2) - X(0) - 2} height={30} rx={4} fill="#334155" /><rect x={X(14 + 4 * k)} y={Y0 - 70} width={X(2) - X(0) - 2} height={30} rx={4} fill={ACOL[(k + 1) % 4]} /></g>)}
+        <text x={X(28)} y={Y0 - 80} textAnchor="middle" fill={C.dim} fontSize={16}>회색 = 안테나 전환 2 µs · 색 = 표본 2 µs</text>
+        {[0, 1, 2, 3].map((i) => <g key={i}><text x={X0 - 8} y={Y0 + i * ROWH + 22} textAnchor="end" fill={ACOL[i]} fontSize={18} fontWeight={800}>{i + 1}</text><line x1={X0} x2={X0 + W} y1={Y0 + i * ROWH + 16} y2={Y0 + i * ROWH + 16} stroke={C.faint} strokeWidth={1.5} /></g>)}
+        {SAMPLES.filter((sm) => sm.t <= us).map((sm, k) => <circle key={k} cx={X(sm.t)} cy={Y0 + sm.ant * ROWH + 16} r={sm.ref ? 6 : 9} fill={sm.ref ? C.text : ACOL[sm.ant]} />)}
+        <line x1={X(us)} x2={X(us)} y1={Y0 - 76} y2={Y0 + ROWH * 4 + 6} stroke={TONE} strokeWidth={4} />
+        <text x={X(us)} y={Y0 + ROWH * 4 + 30} textAnchor="middle" fill={TONE} fontSize={18} fontWeight={900}>{us.toFixed(0)} µs</text>
+        {/* IQ 원 */}
+        <circle cx={CX} cy={CY} r={R} fill={C.panel} stroke={C.faint} strokeWidth={3} />
+        <text x={CX} y={CY - R - 20} textAnchor="middle" fill={C.dim} fontSize={20}>찍은 위상 (IQ 원)</text>
+        {SAMPLES.filter((sm) => sm.t <= us).map((sm, k) => { const a = sub > 0.5 && !sm.ref ? fixd(sm) : raw(sm), [x, y] = P(a, R - 10 - (sm.ref ? 0 : 0)); return <circle key={k} cx={x} cy={y} r={sm.ref ? 8 : 11} fill={sm.ref ? "none" : ACOL[sm.ant]} stroke={sm.ref ? C.text : "none"} strokeWidth={3} opacity={sm.ref && sub > 0.5 ? 0.25 : 1} />; })}
+        {cur && (() => { const a = sub > 0.5 && !cur.ref ? fixd(cur) : raw(cur), [x, y] = P(a); return <line x1={CX} y1={CY} x2={x} y2={y} stroke={cur.ref ? C.text : ACOL[cur.ant]} strokeWidth={5} />; })()}
+        <text x={CX} y={CY + R + 40} textAnchor="middle" fill={us < 12 ? C.text : sub > 0.5 ? OK : TONE} fontSize={22} fontWeight={900}>{us < 4 ? "보호 구간" : us < 12 ? `같은 안테나인데 1 µs마다 약 ${W_US}°씩 돈다` : sub > 0.5 ? "ω·t를 빼면 → 안테나별 위상차만 남는다" : "찍은 그대로는 회전이 섞여 있다"}</text>
+        {sub > 0.5 && <text x={CX} y={CY + R + 74} textAnchor="middle" fill={C.dim} fontSize={20}>이웃 안테나마다 90° 차이 (30° 방향, 간격 반 파장)</text>}
       </svg>
     </>
   );
@@ -220,7 +237,7 @@ const body = (s: Timed) => {
   switch (s.id) {
     case "hook": return <Hook cues={s.cues} len={s.frames} />;
     case "tone": return <Tone cues={s.cues} len={s.frames} />;
-    case "spin": return <Spin cues={s.cues} />;
+    case "spin": return <Spin cues={s.cues} len={s.frames} />;
     case "angle": return <AngleScene cues={s.cues} len={s.frames} />;
     case "where": return <Where cues={s.cues} len={s.frames} />;
     case "error": return <Where cues={s.cues} len={s.frames} err />;
