@@ -5,6 +5,7 @@ import { Scene3D, type Cam, type Vec } from "../afh/world3d";
 import { project } from "../range/hook3d";
 import { basicHop } from "../book";
 import { DEEP, Earbud3D, EarbudsCase3D, Ground } from "./kit";
+import { Key3D, Listener3D } from "./deep3d";
 import { SchedStage } from "../scheduling/Scheduling";
 import { HopBand } from "../hopping/Hopping";
 
@@ -176,19 +177,17 @@ export const DirectionThumbnail: React.FC = () => {
     </DeepCard>
   );
 };
-/* 9. PIN: 숫자 키패드 위 PIN과 6자리 */
-const PCAM9: Cam = { pos: [0, 4, 20], look: [0, 4, 0], fov: 40 };
+/* 9. 보안 총정리: 가운데 큰 열쇠, 엿듣는 수신기와 끼어든 기기 */
+const PCAM9: Cam = { pos: [0, 6, 20], look: [0, 4, 0], fov: 40 };
 export const PinThumbnail: React.FC = () => {
   useFont();
-  const [px, py] = project(PCAM9, [-3.2, 6.2, 0.6]), [qx, qy] = project(PCAM9, [4, 6.2, 0.6]);
   return (
-    <DeepCard no={9} shift={430} lines={<>블루투스는 어떻게<br />{hi("엿듣기")}와 {hi("끼어들기", C.warn)}를<br />막을까?</>}
-      overlay={<svg width={1920} height={1080} style={{ position: "absolute", inset: 0 }} fontFamily={FONT}><text x={px} y={py} textAnchor="middle" fill={C.warn} fontSize={70} fontWeight={900} letterSpacing={8}>●●●●</text><text x={qx} y={qy} textAnchor="middle" fill="#fff" fontSize={64} fontWeight={900} letterSpacing={6}>▢▢▢▢▢▢</text><text x={(px + qx) / 2} y={py + 10} textAnchor="middle" fill={DEEP} fontSize={80} fontWeight={900}>→</text></svg>}>
+    <DeepCard no={9} shift={430} lines={<>블루투스는 어떻게<br />{hi("엿듣기")}와 {hi("끼어들기", C.warn)}를<br />막을까?</>}>
       <Scene3D cam={PCAM9}>
         <Ground light={[0, 12, 10]} />
-        <mesh position={[-3.2, 5.6, 0]}><boxGeometry args={[5.2, 3.4, 0.6]} />{mat("#3b2c1c", 0.2)}</mesh>
-        <mesh position={[4, 5.6, 0]}><boxGeometry args={[6.4, 3.4, 0.6]} />{mat("#14532d", 0.3)}</mesh>
-        {Array.from({ length: 9 }, (_, i) => <mesh key={i} position={[-4.6 + (i % 3) * 1.4, 1.2 + Math.floor(i / 3) * 1.1, 1]}><boxGeometry args={[1.1, 0.8, 0.3]} />{mat("#cbd5e1", 0.1)}</mesh>)}
+        <Key3D p={[-2.6, 5, 2]} col={C.ok} s={1.5} glow={0.9} />
+        <Listener3D p={[-5.5, 0, -5]} />
+        <group position={[5.5, 0, -4]}><mesh position={[0, 2.6, 0]}><boxGeometry args={[2.6, 4.6, 0.5]} />{mat("#3f1d24", 0.2)}</mesh><mesh position={[0, 2.6, 0.27]}><boxGeometry args={[2.2, 4, 0.02]} />{mat(C.bad, 0.6)}</mesh></group>
       </Scene3D>
     </DeepCard>
   );
