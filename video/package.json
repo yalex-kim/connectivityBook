@@ -26,7 +26,8 @@
     "thumbnail:hopping": "remotion still HoppingThumbnail out/youtube-hopping/thumbnail.png",
     "thumbnail:gattcache": "remotion still GattCacheThumbnail out/youtube-gattcache/thumbnail.png",
     "thumbnail:encrypt": "remotion still EncryptThumbnail out/youtube-encrypt/thumbnail.png",
-    "thumbnail:privacy": "remotion still PrivacyThumbnail out/youtube-privacy/thumbnail.png"
+    "thumbnail:privacy": "remotion still PrivacyThumbnail out/youtube-privacy/thumbnail.png",
+    "thumbnail:sync": "remotion still SyncThumbnail out/youtube-sync/thumbnail.png"
   },
   "dependencies": {
     "@react-three/fiber": "9.8.2",

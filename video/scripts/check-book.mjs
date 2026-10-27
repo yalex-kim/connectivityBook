@@ -28,7 +28,7 @@ const big = V.simulate(20000, false), lossHop = big.filter((e) => e.hit).length 
 assert.ok(Math.abs(lossHop - 31 / 74) < 0.02, `무작위 도약 손실 ${lossHop}`);
 assert.equal(V.simulate(2000, true).filter((e) => e.hit).length, 0, "적응형 도약은 손실 0");
 // 대본: say와 caption의 문장 수가 같고, say에 숫자가 없고, 나레이션 음성(durations.json)이 지금 문장으로 만든 것인지
-for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt", "pairing", "power", "audio", "locate", "scheduling", "instant", "hopping", "gattcache", "encrypt", "privacy"]) {
+for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt", "pairing", "power", "audio", "locate", "scheduling", "instant", "hopping", "gattcache", "encrypt", "privacy", "sync"]) {
   const src = fs.readFileSync(new URL(`../src/${video}/script.ts`, import.meta.url), "utf8");
   const dur = JSON.parse(fs.readFileSync(new URL(`../src/${video}/durations.json`, import.meta.url), "utf8"));
   const voiced = Object.keys(dur).length > 0; // 무음판 단계면 음성 검사는 건너뛴다
@@ -299,6 +299,20 @@ for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt
   const r = V.bookRng(5); for (let k = 0; k < 200; k++) { const p = 0x400000 | (Math.floor(r() * 0x3ffffe) + 1); assert.equal(V.ah(irk, p), cp.ah(irk, p)); n++; }
   assert.ok(pv.includes("8~15분") && pv.includes("15분"));
   console.log(`privacy: ah(D.7 IRK, 708194) = ${V.ah(irk, 0x708194).toString(16)}`);
+}
+// 심화 7편 이어폰 동기: cisLatency가 심화 14장(isoal.html)과 같은가, 그리고 영상의 12 ms
+{
+  const is = fs.readFileSync(new URL("../../bluetooth-deep/chapters/isoal.html", import.meta.url), "utf8");
+  const i = is.indexOf("  function cisLatency("); let d = 0, j = is.indexOf("{", i); for (; j < is.length; j++) { if (is[j] === "{") d++; else if (is[j] === "}" && --d === 0) break; }
+  const ci = vm.createContext({}); vm.runInContext(is.slice(i, j + 1) + "\nthis.lat = cisLatency;", ci);
+  for (const m of ["unframed", "segmentable", "unsegmented"]) for (const s of [1, 2, 5]) for (const ft of [1, 2, 3]) for (const iso of [7.5, 10, 20]) for (const sdu of [7.5, 10]) { assert.equal(V.cisLatency(m, s, ft, iso, sdu), ci.lat(m, s, ft, iso, sdu)); n++; }
+  const scr = fs.readFileSync(new URL("../src/sync/script.ts", import.meta.url), "utf8");
+  assert.ok(scr.includes("export const EX = { iso: 10, sdu: 10, ft: 2, sync: 2 };"));
+  assert.equal(ci.lat("unframed", 2, 2, 10, 10), 12, "영상의 12 ms");
+  assert.ok(is.includes('id="cf-f" min="1" max="8" value="2"') && is.includes('id="cf-d" min="1" max="20" value="2"'), "책 계산기의 처음 값: FT 2, CIG_Sync_Delay 2 ms");
+  const la = fs.readFileSync(new URL("../../bluetooth-deep/chapters/leaudio.html", import.meta.url), "utf8");
+  assert.ok(la.includes("CIG_Sync_Delay, 14장)이 두 귀의 소리를 같은 순간에 내게 한다") && la.includes("왼쪽만 먼저 나오거나 한쪽만 멈추지 않는다"));
+  console.log(`sync: 지연 ${ci.lat("unframed", 2, 2, 10, 10)} ms`);
 }
 // 조건별 예시(영상의 막대 셋): 책의 함수로 다시 계산
 const ex = (w, d) => (B.wifiBlocked(w).size / 37) * d * 100;

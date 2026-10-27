@@ -57,11 +57,14 @@ import * as enY from "../src/encrypt/youtube";
 import * as prS from "../src/privacy/script";
 import * as prT from "../src/privacy/timing";
 import * as prY from "../src/privacy/youtube";
+import * as syS from "../src/sync/script";
+import * as syT from "../src/sync/timing";
+import * as syY from "../src/sync/youtube";
 import * as loT from "../src/locate/timing";
 import * as loY from "../src/locate/youtube";
 
 const VIDEO = process.env.VIDEO || "afh";
-const V = { afh: [afhS, afhT, afhY], discover: [disS, disT, disY], twokinds: [tkS, tkT, tkY], range: [rgS, rgT, rgY], connection: [cnS, cnT, cnY], gatt: [gtS, gtT, gtY], pairing: [paS, paT, paY], power: [poS, poT, poY], audio: [auS, auT, auY], locate: [loS, loT, loY], scheduling: [scS, scT, scY], instant: [inS, inT, inY], hopping: [hoS, hoT, hoY], gattcache: [gcS, gcT, gcY], encrypt: [enS, enT, enY], privacy: [prS, prT, prY] }[VIDEO] as unknown as [typeof afhS, typeof afhT, typeof afhY];
+const V = { afh: [afhS, afhT, afhY], discover: [disS, disT, disY], twokinds: [tkS, tkT, tkY], range: [rgS, rgT, rgY], connection: [cnS, cnT, cnY], gatt: [gtS, gtT, gtY], pairing: [paS, paT, paY], power: [poS, poT, poY], audio: [auS, auT, auY], locate: [loS, loT, loY], scheduling: [scS, scT, scY], instant: [inS, inT, inY], hopping: [hoS, hoT, hoY], gattcache: [gcS, gcT, gcY], encrypt: [enS, enT, enY], privacy: [prS, prT, prY], sync: [syS, syT, syY] }[VIDEO] as unknown as [typeof afhS, typeof afhT, typeof afhY];
 if (!V) throw new Error(`모르는 영상: ${VIDEO}`);
 const [{ SCENES }, { scenesFor, startsFor, sentenceEnd, framesFor }, { YOUTUBE }] = V;
 const FPS = 30, OUT = path.join(__dirname, "..", "out", VIDEO === "afh" ? "youtube" : `youtube-${VIDEO}`);
