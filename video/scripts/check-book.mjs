@@ -28,7 +28,7 @@ const big = V.simulate(20000, false), lossHop = big.filter((e) => e.hit).length 
 assert.ok(Math.abs(lossHop - 31 / 74) < 0.02, `무작위 도약 손실 ${lossHop}`);
 assert.equal(V.simulate(2000, true).filter((e) => e.hit).length, 0, "적응형 도약은 손실 0");
 // 대본: say와 caption의 문장 수가 같고, say에 숫자가 없고, 나레이션 음성(durations.json)이 지금 문장으로 만든 것인지
-for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt", "pairing", "power", "audio", "locate", "scheduling", "instant", "hopping", "gattcache", "encrypt", "privacy"]) {
+for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt", "pairing", "power", "audio", "locate", "scheduling", "instant", "hopping", "gattcache", "encrypt", "privacy", "sync", "direction", "pin"]) {
   const src = fs.readFileSync(new URL(`../src/${video}/script.ts`, import.meta.url), "utf8");
   const dur = JSON.parse(fs.readFileSync(new URL(`../src/${video}/durations.json`, import.meta.url), "utf8"));
   const voiced = Object.keys(dur).length > 0; // 무음판 단계면 음성 검사는 건너뛴다
@@ -299,6 +299,49 @@ for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt
   const r = V.bookRng(5); for (let k = 0; k < 200; k++) { const p = 0x400000 | (Math.floor(r() * 0x3ffffe) + 1); assert.equal(V.ah(irk, p), cp.ah(irk, p)); n++; }
   assert.ok(pv.includes("8~15분") && pv.includes("15분"));
   console.log(`privacy: ah(D.7 IRK, 708194) = ${V.ah(irk, 0x708194).toString(16)}`);
+}
+// 심화 7편 이어폰 동기: cisLatency가 심화 14장(isoal.html)과 같은가, 그리고 영상의 12 ms
+{
+  const is = fs.readFileSync(new URL("../../bluetooth-deep/chapters/isoal.html", import.meta.url), "utf8");
+  const i = is.indexOf("  function cisLatency("); let d = 0, j = is.indexOf("{", i); for (; j < is.length; j++) { if (is[j] === "{") d++; else if (is[j] === "}" && --d === 0) break; }
+  const ci = vm.createContext({}); vm.runInContext(is.slice(i, j + 1) + "\nthis.lat = cisLatency;", ci);
+  for (const m of ["unframed", "segmentable", "unsegmented"]) for (const s of [1, 2, 5]) for (const ft of [1, 2, 3]) for (const iso of [7.5, 10, 20]) for (const sdu of [7.5, 10]) { assert.equal(V.cisLatency(m, s, ft, iso, sdu), ci.lat(m, s, ft, iso, sdu)); n++; }
+  const scr = fs.readFileSync(new URL("../src/sync/script.ts", import.meta.url), "utf8");
+  assert.ok(scr.includes("export const EX = { iso: 10, sdu: 10, ft: 2, sync: 2 };"));
+  assert.equal(ci.lat("unframed", 2, 2, 10, 10), 12, "영상의 12 ms");
+  assert.ok(is.includes('id="cf-f" min="1" max="8" value="2"') && is.includes('id="cf-d" min="1" max="20" value="2"'), "책 계산기의 처음 값: FT 2, CIG_Sync_Delay 2 ms");
+  const la = fs.readFileSync(new URL("../../bluetooth-deep/chapters/leaudio.html", import.meta.url), "utf8");
+  assert.ok(la.includes("CIG_Sync_Delay, 14장)이 두 귀의 소리를 같은 순간에 내게 한다") && la.includes("왼쪽만 먼저 나오거나 한쪽만 멈추지 않는다"));
+  console.log(`sync: 지연 ${ci.lat("unframed", 2, 2, 10, 10)} ms`);
+}
+// 심화 8편 방향 찾기: 책 심화 17장(direction.html)의 삼각측량 예와 오차, 각도 식
+{
+  const di = fs.readFileSync(new URL("../../bluetooth-deep/chapters/direction.html", import.meta.url), "utf8");
+  const scr = fs.readFileSync(new URL("../src/direction/script.ts", import.meta.url), "utf8");
+  assert.ok(scr.includes("export const TRI = { D: 10, a1: 60, a2: 120 };"));
+  const p = V.triangulate(10, Math.PI / 3, Math.PI / 3);
+  assert.ok(Math.abs(p.x - 5) < 1e-9 && Math.abs(p.y - 8.66) < 0.005, "(5, 8.66)");
+  assert.ok(di.includes("(5 m, 8.66 m)") && di.includes("y = D · tanα · tanβ ÷ (tanα + tanβ)"));
+  assert.ok(Math.abs(2 * Math.PI / 180 - 0.035) < 0.001 && Math.abs(10 * 2 * Math.PI / 180 - 0.35) < 0.01 && di.includes("10 m에서 약 35 cm"), "2° → 10 m에서 약 35 cm");
+  assert.ok(Math.abs(V.aoaAngle(Math.PI / 2, 0.5, 1) * 180 / Math.PI - 30) < 1e-9, "90° → 30°");
+  { const txt = di.replace(/<[^>]*>/g, ""); assert.ok(txt.includes("16~160 µs") && txt.includes("처음 4 µs 보호 구간, 다음 8 µs 기준 구간"), "CTE 구조"); }
+  for (const D of [5, 10, 20]) for (const a of [30, 45, 60, 75]) for (const b of [30, 60, 80]) { const q = V.triangulate(D, a * Math.PI / 180, b * Math.PI / 180); assert.ok(Math.abs(Math.atan2(q.y, q.x) - a * Math.PI / 180) < 1e-9 && Math.abs(Math.atan2(q.y, D - q.x) - b * Math.PI / 180) < 1e-9); n++; }
+  console.log(`direction: (${p.x.toFixed(2)}, ${p.y.toFixed(2)}) m`);
+}
+// 심화 9편 보안 총정리: 대본이 기대는 책 문장(심화 13장 classicsec, 7장 smp, 입문 8장 security)
+{
+  const strip = (p) => fs.readFileSync(new URL(p, import.meta.url), "utf8").replace(/<[^>]*>/g, "");
+  const cs = strip("../../bluetooth-deep/chapters/classicsec.html"), sm = strip("../../bluetooth-deep/chapters/smp.html"), se = strip("../../bluetooth/chapters/security.html");
+  const want = [
+    [cs, "레거시는 비밀이 PIN뿐이라 짧은 PIN이면"], [cs, "레거시 (≤ 2.0)"], [cs, "SSP (2.1)"], [cs, "Secure Connections (4.1)"], [cs, "확인 값에 IOcap이 들어가므로"],
+    [cs, "SRES_C, 다음 32비트가 SRES_P"], [cs, "AES-CCM(M = 4, L = 2)"], [cs, "협상 범위는 7~16바이트"], [cs, "16바이트를 요구하는 것이 안전한 설정"], [cs, "보안 모드 4 레벨 4"],
+    [sm, "TK(0이나 6자리 패스키)"], [sm, "공개 키가 없으니"], [sm, "2018년 공개된 취약점"], [sm, "디버그 키"], [sm, "LE 보안 모드 1 레벨 4"], [sm, "CTKD"], [sm, "약속값 Cb = f4"],
+    [se, "4.2의 LE Secure Connections"],
+  ];
+  for (const [txt, w] of want) { assert.ok(txt.includes(w), `책 문장: ${w}`); n++; }
+  const scr = fs.readFileSync(new URL("../src/pin/script.ts", import.meta.url), "utf8");
+  assert.ok(!scr.includes("069598") && !scr.includes("영 육 구 오 구 팔"), "예시 숫자는 뺐다");
+  console.log(`pin(보안 총정리): 책 문장 ${want.length}개 확인`);
 }
 // 조건별 예시(영상의 막대 셋): 책의 함수로 다시 계산
 const ex = (w, d) => (B.wifiBlocked(w).size / 37) * d * 100;

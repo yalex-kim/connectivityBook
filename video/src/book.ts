@@ -327,3 +327,15 @@ export function ccm(sk: number[], nonce: number[], hdr: number, payload: number[
 
 /* 심화 8장(privacy.html): RPA의 hash = ah(IRK, prand) = e(IRK, 0¹⁰⁴ ‖ prand)의 아래 24비트. [Vol 3] Part H §2.2.2 */
 export function ah(k: number[], r: number): number { const e = aes128(k, new Array(13).fill(0).concat([(r >> 16) & 255, (r >> 8) & 255, r & 255])); return (e[13] << 16) | (e[14] << 8) | e[15]; }
+
+/* 심화 14장(isoal.html): CIS 센트럴 → 페리페럴 전송 지연(ms). [Vol 6] Part G §3.2 */
+export function cisLatency(mode: string, cigSyncDelay: number, ft: number, isoInt: number, sduInt: number): number {
+  if (mode === "unframed") return cigSyncDelay + ft * isoInt - sduInt;
+  return cigSyncDelay + ft * isoInt + (mode === "segmentable" ? sduInt : 0);
+}
+
+/* 심화 17장(direction.html) 삼각측량: 기준선 길이 D, 두 로케이터에서 기준선으로 잰 내각 α, β(rad) → 태그 위치 {x, y} (사양 밖, 책의 식) */
+export function triangulate(D: number, alpha: number, beta: number): { x: number; y: number } {
+  const ta = Math.tan(alpha), tb = Math.tan(beta), y = (D * ta * tb) / (ta + tb);
+  return { x: y / ta, y };
+}

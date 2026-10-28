@@ -20,7 +20,7 @@ CI(`.github/workflows/pages.yml`)가 PR과 `main` push마다 `sync_shared.py --c
 ## 구조
 
 - `<책>/chapters/*.html` + `index.html`, `js/terms.js`(용어집 데이터), `scripts/verify-factcheck.cjs`, `tools/seo.py`, `book.json`, `CONTRIBUTING.md`(그 책의 작성 규칙: 기준 문서, 공통 비유, 출처 표기 방식)
-- `<책>/js/common.js`, `<책>/css/style.css`는 **생성물**이다. 원본은 루트 `shared/`이고, 책마다 다른 값(전역 이름, 짧은 이름, 푸터, 출처 상자 이름, 색, 로고, 시리즈)은 `book.json`의 `ui`에 있다. `ui.series`(이름과 권별 `dir`·`label`)가 있으면 위쪽 막대와 장 목록 서랍에 같은 시리즈의 다른 권으로 가는 전환 탭이 생긴다(BluetoothBook 입문편·심화편). 장 목록(`CHAPTERS`)만 각 책의 `common.js`에서 직접 고친다. 공통 동작·스타일을 고칠 때는 `shared/`를 고치고 `sync_shared.py`를 돌린다.
+- `<책>/js/common.js`, `<책>/css/style.css`는 **생성물**이다. 원본은 루트 `shared/`이고, 책마다 다른 값(전역 이름, 짧은 이름, 푸터, 출처 상자 이름, 색, 로고, 시리즈, 책 홈에 보일 영상 묶음 `videos`)은 `book.json`의 `ui`에 있다. `ui.series`(이름과 권별 `dir`·`label`)가 있으면 위쪽 막대와 장 목록 서랍에 같은 시리즈의 다른 권으로 가는 전환 탭이 생긴다(BluetoothBook 입문편·심화편). 장 목록(`CHAPTERS`)만 각 책의 `common.js`에서 직접 고친다. 공통 동작·스타일을 고칠 때는 `shared/`를 고치고 `sync_shared.py`를 돌린다.
 - 장을 추가하거나 제목·절을 바꾸면 `seo.py`와 `build_search.py`를, 용어를 추가하거나 본문을 쓰면 `mark_terms.py`를 다시 돌린다.
 - 저절로 움직이는 그림은 `<NS>.loop`로 만든다(“동작 줄이기” 설정이면 멈춘 채 시작하고 재생 버튼이 붙는다). 인쇄용 스타일은 `shared/style.css` 끝에 있다.
 - 장 끝의 “오류 제보” 링크는 `오류 제보` 라벨의 GitHub 이슈를 연다. 제보가 오면 근거를 확인해 고치고, 계산 오류면 검증 스크립트에 시험을 더한다.

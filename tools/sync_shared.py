@@ -2,7 +2,7 @@
 """책마다 복사해 쓰는 공통 코드(js/common.js, css/style.css)를 shared/의 원본에서 만든다.
 
 - 원본: shared/common.js, shared/style.css (자리 표시자 @@…@@)
-- 책마다 다른 값: <책>/book.json의 "ui" (전역 이름, 짧은 이름, 푸터 문구, 출처 상자 이름, 색, 시리즈)
+- 책마다 다른 값: <책>/book.json의 "ui" (전역 이름, 짧은 이름, 푸터 문구, 출처 상자 이름, 색, 시리즈, 책 홈에 보일 영상 묶음 videos)
 - 장 목록(CHAPTERS)은 책의 js/common.js에 있는 것을 그대로 둔다(@book-chapters-begin ~ end)
 
 사용: python3 tools/sync_shared.py          # 모든 책에 쓰기
@@ -33,7 +33,7 @@ def render(book):
     cfg = json.loads((book / 'book.json').read_text()); ui = cfg['ui']
     common = {'@@BOOK@@': cfg['title'], '@@SHORT@@': ui['short'], '@@NS@@': ui['ns'], '@@ns@@': ui['prefix'], '@@DIR@@': book.name}
     js = (SHARED / 'common.js').read_text()
-    for k, v in {**common, '@@FOOTER@@': ui['footer'], '@@LOGO@@': ui['logo'], '@@SERIES@@': json.dumps(ui.get('series'), ensure_ascii=False), '@@TERMS_ALSO@@': json.dumps(ui.get('termsAlso'), ensure_ascii=False)}.items():
+    for k, v in {**common, '@@FOOTER@@': ui['footer'], '@@LOGO@@': ui['logo'], '@@SERIES@@': json.dumps(ui.get('series'), ensure_ascii=False), '@@TERMS_ALSO@@': json.dumps(ui.get('termsAlso'), ensure_ascii=False), '@@VIDEOS@@': json.dumps(ui.get('videos'), ensure_ascii=False)}.items():
         js = js.replace(k, v)
     cur = (book / 'js/common.js').read_text()
     i = js.index(BEGIN); i = js.index('\n', i) + 1

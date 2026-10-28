@@ -4,7 +4,8 @@ import { useFont } from "../afh/parts";
 import { Scene3D, type Cam, type Vec } from "../afh/world3d";
 import { project } from "../range/hook3d";
 import { basicHop } from "../book";
-import { DEEP, EarbudsCase3D, Ground } from "./kit";
+import { DEEP, Earbud3D, EarbudsCase3D, Ground } from "./kit";
+import { Key3D, Listener3D } from "./deep3d";
 import { SchedStage } from "../scheduling/Scheduling";
 import { HopBand } from "../hopping/Hopping";
 
@@ -139,6 +140,54 @@ export const PrivacyThumbnail: React.FC = () => {
             <sphereGeometry args={[0.35, 12, 10]} />{mat("#f472b6", 1.2)}
           </mesh>
         ))}
+      </Scene3D>
+    </DeepCard>
+  );
+};
+/* 7. 이어폰 동기: 두 이어폰에서 같은 순간 퍼지는 고리 */
+const SCAM: Cam = { pos: [0, 6, 20], look: [0, 3.5, 0], fov: 40 };
+export const SyncThumbnail: React.FC = () => {
+  useFont();
+  return (
+    <DeepCard no={7} shift={330} lines={<>이어폰 두 쪽은<br />따로 받는데,<br />어떻게 {hi("같이")} 울릴까?</>}>
+      <Scene3D cam={SCAM}>
+        <Ground light={[0, 14, 10]} />
+        <Earbud3D p={[-3.4, 4.2, 0]} ry={-1.2} s={1.6} col="#f1f4f9" />
+        <Earbud3D p={[3.4, 4.2, 0]} ry={1.9} s={1.6} col="#f1f4f9" />
+        {[-3.4, 3.4].map((x) => [1.6, 2.6].map((r, j) => <mesh key={x + "-" + j} position={[x, 4.4, -0.2]} rotation={[0, 0, Math.PI / 2]}><torusGeometry args={[r, 0.09, 8, 40]} />{mat(C.ok, 1.2)}</mesh>))}
+      </Scene3D>
+    </DeepCard>
+  );
+};
+/* 8. 방향: 수신기 두 대의 방향선이 만나는 곳 */
+const DCAM: Cam = { pos: [6, 16, 16], look: [6, 1, -4], fov: 42 };
+export const DirectionThumbnail: React.FC = () => {
+  useFont();
+  const A: Vec = [0, 0, 0], B: Vec = [12, 0, 0], T: Vec = [6, 0.3, -10.4];
+  const bar = (a: Vec, b: Vec, col: string) => { const dx = b[0] - a[0], dz = b[2] - a[2], L = Math.hypot(dx, dz); return <mesh position={[(a[0] + b[0]) / 2, 3.6, (a[2] + b[2]) / 2]} rotation={[0, -Math.atan2(dz, dx), 0]}><boxGeometry args={[L, 0.25, 0.25]} />{mat(col, 1.2)}</mesh>; };
+  return (
+    <DeepCard no={8} shift={300} lines={<>방향을 안다면,<br />실내에서 내 {hi("위치")}도<br />알 수 있을까?</>}>
+      <Scene3D cam={DCAM}>
+        <Ground light={[6, 16, 6]} />
+        {[A, B].map((p, i) => <group key={i} position={p}><mesh position={[0, 1.8, 0]}><cylinderGeometry args={[0.2, 0.3, 3.6, 10]} />{mat("#5b6b88")}</mesh><mesh position={[0, 3.9, 0]}><boxGeometry args={[3.2, 0.6, 1]} />{mat(C.accent2, 0.5)}</mesh></group>)}
+        {bar([A[0], 0, A[2]], [T[0] * 1.4, 0, T[2] * 1.4], DEEP)}
+        {bar([B[0], 0, B[2]], [B[0] - (B[0] - T[0]) * 1.4, 0, T[2] * 1.4], DEEP)}
+        <mesh position={[T[0], 3.6, T[2]]}><sphereGeometry args={[1, 18, 14]} />{mat(C.ok, 1.4)}</mesh>
+      </Scene3D>
+    </DeepCard>
+  );
+};
+/* 9. 보안 총정리: 가운데 큰 열쇠, 엿듣는 수신기와 끼어든 기기 */
+const PCAM9: Cam = { pos: [0, 6, 20], look: [0, 4, 0], fov: 40 };
+export const PinThumbnail: React.FC = () => {
+  useFont();
+  return (
+    <DeepCard no={9} shift={430} lines={<>블루투스는 어떻게<br />{hi("엿듣기")}와 {hi("끼어들기", C.warn)}를<br />막을까?</>}>
+      <Scene3D cam={PCAM9}>
+        <Ground light={[0, 12, 10]} />
+        <Key3D p={[-2.6, 5, 2]} col={C.ok} s={1.5} glow={0.9} />
+        <Listener3D p={[-5.5, 0, -5]} />
+        <group position={[5.5, 0, -4]}><mesh position={[0, 2.6, 0]}><boxGeometry args={[2.6, 4.6, 0.5]} />{mat("#3f1d24", 0.2)}</mesh><mesh position={[0, 2.6, 0.27]}><boxGeometry args={[2.2, 4, 0.02]} />{mat(C.bad, 0.6)}</mesh></group>
       </Scene3D>
     </DeepCard>
   );

@@ -15,7 +15,7 @@ export const AfhThumbnail: React.FC = () => {
       <Waterfall3D cam={{ pos: [70, 55, 120], look: [-8, 0, 40], fov: 40 }} events={AFH} shown={60} blocked={BLOCKED} laneOff={1} />
       <AbsoluteFill style={{ background: "linear-gradient(90deg, rgba(11,18,32,.96) 0%, rgba(11,18,32,.85) 45%, rgba(11,18,32,0) 75%)" }} />
       <div style={{ position: "absolute", left: 110, top: 230, fontFamily: FONT }}>
-        <div style={{ color: C.accent, fontSize: 46, fontWeight: 800, letterSpacing: 3 }}>BLUETOOTH × Wi-Fi</div>
+        <div style={{ color: C.accent2, fontSize: 46, fontWeight: 800, letterSpacing: 3 }}>BLUETOOTH 입문 4</div>
         <div style={{ color: C.text, fontSize: 132, fontWeight: 900, lineHeight: 1.15, marginTop: 20 }}>
           블루투스는 왜<br />
           <span style={{ color: C.warn }}>Wi-Fi</span>와<br />
