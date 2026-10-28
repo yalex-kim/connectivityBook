@@ -114,7 +114,7 @@ const Spin: React.FC<{ cues: number[]; len: number }> = ({ cues, len }) => {
         <Scene3D cam={cam}>
           <Ground light={[0, 16, 10]} />
           {[0, 1, 2, 3].map((i) => <mesh key={i} position={[(i - 1.5) * S + AX, 1, 0]}><cylinderGeometry args={[0.2, 0.2, 2, 10]} />{mat(i === curAnt ? TONE : ACOL[i], i === curAnt ? 1.6 : 0.4)}</mesh>)}
-          {Array.from({ length: 6 }, (_, k) => { const d = ((f * 0.1 + k * 2.4) % 12) + 1.5; return <mesh key={k} position={[AX - Math.sin(th) * d, 1.2, -Math.cos(th) * d]} rotation={[0, th, 0]}><boxGeometry args={[8, 0.08, 0.08]} />{mat(TONE, 1, 0.7)}</mesh>; })}
+          {Array.from({ length: 6 }, (_, k) => { const d = 13.5 - ((f * 0.1 + k * 2.4) % 12); return <mesh key={k} position={[AX - Math.sin(th) * d, 1.2, -Math.cos(th) * d]} rotation={[0, th, 0]}><boxGeometry args={[8, 0.08, 0.08]} />{mat(TONE, 1, 0.7)}</mesh>; })}
         </Scene3D>
       </div>
       <Title kicker="회전 지우기">기준 구간에서 잰 회전을, 표본마다 뺀다</Title>
@@ -154,7 +154,7 @@ const AngleScene: React.FC<{ cues: number[]; len: number }> = ({ cues, len }) =>
       <Scene3D cam={cam}>
         <Ground light={[0, 16, 12]} />
         {[0, 1, 2, 3].map((i) => <mesh key={i} position={[(i - 1.5) * S, 1, 0]}><cylinderGeometry args={[0.18, 0.18, 2, 10]} />{mat(LOC, 0.6)}</mesh>)}
-        {Array.from({ length: 6 }, (_, k) => { const d = ((f * 0.12 + k * 2.4) % 12) + 2; return <mesh key={k} position={[-dirx * d, 1.2, -dirz * d]} rotation={[0, th, 0]}><boxGeometry args={[7, 0.08, 0.08]} />{mat(TONE, 1, 0.75)}</mesh>; })}
+        {Array.from({ length: 6 }, (_, k) => { const d = 14 - ((f * 0.12 + k * 2.4) % 12); return <mesh key={k} position={[-dirx * d, 1.2, -dirz * d]} rotation={[0, th, 0]}><boxGeometry args={[7, 0.08, 0.08]} />{mat(TONE, 1, 0.75)}</mesh>; })}
         <Ray a={[0, 0.3, 0]} b={[-dirx * 12, 0.3, -dirz * 12]} col={DIR} op={show} w={0.14} />
         <Ray a={[0, 0.3, 0]} b={[0, 0.3, -12]} col={C.faint} op={show} w={0.08} />
       </Scene3D>
