@@ -693,6 +693,38 @@
     const onScroll = () => { const h = document.documentElement.scrollHeight - innerHeight; prog.style.width = (h > 0 ? (scrollY / h) * 100 : 0) + "%"; };
     addEventListener("scroll", onScroll, { passive: true }); onScroll();
 
+    // 책 홈: book.json의 ui.videos에 적은 영상 묶음(서재의 assets/videos.js)을 목차 앞에 보인다. 시리즈별 작은 카드, 편 번호 순
+    const VIDEO_SERIES = ["블루투스 입문", "블루투스 심화"];
+    const hero = document.querySelector(".home-hero");
+    if (hero && VIDEO_SERIES) {
+      const vs = document.createElement("script");
+      vs.src = `${root}../assets/videos.js`;
+      vs.onload = () => {
+        const q = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+        const all = window.YB_VIDEOS || [], up = `${root}../`;
+        const groups = VIDEO_SERIES.map((g) => [g, all.filter((v) => v.series === g).sort((a, b) => (a.no || 999) - (b.no || 999))]).filter(([, l]) => l.length);
+        if (!groups.length || document.getElementById("videos")) return;
+        const card = (v) => {
+          const inner = `<img src="${up}${q(v.thumb)}" alt="" loading="lazy"><span class="pb" aria-hidden="true"></span>${v.no ? `<span class="no">${v.no}편</span>` : ""}<span class="dur">${q(v.duration)}</span>`;
+          const player = v.embed ? `<button type="button" class="vid-play" data-yt="${q(v.youtube)}" aria-label="${q(v.title)} 재생">${inner}</button>`
+            : `<a class="vid-play" href="https://www.youtube.com/watch?v=${encodeURIComponent(v.youtube)}" target="_blank" rel="noopener" aria-label="${q(v.title)} 유튜브에서 보기">${inner}</a>`;
+          return `<article class="vid" title="${q(v.summary)}">${player}<h3>${q(v.title)}</h3><div class="links">${(v.chapters || []).map((c) => `<a href="${up}${q(c.path)}">${q(c.short || c.label)}</a>`).join("")}</div></article>`;
+        };
+        const sec = document.createElement("section");
+        sec.className = "home-section book-videos"; sec.id = "videos"; sec.style.paddingTop = "0";
+        sec.innerHTML = `<h2>영상</h2><p class="sub">책의 한 장을 그림으로 짧게 풀어 낸 영상입니다. 영상 아래 링크로 그 장의 시뮬레이터에서 직접 확인할 수 있습니다.</p>` +
+          groups.map(([g, l]) => `<div class="vgroup"><div class="vgroup-head"><b>${q(g)}</b><span>${l.length}편</span></div><div class="vids">${l.map(card).join("")}</div></div>`).join("");
+        const ch = document.getElementById("chapters");
+        ch ? ch.parentNode.insertBefore(sec, ch) : hero.after(sec);
+        sec.addEventListener("click", (e) => {
+          const b = e.target.closest("button.vid-play[data-yt]");
+          if (!b) return;
+          b.outerHTML = `<div class="vid-play"><iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(b.dataset.yt)}?autoplay=1&rel=0" title="${b.getAttribute("aria-label")}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>`;
+        });
+      };
+      document.head.appendChild(vs);
+    }
+
     // chapter page extras
     const main = document.querySelector("main.chapter");
     if (main) {

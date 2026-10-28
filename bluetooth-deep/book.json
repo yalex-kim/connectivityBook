@@ -9,7 +9,11 @@
   "path": "bluetooth-deep/",
   "ui": {
     "ns": "BD",
-    "termsAlso": { "dir": "bluetooth", "ns": "BT", "label": "입문편" },
+    "termsAlso": {
+      "dir": "bluetooth",
+      "ns": "BT",
+      "label": "입문편"
+    },
     "prefix": "bd",
     "short": "블루투스 심화 교과서",
     "footer": "BluetoothBook 심화 — 프로토콜 스택을 끝까지 따라가는 블루투스 교과서 · 기준 사양: Bluetooth Core 6.3",
@@ -41,6 +45,10 @@
           "label": "심화편"
         }
       ]
-    }
+    },
+    "videos": [
+      "블루투스 심화",
+      "블루투스 입문"
+    ]
   }
 }
