@@ -697,8 +697,8 @@
     const onScroll = () => { const h = document.documentElement.scrollHeight - innerHeight; prog.style.width = (h > 0 ? (scrollY / h) * 100 : 0) + "%"; };
     addEventListener("scroll", onScroll, { passive: true }); onScroll();
 
-    // 책 홈: book.json의 ui.videos에 적은 영상 묶음(서재의 assets/videos.js)을 목차 앞에 보인다. 시리즈별 작은 카드, 편 번호 순
-    const VIDEO_SERIES = ["블루투스 심화", "블루투스 입문"];
+    // 책 홈: book.json의 ui.videos에 적은 영상 묶음(서재의 assets/videos.js)을 홈 맨 아래(마지막 절 뒤)에 보인다. 시리즈별 작은 카드, 편 번호 순
+    const VIDEO_SERIES = ["블루투스 심화"];
     const hero = document.querySelector(".home-hero");
     if (hero && VIDEO_SERIES) {
       const vs = document.createElement("script");
@@ -718,8 +718,8 @@
         sec.className = "home-section book-videos"; sec.id = "videos"; sec.style.paddingTop = "0";
         sec.innerHTML = `<h2>영상</h2><p class="sub">책의 한 장을 그림으로 짧게 풀어 낸 영상입니다. 영상 아래 링크로 그 장의 시뮬레이터에서 직접 확인할 수 있습니다.</p>` +
           groups.map(([g, l]) => `<div class="vgroup"><div class="vgroup-head"><b>${q(g)}</b><span>${l.length}편</span></div><div class="vids">${l.map(card).join("")}</div></div>`).join("");
-        const ch = document.getElementById("chapters");
-        ch ? ch.parentNode.insertBefore(sec, ch) : hero.after(sec);
+        const last = [...hero.parentNode.children].filter((el) => el.matches("section.home-section, section.home-hero")).pop();
+        last.after(sec);
         sec.addEventListener("click", (e) => {
           const b = e.target.closest("button.vid-play[data-yt]");
           if (!b) return;
