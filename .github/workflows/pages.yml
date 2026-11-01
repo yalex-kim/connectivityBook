@@ -37,8 +37,15 @@ jobs:
             [ -e "$f" ] || continue
             echo "::group::$f"; node "$f"; echo "::endgroup::"
           done
+      # 출력 폴더가 저장소 안이어도 안내 페이지 수가 원본 HTML 수와 같아야 한다 (자기 출력을 다시 읽지 않는지)
       - name: Pages redirect site builds
-        run: python3 tools/pages_redirect.py /tmp/pages-redirect
+        run: |
+          python3 tools/pages_redirect.py _redirect_check
+          want=$(find . -name '*.html' -not -path './_redirect_check/*' -not -path './video/*' -not -path './shared/*' -not -path '*/node_modules/*' | wc -l)
+          got=$(find _redirect_check -name '*.html' ! -name 404.html | wc -l)
+          echo "html: $want, redirect pages: $got"
+          test "$want" = "$got"
+          rm -rf _redirect_check
   # 예전 GitHub Pages 주소로 오는 사람을 connbook.yalex-k.com 의 같은 페이지로 넘긴다 (서재 본체는 NAS 가 서빙)
   deploy:
     if: github.event_name != 'pull_request'
@@ -51,9 +58,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
       - name: Build redirect site
-        run: python3 tools/pages_redirect.py _redirect
+        run: python3 tools/pages_redirect.py "$RUNNER_TEMP/pages-redirect"
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: _redirect
+          path: ${{ runner.temp }}/pages-redirect
       - id: deployment
         uses: actions/deploy-pages@v4

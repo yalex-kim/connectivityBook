@@ -53,12 +53,19 @@ def page(rel):
 
 
 def main(out):
-    out = pathlib.Path(out)
-    n = 0
-    for p in ROOT.rglob('*.html'):
+    out = pathlib.Path(out).resolve()
+    # 쓰기 전에 목록을 다 만든다. 출력 폴더가 저장소 안이면 그 안은 건너뛴다
+    # (쓰면서 rglob 하면 방금 쓴 안내 페이지를 다시 주워 _redirect/_redirect/… 로 끝없이 들어간다)
+    pages = []
+    for p in sorted(ROOT.rglob('*.html')):
+        if p.resolve().is_relative_to(out):
+            continue
         rel = p.relative_to(ROOT)
         if SKIP & set(rel.parts):
             continue
+        pages.append((p, rel))
+    n = 0
+    for p, rel in pages:
         url = rel.as_posix()
         if url == 'index.html':
             url = ''
