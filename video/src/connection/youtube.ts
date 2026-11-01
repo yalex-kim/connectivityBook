@@ -25,9 +25,9 @@ export const YOUTUBE = {
     "이 영상은 연결된 LE 기기의 이야기입니다. 휴대폰 전체의 배터리 사용량은 화면, 다른 무선, 앱의 동작에 따라 달라집니다.",
   ],
   links: [
-    ["BluetoothBook 입문 6장 “연결: 약속된 시각의 짧은 만남” (연결 파라미터 설계기, SN/NESN 시뮬레이터)", "https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/connection.html"],
-    ["이어지는 내용: BluetoothBook 입문 9장 “전력: 코인 전지로 몇 년”", "https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/power.html"],
-    ["ConnectivityBook 서재", "https://yalex-kim.github.io/connectivityBook/"],
+    ["BluetoothBook 입문 6장 “연결: 약속된 시각의 짧은 만남” (연결 파라미터 설계기, SN/NESN 시뮬레이터)", "https://connbook.yalex-k.com/bluetooth/chapters/connection.html"],
+    ["이어지는 내용: BluetoothBook 입문 9장 “전력: 코인 전지로 몇 년”", "https://connbook.yalex-k.com/bluetooth/chapters/power.html"],
+    ["ConnectivityBook 서재", "https://connbook.yalex-k.com/"],
   ],
   sources: [
     "Bluetooth Core Specification 6.3 — [Vol 6] Part B §4.5.1(연결 간격, 페리페럴 지연·타임아웃 규칙), §4.5.2(감독 타임아웃), §4.1.1(T_IFS 150 µs), §4.5.6(MD와 이벤트 닫기), §4.5.9(SN/NESN 확인 응답)",

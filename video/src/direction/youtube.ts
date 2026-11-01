@@ -15,9 +15,9 @@ export const YOUTUBE = {
   ] as [string, SceneId][],
   notes: ["삼각측량 예(10 m, 60°·120° → 5 m, 8.66 m)와 오차(2° → 10 m에서 약 35 cm)는 책 심화 17장의 그림 값입니다. 신호는 잡음·반사가 없는 이상적인 경우입니다.", "각도와 위치 계산은 사양 밖으로, 수신기나 휴대폰 쪽 소프트웨어가 합니다."],
   links: [
-    ["BluetoothBook 심화 17장 “방향 찾기: CTE, IQ 표본, 안테나 전환”", "https://yalex-kim.github.io/connectivityBook/bluetooth-deep/chapters/direction.html"],
-    ["BluetoothBook 입문 11장 “위치 찾기: RSSI에서 채널 사운딩까지”", "https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/location.html"],
-    ["ConnectivityBook 서재", "https://yalex-kim.github.io/connectivityBook/"],
+    ["BluetoothBook 심화 17장 “방향 찾기: CTE, IQ 표본, 안테나 전환”", "https://connbook.yalex-k.com/bluetooth-deep/chapters/direction.html"],
+    ["BluetoothBook 입문 11장 “위치 찾기: RSSI에서 채널 사운딩까지”", "https://connbook.yalex-k.com/bluetooth/chapters/location.html"],
+    ["ConnectivityBook 서재", "https://connbook.yalex-k.com/"],
   ] as [string, string][],
   sources: ["Bluetooth Core Specification 6.3 — [Vol 6] Part B §2.1.5·§2.5(CTE 구조·슬롯·IQ 표본), [Vol 6] Part A §5.1(안테나 전환)", "각도·삼각측량 식은 배열 기하(사양 밖)"],
   credits: ["나레이션: Typecast AI 음성(예슬)", "만든 도구: Remotion, three.js"],

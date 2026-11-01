@@ -15,9 +15,9 @@ export const YOUTUBE = {
   ] as [string, SceneId][],
   notes: ["RPA 값은 사양 부록 D.7 샘플의 IRK와 prand로 책의 계산을 돌린 결과입니다. 이후 주소들은 같은 IRK에 무작위 prand를 넣은 예입니다.", "주소를 바꾸는지, 얼마나 자주 바꾸는지는 기기마다 다릅니다. 이 영상은 원리와 방어를 다룹니다."],
   links: [
-    ["BluetoothBook 심화 8장 “프라이버시와 필터링: 해석 목록과 필터 수용 목록”", "https://yalex-kim.github.io/connectivityBook/bluetooth-deep/chapters/privacy.html"],
-    ["BluetoothBook 입문 5장 “광고와 스캔”", "https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/advertising.html"],
-    ["ConnectivityBook 서재", "https://yalex-kim.github.io/connectivityBook/"],
+    ["BluetoothBook 심화 8장 “프라이버시와 필터링: 해석 목록과 필터 수용 목록”", "https://connbook.yalex-k.com/bluetooth-deep/chapters/privacy.html"],
+    ["BluetoothBook 입문 5장 “광고와 스캔”", "https://connbook.yalex-k.com/bluetooth/chapters/advertising.html"],
+    ["ConnectivityBook 서재", "https://connbook.yalex-k.com/"],
   ] as [string, string][],
   sources: ["Bluetooth Core Specification 6.3 — [Vol 6] Part B §1.3.2(RPA 생성·해석), §4.7(해석 목록), [Vol 3] Part H §2.2.2(ah)·§3.6.4(IRK 배포)·Appendix D.7(샘플), [Vol 3] Part C §10.8.2(TGAP 15분), [Vol 4] Part E §7.8.45(RPA 갱신 범위)"],
   credits: ["나레이션: Typecast AI 음성(예슬)", "만든 도구: Remotion, three.js"],

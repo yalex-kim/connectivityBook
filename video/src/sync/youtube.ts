@@ -15,9 +15,9 @@ export const YOUTUBE = {
   ] as [string, SceneId][],
   notes: ["지연 예는 책 심화 14장 계산기의 처음 값(ISO·SDU 간격 10 ms, FT 2, CIG_Sync_Delay 2 ms, 프레임 없는 PDU)입니다. 실제 값은 기기와 설정마다 다릅니다.", "이 영상은 LE 오디오(CIS)를 쓰는 이어폰의 경우입니다. Classic 오디오(A2DP) 이어폰은 다른 방식입니다."],
   links: [
-    ["BluetoothBook 심화 14장 “ISOAL과 등시성 타이밍”", "https://yalex-kim.github.io/connectivityBook/bluetooth-deep/chapters/isoal.html"],
-    ["BluetoothBook 심화 15장 “LE 오디오 프로파일: PACS·ASCS·BAP·CAP”", "https://yalex-kim.github.io/connectivityBook/bluetooth-deep/chapters/leaudio.html"],
-    ["ConnectivityBook 서재", "https://yalex-kim.github.io/connectivityBook/"],
+    ["BluetoothBook 심화 14장 “ISOAL과 등시성 타이밍”", "https://connbook.yalex-k.com/bluetooth-deep/chapters/isoal.html"],
+    ["BluetoothBook 심화 15장 “LE 오디오 프로파일: PACS·ASCS·BAP·CAP”", "https://connbook.yalex-k.com/bluetooth-deep/chapters/leaudio.html"],
+    ["ConnectivityBook 서재", "https://connbook.yalex-k.com/"],
   ] as [string, string][],
   sources: ["Bluetooth Core Specification 6.3 — [Vol 6] Part G §3.2(전송 지연), [Vol 6] Part B §4.5.13(CIS·CIG, CIG_Sync_Delay)", "CAP·CSIP·BAP(Bluetooth SIG 사양)"],
   credits: ["나레이션: Typecast AI 음성(예슬)", "만든 도구: Remotion, three.js"],

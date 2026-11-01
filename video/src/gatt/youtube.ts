@@ -24,8 +24,8 @@ export const YOUTUBE = {
     "알림 주기는 기기마다 다릅니다. 화면의 알림 값은 예시입니다.",
   ],
   links: [
-    ["BluetoothBook 입문 7장 “GATT: 데이터를 담는 메뉴판” (심박계 GATT 서버 시뮬레이터)", "https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/gatt.html"],
-    ["ConnectivityBook 서재", "https://yalex-kim.github.io/connectivityBook/"],
+    ["BluetoothBook 입문 7장 “GATT: 데이터를 담는 메뉴판” (심박계 GATT 서버 시뮬레이터)", "https://connbook.yalex-k.com/bluetooth/chapters/gatt.html"],
+    ["ConnectivityBook 서재", "https://connbook.yalex-k.com/"],
   ],
   sources: [
     "Bluetooth Core Specification 6.3 — [Vol 3] Part F §3.2(속성: 핸들·종류·값·권한), Part G(GATT: 서비스 0x2800·특성 0x2803·CCCD 0x2902, 찾기·알림·표시), Part B §2.5.1(16비트 UUID와 기본 UUID)",

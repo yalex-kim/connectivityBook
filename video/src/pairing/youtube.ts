@@ -15,8 +15,8 @@ export const YOUTUBE = {
   ] as [string, SceneId][],
   notes: ["숫자 938554는 사양 [Vol 3] Part H 부록 D.5 샘플로 계산한 g2 값(0x2F9ED5BA)의 하위 6자리입니다. 중간자 쪽 숫자는 예시입니다.", "색 섞기는 디피-헬먼을 설명하는 비유입니다. 실제로는 P-256 타원곡선의 공개 키·비밀 키 계산입니다.", "방식 표는 LE Secure Connections와 MITM 보호 요구를 기준으로 했습니다. 차는 보통 클래식 블루투스로 연결되며, 클래식도 2.1의 Secure Simple Pairing부터 같은 방식(숫자 비교·패스키·Just Works·OOB)을 씁니다. 오래된 차는 PIN을 입력하는 레거시 방식을 쓰기도 합니다."],
   links: [
-    ...[["BluetoothBook 입문 8장 “페어링과 보안” (페어링 방식 표, 숫자 비교 시뮬레이터)", "https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/security.html"],["BluetoothBook 심화 13장 “Classic 보안: 레거시 PIN에서 Secure Connections까지”","https://yalex-kim.github.io/connectivityBook/bluetooth-deep/chapters/classicsec.html"]],
-    ["ConnectivityBook 서재", "https://yalex-kim.github.io/connectivityBook/"],
+    ...[["BluetoothBook 입문 8장 “페어링과 보안” (페어링 방식 표, 숫자 비교 시뮬레이터)", "https://connbook.yalex-k.com/bluetooth/chapters/security.html"],["BluetoothBook 심화 13장 “Classic 보안: 레거시 PIN에서 Secure Connections까지”","https://connbook.yalex-k.com/bluetooth-deep/chapters/classicsec.html"]],
+    ["ConnectivityBook 서재", "https://connbook.yalex-k.com/"],
   ] as [string, string][],
   sources: ["Bluetooth Core Specification 6.3 — [Vol 3] Part H §2.3.5.1(페어링 방식 표), §2.2.9(g2), 부록 D.5(g2 샘플), §2.3.5.6(LE Secure Connections)"],
   credits: ["나레이션: Typecast AI 음성(예슬)", "만든 도구: Remotion, three.js"],

@@ -22,8 +22,8 @@ export const YOUTUBE = {
     "시간축 그림의 패킷 간격과 배터리 잔량 숫자는 설명을 위한 예시입니다.",
   ],
   links: [
-    ["BluetoothBook 입문 1장 “블루투스란 무엇인가”", "https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/intro.html"],
-    ["ConnectivityBook 서재", "https://yalex-kim.github.io/connectivityBook/"],
+    ["BluetoothBook 입문 1장 “블루투스란 무엇인가”", "https://connbook.yalex-k.com/bluetooth/chapters/intro.html"],
+    ["ConnectivityBook 서재", "https://connbook.yalex-k.com/"],
   ],
   sources: [
     "Bluetooth Core Specification 6.3 — [Vol 2] Part A §2(BR/EDR 채널 f = 2402 + k MHz, k = 0~78), [Vol 6] Part A §2(LE 40채널, 2 MHz 간격)",

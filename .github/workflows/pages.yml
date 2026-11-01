@@ -1,4 +1,4 @@
-name: Deploy Library
+name: Check Library
 on:
   push:
     branches: [main]
@@ -6,12 +6,11 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
-  pages: write
-  id-token: write
 concurrency:
-  group: pages-${{ github.ref }}
+  group: check-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  # 잡 이름 test 를 바꾸지 않는다: NAS(connbook.yalex-k.com)가 이 체크를 통과한 main 커밋만 배포한다
   test:
     runs-on: ubuntu-latest
     steps:
@@ -36,21 +35,3 @@ jobs:
             [ -e "$f" ] || continue
             echo "::group::$f"; node "$f"; echo "::endgroup::"
           done
-  deploy:
-    if: github.event_name != 'pull_request'
-    needs: test
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v5
-      # js·css 주소에 커밋 번호를 붙여, 배포 뒤 새로고침하면 바로 새 파일을 받게 한다 (캐시 10분)
-      - name: Stamp asset URLs
-        run: python3 tools/stamp_assets.py "${GITHUB_SHA::7}"
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: .
-      - id: deployment
-        uses: actions/deploy-pages@v4
