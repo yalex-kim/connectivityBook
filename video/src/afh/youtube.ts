@@ -23,9 +23,9 @@ export const YOUTUBE = {
   ],
   links: [
     ["앞 이야기: 처음 보는 두 블루투스 기기는 어떻게 만날까?", "https://youtu.be/do1whEDnMOY"],
-    ["BluetoothBook 입문 4장 “주파수 도약” (시뮬레이터)", "https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/hopping.html"],
-    ["더 깊이 · BluetoothBook 심화 12장(Classic 도약 커널과 AFH)", "https://yalex-kim.github.io/connectivityBook/bluetooth-deep/chapters/baseband.html"],
-    ["ConnectivityBook 서재", "https://yalex-kim.github.io/connectivityBook/"],
+    ["BluetoothBook 입문 4장 “주파수 도약” (시뮬레이터)", "https://connbook.yalex-k.com/bluetooth/chapters/hopping.html"],
+    ["더 깊이 · BluetoothBook 심화 12장(Classic 도약 커널과 AFH)", "https://connbook.yalex-k.com/bluetooth-deep/chapters/baseband.html"],
+    ["ConnectivityBook 서재", "https://connbook.yalex-k.com/"],
   ],
   sources: [
     "Bluetooth Core Specification 6.3 — [Vol 6] Part B §4.5.8(LE 채널 선택, AFH), [Vol 2] Part B §2.6.3(Classic AFH), [Vol 6] Part B Table 1.3(LE 채널 주파수)",

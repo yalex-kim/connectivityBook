@@ -22,10 +22,10 @@ export const YOUTUBE = {
     "지연 유무 비교와 스캔 장면의 간격·창 길이는 설명을 위한 예시 값입니다.",
   ],
   links: [
-    ["BluetoothBook 입문 5장 “광고와 스캔” (시뮬레이터)", "https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/advertising.html"],
-    ["BluetoothBook 입문 6장 “연결” — 연결 이벤트와 연결 간격", "https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/connection.html"],
+    ["BluetoothBook 입문 5장 “광고와 스캔” (시뮬레이터)", "https://connbook.yalex-k.com/bluetooth/chapters/advertising.html"],
+    ["BluetoothBook 입문 6장 “연결” — 연결 이벤트와 연결 간격", "https://connbook.yalex-k.com/bluetooth/chapters/connection.html"],
     ["이어지는 영상: 블루투스는 왜 Wi-Fi와 부딪히지 않을까? (AFH)", "https://youtu.be/U0n4ZyQ5sv4"],
-    ["ConnectivityBook 서재", "https://yalex-kim.github.io/connectivityBook/"],
+    ["ConnectivityBook 서재", "https://connbook.yalex-k.com/"],
   ],
   sources: [
     "Bluetooth Core Specification 6.3 — [Vol 6] Part B §4.4.2.2(광고 이벤트, advDelay 0~10 ms), §4.4.3(스캔 창과 스캔 간격), §2.3.3.1(CONNECT_IND), §4.5.3(전송 창), Table 1.3(채널 번호와 주파수)",

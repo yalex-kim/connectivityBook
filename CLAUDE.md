@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-ConnectivityBook: 직접 만지며 배우는 한국어 인터랙티브 교과서 서재. 책 한 권 = 폴더 하나(`bluetooth/`, `wifi/`, `uwb/`, `gnss/`, 집필 중인 `bluetooth-deep/`), 루트 `index.html`이 책장이다. 빌드 과정 없는 정적 사이트이고 GitHub Pages(https://yalex-kim.github.io/connectivityBook/)로 배포한다.
+ConnectivityBook: 직접 만지며 배우는 한국어 인터랙티브 교과서 서재. 책 한 권 = 폴더 하나(`bluetooth/`, `wifi/`, `uwb/`, `gnss/`, 집필 중인 `bluetooth-deep/`), 루트 `index.html`이 책장이다. 빌드 과정 없는 정적 사이트이고 https://connbook.yalex-k.com/ (집 NAS, Cloudflare 터널)에서 서빙한다. NAS가 `main`의 `test` 체크를 통과한 커밋을 몇 분 안에 가져가 배포한다.
 
 ## Commands
 
@@ -11,11 +11,11 @@ python3 tools/sync_shared.py [--check]               # shared/ → 각 책의 js
 python3 tools/build_search.py [--check]              # 서재 통합 검색 색인 assets/search-index.js
 python3 tools/mark_terms.py [책...] [--check]        # 용어집 표제어·약어·별칭에 툴팁 달기(장마다 처음 나오는 곳)
 python3 tools/spec_links.py [--check]               # 블루투스 두 책의 "[Vol x] Part y §z" → 사양서 웹판 절 주소표 assets/bt-spec.js (새 절을 인용하면 다시 돌린다, 네트워크)
-python3 tools/stamp_assets.py <버전>                # (배포 때 CI만) js·css 주소에 ?v=<커밋> 붙이기. 로컬에서 돌리지 않는다
+python3 tools/stamp_assets.py <버전>                # (배포 때 서버만) js·css 주소에 ?v=<커밋> 붙이기. 로컬에서 돌리지 않는다
 (cd <책> && python3 tools/seo.py)                    # canonical/OG/JSON-LD, 책 sitemap
 ```
 
-CI(`.github/workflows/pages.yml`)가 PR과 `main` push마다 `sync_shared.py --check`, `build_search.py --check`, `mark_terms.py --check`, `spec_links.py --check`, 모든 `verify-factcheck.cjs`를 돌리고, 통과해야 배포한다.
+CI(`.github/workflows/pages.yml`, 잡 이름 `test`)가 PR과 `main` push마다 `sync_shared.py --check`, `build_search.py --check`, `mark_terms.py --check`, `spec_links.py --check`, 모든 `verify-factcheck.cjs`를 돌린다. 서버는 이 `test` 체크가 통과한 커밋만 배포하므로 잡 이름을 바꾸지 않는다. `main`이면 `deploy` 잡이 예전 GitHub Pages 주소에 새 주소로 넘기는 안내 페이지(`tools/pages_redirect.py`)를 올린다.
 
 ## 구조
 

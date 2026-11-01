@@ -15,9 +15,9 @@ export const YOUTUBE = {
   ] as [string, SceneId][],
   notes: ["데이터베이스와 지문(Database Hash)은 책 시뮬레이터의 예시 데이터베이스로 직접 계산한 값입니다. 칸이 밀리는 장면은 배터리 서비스를 심박 서비스 앞에 끼운 예입니다.", "오류(0x12)는 기기와 앱이 모두 Robust Caching을 쓸 때의 동작입니다."],
   links: [
-    ["BluetoothBook 심화 11장 “ATT/GATT 심화: EATT, 큐 쓰기, Database Hash”", "https://yalex-kim.github.io/connectivityBook/bluetooth-deep/chapters/gatt.html"],
-    ["BluetoothBook 입문 7장 “GATT: 데이터를 담는 메뉴판”", "https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/gatt.html"],
-    ["ConnectivityBook 서재", "https://yalex-kim.github.io/connectivityBook/"],
+    ["BluetoothBook 심화 11장 “ATT/GATT 심화: EATT, 큐 쓰기, Database Hash”", "https://connbook.yalex-k.com/bluetooth-deep/chapters/gatt.html"],
+    ["BluetoothBook 입문 7장 “GATT: 데이터를 담는 메뉴판”", "https://connbook.yalex-k.com/bluetooth/chapters/gatt.html"],
+    ["ConnectivityBook 서재", "https://connbook.yalex-k.com/"],
   ] as [string, string][],
   sources: ["Bluetooth Core Specification 6.3 — [Vol 3] Part G §7.3·§7.3.1(Database Hash와 계산 규칙), §2.5.2.1(Robust Caching), [Vol 3] Part F §3.4.1.1(오류 0x12 Database Out Of Sync)"],
   credits: ["나레이션: Typecast AI 음성(예슬)", "만든 도구: Remotion, three.js"],

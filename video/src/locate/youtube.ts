@@ -15,8 +15,8 @@ export const YOUTUBE = {
   ] as [string, SceneId][],
   notes: ["RSSI 예시는 1 m 기준 −59 dBm, 트인 곳(n = 2)을 가정했습니다. 채널 사운딩 그래프는 3 m일 때의 이상적인 왕복 위상입니다.", "실제 ‘찾기’ 기능이 어떤 기술을 쓰는지는 제품마다 다릅니다."],
   links: [
-    ...[["BluetoothBook 입문 11장 “위치 찾기: RSSI에서 채널 사운딩까지”", "https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/location.html"]],
-    ["ConnectivityBook 서재", "https://yalex-kim.github.io/connectivityBook/"],
+    ...[["BluetoothBook 입문 11장 “위치 찾기: RSSI에서 채널 사운딩까지”", "https://connbook.yalex-k.com/bluetooth/chapters/location.html"]],
+    ["ConnectivityBook 서재", "https://connbook.yalex-k.com/"],
   ] as [string, string][],
   sources: ["Bluetooth Core Specification 6.3 — [Vol 1] Part A §9.1~§9.3(채널 사운딩 개요, PBR 거리 식, 150 m 모호성), [Vol 6] Part H(채널 사운딩), [Vol 6] Part A §2(CS 채널)"],
   credits: ["나레이션: Typecast AI 음성(예슬)", "만든 도구: Remotion, three.js"],

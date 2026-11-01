@@ -16,8 +16,8 @@ export const YOUTUBE = {
   ] as [string, SceneId][],
   notes: ["계산은 BluetoothBook 입문 9장의 예(CR2032 220 mAh, 수면 2 µA, 이벤트 한 번 15 µC)를 따랐습니다. 실제 수명은 칩, 설정, 온도, 전지 특성에 따라 다릅니다.", "전류 파형의 각 단계 길이와 높이는 대표값입니다."],
   links: [
-    ...[["BluetoothBook 입문 9장 “전력: 코인 전지로 몇 년” (전류 파형·배터리 수명 시뮬레이터)", "https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/power.html"]],
-    ["ConnectivityBook 서재", "https://yalex-kim.github.io/connectivityBook/"],
+    ...[["BluetoothBook 입문 9장 “전력: 코인 전지로 몇 년” (전류 파형·배터리 수명 시뮬레이터)", "https://connbook.yalex-k.com/bluetooth/chapters/power.html"]],
+    ["ConnectivityBook 서재", "https://connbook.yalex-k.com/"],
   ] as [string, string][],
   sources: ["Bluetooth Core Specification 6.3 — [Vol 6] Part B §4.2.2(시계 정확도: 활성 ±50 ppm, 수면 ±500 ppm), §4.5.7(창 넓히기)"],
   credits: ["나레이션: Typecast AI 음성(예슬)", "만든 도구: Remotion, three.js"],

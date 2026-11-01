@@ -15,9 +15,9 @@ export const YOUTUBE = {
   ] as [string, SceneId][],
   notes: ["확률은 한 번에 못 들을 확률 30%, 각 기회가 서로 독립이라는 책의 모델로 계산했습니다(심화 4장).", "간격(30 ms → 60 ms), 만남 번호, WinOffset은 예시 값입니다."],
   links: [
-    ["BluetoothBook 심화 4장 “링크 계층 제어 절차: instant와 충돌 규칙”", "https://yalex-kim.github.io/connectivityBook/bluetooth-deep/chapters/procedures.html"],
-    ["BluetoothBook 심화 3장 “링크 계층 상태 기계와 컨트롤러 스케줄링”", "https://yalex-kim.github.io/connectivityBook/bluetooth-deep/chapters/scheduling.html"],
-    ["ConnectivityBook 서재", "https://yalex-kim.github.io/connectivityBook/"],
+    ["BluetoothBook 심화 4장 “링크 계층 제어 절차: instant와 충돌 규칙”", "https://connbook.yalex-k.com/bluetooth-deep/chapters/procedures.html"],
+    ["BluetoothBook 심화 3장 “링크 계층 상태 기계와 컨트롤러 스케줄링”", "https://connbook.yalex-k.com/bluetooth-deep/chapters/scheduling.html"],
+    ["ConnectivityBook 서재", "https://connbook.yalex-k.com/"],
   ] as [string, string][],
   sources: ["Bluetooth Core Specification 6.3 — [Vol 6] Part B §5.5·§5.5.1(instant, 들을 기회 6번, Instant Passed), §5.1.1(연결 갱신, 전송 창, 앵커 포인트 이동), §4.5.1(connEventCounter), [Vol 1] Part F §2(오류 코드 0x08·0x28)"],
   credits: ["나레이션: Typecast AI 음성(예슬)", "만든 도구: Remotion, three.js"],

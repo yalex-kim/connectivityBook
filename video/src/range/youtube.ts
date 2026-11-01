@@ -25,9 +25,9 @@ export const YOUTUBE = {
     "LE Coded의 거리 배율은 사양이 요구하는 감도 차이(−70 → −82 dBm, 12 dB)로 계산했습니다. 실제 기기에서는 칩과 환경에 따라 다릅니다.",
   ],
   links: [
-    ["BluetoothBook 입문 2장 “2.4 GHz 전파와 데시벨” (링크 버짓 시뮬레이터)", "https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/radio.html"],
-    ["BluetoothBook 입문 3장 “비트를 전파에 싣기: GFSK와 PHY” (LE Coded 부호기)", "https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/phy.html"],
-    ["ConnectivityBook 서재", "https://yalex-kim.github.io/connectivityBook/"],
+    ["BluetoothBook 입문 2장 “2.4 GHz 전파와 데시벨” (링크 버짓 시뮬레이터)", "https://connbook.yalex-k.com/bluetooth/chapters/radio.html"],
+    ["BluetoothBook 입문 3장 “비트를 전파에 싣기: GFSK와 PHY” (LE Coded 부호기)", "https://connbook.yalex-k.com/bluetooth/chapters/phy.html"],
+    ["ConnectivityBook 서재", "https://connbook.yalex-k.com/"],
   ],
   sources: [
     "Bluetooth Core Specification 6.3 — [Vol 6] Part A §3(송신 전력과 전력 등급), §4.1 Table 4.2(수신 감도 LE 1M·2M −70 dBm, Coded S=2 −75 dBm, S=8 −82 dBm), [Vol 6] Part B §3.3(FEC 부호기와 패턴 매퍼), [Vol 2] Part A §3(BR/EDR 전력 등급)",

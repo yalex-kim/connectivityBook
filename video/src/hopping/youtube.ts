@@ -15,9 +15,9 @@ export const YOUTUBE = {
   ] as [string, SceneId][],
   notes: ["채널은 사양 예제([Vol 2] Part G §2)의 Central 주소 0x2A96EF25로 책의 계산을 돌린 값입니다. 휴대폰이 Central인 경우를 그렸습니다.", "LE의 채널 선택은 다른 방식입니다(입문 4편). 적응 도약에서는 이어폰이 바로 앞 휴대폰 슬롯과 같은 채널로 답하므로, 1600번은 기본 도약일 때의 최대입니다."],
   links: [
-    ["BluetoothBook 심화 12장 “Classic 기저대역: 도약 커널, 접근 코드, HEC·CRC·FEC”", "https://yalex-kim.github.io/connectivityBook/bluetooth-deep/chapters/baseband.html"],
-    ["BluetoothBook 입문 4장 “주파수 도약”", "https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/hopping.html"],
-    ["ConnectivityBook 서재", "https://yalex-kim.github.io/connectivityBook/"],
+    ["BluetoothBook 심화 12장 “Classic 기저대역: 도약 커널, 접근 코드, HEC·CRC·FEC”", "https://connbook.yalex-k.com/bluetooth-deep/chapters/baseband.html"],
+    ["BluetoothBook 입문 4장 “주파수 도약”", "https://connbook.yalex-k.com/bluetooth/chapters/hopping.html"],
+    ["ConnectivityBook 서재", "https://connbook.yalex-k.com/"],
   ] as [string, string][],
   sources: ["Bluetooth Core Specification 6.3 — [Vol 2] Part A §2(79채널), Part B §2.2.3·§2.2.4(슬롯과 클록), §2.6.1~§2.6.4(도약 선택 커널, AFH 재매핑, 입력), Part G §2(예제)"],
   credits: ["나레이션: Typecast AI 음성(예슬)", "만든 도구: Remotion, three.js"],

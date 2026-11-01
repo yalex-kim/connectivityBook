@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """배포 직전에 페이지가 부르는 js·css 주소 끝에 ?v=<버전>을 붙인다 (저장소에는 커밋하지 않는다).
 
-GitHub Pages는 파일을 10분 동안 캐시하게 하므로, 배포 뒤 새로고침해도 휴대폰이 예전 common.js를 쓸 수 있다.
+js·css는 브라우저와 Cloudflare가 캐시하므로, 배포 뒤 새로고침해도 휴대폰이 예전 common.js를 쓸 수 있다.
 새로고침하면 HTML은 다시 받으므로, HTML이 가리키는 주소가 배포마다 바뀌면 js·css도 새로 받는다.
 사용: python3 tools/stamp_assets.py <버전>   # 예: git rev-parse --short HEAD
 """

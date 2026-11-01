@@ -15,9 +15,9 @@ export const YOUTUBE = {
   ] as [string, SceneId][],
   notes: ["세션 키와 암호문은 사양 샘플([Vol 6] Part C §1)의 값으로 책의 계산을 돌린 결과입니다. 다음 연결의 세션 키는 무작위 값 한 바이트만 바꾼 예입니다.", "이 영상은 LE 링크 계층 암호화의 원리와 방어를 다룹니다."],
   links: [
-    ["BluetoothBook 심화 6장 “링크 계층 암호화: 세션 키와 AES-CCM”", "https://yalex-kim.github.io/connectivityBook/bluetooth-deep/chapters/encryption.html"],
-    ["BluetoothBook 입문 8장 “페어링과 보안”", "https://yalex-kim.github.io/connectivityBook/bluetooth/chapters/security.html"],
-    ["ConnectivityBook 서재", "https://yalex-kim.github.io/connectivityBook/"],
+    ["BluetoothBook 심화 6장 “링크 계층 암호화: 세션 키와 AES-CCM”", "https://connbook.yalex-k.com/bluetooth-deep/chapters/encryption.html"],
+    ["BluetoothBook 입문 8장 “페어링과 보안”", "https://connbook.yalex-k.com/bluetooth/chapters/security.html"],
+    ["ConnectivityBook 서재", "https://connbook.yalex-k.com/"],
   ] as [string, string][],
   sources: ["Bluetooth Core Specification 6.3 — [Vol 6] Part B §5.1.3.1(암호화 시작, SK = e(LTK, SKD)), [Vol 6] Part E §1·§2.1·§2.2(AES-CCM, nonce, MIC), [Vol 6] Part C §1(암호화 샘플)"],
   credits: ["나레이션: Typecast AI 음성(예슬)", "만든 도구: Remotion, three.js"],

@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://yalex-kim.github.io/connectivityBook/sitemap.xml
+Sitemap: https://connbook.yalex-k.com/sitemap.xml
