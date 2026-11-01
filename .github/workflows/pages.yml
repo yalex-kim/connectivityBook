@@ -1,4 +1,4 @@
-name: Check Library
+name: Check Library · Pages redirect
 on:
   push:
     branches: [main]
@@ -6,8 +6,10 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  pages: write
+  id-token: write
 concurrency:
-  group: check-${{ github.ref }}
+  group: pages-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   # 잡 이름 test 를 바꾸지 않는다: NAS(connbook.yalex-k.com)가 이 체크를 통과한 main 커밋만 배포한다
@@ -35,3 +37,23 @@ jobs:
             [ -e "$f" ] || continue
             echo "::group::$f"; node "$f"; echo "::endgroup::"
           done
+      - name: Pages redirect site builds
+        run: python3 tools/pages_redirect.py /tmp/pages-redirect
+  # 예전 GitHub Pages 주소로 오는 사람을 connbook.yalex-k.com 의 같은 페이지로 넘긴다 (서재 본체는 NAS 가 서빙)
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: test
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - name: Build redirect site
+        run: python3 tools/pages_redirect.py _redirect
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _redirect
+      - id: deployment
+        uses: actions/deploy-pages@v4

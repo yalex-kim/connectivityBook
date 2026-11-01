@@ -23,7 +23,7 @@ shared/                 네 책이 함께 쓰는 common.js·style.css 원본 (to
 tools/                  sync_shared.py, build_search.py
 CLAUDE.md               서재 공통 규칙과 새 책 체크리스트
 favicon.svg, robots.txt, sitemap.xml(각 책의 sitemap을 묶는 인덱스)
-.github/workflows/pages.yml   PR·push마다 모든 책의 검증 스크립트 실행 (test 체크)
+.github/workflows/pages.yml   PR·push마다 모든 책의 검증 스크립트 실행 (test 체크) → main이면 예전 Pages 주소에 이동 안내 배포
 bluetooth/              BluetoothBook (자체 css·js·chapters·scripts·tools를 가진 독립 정적 사이트)
 wifi/                   WiFiBook (같은 구조, 전역 이름 WF)
 uwb/                    UWBBook (같은 구조, 전역 이름 UW)
@@ -50,6 +50,8 @@ GitHub Actions가 PR과 `main` push마다 같은 검사(`test` 체크)를 돌리
 
 ## 배포 (자체 서버)
 https://connbook.yalex-k.com/ 은 집 NAS에서 서빙합니다(Cloudflare 터널). NAS의 `connbook-sync`가 5분마다 `main`을 확인해, `test` 체크가 통과한 커밋을 받아 `tools/stamp_assets.py <커밋>`을 돌린 뒤 바꿔 끼웁니다. `main`에 병합하면 몇 분 안에 반영되고, 따로 할 일은 없습니다.
+
+예전 주소 https://yalex-kim.github.io/connectivityBook/ 에는 `tools/pages_redirect.py`가 만든 이동 안내만 GitHub Pages로 남아 있어, 같은 경로의 새 주소로 넘겨 줍니다.
 
 ## 라이선스
 코드는 [MIT](LICENSE-MIT), 교재 콘텐츠는 [CC BY 4.0](LICENSE-CC-BY-4.0). 책별 세부 안내는 각 폴더의 `LICENSE.md`를 참고하세요.

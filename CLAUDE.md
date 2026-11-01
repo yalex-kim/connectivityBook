@@ -15,7 +15,7 @@ python3 tools/stamp_assets.py <버전>                # (배포 때 서버만) j
 (cd <책> && python3 tools/seo.py)                    # canonical/OG/JSON-LD, 책 sitemap
 ```
 
-CI(`.github/workflows/pages.yml`, 잡 이름 `test`)가 PR과 `main` push마다 `sync_shared.py --check`, `build_search.py --check`, `mark_terms.py --check`, `spec_links.py --check`, 모든 `verify-factcheck.cjs`를 돌린다. 서버는 이 `test` 체크가 통과한 커밋만 배포하므로 잡 이름을 바꾸지 않는다.
+CI(`.github/workflows/pages.yml`, 잡 이름 `test`)가 PR과 `main` push마다 `sync_shared.py --check`, `build_search.py --check`, `mark_terms.py --check`, `spec_links.py --check`, 모든 `verify-factcheck.cjs`를 돌린다. 서버는 이 `test` 체크가 통과한 커밋만 배포하므로 잡 이름을 바꾸지 않는다. `main`이면 `deploy` 잡이 예전 GitHub Pages 주소에 새 주소로 넘기는 안내 페이지(`tools/pages_redirect.py`)를 올린다.
 
 ## 구조
 
