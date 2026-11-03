@@ -10,7 +10,7 @@ import html, pathlib, sys
 NEW = 'https://connbook.yalex-k.com/'
 PREFIX = '/connectivityBook/'
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-SKIP = {'video', 'node_modules', '.git', 'shared'}
+SKIP = {'video', 'node_modules', '.git', 'shared', 'cloudflare'}  # cloudflare/: Pages 전용 파일 (404.html 등)
 
 PAGE = '''<!doctype html>
 <html lang="ko">

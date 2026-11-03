@@ -41,7 +41,7 @@ jobs:
       - name: Pages redirect site builds
         run: |
           python3 tools/pages_redirect.py _redirect_check
-          want=$(find . -name '*.html' -not -path './_redirect_check/*' -not -path './video/*' -not -path './shared/*' -not -path '*/node_modules/*' | wc -l)
+          want=$(find . -name '*.html' -not -path './_redirect_check/*' -not -path './video/*' -not -path './shared/*' -not -path './cloudflare/*' -not -path '*/node_modules/*' | wc -l)
           got=$(find _redirect_check -name '*.html' ! -name 404.html | wc -l)
           echo "html: $want, redirect pages: $got"
           test "$want" = "$got"
