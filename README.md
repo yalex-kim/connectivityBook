@@ -49,9 +49,13 @@ GitHub Actions가 PR과 `main` push마다 같은 검사(`test` 체크)를 돌리
 [`CLAUDE.md`](CLAUDE.md)의 “새 책 체크리스트”를 따릅니다. 요약하면 기존 책 폴더를 복사해 내용과 `book.json`(`ui`)을 바꾸고, `python3 tools/sync_shared.py`로 공통 코드를, 책 폴더에서 `python3 tools/seo.py`로 SEO 태그를 만든 뒤, `assets/books.js`·루트 `sitemap.xml`에 등록하고 `python3 tools/build_search.py`로 통합 검색 색인을 갱신합니다.
 
 ## 배포 (자체 서버)
-https://connbook.yalex-k.com/ 은 Cloudflare Workers 정적 자산으로 서빙합니다. `main`에 병합하면 GitHub Actions가 `test` 잡을 통과시킨 뒤 `cloudflare` 잡이 배포하므로 따로 할 일은 없습니다. 배포본은 `tools/build_site.sh`가 만듭니다. 커밋된 파일에서 점(.)으로 시작하는 파일과 `cloudflare/`를 빼고, `tools/stamp_assets.py <커밋>`으로 js·css 주소에 버전을 붙입니다.
+https://connbook.yalex-k.com/ 은 Cloudflare Pages 프로젝트 `connbook`이 서빙합니다. DNS는 프록시를 끈 `CNAME → connbook.pages.dev`입니다. `main`에 병합하면 GitHub Actions가 `test` 잡을 통과시킨 뒤 `cloudflare` 잡이 배포하므로 따로 할 일은 없습니다. 배포본은 `tools/build_site.sh`가 만듭니다. 커밋된 파일에서 점(.)으로 시작하는 파일과 `cloudflare/`를 빼고, `tools/stamp_assets.py <커밋>`으로 js·css 주소에 버전을 붙인 뒤, `cloudflare/`의 Pages 파일을 더합니다.
 
-`cloudflare/worker.js`는 정적 파일이 없는 주소만 처리합니다. `/dir/`이면 `dir/index.html`을 주고, `/dir`이면 `/dir/`로 301을 보내고, 그 밖에는 404를 줍니다. `.html` 주소는 그대로 둡니다(`html_handling: none`). 배포에는 저장소 Secret `CLOUDFLARE_API_TOKEN`이 필요합니다. 손으로 배포하려면 `sh tools/build_site.sh && npx wrangler deploy -c cloudflare/wrangler.jsonc`를 실행합니다.
+- `_worker.js`·`_routes.json`: Pages는 `/a.html`을 `/a`로 308 리다이렉트하고 이를 끌 수 없습니다. canonical·sitemap·링크가 `.html`이라, `.html` 요청만 이 Worker가 받아 리다이렉트 없이 200으로 줍니다. 다른 요청은 Worker를 거치지 않습니다.
+- `404.html`: 없으면 Pages가 없는 주소에도 `index.html`을 200으로 줍니다.
+- `_headers`: `nosniff`·`Referrer-Policy`.
+
+배포에는 저장소 Secret `CLOUDFLARE_API_TOKEN`이 필요합니다. 손으로 배포하려면 `sh tools/build_site.sh && npx wrangler pages deploy _site --project-name connbook --branch main`을 실행합니다.
 
 예전 주소 https://yalex-kim.github.io/connectivityBook/ 에는 `tools/pages_redirect.py`가 만든 이동 안내만 GitHub Pages로 남아 있어, 같은 경로의 새 주소로 넘겨 줍니다.
 

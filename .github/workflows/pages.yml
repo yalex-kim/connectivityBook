@@ -46,7 +46,7 @@ jobs:
           echo "html: $want, redirect pages: $got"
           test "$want" = "$got"
           rm -rf _redirect_check
-  # 서재 본체 — connbook.yalex-k.com (Cloudflare Workers 정적 자산, cloudflare/wrangler.jsonc)
+  # 서재 본체 — connbook.yalex-k.com (Cloudflare Pages 프로젝트 connbook, DNS only)
   # 저장소 Secret CLOUDFLARE_API_TOKEN 이 필요하다
   cloudflare:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
@@ -57,14 +57,15 @@ jobs:
       url: https://connbook.yalex-k.com/
     steps:
       - uses: actions/checkout@v4
-      # 커밋된 파일에서 점 파일·cloudflare/ 를 빼고, js·css 주소에 커밋 번호를 붙인다
+      # 커밋된 파일에서 점 파일·cloudflare/ 를 빼고, js·css 주소에 커밋 번호를 붙이고, Pages 파일(_worker.js 등)을 더한다
       - name: Build site
         run: sh tools/build_site.sh "$GITHUB_SHA"
       - uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: c0def7a36886c178cce96f73375f8f97
           wranglerVersion: "4.156.2"
-          command: deploy -c cloudflare/wrangler.jsonc
+          command: pages deploy _site --project-name connbook --branch main --commit-hash ${{ github.sha }}
   # 예전 GitHub Pages 주소로 오는 사람을 connbook.yalex-k.com 의 같은 페이지로 넘긴다
   deploy:
     if: github.event_name != 'pull_request'
