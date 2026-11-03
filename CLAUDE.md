@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-ConnectivityBook: 직접 만지며 배우는 한국어 인터랙티브 교과서 서재. 책 한 권 = 폴더 하나(`bluetooth/`, `wifi/`, `uwb/`, `gnss/`, 집필 중인 `bluetooth-deep/`), 루트 `index.html`이 책장이다. 빌드 과정 없는 정적 사이트이고 https://connbook.yalex-k.com/ (Cloudflare Workers 정적 자산)에서 서빙한다. `main`에 들어온 커밋은 GitHub Actions가 `test` 잡을 통과시킨 뒤 `cloudflare` 잡으로 배포한다 (`tools/build_site.sh` → `cloudflare/wrangler.jsonc`).
+ConnectivityBook: 직접 만지며 배우는 한국어 인터랙티브 교과서 서재. 책 한 권 = 폴더 하나(`bluetooth/`, `wifi/`, `uwb/`, `gnss/`, 집필 중인 `bluetooth-deep/`), 루트 `index.html`이 책장이다. 빌드 과정 없는 정적 사이트이고 https://connbook.yalex-k.com/ (Cloudflare Pages 프로젝트 `connbook`)에서 서빙한다. `main`에 들어온 커밋은 GitHub Actions가 `test` 잡을 통과시킨 뒤 `cloudflare` 잡으로 배포한다 (`tools/build_site.sh` → `wrangler pages deploy _site`).
 
 ## Commands
 

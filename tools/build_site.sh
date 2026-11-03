@@ -11,5 +11,5 @@ git archive "$SHA" | tar -x -C _site
 find _site -name '.*' -prune -exec rm -rf {} +
 rm -rf _site/cloudflare
 (cd _site && python3 -I tools/stamp_assets.py "$SHA")
-cp cloudflare/_headers _site/
+cp cloudflare/_headers cloudflare/_worker.js cloudflare/_routes.json cloudflare/404.html _site/
 echo "built _site @ $SHA ($(find _site -type f | wc -l) files)"
