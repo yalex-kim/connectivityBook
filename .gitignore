@@ -2,3 +2,5 @@
 node_modules/
 .book-dist/
 .spec-cache/
+_site/
+.wrangler/

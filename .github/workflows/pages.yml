@@ -1,4 +1,4 @@
-name: Check Library · Pages redirect
+name: Check Library · Deploy
 on:
   push:
     branches: [main]
@@ -12,7 +12,7 @@ concurrency:
   group: pages-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  # 잡 이름 test 를 바꾸지 않는다: NAS(connbook.yalex-k.com)가 이 체크를 통과한 main 커밋만 배포한다
+  # test 를 통과한 main 커밋만 cloudflare 잡이 connbook.yalex-k.com 에 배포한다
   test:
     runs-on: ubuntu-latest
     steps:
@@ -46,7 +46,26 @@ jobs:
           echo "html: $want, redirect pages: $got"
           test "$want" = "$got"
           rm -rf _redirect_check
-  # 예전 GitHub Pages 주소로 오는 사람을 connbook.yalex-k.com 의 같은 페이지로 넘긴다 (서재 본체는 NAS 가 서빙)
+  # 서재 본체 — connbook.yalex-k.com (Cloudflare Workers 정적 자산, cloudflare/wrangler.jsonc)
+  # 저장소 Secret CLOUDFLARE_API_TOKEN 이 필요하다
+  cloudflare:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+    environment:
+      name: cloudflare
+      url: https://connbook.yalex-k.com/
+    steps:
+      - uses: actions/checkout@v4
+      # 커밋된 파일에서 점 파일·cloudflare/ 를 빼고, js·css 주소에 커밋 번호를 붙인다
+      - name: Build site
+        run: sh tools/build_site.sh "$GITHUB_SHA"
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          wranglerVersion: "4.156.2"
+          command: deploy -c cloudflare/wrangler.jsonc
+  # 예전 GitHub Pages 주소로 오는 사람을 connbook.yalex-k.com 의 같은 페이지로 넘긴다
   deploy:
     if: github.event_name != 'pull_request'
     needs: test
