@@ -522,6 +522,7 @@
   const LOGO = `<svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="btg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--accent)"/><stop offset="1" stop-color="var(--accent-2)"/></linearGradient></defs><rect x="2" y="2" width="28" height="28" rx="8" fill="url(#btg)"/><path d="M10.5 11.5 20.5 20.5 15.5 25V7l5 4.5-10 9" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   /** 같은 시리즈의 책들(book.json ui.series). 없으면 null */
   const SERIES = {"name": "BluetoothBook 시리즈", "items": [{"dir": "bluetooth", "label": "입문편"}, {"dir": "bluetooth-deep", "label": "심화편"}]};
+  const GAME = {"name": "Packet Knight", "url": "https://packetknight.yalex-k.com/", "pitch": "패킷 기사가 되어 블루투스를 몸으로 배우는 3D 복셀 RPG. 이 책의 장마다 퀘스트가 있고, 던전에서는 채널맵을 고쳐 Wi-Fi 간섭을 피하며 싸운다.", "quests": {"intro": ["Q0", "세계에 첫 패킷을 쏘다"], "radio": ["Q1", "전파는 어떻게 날까?"], "phy": ["Q2", "속도의 비밀 (1M vs 2M vs Coded)"], "advertising": ["Q3", "숲의 세 갈래 길 (37/38/39)"], "hopping": ["Q4", "채널을 지어 날아라"], "connection": ["Q5", "돌진해서 연결하라"], "gatt": ["Q6", "마을의 데이터 상인들"], "security": ["Q7", "잠긴 감옥을 열다"], "power": ["Q8", "전력의 마른 뼈"]}};   // 이 책과 이어진 게임(ui.game: 이름·주소·소개·장별 퀘스트). 없으면 null
   const ICON_MENU = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>`;
   const ICON_MOON = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>`;
   const ICON_SUN = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>`;
@@ -696,6 +697,17 @@
     // 책 홈: book.json의 ui.videos에 적은 영상 묶음(서재의 assets/videos.js)을 홈 맨 아래(마지막 절 뒤)에 보인다. 시리즈별 작은 카드, 편 번호 순
     const VIDEO_SERIES = ["블루투스 입문"];
     const hero = document.querySelector(".home-hero");
+    // 책 홈: 게임으로 배우기 카드(ui.game) — 히어로 바로 아래
+    if (hero && GAME && !document.getElementById("game")) {
+      const gq = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+      const n = Object.keys(GAME.quests || {}).length;
+      const sec = document.createElement("section");
+      sec.className = "home-section book-game"; sec.id = "game";
+      sec.innerHTML = `<div class="sb-game home"><span class="sb-game-ico" aria-hidden="true">🎮</span><div><b>게임으로 배우기 · ${gq(GAME.name)}</b>` +
+        `<p>${gq(GAME.pitch)}${n ? ` 퀘스트 ${n}개가 이 책의 장과 이어져 있어요.` : ""}</p></div>` +
+        `<a class="sb-game-go" href="${gq(GAME.url)}" target="_blank" rel="noopener">게임 열기 ↗</a></div>`;
+      hero.after(sec);
+    }
     if (hero && VIDEO_SERIES) {
       const vs = document.createElement("script");
       vs.src = `${root}../assets/videos.js`;
@@ -783,8 +795,19 @@
         (prev ? `<a class="prev" href="${href(prev.slug)}"><small>← 이전 · ${prev.num}</small>${prev.title}</a>` : `<a class="prev" href="${href("")}"><small>← 처음으로</small>홈 · 로드맵</a>`) +
         (next ? `<a class="next" href="${href(next.slug)}"><small>다음 · ${next.num} →</small>${next.title}</a>` : "");
       layout.after(pager);
-      // 오류 제보: 장 주소와 제목을 채운 GitHub 이슈를 연다(사실 정확성이 이 책의 1순위다)
+      // 게임으로 배우기(ui.game): 이 장에 퀘스트가 있으면 그 퀘스트로, 없으면 게임 첫 화면으로 (새 탭)
       const ch = CHAPTERS[idx];
+      if (ch && main && GAME) {
+        const qg = GAME.quests && GAME.quests[ch.slug];
+        const gq = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+        const g = document.createElement("aside");
+        g.className = "sb-game";
+        g.innerHTML = `<span class="sb-game-ico" aria-hidden="true">🎮</span><div><b>${qg ? "이 장을 게임으로" : "블루투스를 게임으로"}</b>` +
+          `<p>${qg ? `${gq(GAME.name)}의 퀘스트 <strong>${gq(qg[0])} 「${gq(qg[1])}」</strong>에서 이 장의 내용을 직접 해 볼 수 있어요.` : `${gq(GAME.pitch)}`}</p></div>` +
+          `<a class="sb-game-go" href="${gq(GAME.url)}${qg ? `?quest=${encodeURIComponent(qg[0])}` : ""}" target="_blank" rel="noopener">${qg ? "퀘스트 하러 가기" : "게임 열기"} ↗</a>`;
+        main.appendChild(g);
+      }
+      // 오류 제보: 장 주소와 제목을 채운 GitHub 이슈를 연다(사실 정확성이 이 책의 1순위다)
       if (ch && main) {
         const title = `[BluetoothBook ${ch.num}장] `, bodyTxt = `페이지: ${location.href.split("#")[0]}\n위치(절 제목이나 문장):\n\n무엇이 틀렸나요:\n\n근거(사양서 절, 링크 등, 있으면):\n`;
         const rep = document.createElement("aside");
