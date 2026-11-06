@@ -5,7 +5,7 @@ GATT, 페어링과 보안, 코인 전지로 몇 년 가는 전력 설계, LE 오
 블루투스를 배운 적 없는 사람도 **직접 패킷을 만들고 계산을 돌려 보며** 이해하도록 만든 한국어 웹 교과서입니다.
 15개 챕터, 41개 시뮬레이터, “예측해 보기” 실험, 용어 151개와 종합 퀴즈로 구성됩니다.
 
-모든 수치와 규칙의 기준은 **Bluetooth Core Specification 6.3**(2026-05-05 채택)이며, 본문에 `[Vol 6] Part B §4.5.1`처럼 근거 위치를 밝혔습니다.
+모든 수치와 규칙의 기준은 **Bluetooth Core Specification 7.0**(2026-11-03 채택)이며, 본문에 `[Vol 6] Part B §4.5.1`처럼 근거 위치를 밝혔습니다.
 CRC·화이트닝, 채널 선택 알고리즘 #2, LE Coded 부호기, AES-CMAC·g2·ah 같은 계산은 사양서의 샘플 데이터와 비트 단위로 맞춰 검증합니다.
 
 [ConnectivityBook](../README.md) 서재의 한 권입니다. 구조·디자인 시스템·설명 방식(비유 → 그림 → 예측 → 시뮬레이터 → 수치 → 정리·퀴즈)은 [Books](https://books.euiyun.com/) 시리즈의 [NetworkBook](https://github.com/geniuskey/networkbook)을 따랐습니다.
@@ -21,7 +21,7 @@ python3 -m http.server 8000   # 저장소 루트에서 → http://localhost:8000
 ## 구성
 | 장 | 파일 | 주제 | 주요 시뮬레이터 |
 |---|---|---|---|
-| 01 | chapters/intro.html | 블루투스란 무엇인가 | 주변 기기의 클래식/LE, Core 변경 이력 1.2~6.3, 스택 탐색 |
+| 01 | chapters/intro.html | 블루투스란 무엇인가 | 주변 기기의 클래식/LE, Core 변경 이력 1.2~7.0, 스택 탐색 |
 | 02 | chapters/radio.html | 2.4 GHz 전파와 데시벨 | 대역 지도와 LE 채널 번호, dBm 사다리, 링크 버짓, 다중 경로 페이딩 |
 | 03 | chapters/phy.html | 비트를 전파에 싣기: GFSK와 PHY | GFSK 파형, 잡음 속 BER·PER, EDR 성좌도, LE Coded 부호기, PHY 비교, HDT(공개 초안) 미리 보기 |
 | 04 | chapters/hopping.html | 주파수 도약과 공존 | Wi-Fi 옆 고정/도약/AFH, 채널 선택 알고리즘 #1·#2(사양 샘플 검증) |
@@ -45,7 +45,7 @@ python3 -m http.server 8000   # 저장소 루트에서 → http://localhost:8000
 ```bash
 node bluetooth/scripts/verify-factcheck.cjs   # 저장소 루트에서
 ```
-챕터의 계산 함수를 꺼내 Core 6.3의 값과 샘플 데이터([Vol 6] Part C, [Vol 3] Part H Appendix D), FIPS-197·RFC 4493 예제와 맞춰 보고, 모든 인라인 스크립트가 컴파일되는지 확인합니다.
+챕터의 계산 함수를 꺼내 Core 7.0의 값과 샘플 데이터([Vol 6] Part C, [Vol 3] Part H Appendix D), FIPS-197·RFC 4493 예제와 맞춰 보고, 모든 인라인 스크립트가 컴파일되는지 확인합니다.
 
 시뮬레이터는 이해를 돕기 위해 단순화한 모델이며, 전류·감도 같은 칩 의존 수치는 대표적인 크기 수준입니다. 사양이 정한 값과 칩의 대표값은 본문에서 구분해 적었습니다.
 

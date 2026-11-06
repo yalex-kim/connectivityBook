@@ -1,15 +1,15 @@
 /* BluetoothBook 심화 용어 데이터 — [한국어, 영어, 설명, 장 slug]
-   용어집(glossary.html)과 본문 용어 툴팁(common.js)이 함께 쓴다. 설명 끝의 [Vol x] Part y §z는 Bluetooth Core Specification 6.3의 근거 위치다. */
+   용어집(glossary.html)과 본문 용어 툴팁(common.js)이 함께 쓴다. 설명 끝의 [Vol x] Part y §z는 Bluetooth Core Specification 7.0의 근거 위치다. */
 window.BD_TERMS = [
   // 06 encryption
   ["LTK", "Long Term Key", "페어링으로 만들어 본딩 때 저장하는 128비트 키. 링크 계층은 이것으로 패킷을 직접 잠그지 않고 연결마다 세션 키를 만든다. [Vol 3] Part H §2.4", "encryption"],
   ["세션 키", "Session Key (SK)", "연결마다 새로 만드는 암호화 키. SK = e(LTK, SKD_P ‖ SKD_C). SKD는 양쪽이 반씩 낸 무작위 값이다. [Vol 6] Part B §5.1.3.1", "encryption"],
   ["SKD", "Session Key Diversifier", "세션 키를 만들 때 LTK로 암호화하는 16바이트. 센트럴의 SKD_C 8바이트와 페리페럴의 SKD_P 8바이트를 이어 붙인다. [Vol 6] Part B §5.1.3.1", "encryption"],
   ["IV", "Initialization Vector", "nonce에 들어가는 8바이트. IV_P ‖ IV_C. 키를 새로 시작할 때마다 새 값을 쓴다. CIS·BIS는 아래 32비트를 접근 주소와 XOR한다. [Vol 6] Part E §2.1", "encryption"],
-  ["AES-CCM", "Counter with CBC-MAC", "AES로 인증(CBC-MAC)과 암호화(카운터 모드)를 함께 하는 방식. LE는 MIC 4바이트(M = 4), 길이 칸 2바이트(L = 2). [Vol 6] Part E §1", "encryption"],
+  ["AES-CCM", "Counter with CBC-MAC", "AES로 인증(CBC-MAC)과 암호화(카운터 모드)를 함께 하는 방식. LE는 길이 칸 2바이트(L = 2), MIC는 GFSK PHY에서 4바이트(M = 4), HDT PHY에서 8 또는 16바이트. [Vol 6] Part E §1", "encryption"],
   ["nonce", "CCM nonce", "패킷마다 한 번만 쓰는 13바이트. packetCounter 39비트 + directionBit + IV 8바이트. [Vol 6] Part E Table 2.1", "encryption"],
   ["packetCounter", "packetCounter", "방향마다 따로 세는 39비트 카운터. 암호화 시작 때 0, 새 PDU마다 1씩 늘고 재전송에는 그대로. [Vol 6] Part E §2.1", "encryption"],
-  ["MIC", "Message Integrity Check", "CCM이 붙이는 4바이트 인증값. 헤더 첫 바이트(NESN·SN·MD 제외)와 페이로드를 덮는다. 틀리면 연결이 끊긴다(0x3D). [Vol 6] Part E §1·§2.2", "encryption"],
+  ["MIC", "Message Integrity Check", "CCM이 붙이는 인증값(GFSK PHY 4바이트, HDT PHY 8·16바이트). 헤더 첫 바이트(NESN·SN·MD 제외)와 페이로드를 덮는다. 틀리면 연결이 끊긴다(0x3D). [Vol 6] Part E §1·§2.2", "encryption"],
   // 07 smp
   ["DHKey", "Diffie-Hellman Key", "P-256 ECDH로 만든 공유 비밀(점의 x 좌표 32바이트). f5의 입력. [Vol 3] Part H §2.3.5.6.1", "smp"],
   ["공개 키 검증", "Public key validation", "받은 P-256 공개 키가 곡선 위의 점인지 확인하는 의무 검사. 실패하면 DHKey Check Failed. [Vol 3] Part H §2.3.5.6.1", "smp"],
@@ -82,7 +82,7 @@ window.BD_TERMS = [
   // 14 isoal
   ["ISOAL", "Isochronous Adaptation Layer", "SDU(코덱 프레임)를 등시성 PDU로 나누고 합치는 계층. 프레임 없는 방식과 프레임 있는 방식이 있다. [Vol 6] Part G", "isoal"],
   ["USPI", "USPI", "ISO 간격 하나에 들어오는 SDU 수 = ISO_Interval ÷ SDU_Interval(정수여야 프레임 없음 가능). [Vol 6] Part G §2.1", "isoal"],
-  ["UPPS", "UPPS", "SDU 하나에 배정하는 프레임 없는 PDU 수. ⌈Max_SDU ÷ Max_PDU⌉ 이상, BN = UPPS × USPI. [Vol 6] Part G §2.1", "isoal"],
+  ["UPPS", "UPPS", "SDU 하나에 배정하는 프레임 없는 PDU 수. ⌈Max_SDU ÷ Max_IPP⌉ 이상, BN = UPPS × USPI. [Vol 6] Part G §2.1", "isoal"],
   ["분할 헤더", "Segmentation Header", "프레임 있는 PDU의 세그먼트 앞 2바이트. SC(시작/이어짐), CMPLT(끝), 길이. [Vol 6] Part G §2.2", "isoal"],
   ["Time_Offset", "Time_Offset", "새 SDU의 첫 세그먼트에 붙는 24비트(µs). SDU 기준 시각에서 CIG 기준점·BIG 앵커까지의 시간. [Vol 6] Part G §3.1", "isoal"],
   ["ASE", "Audio Stream Endpoint", "서버의 오디오 스트림 끝점. Sink ASE·Source ASE가 있고 Idle~Releasing 상태를 가진다. ASCS v1.0 §3", "leaudio"],

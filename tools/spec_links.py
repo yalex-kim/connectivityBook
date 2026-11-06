@@ -9,8 +9,8 @@ import html, json, re, sys, pathlib, urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 OUT = ROOT / 'assets/bt-spec.js'
-VERSION = '6.3'
-BASE = 'https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Core_v6.3/out/en/'
+VERSION = '7.0'
+BASE = 'https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Core_v7.0/out/en/'
 # 사양서 웹판의 권(Volume) 폴더
 VOLS = {'consolidated-table-of-contents,-acknowledgments,---core-configurations': 0, 'architecture,-change-history,-and-conventions': 1,
         'br-edr-controller': 2, 'host': 3, 'host-controller-interface': 4, 'low-energy-controller': 6, 'wireless-coexistence-signaling-and-interfaces': 7}
@@ -25,7 +25,7 @@ def get(url):
 
 
 def build():
-    first = get(BASE + 'low-energy-controller/link-layer-specification.html')
+    first = get(BASE + 'low-energy-controller/linklayer-ll--specification.html')
     pages = sorted({h for h in re.findall(r'href="\.\./([^"#]+\.html)', first) if h.split('/')[0] in VOLS and '/' in h})
     parts = {}
     for p in pages:

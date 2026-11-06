@@ -1,6 +1,6 @@
 # BluetoothBook 심화 — 프로토콜 스택을 끝까지 따라가는 블루투스 교과서
 
-[BluetoothBook](../bluetooth/)의 다음 책입니다. 1권이 “무엇이 왜 그런가”를 넓게 보여 줬다면, 이 책은 그 아래로 내려가 HCI 바이트, 링크 계층 절차, 패킷 암호화와 페어링 함수, 프라이버시, L2CAP·EATT, 클래식 베이스밴드, 등시성 채널과 LE 오디오, 채널 사운딩과 방향 찾기를 **Bluetooth Core Specification 6.3의 시험 데이터로 계산을 맞춰 보며** 따라갑니다. 대상은 1권을 읽은 펌웨어·스택·칩 검증 엔지니어입니다.
+[BluetoothBook](../bluetooth/)의 다음 책입니다. 1권이 “무엇이 왜 그런가”를 넓게 보여 줬다면, 이 책은 그 아래로 내려가 HCI 바이트, 링크 계층 절차, 패킷 암호화와 페어링 함수, 프라이버시, L2CAP·EATT, 클래식 베이스밴드, 등시성 채널과 LE 오디오, 채널 사운딩과 방향 찾기를 **Bluetooth Core Specification 7.0의 시험 데이터로 계산을 맞춰 보며** 따라갑니다. 대상은 1권을 읽은 펌웨어·스택·칩 검증 엔지니어입니다.
 
 모두 19장, 시뮬레이터 41개입니다.
 
@@ -34,7 +34,7 @@ node bluetooth-deep/scripts/verify-factcheck.cjs   # 계산·구조 검증
 ```
 Classic 장(12·13)의 시험은 사양 [Vol 2] Part G의 예제 데이터를 `scripts/data/partg.json`에 옮겨 두고 대조합니다.
 
-인용한 절·표가 사양에 있는지는 `python3 tools/check_spec_refs.py 6.3 --titles`로 확인합니다(사양 HTML을 받아 `.spec-cache/`에 둡니다).
+인용한 절·표가 사양에 있는지는 `python3 tools/check_spec_refs.py 7.0 --titles`로 확인합니다(사양 HTML을 받아 `.spec-cache/`에 둡니다).
 공통 코드(`js/common.js`, `css/style.css`)는 저장소 루트 `shared/`에서 만듭니다. 작성 규칙은 [CONTRIBUTING.md](CONTRIBUTING.md)와 저장소 루트의 `CLAUDE.md`를 따릅니다.
 
 ## 라이선스

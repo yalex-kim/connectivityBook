@@ -1,6 +1,6 @@
 {
 "hop": {
-"_source": "Bluetooth Core 6.3 [Vol 2] Part G §2: Connection state hop sequences, CLK start 0x0000010, 32 rows x 16 slots",
+"_source": "Bluetooth Core 7.0 [Vol 2] Part G §2: Connection state hop sequences, CLK start 0x0000010, 32 rows x 16 slots",
 "sets": [
 {
 "ulap": "00000000",
@@ -77,7 +77,7 @@
 ]
 },
 "access": {
-"_source": "Bluetooth Core 6.3 [Vol 2] Part G §3: LAP | preamble | sync word | trailer (transmission order, hex nibbles)",
+"_source": "Bluetooth Core 7.0 [Vol 2] Part G §3: LAP | preamble | sync word | trailer (transmission order, hex nibbles)",
 "rows": [
 "000000 5 7e7041e34000000d 5",
 "ffffff a e758b5227ffffff2 a",
