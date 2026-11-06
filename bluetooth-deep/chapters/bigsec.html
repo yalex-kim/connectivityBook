@@ -5,19 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <title>BIG 보안과 BIS: 방송 코드에서 그룹 세션 키까지 · BluetoothBook 심화</title>
-<meta name="description" content="연결도 페어링도 없는 방송을 어떻게 잠그나. 방송 코드의 UTF-8 표현, h7·h6·h8로 이어지는 IGLTK·GLTK·GSK 유도, BIGInfo의 GSKD와 GIV, BIS의 CCM nonce, 시드 접근 주소에서 BIS마다 접근 주소를 만드는 규칙을 Core 6.3의 샘플(Børne House, SAA 0x78E52493)로 재현한다.">
+<meta name="description" content="연결도 페어링도 없는 방송을 어떻게 잠그나. 방송 코드의 UTF-8 표현, h7·h6·h8로 이어지는 IGLTK·GLTK·GSK 유도, BIGInfo의 GSKD와 GIV, BIS의 CCM nonce, 시드 접근 주소에서 BIS마다 접근 주소를 만드는 규칙을 Core 7.0의 샘플(Børne House, SAA 0x78E52493)로 재현한다.">
 <link rel="canonical" href="https://connbook.yalex-k.com/bluetooth-deep/chapters/bigsec.html">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="BluetoothBook 심화">
 <meta property="og:title" content="BIG 보안과 BIS: 방송 코드에서 그룹 세션 키까지 · BluetoothBook 심화">
-<meta property="og:description" content="연결도 페어링도 없는 방송을 어떻게 잠그나. 방송 코드의 UTF-8 표현, h7·h6·h8로 이어지는 IGLTK·GLTK·GSK 유도, BIGInfo의 GSKD와 GIV, BIS의 CCM nonce, 시드 접근 주소에서 BIS마다 접근 주소를 만드는 규칙을 Core 6.3의 샘플(Børne House, SAA 0x78E52493)로 재현한다.">
+<meta property="og:description" content="연결도 페어링도 없는 방송을 어떻게 잠그나. 방송 코드의 UTF-8 표현, h7·h6·h8로 이어지는 IGLTK·GLTK·GSK 유도, BIGInfo의 GSKD와 GIV, BIS의 CCM nonce, 시드 접근 주소에서 BIS마다 접근 주소를 만드는 규칙을 Core 7.0의 샘플(Børne House, SAA 0x78E52493)로 재현한다.">
 <meta property="og:url" content="https://connbook.yalex-k.com/bluetooth-deep/chapters/bigsec.html">
 <meta property="og:image" content="https://connbook.yalex-k.com/bluetooth-deep/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"BIG 보안과 BIS: 방송 코드에서 그룹 세션 키까지","name":"BIG 보안과 BIS: 방송 코드에서 그룹 세션 키까지 · BluetoothBook 심화","url":"https://connbook.yalex-k.com/bluetooth-deep/chapters/bigsec.html","mainEntityOfPage":"https://connbook.yalex-k.com/bluetooth-deep/chapters/bigsec.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":9,"image":"https://connbook.yalex-k.com/bluetooth-deep/og.png","dateModified":"2026-10-20","isPartOf":{"@type":"Book","@id":"https://connbook.yalex-k.com/bluetooth-deep/#book","name":"BluetoothBook 심화 — 프로토콜 스택을 끝까지 따라가는 블루투스 교과서","url":"https://connbook.yalex-k.com/bluetooth-deep/"},"publisher":{"@type":"Organization","name":"BluetoothBook 심화","url":"https://connbook.yalex-k.com/bluetooth-deep/"},"description":"연결도 페어링도 없는 방송을 어떻게 잠그나. 방송 코드의 UTF-8 표현, h7·h6·h8로 이어지는 IGLTK·GLTK·GSK 유도, BIGInfo의 GSKD와 GIV, BIS의 CCM nonce, 시드 접근 주소에서 BIS마다 접근 주소를 만드는 규칙을 Core 6.3의 샘플(Børne House, SAA 0x78E52493)로 재현한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook 심화","item":"https://connbook.yalex-k.com/bluetooth-deep/"},{"@type":"ListItem","position":2,"name":"09 BIG 보안과 BIS: 방송 코드에서 그룹 세션 키까지","item":"https://connbook.yalex-k.com/bluetooth-deep/chapters/bigsec.html"}]}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"BIG 보안과 BIS: 방송 코드에서 그룹 세션 키까지","name":"BIG 보안과 BIS: 방송 코드에서 그룹 세션 키까지 · BluetoothBook 심화","url":"https://connbook.yalex-k.com/bluetooth-deep/chapters/bigsec.html","mainEntityOfPage":"https://connbook.yalex-k.com/bluetooth-deep/chapters/bigsec.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":9,"image":"https://connbook.yalex-k.com/bluetooth-deep/og.png","dateModified":"2026-11-06","isPartOf":{"@type":"Book","@id":"https://connbook.yalex-k.com/bluetooth-deep/#book","name":"BluetoothBook 심화 — 프로토콜 스택을 끝까지 따라가는 블루투스 교과서","url":"https://connbook.yalex-k.com/bluetooth-deep/"},"publisher":{"@type":"Organization","name":"BluetoothBook 심화","url":"https://connbook.yalex-k.com/bluetooth-deep/"},"description":"연결도 페어링도 없는 방송을 어떻게 잠그나. 방송 코드의 UTF-8 표현, h7·h6·h8로 이어지는 IGLTK·GLTK·GSK 유도, BIGInfo의 GSKD와 GIV, BIS의 CCM nonce, 시드 접근 주소에서 BIS마다 접근 주소를 만드는 규칙을 Core 7.0의 샘플(Børne House, SAA 0x78E52493)로 재현한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook 심화","item":"https://connbook.yalex-k.com/bluetooth-deep/"},{"@type":"ListItem","position":2,"name":"09 BIG 보안과 BIS: 방송 코드에서 그룹 세션 키까지","item":"https://connbook.yalex-k.com/bluetooth-deep/chapters/bigsec.html"}]}]}</script>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -114,7 +114,7 @@
       <tbody>
         <tr><td>키</td><td>세션 키 SK = e(LTK, SKD)</td><td>GSK</td></tr>
         <tr><td>IV</td><td>IV_P ‖ IV_C (암호화 시작 때 교환)</td><td>GIV의 아래 32비트를 그 BIS의 접근 주소와 XOR</td></tr>
-        <tr><td>packetCounter</td><td>새 PDU마다 +1</td><td>bisPayloadCounter (BIG 이벤트마다 정해진 값)</td></tr>
+        <tr><td>packetCounter</td><td>새 PDU마다 +1</td><td>그 BIS 페이로드의 PayloadNumber 비트 38:0 (6.3까지 이름은 bisPayloadCounter, BIG 이벤트마다 정해진 값)</td></tr>
         <tr><td>directionBit</td><td>센트럴 1, 페리페럴 0</td><td>항상 1 (방송자)</td></tr>
         <tr><td>MIC에서 가리는 헤더 비트</td><td>NESN, SN, MD</td><td>CSSN, CSTF</td></tr>
         <tr><td>MIC 실패</td><td>연결 끊김 (0x3D)</td><td>동기 상실, 그 BIS를 더 받지 않음 (0x3D)</td></tr>
@@ -155,7 +155,7 @@
       <li>방송 코드: 화면에서는 UTF-8 4~16옥텟 문자열, 그 아래에서는 작은 바이트부터 채운 128비트 값.</li>
       <li>IGLTK = h7(“BIG1”, 코드), GLTK = h6(IGLTK, “BIG2”), GSK = h8(GLTK, GSKD, “BIG3”). GSKD는 암호화된 BIG마다 새로 뽑아 BIGInfo에 싣는다.</li>
       <li>코드가 같아도 BIG마다 GSK가 다르지만, 코드가 새면 녹음된 과거 방송도 풀린다. 코드 자체를 자주 바꾼다.</li>
-      <li>BIS의 CCM: 키 GSK, IV = GIV의 아래 32비트 ⊕ 접근 주소, 카운터 = bisPayloadCounter, 방향 비트 1, CSSN·CSTF 마스크.</li>
+      <li>BIS의 CCM: 키 GSK, IV = GIV의 아래 32비트 ⊕ 접근 주소, 카운터 = PayloadNumber(6.3까지 bisPayloadCounter), 방향 비트 1, CSSN·CSTF 마스크.</li>
       <li>BIS 접근 주소 = SAA ⊕ DW(n), D = (35n + 42) mod 128. n = 0은 BIG 제어 링크.</li>
     </ol>
   </section>

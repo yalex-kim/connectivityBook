@@ -5,19 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <title>ISOAL과 등시성 타이밍 · BluetoothBook 심화</title>
-<meta name="description" content="LC3 프레임(SDU)이 등시성 PDU가 되는 ISOAL. 프레임 없는 PDU의 USPI·UPPS·BN과 LLID, 프레임 있는 PDU의 분할 헤더(SC·CMPLT·길이)와 Time_Offset, 분할 모드와 비분할 모드의 Max_PDU 조건, CIG·BIG의 전송 지연 공식을 사양의 예로 맞춰 보며 익힌다.">
+<meta name="description" content="LC3 프레임(SDU)이 등시성 PDU가 되는 ISOAL. 프레임 없는 PDU의 USPI·UPPS·BN과 LLID, 프레임 있는 PDU의 분할 헤더(SC·CMPLT·길이)와 Time_Offset, 분할 모드와 비분할 모드의 Max_IPP 조건, CIG·BIG의 전송 지연 공식을 사양의 예로 맞춰 보며 익힌다.">
 <link rel="canonical" href="https://connbook.yalex-k.com/bluetooth-deep/chapters/isoal.html">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="BluetoothBook 심화">
 <meta property="og:title" content="ISOAL과 등시성 타이밍 · BluetoothBook 심화">
-<meta property="og:description" content="LC3 프레임(SDU)이 등시성 PDU가 되는 ISOAL. 프레임 없는 PDU의 USPI·UPPS·BN과 LLID, 프레임 있는 PDU의 분할 헤더(SC·CMPLT·길이)와 Time_Offset, 분할 모드와 비분할 모드의 Max_PDU 조건, CIG·BIG의 전송 지연 공식을 사양의 예로 맞춰 보며 익힌다.">
+<meta property="og:description" content="LC3 프레임(SDU)이 등시성 PDU가 되는 ISOAL. 프레임 없는 PDU의 USPI·UPPS·BN과 LLID, 프레임 있는 PDU의 분할 헤더(SC·CMPLT·길이)와 Time_Offset, 분할 모드와 비분할 모드의 Max_IPP 조건, CIG·BIG의 전송 지연 공식을 사양의 예로 맞춰 보며 익힌다.">
 <meta property="og:url" content="https://connbook.yalex-k.com/bluetooth-deep/chapters/isoal.html">
 <meta property="og:image" content="https://connbook.yalex-k.com/bluetooth-deep/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"ISOAL과 등시성 타이밍","name":"ISOAL과 등시성 타이밍 · BluetoothBook 심화","url":"https://connbook.yalex-k.com/bluetooth-deep/chapters/isoal.html","mainEntityOfPage":"https://connbook.yalex-k.com/bluetooth-deep/chapters/isoal.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":14,"image":"https://connbook.yalex-k.com/bluetooth-deep/og.png","dateModified":"2026-10-20","isPartOf":{"@type":"Book","@id":"https://connbook.yalex-k.com/bluetooth-deep/#book","name":"BluetoothBook 심화 — 프로토콜 스택을 끝까지 따라가는 블루투스 교과서","url":"https://connbook.yalex-k.com/bluetooth-deep/"},"publisher":{"@type":"Organization","name":"BluetoothBook 심화","url":"https://connbook.yalex-k.com/bluetooth-deep/"},"description":"LC3 프레임(SDU)이 등시성 PDU가 되는 ISOAL. 프레임 없는 PDU의 USPI·UPPS·BN과 LLID, 프레임 있는 PDU의 분할 헤더(SC·CMPLT·길이)와 Time_Offset, 분할 모드와 비분할 모드의 Max_PDU 조건, CIG·BIG의 전송 지연 공식을 사양의 예로 맞춰 보며 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook 심화","item":"https://connbook.yalex-k.com/bluetooth-deep/"},{"@type":"ListItem","position":2,"name":"14 ISOAL과 등시성 타이밍","item":"https://connbook.yalex-k.com/bluetooth-deep/chapters/isoal.html"}]}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"ISOAL과 등시성 타이밍","name":"ISOAL과 등시성 타이밍 · BluetoothBook 심화","url":"https://connbook.yalex-k.com/bluetooth-deep/chapters/isoal.html","mainEntityOfPage":"https://connbook.yalex-k.com/bluetooth-deep/chapters/isoal.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":14,"image":"https://connbook.yalex-k.com/bluetooth-deep/og.png","dateModified":"2026-11-06","isPartOf":{"@type":"Book","@id":"https://connbook.yalex-k.com/bluetooth-deep/#book","name":"BluetoothBook 심화 — 프로토콜 스택을 끝까지 따라가는 블루투스 교과서","url":"https://connbook.yalex-k.com/bluetooth-deep/"},"publisher":{"@type":"Organization","name":"BluetoothBook 심화","url":"https://connbook.yalex-k.com/bluetooth-deep/"},"description":"LC3 프레임(SDU)이 등시성 PDU가 되는 ISOAL. 프레임 없는 PDU의 USPI·UPPS·BN과 LLID, 프레임 있는 PDU의 분할 헤더(SC·CMPLT·길이)와 Time_Offset, 분할 모드와 비분할 모드의 Max_IPP 조건, CIG·BIG의 전송 지연 공식을 사양의 예로 맞춰 보며 익힌다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook 심화","item":"https://connbook.yalex-k.com/bluetooth-deep/"},{"@type":"ListItem","position":2,"name":"14 ISOAL과 등시성 타이밍","item":"https://connbook.yalex-k.com/bluetooth-deep/chapters/isoal.html"}]}]}</script>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,7 +37,7 @@
     <ul class="objectives">
       <li>프레임 없는 PDU를 쓸 수 있는 조건과 USPI·UPPS·BN, LLID 0b00/0b01, 채움 PDU를 안다.</li>
       <li>프레임 있는 PDU의 분할 헤더(SC·CMPLT·길이)와 Time_Offset을 바이트로 만들 수 있다.</li>
-      <li>분할 모드와 비분할 모드에서 Max_PDU가 충분한지 판단할 수 있다.</li>
+      <li>분할 모드와 비분할 모드에서 Max_IPP가 충분한지 판단할 수 있다.</li>
       <li>CIG·BIG의 전송 지연을 프레임 없음·있음에 따라 계산할 수 있다.</li>
     </ul>
   </header>
@@ -45,10 +45,10 @@
   <!-- ============================================================ -->
   <section id="unframed">
     <h2>프레임 없는 PDU: 박자가 맞을 때</h2>
-    <p>ISO 간격이 SDU 간격과 같거나 그 정수배이고, 상위 계층이 SDU를 전송 박자에 맞춰 만들어 주면 <b>프레임 없는</b>(unframed) PDU를 쓸 수 있다. 추가 머리말이 없다. SDU가 Max_PDU보다 길면 최소 개수의 조각(fragment)으로 나누고, 각 조각은 PDU 하나에 담는다. 끝 조각이나 SDU 전체를 담은 PDU는 <span class="term">LLID</span> = 0b00, 시작·중간 조각은 0b01이다.</p>
+    <p>ISO 간격이 SDU 간격과 같거나 그 정수배이고, 상위 계층이 SDU를 전송 박자에 맞춰 만들어 주면 <b>프레임 없는</b>(unframed) PDU를 쓸 수 있다. 추가 머리말이 없다. SDU가 Max_IPP보다 길면 최소 개수의 조각(fragment)으로 나누고, 각 조각은 PDU 하나에 담는다. 끝 조각이나 SDU 전체를 담은 PDU는 <span class="term">LLID</span> = 0b00, 시작·중간 조각은 0b01이다.</p>
     <ul>
       <li><b><span class="term">USPI</span></b> = <span class="term">ISO_Interval</span> ÷ SDU_Interval: ISO 간격 하나에 들어오는 SDU 수.</li>
-      <li><b><span class="term">UPPS</span></b>: SDU 하나에 배정하는 PDU 수. 적어도 ⌈Max_SDU ÷ Max_PDU⌉.</li>
+      <li><b><span class="term">UPPS</span></b>: SDU 하나에 배정하는 PDU 수. 적어도 ⌈Max_SDU ÷ Max_IPP⌉.</li>
       <li><b><span class="term">BN</span></b> = UPPS × USPI: ISO 이벤트 하나에 보내는 새 PDU 수. SDU가 UPPS보다 적은 조각이 되면 길이 0, LLID 0b01인 <b>채움 PDU</b>로 개수를 맞춘다.</li>
     </ul>
     <div class="callout analogy"><strong>정해진 칸 수의 기차</strong><p>기차(ISO 이벤트)는 매번 같은 수의 칸(BN)을 달고 정시에 떠난다. 박자가 맞으면 짐(SDU) 하나를 칸 몇 개에 나눠 싣고(프레임 없음), 칸이 남으면 빈 칸을 단다. 짐이 기차 시간표와 다른 박자로 들어오면, 짐을 쪼개 칸마다 이름표(<span class="term">분할 헤더</span>)와 “짐이 도착한 시각”(<span class="term">Time_Offset</span>)을 붙여 아무 칸에나 이어 싣는다(프레임 있음).</p></div>
@@ -67,14 +67,14 @@
         <label class="ctrl"><span>SDU 간격 <b id="sg-i-out">7.5 ms</b></span><input type="range" id="sg-i" min="0" max="2" value="0"></label>
         <label class="ctrl"><span>ISO 간격 <b id="sg-o-out">10 ms</b></span><input type="range" id="sg-o" min="0" max="2" value="1"></label>
         <label class="ctrl"><span>SDU 크기 <b id="sg-s-out">40</b> 바이트</span><input type="range" id="sg-s" min="10" max="120" value="40"></label>
-        <label class="ctrl"><span>Max_PDU <b id="sg-p-out">64</b></span><input type="range" id="sg-p" min="20" max="251" value="64"></label>
+        <label class="ctrl"><span>Max_IPP <b id="sg-p-out">64</b></span><input type="range" id="sg-p" min="20" max="251" value="64"></label>
         <label class="ctrl"><span>BN <b id="sg-b-out">1</b></span><input type="range" id="sg-b" min="1" max="4" value="1"></label>
       </div>
       <div class="sim-readout">
-        <div class="stat"><span class="k">대역 조건 BN×(Max_PDU−2) ≥ F×(5 + Max_SDU)</span><span class="v" id="sg-c" style="font-size:14px">—</span></div>
+        <div class="stat"><span class="k">대역 조건 BN×(Max_IPP−2) ≥ F×(5 + Max_SDU)</span><span class="v" id="sg-c" style="font-size:14px">—</span></div>
         <div class="stat"><span class="k">밀린 바이트(이벤트 8 뒤)</span><span class="v" id="sg-q">—</span></div>
       </div>
-      <div class="sim-note">이벤트 0~7의 PDU 바이트. 파랑 = 분할 헤더(SC/CMPLT 바이트, 길이), 주황 = Time_Offset(µs, 리틀 엔디언), 나머지 = SDU 데이터(S0, S1 …의 첫 바이트를 SDU 번호로 채웠다). 모델: SDU j는 j × SDU 간격에 생기고, 이벤트 k(시각 k × ISO 간격)의 PDU에는 그 전에 생긴 데이터만 싣는다. F = (1 + 100 ppm) × ISO 간격 ÷ SDU 간격. 해볼 것: ① 7.5 ms SDU를 10 ms 간격에 실으면 어떤 이벤트에는 SDU 시작이 둘, 어떤 이벤트에는 이어지는 조각이 들어간다. ② Max_PDU를 줄여 대역 조건이 깨지면 밀린 바이트가 쌓인다. ③ SDU 간격 = ISO 간격(10/10)이면 프레임 없는 PDU로도 된다(아래 계산기).</div>
+      <div class="sim-note">이벤트 0~7의 PDU 바이트. 파랑 = 분할 헤더(SC/CMPLT 바이트, 길이), 주황 = Time_Offset(µs, 리틀 엔디언), 나머지 = SDU 데이터(S0, S1 …의 첫 바이트를 SDU 번호로 채웠다). 모델: SDU j는 j × SDU 간격에 생기고, 이벤트 k(시각 k × ISO 간격)의 PDU에는 그 전에 생긴 데이터만 싣는다. F = (1 + 100 ppm) × ISO 간격 ÷ SDU 간격. 해볼 것: ① 7.5 ms SDU를 10 ms 간격에 실으면 어떤 이벤트에는 SDU 시작이 둘, 어떤 이벤트에는 이어지는 조각이 들어간다. ② Max_IPP를 줄여 대역 조건이 깨지면 밀린 바이트가 쌓인다. ③ SDU 간격 = ISO 간격(10/10)이면 프레임 없는 PDU로도 된다(아래 계산기).</div>
     </div>
     <p class="spec-ref">분할 헤더(그림 2.3, Table 2.2·2.3)·Time_Offset·5바이트 규칙·모드: <b>[Vol 6] Part G §2.2</b> · Time_Offset 정의: <b>§3.1</b></p>
     <figure class="diagram">
@@ -106,17 +106,17 @@
 
   <!-- ============================================================ -->
   <section id="size">
-    <h2>설정이 충분한가: Max_PDU와 BN</h2>
-    <p>사양은 대역이 모자라지 않도록 두 조건을 준다. MaxDrift(SDU 박자의 평균 오차)는 100 ppm이다.</p>
-    <div class="formula">분할 모드: BN × (Max_PDU − 2) ≥ F × 5 + F × Max_SDU, F = (1 + MaxDrift) × ISO_Interval ÷ SDU_Interval<br>비분할 모드: Max_PDU = ⌈ISO_Interval ÷ SDU_Interval × (1 + MaxDrift) ÷ BN⌉ × 5 + Max_SDU</div>
-    <p>사양의 예: 10 ms마다 40바이트 SDU를 7.5 ms ISO 간격, BN 1로 보내면 비분할 모드의 Max_PDU는 45바이트다(PDU 하나에 SDU 하나, 헤더 2 + Time_Offset 3). 프레임 없는 PDU는 USPI와 UPPS가 정수일 때만 가능하다.</p>
+    <h2>설정이 충분한가: Max_IPP와 BN</h2>
+    <p>Max_IPP는 그 스트림에서 ISOAL PDU 하나의 최대 크기다(방향마다 다를 수 있다). 6.3까지는 Max_PDU라고 불렀고, 7.0에서 <span class="term">링크 계층</span>의 패킷 최대 페이로드(Max_Packet_Payload)와 이름을 나눴다. 사양은 대역이 모자라지 않도록 두 조건을 준다. MaxDrift(SDU 박자의 평균 오차)는 100 ppm이다.</p>
+    <div class="formula">분할 모드: BN × (Max_IPP − 2) ≥ F × 5 + F × Max_SDU, F = (1 + MaxDrift) × ISO_Interval ÷ SDU_Interval<br>비분할 모드: Max_IPP = ⌈ISO_Interval ÷ SDU_Interval × (1 + MaxDrift) ÷ BN⌉ × 5 + Max_SDU</div>
+    <p>사양의 예: 10 ms마다 40바이트 SDU를 7.5 ms ISO 간격, BN 1로 보내면 비분할 모드의 Max_IPP는 45바이트다(PDU 하나에 SDU 하나, 헤더 2 + Time_Offset 3). 프레임 없는 PDU는 USPI와 UPPS가 정수일 때만 가능하다.</p>
     <div class="sim" id="sim-cfg">
       <div class="sim-head"><span class="sim-tag">CALCULATOR</span><h3>ISOAL 설정 점검과 전송 지연</h3></div>
       <div class="sim-controls" style="border-top:0">
         <label class="ctrl"><span>SDU 간격 (ms) <b id="cf-i-out">10</b></span><input type="range" id="cf-i" min="0" max="3" value="1"></label>
         <label class="ctrl"><span>ISO 간격 (ms) <b id="cf-o-out">10</b></span><input type="range" id="cf-o" min="0" max="3" value="1"></label>
         <label class="ctrl"><span>Max_SDU <b id="cf-s-out">40</b></span><input type="range" id="cf-s" min="20" max="155" value="40"></label>
-        <label class="ctrl"><span>Max_PDU <b id="cf-p-out">40</b></span><input type="range" id="cf-p" min="20" max="251" value="40"></label>
+        <label class="ctrl"><span>Max_IPP <b id="cf-p-out">40</b></span><input type="range" id="cf-p" min="20" max="251" value="40"></label>
         <label class="ctrl"><span>FT(재전송 이벤트 수) <b id="cf-f-out">2</b></span><input type="range" id="cf-f" min="1" max="8" value="2"></label>
         <label class="ctrl"><span>CIG_Sync_Delay (ms) <b id="cf-d-out">2</b></span><input type="range" id="cf-d" min="1" max="20" value="2"></label>
       </div>
@@ -127,8 +127,27 @@
       <button class="opt">둘 다 10 ms</button>
       <button class="opt" data-correct>분할 20.6 ms, 비분할 10 ms</button>
       <button class="opt">분할 10.6 ms, 비분할 0 ms</button>
-    </div><div class="quiz-exp">사양 [Vol 6] Part G §3.2.1의 예 그대로다. 분할 모드는 SDU를 PDU 경계에 맞춰 쪼개며 기다리는 시간이 하나 더 든다. 대신 비분할 모드는 PDU 하나에 SDU를 통째로 넣어야 해서 Max_PDU가 커야 한다.</div></div>
-    <p class="spec-ref">대역 조건과 비분할 Max_PDU, 45바이트 예: <b>[Vol 6] Part G §2.2</b> · 프레임 있는 경우 지연(10.6/10 → 20.6 ms): <b>§3.2.1</b> · 프레임 없는 경우 지연(10/20 → 10 ms): <b>§3.2.2</b></p>
+    </div><div class="quiz-exp">사양 [Vol 6] Part G §3.2.1의 예 그대로다. 분할 모드는 SDU를 PDU 경계에 맞춰 쪼개며 기다리는 시간이 하나 더 든다. 대신 비분할 모드는 PDU 하나에 SDU를 통째로 넣어야 해서 Max_IPP가 커야 한다.</div></div>
+    <p class="spec-ref">대역 조건과 비분할 Max_IPP, 45바이트 예: <b>[Vol 6] Part G §2.2</b> · 프레임 있는 경우 지연(10.6/10 → 20.6 ms): <b>§3.2.1</b> · 프레임 없는 경우 지연(10/20 → 10 ms): <b>§3.2.2</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="ipu">
+    <h2>7.0: CIS를 끊지 않고 바꾸기 (IPU)</h2>
+    <p>6.3까지 <span class="term">CIS</span>의 파라미터는 “CIS가 살아 있는 동안 바뀌지 않는다”였다. 전파가 나빠져 더 튼튼한 <span class="term">PHY</span>로 내리거나, 음악에서 통화로 바뀌어 비트레이트와 지연을 바꾸려면 CIS를 끊고 다시 만들어야 했고, 그동안 소리가 끊겼다. Core 7.0의 <b>CIS 파라미터 갱신</b><span class="en">(LE Isochronous Parameter Update, IPU)</span>은 미리 정해 둔 설정 사이를 정해진 이벤트에서 갈아타게 한다.</p>
+    <ul>
+      <li><b>설정 미리 등록하기</b>: <span class="term">센트럴</span>은 CIS를 만든 뒤 <code>LL_CIG_CONFIG_REQ</code>로 다른 설정(PHY, ISO_Interval, Max_SDU, BN·<span class="term">FT</span>·<span class="term">NSE</span>, Max_Packet_Payload, 전송 지연 등)을 Config_ID 하나에 묶어 <span class="term">페리페럴</span>에 등록해 둔다. <span class="term">호스트</span>가 붙이는 번호는 0x01~0x7F, <span class="term">컨트롤러</span>가 스스로 만드는 번호는 0x80~0xFF다. 전송 지연이 같은 설정끼리는 TL_Group으로 묶는다.</li>
+      <li><b><span class="term">instant</span>에 갈아타기</b>: <code>LL_CIS_UPDATE_REQ</code>가 Config_ID와 CIS별 instant(1~16,384 CIS 이벤트 뒤)를 알리면, 두 쪽이 그 이벤트부터 새 설정을 쓴다. 앵커 포인트만 AO(µs)만큼 옮기는 것도 같은 절차다. 페리페럴은 <code>LL_CIS_PERIPHERAL_UPDATE_REQ</code>로 요청할 수 있다.</li>
+      <li><b>바꿀 수 없는 것</b>: SDU 간격과 프레임 방식(Framing_Mode)은 바꾸지 못한다. 한 CIS가 <span class="term">GFSK</span> PHY와 <span class="term">HDT</span> PHY 사이를 오가는 설정도 만들 수 없다. Max_SDU를 바꾸거나 전송 지연이 다른 TL_Group으로 가려면 두 호스트가 그 기능을 지원해야 한다.</li>
+    </ul>
+    <p>까다로운 것은 갈아타는 순간에 이미 떠 있던 페이로드다. instant 전에 기준 앵커 포인트가 있고 플러시 시점(이전 설정 기준)이 instant 뒤인 페이로드를 <b>전환 페이로드</b>라 하고, 그 수는 <b>BN<sub>old</sub> × (FT<sub>old</sub> − 1)</b>이다. FT가 1이면 매 이벤트 안에서 끝나니 전환 페이로드가 없다. 전환 페이로드의 동기 시점이 새 설정의 첫 페이로드보다 늦으면 잘라 맞추고, 전송 지연 그룹이 바뀌거나 Max_Packet_Payload가 줄어드는 경우에는 instant 바로 앞 이벤트에서 플러시한다. 이 장의 지연 계산(위 절)이 설정마다 따로 성립하고, 그 경계를 규칙으로 이어 붙인 것이다.</p>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">BN 2, FT 3인 CIS를 IPU로 BN 1, FT 1인 설정으로 바꾼다. instant를 넘어가는 전환 페이로드는 몇 개인가?</p><p class="wi-hint">전환 페이로드 수는 이전 설정만으로 정해진다.</p><div class="opts">
+      <button class="opt">0개</button>
+      <button class="opt">2개</button>
+      <button class="opt" data-correct>4개</button>
+      <button class="opt">6개</button>
+    </div><div class="quiz-exp">BN<sub>old</sub> × (FT<sub>old</sub> − 1) = 2 × 2 = 4. 이벤트마다 새 페이로드 2개가 들어오고 각각 최대 3이벤트 동안 보낼 수 있으니, instant 직전 두 이벤트에서 들어온 4개가 아직 기한이 남아 있다.</div></div>
+    <p class="spec-ref">CIS 파라미터(6.3의 “바뀌지 않는다” 문장 삭제): <b>[Vol 6] Part B §4.5.13.1</b> · CIG 설정과 Config_ID·TL_Group: <b>§4.5.14</b> · 설정 정의·갱신·삭제 절차: <b>§5.1.36~§5.1.38</b> · 바꿀 수 없는 것(SDU 간격, Framing_Mode, GFSK↔HDT): <b>§5.1.36</b> · instant 1~16,384와 AO: <b>§5.1.37·§5.1.37.2</b> · 전환 페이로드와 플러시: <b>§4.5.13.8</b> · 기능 비트: <b>§4.6.64·§4.6.65</b> · 7.0 새 기능: <b>[Vol 1] Part C §18.1</b></p>
   </section>
 
   <div class="callout related"><strong>다른 책에서</strong><ul><li><a href="../../bluetooth/chapters/audio.html">BluetoothBook 10장 · 블루투스 오디오</a> — CIS·BIS, LC3, 지연 예산</li></ul></div>
@@ -136,18 +155,19 @@
   <section class="keypoints" id="summary">
     <h2>핵심 정리</h2>
     <ol>
-      <li>프레임 없는 PDU: ISO 간격이 SDU 간격의 정수배이고 박자가 맞을 때. USPI = ISO ÷ SDU, UPPS ≥ ⌈Max_SDU ÷ Max_PDU⌉, BN = UPPS × USPI, LLID 0b00(끝·전체)·0b01(시작·중간·채움).</li>
+      <li>프레임 없는 PDU: ISO 간격이 SDU 간격의 정수배이고 박자가 맞을 때. USPI = ISO ÷ SDU, UPPS ≥ ⌈Max_SDU ÷ Max_IPP⌉, BN = UPPS × USPI, LLID 0b00(끝·전체)·0b01(시작·중간·채움).</li>
       <li>프레임 있는 PDU: 세그먼트마다 분할 헤더 2바이트(SC, CMPLT, 길이), 새 SDU의 첫 세그먼트엔 Time_Offset 3바이트.</li>
       <li>분할 모드는 SDU를 나누고 섞어 담는다(필수), 비분할 모드는 SDU를 통째로(선택). 5바이트가 남지 않으면 새 SDU를 시작하지 않는다.</li>
-      <li>분할 모드: BN × (Max_PDU − 2) ≥ F × (5 + Max_SDU). 비분할: Max_PDU = ⌈…⌉ × 5 + Max_SDU.</li>
+      <li>분할 모드: BN × (Max_IPP − 2) ≥ F × (5 + Max_SDU). 비분할: Max_IPP = ⌈…⌉ × 5 + Max_SDU.</li>
       <li>전송 지연(CIS C→P): 프레임 없음 CIG_Sync_Delay + FT × ISO − SDU, 프레임 있음 CIG_Sync_Delay + FT × ISO + (분할이면 SDU 간격).</li>
+      <li>7.0의 IPU: 미리 등록한 CIG 설정(Config_ID) 사이를 instant에 갈아탄다. SDU 간격·프레임 방식은 못 바꾸고, 전환 페이로드 BN<sub>old</sub> × (FT<sub>old</sub> − 1)개는 따로 정한 플러시 규칙을 따른다.</li>
     </ol>
   </section>
 
   <section class="quiz-sec" id="quiz">
     <h2>확인 퀴즈</h2>
     <div class="quiz">
-      <div class="quiz-q"><p>ISO 간격 20 ms, SDU 간격 10 ms, Max_SDU 100, Max_PDU 60이면 BN은?</p><div class="opts">
+      <div class="quiz-q"><p>ISO 간격 20 ms, SDU 간격 10 ms, Max_SDU 100, Max_IPP 60이면 BN은?</p><div class="opts">
         <button class="opt">1</button><button class="opt">2</button><button class="opt" data-correct>4</button><button class="opt">5</button>
       </div><div class="quiz-exp">USPI = 2, UPPS = ⌈100 ÷ 60⌉ = 2, BN = 4.</div></div>
       <div class="quiz-q"><p>분할 헤더의 SC가 0이면?</p><div class="opts">
@@ -156,7 +176,7 @@
       <div class="quiz-q"><p>프레임 없는 PDU에서 SDU를 담은 마지막 PDU의 LLID는?</p><div class="opts">
         <button class="opt" data-correct>0b00</button><button class="opt">0b01</button><button class="opt">0b10</button><button class="opt">0b11</button>
       </div><div class="quiz-exp">끝 조각이나 SDU 전체는 0b00, 시작·중간·채움은 0b01.</div></div>
-      <div class="quiz-q"><p>10 ms마다 40바이트 SDU를 ISO 간격 7.5 ms, BN 1, 비분할 모드로 보낼 때 Max_PDU는?</p><div class="opts">
+      <div class="quiz-q"><p>10 ms마다 40바이트 SDU를 ISO 간격 7.5 ms, BN 1, 비분할 모드로 보낼 때 Max_IPP는?</p><div class="opts">
         <button class="opt">40</button><button class="opt">42</button><button class="opt" data-correct>45</button><button class="opt">80</button>
       </div><div class="quiz-exp">⌈0.75 × 1.0001 ÷ 1⌉ × 5 + 40 = 45. 사양의 예다.</div></div>
     </div>
@@ -188,9 +208,11 @@
   function segHeader(sc, cmplt, len) { return [(sc & 1) | ((cmplt & 1) << 1), len & 255]; }
   /** 분할 모드 대역 조건. [Vol 6] Part G §2.2 */
   function segmentableOk(bn, maxPdu, maxSdu, sduInt, isoInt) { const F = (1 + MAX_DRIFT) * isoInt / sduInt; return bn * (maxPdu - 2) >= F * 5 + F * maxSdu; }
-  /** 비분할 모드 Max_PDU. [Vol 6] Part G §2.2 */
+  /** 비분할 모드 Max_IPP. [Vol 6] Part G §2.2 */
   function unsegmentedMaxPdu(sduInt, isoInt, bn, maxSdu) { return Math.ceil((isoInt / sduInt) * (1 + MAX_DRIFT) / bn) * 5 + maxSdu; }
   /** CIS(C→P) 전송 지연. mode: "unframed" | "segmentable" | "unsegmented". [Vol 6] Part G §3.2 */
+  /** IPU의 전환 페이로드 수: BN_old × (FT_old − 1). [Vol 6] Part B §4.5.13.8 */
+  function transitionPayloads(bnOld, ftOld) { return bnOld * (ftOld - 1); }
   function cisLatency(mode, cigSyncDelay, ft, isoInt, sduInt) {
     if (mode === "unframed") return cigSyncDelay + ft * isoInt - sduInt;
     return cigSyncDelay + ft * isoInt + (mode === "segmentable" ? sduInt : 0);
@@ -249,9 +271,9 @@
       const S = V[+si()], I = V[+oi()], u = unframedParams(S, I, +ms(), +mp()), L = (k, v, c) => `<span class="k">${k.padEnd(10)}</span> <span class="${c || ""}">${v}</span>\n`;
       let o = u ? L("프레임 없음", `가능 · USPI ${u.uspi} · UPPS ${u.upps} · BN ${u.bn}`, "ok") + L("", `지연 ${cisLatency("unframed", +dd(), +ft(), I, S).toFixed(1)} ms`, "a") : L("프레임 없음", "불가 (ISO 간격이 SDU 간격의 정수배가 아님)", "bad");
       const bnSeg = Math.ceil(((1 + MAX_DRIFT) * I / S * (5 + +ms())) / (+mp() - 2));
-      o += L("분할 모드", `BN ${bnSeg} 필요 (Max_PDU ${mp()}) · 지연 ${cisLatency("segmentable", +dd(), +ft(), I, S).toFixed(1)} ms`, "a");
+      o += L("분할 모드", `BN ${bnSeg} 필요 (Max_IPP ${mp()}) · 지연 ${cisLatency("segmentable", +dd(), +ft(), I, S).toFixed(1)} ms`, "a");
       const mu = unsegmentedMaxPdu(S, I, 1, +ms());
-      o += L("비분할 모드", `BN 1이면 Max_PDU ${mu} 필요${mu > 251 ? " (251 초과)" : ""} · 지연 ${cisLatency("unsegmented", +dd(), +ft(), I, S).toFixed(1)} ms`, "a");
+      o += L("비분할 모드", `BN 1이면 Max_IPP ${mu} 필요${mu > 251 ? " (251 초과)" : ""} · 지연 ${cisLatency("unsegmented", +dd(), +ft(), I, S).toFixed(1)} ms`, "a");
       $("cf-out").innerHTML = o;
     }
     draw();

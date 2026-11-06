@@ -12,7 +12,7 @@
   const CHAPTERS = [
     { slug: "intro",       num: "01", part: "시작하기",     title: "블루투스란 무엇인가",               desc: "선을 없애려던 작은 무전기. 이름의 유래, 클래식과 저전력(LE), 호스트와 컨트롤러로 나뉜 프로토콜 스택을 한눈에.", tags: ["기초", "sim"] },
     { slug: "radio",       num: "02", part: "시작하기",     title: "2.4 GHz 전파와 데시벨",             desc: "전자레인지와 같은 대역을 쓰는 이유. 파장 12 cm, dBm 계산, 거리·벽·몸이 깎는 신호, 링크 버짓과 RSSI.", tags: ["무선", "sim"] },
-    { slug: "phy",         num: "03", part: "시작하기",     title: "비트를 전파에 싣기: GFSK와 PHY",     desc: "주파수를 살짝 올리고 내려 0과 1을 보낸다. GFSK, EDR의 위상 변조, LE 1M·2M·Coded PHY의 속도와 거리 교환.", tags: ["무선", "sim"] },
+    { slug: "phy",         num: "03", part: "시작하기",     title: "비트를 전파에 싣기: GFSK와 PHY",     desc: "주파수를 살짝 올리고 내려 0과 1을 보낸다. GFSK, EDR의 위상 변조, LE 1M·2M·Coded PHY의 속도와 거리 교환, 7.0의 최대 7.5 Mb/s HDT.", tags: ["무선", "sim"] },
     { slug: "hopping",     num: "04", part: "연결의 원리",  title: "주파수 도약과 공존",               desc: "79개·40개 채널을 옮겨 다니며 간섭을 피한다. 적응형 도약(AFH), 채널 선택 알고리즘 #1·#2, Wi-Fi와 함께 살기.", tags: ["무선", "sim"] },
     { slug: "advertising", num: "05", part: "연결의 원리",  title: "광고와 스캔: 나 여기 있어요",        desc: "광고 채널 37·38·39, 광고 간격과 무작위 지연, 31바이트 광고 데이터, 확장 광고, 발견에 걸리는 시간.", tags: ["LE", "sim"] },
     { slug: "connection",  num: "06", part: "연결의 원리",  title: "연결: 약속된 시각의 짧은 만남",      desc: "연결 이벤트와 연결 간격, 페리페럴 지연과 감독 타임아웃, 패킷 해부, SN/NESN 재전송, 처리량 계산.", tags: ["LE", "sim"] },
@@ -24,7 +24,7 @@
     { slug: "mesh",        num: "12", part: "응용",         title: "메시와 사물 인터넷",               desc: "광고로 소문 퍼뜨리기. 관리된 플러딩과 TTL, 릴레이·프렌드·저전력 노드, 주기적 광고와 응답(PAwR)으로 만드는 전자 가격표.", tags: ["응용", "sim"] },
     { slug: "coexistence", num: "13", part: "응용",         title: "공존: 2.4 GHz를 나눠 쓰는 법",        desc: "한 기기 안의 Wi-Fi·LTE·5G·Thread와 함께 사는 법. 필터와 격리, 순수 TDM과 하이브리드, LTE TDD에 시간표 맞추기, Vol 7의 공존 신호와 WCI-2.", tags: ["응용", "sim"] },
     { slug: "design",      num: "14", part: "종합",         title: "블루투스 제품 설계 플레이그라운드",  desc: "이어폰, 심박계, 분실물 태그, 가격표. 파라미터를 고르면 배터리 수명·지연·거리·처리량이 따라온다.", tags: ["종합", "sim"] },
-    { slug: "glossary",    num: "15", part: "종합",         title: "용어집 & 종합 퀴즈",               desc: "블루투스 핵심 용어를 검색하고, 종합 퀴즈로 배운 내용을 점검하자. 용어마다 Core 6.3의 근거 위치를 함께 적었다.", tags: ["정리"] },
+    { slug: "glossary",    num: "15", part: "종합",         title: "용어집 & 종합 퀴즈",               desc: "블루투스 핵심 용어를 검색하고, 종합 퀴즈로 배운 내용을 점검하자. 용어마다 Core 7.0의 근거 위치를 함께 적었다.", tags: ["정리"] },
   ];
   // @book-chapters-end
   const BT = (window.BT = {});
@@ -818,7 +818,7 @@
     }
     const foot = document.createElement("footer");
     foot.className = "sb-foot";
-    foot.innerHTML = `BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서 · 기준 사양: Bluetooth Core 6.3 · 시뮬레이터는 이해를 돕기 위해 단순화한 모델입니다.
+    foot.innerHTML = `BluetoothBook — 누구나 읽는 인터랙티브 블루투스 교과서 · 기준 사양: Bluetooth Core 7.0 · 시뮬레이터는 이해를 돕기 위해 단순화한 모델입니다.
       <br>© 2026 <a href="https://github.com/yalex-kim">Yalex Kim</a> · <a href="${root}../index.html">ConnectivityBook 서재</a> ·
       콘텐츠 <a href="https://creativecommons.org/licenses/by/4.0/deed.ko" rel="license">CC BY 4.0</a> ·
       코드 <a href="https://github.com/yalex-kim/connectivityBook/blob/main/bluetooth/LICENSE-MIT">MIT</a> ·

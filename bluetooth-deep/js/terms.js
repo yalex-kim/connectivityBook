@@ -1,15 +1,19 @@
 /* BluetoothBook 심화 용어 데이터 — [한국어, 영어, 설명, 장 slug]
-   용어집(glossary.html)과 본문 용어 툴팁(common.js)이 함께 쓴다. 설명 끝의 [Vol x] Part y §z는 Bluetooth Core Specification 6.3의 근거 위치다. */
+   용어집(glossary.html)과 본문 용어 툴팁(common.js)이 함께 쓴다. 설명 끝의 [Vol x] Part y §z는 Bluetooth Core Specification 7.0의 근거 위치다. */
 window.BD_TERMS = [
   // 06 encryption
   ["LTK", "Long Term Key", "페어링으로 만들어 본딩 때 저장하는 128비트 키. 링크 계층은 이것으로 패킷을 직접 잠그지 않고 연결마다 세션 키를 만든다. [Vol 3] Part H §2.4", "encryption"],
   ["세션 키", "Session Key (SK)", "연결마다 새로 만드는 암호화 키. SK = e(LTK, SKD_P ‖ SKD_C). SKD는 양쪽이 반씩 낸 무작위 값이다. [Vol 6] Part B §5.1.3.1", "encryption"],
   ["SKD", "Session Key Diversifier", "세션 키를 만들 때 LTK로 암호화하는 16바이트. 센트럴의 SKD_C 8바이트와 페리페럴의 SKD_P 8바이트를 이어 붙인다. [Vol 6] Part B §5.1.3.1", "encryption"],
   ["IV", "Initialization Vector", "nonce에 들어가는 8바이트. IV_P ‖ IV_C. 키를 새로 시작할 때마다 새 값을 쓴다. CIS·BIS는 아래 32비트를 접근 주소와 XOR한다. [Vol 6] Part E §2.1", "encryption"],
-  ["AES-CCM", "Counter with CBC-MAC", "AES로 인증(CBC-MAC)과 암호화(카운터 모드)를 함께 하는 방식. LE는 MIC 4바이트(M = 4), 길이 칸 2바이트(L = 2). [Vol 6] Part E §1", "encryption"],
+  ["AES-CCM", "Counter with CBC-MAC", "AES로 인증(CBC-MAC)과 암호화(카운터 모드)를 함께 하는 방식. LE는 길이 칸 2바이트(L = 2), MIC는 GFSK PHY에서 4바이트(M = 4), HDT PHY에서 8 또는 16바이트. [Vol 6] Part E §1", "encryption"],
   ["nonce", "CCM nonce", "패킷마다 한 번만 쓰는 13바이트. packetCounter 39비트 + directionBit + IV 8바이트. [Vol 6] Part E Table 2.1", "encryption"],
   ["packetCounter", "packetCounter", "방향마다 따로 세는 39비트 카운터. 암호화 시작 때 0, 새 PDU마다 1씩 늘고 재전송에는 그대로. [Vol 6] Part E §2.1", "encryption"],
-  ["MIC", "Message Integrity Check", "CCM이 붙이는 4바이트 인증값. 헤더 첫 바이트(NESN·SN·MD 제외)와 페이로드를 덮는다. 틀리면 연결이 끊긴다(0x3D). [Vol 6] Part E §1·§2.2", "encryption"],
+  ["MIC", "Message Integrity Check", "CCM이 붙이는 인증값(GFSK PHY 4바이트, HDT PHY 8·16바이트). 헤더 첫 바이트(NESN·SN·MD 제외)와 페이로드를 덮는다. 틀리면 연결이 끊긴다(0x3D). [Vol 6] Part E §1·§2.2", "encryption"],
+  ["EKS", "Encryption Key Schedule", "7.0의 LE 암호화 키 유도. 암호화를 시작할 때마다 링크 계층이 P-256 ECDH 공유 비밀을 만들고 LTK와 함께 AES-CMAC 계단(k1·k2·ee12·kv12)에 넣어 세션 키와 IV를 뽑는다. 끊지 않는 키 새로 고침(k3), CIS마다 다른 키. [Vol 6] Part E §4", "encryption"],
+  ["기회적 암호화", "Opportunistic encryption", "페어링하지 않은 두 기기가 EKS로 LTK = 0과 ECDH만으로 암호화하는 방식. 엿듣기는 막지만 상대를 확인하지 않아 끼어들기는 막지 못한다. LE 보안 모드 4 레벨 1. [Vol 6] Part E §4.2.1 · [Vol 3] Part C §10.2.6", "encryption"],
+  ["LE 보안 모드 4", "LE security mode 4", "7.0에서 더한 페어링 없는 보안 모드. 레벨 1은 기회적 암호화(인증 없음), 레벨 2는 상위 사양이 인증하고 만든 TAK로 암호화. SMP를 쓰지 않고 본딩도 하지 않는다. [Vol 3] Part C §10.2.6", "smp"],
+  ["TAK", "Transient Application Key", "상위 계층 사양이 상대를 인증하고 만들어 호스트에 건네는 128비트 강도의 일회용 키. LTK 자리에 넣어 링크를 암호화하고, 암호화가 시작되면 호스트가 버린다. 끼어들기 방어는 그 상위 사양에 달려 있다. [Vol 1] Part A §5.4.7 · [Vol 3] Part C §10.6.2", "smp"],
   // 07 smp
   ["DHKey", "Diffie-Hellman Key", "P-256 ECDH로 만든 공유 비밀(점의 x 좌표 32바이트). f5의 입력. [Vol 3] Part H §2.3.5.6.1", "smp"],
   ["공개 키 검증", "Public key validation", "받은 P-256 공개 키가 곡선 위의 점인지 확인하는 의무 검사. 실패하면 DHKey Check Failed. [Vol 3] Part H §2.3.5.6.1", "smp"],
@@ -82,7 +86,7 @@ window.BD_TERMS = [
   // 14 isoal
   ["ISOAL", "Isochronous Adaptation Layer", "SDU(코덱 프레임)를 등시성 PDU로 나누고 합치는 계층. 프레임 없는 방식과 프레임 있는 방식이 있다. [Vol 6] Part G", "isoal"],
   ["USPI", "USPI", "ISO 간격 하나에 들어오는 SDU 수 = ISO_Interval ÷ SDU_Interval(정수여야 프레임 없음 가능). [Vol 6] Part G §2.1", "isoal"],
-  ["UPPS", "UPPS", "SDU 하나에 배정하는 프레임 없는 PDU 수. ⌈Max_SDU ÷ Max_PDU⌉ 이상, BN = UPPS × USPI. [Vol 6] Part G §2.1", "isoal"],
+  ["UPPS", "UPPS", "SDU 하나에 배정하는 프레임 없는 PDU 수. ⌈Max_SDU ÷ Max_IPP⌉ 이상, BN = UPPS × USPI. [Vol 6] Part G §2.1", "isoal"],
   ["분할 헤더", "Segmentation Header", "프레임 있는 PDU의 세그먼트 앞 2바이트. SC(시작/이어짐), CMPLT(끝), 길이. [Vol 6] Part G §2.2", "isoal"],
   ["Time_Offset", "Time_Offset", "새 SDU의 첫 세그먼트에 붙는 24비트(µs). SDU 기준 시각에서 CIG 기준점·BIG 앵커까지의 시간. [Vol 6] Part G §3.1", "isoal"],
   ["ASE", "Audio Stream Endpoint", "서버의 오디오 스트림 끝점. Sink ASE·Source ASE가 있고 Idle~Releasing 상태를 가진다. ASCS v1.0 §3", "leaudio"],

@@ -1,6 +1,6 @@
 /* BluetoothBook 용어 데이터 — [한국어, 영어, 설명, 장 slug]
    용어집(glossary.html)과 본문 용어 툴팁(common.js)이 함께 쓴다.
-   설명 끝의 [Vol x] Part y §z는 Bluetooth Core Specification 6.3의 근거 위치다. */
+   설명 끝의 [Vol x] Part y §z는 Bluetooth Core Specification 7.0의 근거 위치다. */
 window.BT_TERMS = [
     // 01 intro
     ["블루투스 SIG", "Bluetooth Special Interest Group", "블루투스 사양을 만들고 제품 인증을 관리하는 단체. 1998년 에릭슨, IBM, 인텔, 노키아, 도시바가 세웠다.", "intro"],
@@ -20,7 +20,7 @@ window.BT_TERMS = [
     ["범용 채널", "General-purpose channel", "LE 채널 0~36. 연결된 뒤의 데이터, 확장 광고의 본문, 주기적 광고에 쓴다. [Vol 6] Part B §1.4", "radio"],
     ["데시벨", "dB", "두 값의 비율을 10·log₁₀으로 나타낸 단위. +3 dB = 2배, +10 dB = 10배. 곱셈을 덧셈으로 바꾼다.", "radio"],
     ["dBm", "Decibel-milliwatts", "1 mW를 기준으로 한 절대 세기. 0 dBm = 1 mW, +20 dBm = 100 mW, −70 dBm = 0.1 nW.", "radio"],
-    ["전력 등급", "Power class", "최대 송신 전력에 따른 분류. LE는 1(≤ +20 dBm), 1.5(≤ +10), 2(≤ +4), 3(≤ 0 dBm). [Vol 6] Part A §3", "radio"],
+    ["전력 등급", "Power class", "최대 송신 전력에 따른 옛 분류. LE는 1(≤ +20 dBm), 1.5(≤ +10), 2(≤ +4), 3(≤ 0 dBm). 6.3까지 [Vol 6] Part A §3에 있었고 7.0에서 빠졌다. 지금은 최대 출력 −20~+20 dBm 범위만 정한다", "radio"],
     ["수신 감도", "Receiver sensitivity", "정해진 비트 오류율을 내는 최소 수신 세기. 사양 요구: LE 1M·2M ≤ −70, Coded S=2 ≤ −75, S=8 ≤ −82 dBm. [Vol 6] Part A §4.1", "radio"],
     ["자유 공간 경로 손실", "FSPL, free-space path loss", "장애물 없이 퍼지며 줄어드는 손실. 20·log₁₀(4πdf/c). 2.44 GHz 1 m에서 약 40 dB, 거리 2배마다 6 dB.", "radio"],
     ["경로 손실 지수", "Path loss exponent", "거리 10배마다 10·n dB씩 줄어든다고 볼 때의 n. 트인 곳 2, 실내 2.5~3.5.", "radio"],
@@ -40,14 +40,15 @@ window.BT_TERMS = [
     ["LE 1M", "LE 1M PHY", "1 Msym/s GFSK, 1 Mb/s. 모든 LE 기기가 지원해야 하는 기본 PHY. [Vol 6] Part A §1", "phy"],
     ["LE 2M", "LE 2M PHY", "2 Msym/s, 2 Mb/s. 같은 데이터를 절반 시간에 보낸다. 5.0의 선택 기능.", "phy"],
     ["LE Coded", "LE Coded PHY", "1 Msym/s에 부호화를 더해 S=2(500 kb/s) 또는 S=8(125 kb/s). 감도를 높여 거리를 늘린다. 5.0의 선택 기능. [Vol 6] Part B §2.2·§3.3", "phy"],
-    ["HDT", "High Data Throughput", "LE 최대 속도를 2 Mb/s에서 7.5 Mb/s로 올리는 새 PHY. 2 Msym/s에 QPSK·QAM 계열 변조와 FEC, 2·3·4·6·7.5 Mb/s, 패킷마다 속도 선택. Core 6.3에도 없고 다음 Core 사양에 들어갈 공개 초안(Change Request) 단계다.", "phy"],
-    ["컨볼루션 부호", "Convolutional code", "앞의 몇 비트와 섞어 여분의 비트를 만드는 오류 정정 부호. LE Coded는 부호율 ½, 구속장 K=4. [Vol 6] Part B §3.3.1", "phy"],
+    ["HDT", "High Data Throughput, LE HDT PHY", "7.0에서 더한 다섯 번째 LE PHY. 2 Msym/s에 π/4 QPSK·8PSK·16QAM과 부호율 ½ 컨볼루션 부호 + 펑처링으로 2·3·4·6·7.5 Mb/s(HDT2~HDT7.5)를 패킷마다 골라 쓴다. HDT2·3·4는 필수, 6·7.5는 선택. [Vol 6] Part A §7 · Part B §2.7", "phy"],
+    ["펑처링", "Puncturing", "부호기 출력에서 정해진 무늬로 일부 비트를 빼 부호율을 높이는 방법. HDT는 부호율 ½ 부호를 2/3·3/4·15/16으로 만든다. [Vol 6] Part B §3.4.4", "phy"],
+    ["컨볼루션 부호", "Convolutional code", "앞의 몇 비트와 섞어 여분의 비트를 만드는 오류 정정 부호. LE Coded는 부호율 ½, 구속장 K=4, 7.0의 HDT는 부호율 ½, 구속장 6. [Vol 6] Part B §3.3.1·§3.4.3", "phy"],
     ["패턴 매퍼", "Pattern mapper", "LE Coded S=8에서 부호 비트를 4심볼로 펼친다(0 → 0011, 1 → 1100). [Vol 6] Part B §3.3.2", "phy"],
     ["물리 계층", "PHY, Physical layer", "전파로 비트를 실어 보내는 가장 아래 계층. 변조와 심볼 속도를 정한다. LE에는 1M·2M·Coded 세 가지 PHY가 있다. [Vol 6] Part A", "phy"],
     ["신호 대 잡음비", "SNR, Signal-to-Noise Ratio", "받은 신호 세기와 잡음 세기의 비(보통 dB). 몇 dB만 떨어져도 비트 오류율이 자릿수로 뛴다.", "phy"],
     ["오류 정정 부호", "FEC, Forward Error Correction", "여분 비트를 덧붙여 받는 쪽이 재전송 없이 비트 오류를 고치게 하는 부호. 클래식 DM 패킷은 2/3 FEC, 패킷 헤더는 1/3 FEC, LE Coded PHY는 컨볼루션 부호를 쓴다. [Vol 2] Part B §7.4·§7.5", "phy"],
     ["DPSK", "Differential Phase Shift Keying", "직전 심볼과의 위상 차이로 비트를 싣는 변조. EDR은 π/4-DQPSK(심볼당 2비트, 2 Mb/s)와 8DPSK(3비트, 3 Mb/s)를 쓴다. [Vol 2] Part A §3.2.1", "phy"],
-    ["QAM", "Quadrature Amplitude Modulation", "위상과 세기를 함께 바꿔 한 심볼에 여러 비트를 싣는 변조. 공개 초안 HDT가 쓰는 방식으로, Core 6.3에는 없다.", "phy"],
+    ["QAM", "Quadrature Amplitude Modulation", "위상과 세기를 함께 바꿔 한 심볼에 여러 비트를 싣는 변조. 7.0의 HDT6·HDT7.5가 16QAM(심볼당 4비트)을 쓴다. [Vol 6] Part A §7.3.3", "phy"],
     // 04 hopping
     ["주파수 도약", "Frequency hopping", "정해진 순서로 채널을 계속 바꾸며 통신해 간섭과 페이딩의 피해를 나눠 줄이는 방식.", "hopping"],
     ["AFH", "Adaptive Frequency Hopping", "나쁜 채널을 빼고 도약하는 방식. 클래식은 1.2에서 추가, 최소 20채널. LE는 필수, 최소 2채널. [Vol 2] Part B §2.3.1, [Vol 6] Part B §4.5.8.1", "hopping"],
@@ -127,8 +128,10 @@ window.BT_TERMS = [
     ["LE Secure Connections", "LE Secure Connections", "4.2의 페어링. P-256 ECDH로 키를 만들어 도청에 안전하다. [Vol 3] Part H §2.3.5.6", "security"],
     ["타원곡선 디피-헬먼", "ECDH, Elliptic Curve Diffie-Hellman", "공개 키만 교환하고 각자 같은 비밀 값을 계산하는 키 합의. 블루투스는 P-256 곡선을 쓴다.", "security"],
     ["LTK", "Long Term Key", "본딩 후 링크 암호화에 쓰는 128비트 키.", "security"],
-    ["AES-CCM", "AES Counter with CBC-MAC", "LE 링크 암호화 방식. 패킷마다 4바이트 MIC를 붙인다. [Vol 6] Part E", "security"],
-    ["MIC", "Message Integrity Check", "암호화된 데이터 PDU에 붙는 4바이트 위조 검사 값. [Vol 6] Part B §2.4", "security"],
+    ["AES-CCM", "AES Counter with CBC-MAC", "LE 링크 암호화 방식. 패킷마다 MIC를 붙인다(GFSK PHY 4바이트, 7.0의 HDT는 8 또는 16바이트). [Vol 6] Part E", "security"],
+    ["MIC", "Message Integrity Check", "암호화된 데이터 PDU에 붙는 위조 검사 값. GFSK PHY는 4바이트, 7.0의 HDT PHY는 8 또는 16바이트. [Vol 6] Part B §2.4 · Part E §1", "security"],
+    ["EKS", "Encryption Key Schedule", "7.0의 LE 암호화 키 유도. 암호화를 시작할 때마다 링크 계층끼리 P-256 키 교환을 해 그 비밀과 LTK를 함께 AES-CMAC으로 섞어 세션 키를 만든다. 끊지 않는 키 새로 고침, HDT의 8·16바이트 MIC. [Vol 6] Part E §4", "security"],
+    ["TAK", "Transient Application Key", "7.0의 LE 보안 모드 4 레벨 2에서 상위 계층이 상대를 인증하고 만들어 건네는 일회용 128비트 강도 키. 페어링·본딩 없이 LTK 대신 링크 암호화에 쓰고, 연결이 끝나면 버린다. [Vol 3] Part C §10.2.6·§10.6.2", "security"],
     ["RPA", "Resolvable Private Address", "IRK를 가진 상대만 알아볼 수 있는 가명 주소. prand(상위 2비트 01) ∥ ah(IRK, prand). [Vol 6] Part B §1.3.2.2", "security"],
     ["IRK", "Identity Resolving Key", "RPA를 만들고 해석하는 128비트 키. 본딩 때 배포한다. [Vol 3] Part H §2.4.2.1", "security"],
     ["정적 주소", "Static device address", "상위 2비트가 11인 무작위 주소. 전원을 껐다 켤 때만 바꿀 수 있다. [Vol 6] Part B §1.3.2.1", "security"],
@@ -209,7 +212,7 @@ window.BT_TERMS = [
     ["UART", "Universal Asynchronous Receiver/Transmitter", "시작·정지 비트로 한 글자씩 보내는 직렬 통신. WCI-1은 반이중 UART를 전선 한 가닥에, WCI-2는 전이중 UART로 공존 신호를 나른다. [Vol 7] Part B §2·Part C §2", "coexistence"],
     // 14 design
     ["기능 교환", "Feature Exchange", "연결 직후 서로 지원하는 링크 계층 기능을 알리는 절차. 선택 기능을 쓸지 정하는 출발점. [Vol 6] Part B §5.1.4", "design"],
-    ["PHY 갱신", "PHY Update", "연결 중에 1M·2M·Coded를 바꾸는 절차. [Vol 6] Part B §5.1.10", "design"],
+    ["PHY 갱신", "PHY Update", "연결 중에 1M·2M·Coded·HDT를 바꾸는 절차. 7.0부터 이름은 PHY Update and Encryption Refresh이고, 두 기기가 EKS를 지원하면 같은 절차로 암호 키와 IV도 새로 만든다. [Vol 6] Part B §5.1.10", "design"],
 ];
 
 /* 본문 표기 → 용어집 표제어 (툴팁 연결용) */

@@ -1,4 +1,4 @@
-// BluetoothBook 심화 사실 검증: 챕터 안의 계산 함수를 꺼내 Bluetooth Core 6.3의 시험 데이터(샘플)와, 가능하면 독립 구현(OpenSSL 등)과 맞춰 본다.
+// BluetoothBook 심화 사실 검증: 챕터 안의 계산 함수를 꺼내 Bluetooth Core 7.0의 시험 데이터(샘플)와, 가능하면 독립 구현(OpenSSL 등)과 맞춰 본다.
 // 실행: node scripts/verify-factcheck.cjs
 const fs = require('node:fs');
 const path = require('node:path');
@@ -34,7 +34,7 @@ const bitsStr = (s) => s.replace(/\s/g, '').split('').map(Number);
 // ---------------------------------------------------------------- 06 encryption
 {
   const src = read('encryption'), sbox = src.slice(src.indexOf('  const SBOX ='), src.indexOf('\n', src.indexOf('  const SBOX =')));
-  const f = load('encryption', ['aes128', 'sessionKey', 'ccmNonce', 'aadByte', 'ccm', 'ccmOpen'], sbox);
+  const f = load('encryption', ['aes128', 'sessionKey', 'ccmNonce', 'aadByte', 'ccm', 'ccmOpen', 'hdtAad', 'aesCmac', 'eksTag', 'eksK1', 'eksEe12', 'eksK2', 'eksK3', 'eksKv12', 'eksAclStart', 'eksCis'], sbox);
   // [Vol 6] Part C §1: LTK·SKD·IV와 SK
   const ltk = H('4C68384139F574D836BCF34E9DFB01BF'), skdC = H('ACBDCEDFE0F10213'), skdP = H('0213243546576879'), iv = H('DEAFBABE' + 'BADCAB24');
   const sk = f.sessionKey(ltk, skdC, skdP);
@@ -92,6 +92,80 @@ const bitsStr = (s) => s.replace(/\s/g, '').split('').map(Number);
     const tampered = r.cipher.slice(); tampered[ri(tampered.length)] ^= 1 << ri(8);
     ok(!f.ccmOpen(k, n, hdr, tampered, r.encMic).ok, 'tampered ciphertext fails MIC #' + t);
   }
+
+  // ---- 7.0 HDT PHY의 CCM: [Vol 6] Part C §11 (SK·IV는 §1과 같다, MIC 8·16바이트, AAD 2바이트)
+  eq(X(f.hdtAad(0, 0, 3)), '000c', 'HDT AAD for LL control PDU (Nb 0, LLID 0b11)');
+  eq(X(f.hdtAad(3, 64, 2)), '4038', 'HDT AAD for data (Nb 3, BlockSize 64, LLID 0b10)');
+  const dataPl = Array.from({ length: 260 }, (_, i) => i & 0xff);
+  const HDT = [
+    { name: 'HDT M8 START_ENC_RSP C', M: 8, dir: 1, ctr: 0, aad: f.hdtAad(0, 0, 3), pl: [0x06], x: ['c955ed659fec2bfdd285386f2afe1b87', '7e2ceda2a23311e11da97fa77492755e', '5f4ebfe9affb92a3ea6b2d5d02b82142'], mic: '5f4ebfe9affb92a3', out: '9f', emic: 'f170da9e59b11d86' },
+    { name: 'HDT M8 START_ENC_RSP P', M: 8, dir: 0, ctr: 0, aad: f.hdtAad(0, 0, 3), pl: [0x06], x: ['576686011dfa7754ddff22df3739c78d', 'bab8799285152dcb45f68e6a9fe44d9a', '62e548cf4482a9b3c5e0d86d4808955e'], mic: '62e548cf4482a9b3', out: 'a3', emic: 'f5b6d1692e4f6a22' },
+    { name: 'HDT M8 data C (260 octets)', M: 8, dir: 1, ctr: 1, aad: f.hdtAad(3, 64, 2), pl: dataPl, x0: '60de30df765a788387362ab1e163072d', mic: 'c8ff2d412e3c131d' },
+    { name: 'HDT M16 START_ENC_RSP C', M: 16, dir: 1, ctr: 0, aad: f.hdtAad(0, 0, 3), pl: [0x06], x: ['e105c49a5e0d1a586f83cb3fde402846', '999be585b0e1e2795d0d7ebfb371dc3c', '3a643a361e4159ee0dd3a89dc70a4da6'], mic: '3a643a361e4159ee0dd3a89dc70a4da6', emic: '945a5f41e80bd6cb4d5f348d12308228' },
+    { name: 'HDT M16 data C (260 octets)', M: 16, dir: 1, ctr: 1, aad: f.hdtAad(3, 64, 2), pl: dataPl, x0: '03bd8329a7a88325bb5eef4ba4f1987d' },
+  ];
+  for (const c of HDT) {
+    const hdt = { M: c.M, aad: c.aad }, r = f.ccm(sk, f.ccmNonce(c.ctr, c.dir, iv), 0, c.pl, hdt);
+    eq(r.B[0][0], c.M === 8 ? 0x59 : 0x79, c.name + ' B0 flags');
+    if (c.x) eq(r.X.map(X), c.x, c.name + ' X blocks');
+    if (c.x0) eq(X(r.X[0]), c.x0, c.name + ' X1');
+    if (c.mic) eq(X(r.mic), c.mic, c.name + ' MIC');
+    if (c.out) eq(X(r.cipher), c.out, c.name + ' ciphertext');
+    if (c.emic) eq(X(r.encMic), c.emic, c.name + ' encrypted MIC');
+    ok(f.ccmOpen(sk, f.ccmNonce(c.ctr, c.dir, iv), 0, r.cipher, r.encMic, hdt).ok, c.name + ' decrypt + MIC check');
+  }
+  eq(X(f.ccm(sk, f.ccmNonce(1, 1, iv), 0, dataPl, { M: 8, aad: f.hdtAad(3, 64, 2) }).S[1]), '6d70b50070440a9a027de8f66b6a6a29', 'HDT data S1 (Part C §11.1.3)');
+  // ---- 7.0 암호화 키 스케줄(EKS): [Vol 6] Part C §10
+  eq(X(f.eksTag('da')), '64657269766564204143 4c'.replace(/ /g, ''), 'EKS tag "derived ACL" (Part E Table 4.1)');
+  eq([f.eksTag('hs'), f.eksTag('tr'), f.eksTag('sk'), f.eksTag('iv')].map(X), ['64657269766564206873', '74726166666963207570 64'.replace(/ /g, ''), '6b6579', '6976'], 'EKS tags hs, tr, sk, iv');
+  const smpSrc = read('smp'), smpLine = (k) => smpSrc.slice(smpSrc.indexOf(k), smpSrc.indexOf('\n', smpSrc.indexOf(k)));
+  const ecCtx = vm.createContext({ Math, Array, Number, String, BigInt });
+  vm.runInContext([smpLine('  const P256 ='), smpLine('  const big ='), smpLine('  const bytes32 =')].join('\n') + '\n' + ['onCurve', 'ecMul', 'dhKey'].map((n) => fn(smpSrc, n)).join('\n') + '\nthis.__f = { dhKey };', ecCtx);
+  const ec = ecCtx.__f;
+  const EKS = [
+    { name: '§10.1 (LTK, debug key at Central, two CISes)', priv: '3F49F6D4A3C55F3874C9B3E3D2103F504AFF607BEB40B7995899B8A6CD3C1ABD',
+      peerX: '8838A5AF78BA899065F019E14C545081D68E49B054EDEE700CAB71C96090ABF7', peerY: '9F09048A5115053AEDFD7B02B58CA83B64EA9C431C694131A755194944CE3BE6',
+      ecdhss: '30F75D4293F89F9001EBBD03F384907FE6AF08D9911DC346874090F781B99331', ltk: '57D9E9D98289EAF46BA6AF26682C1FC5', aa: '2B1908AA', hpa: '',
+      pduC: 'DC809C49652AEB6D63329ABF5A52155C766345C28FED3024741C8ED01589D28B20B003D2F297BE2C5E2C83A7E9F9A5B9EFF49111ACF4FDDBCC0301480E359DE60040AD7AA97ED353BAE899446438B2273800',
+      pduP: '9F09048A5115053AEDFD7B02B58CA83B64EA9C431C694131A755194944CE3BE68838A5AF78BA899065F019E14C545081D68E49B054EDEE700CAB71C96090ABF700C9159587C4BD1E0E3540D91576624B2300',
+      k2: 'D1094D928E90503B2C56A1EA217EA249', cm: '01B9B2EA9845B1D6331C17387B1ADE0E', len: 169, derived: '705423A8A02A26ACF5682CCDC7AE76AA',
+      ts: ['82C9B230330FA1F79D22FC7EE6DDA457', '8D39F59A79FF3532CD8F2F9801613460'], sk: ['436CF9F3E70CA128B01C2AF3EC97132C', 'EC3E690D1C83E34F6D0EF3F13E796674'], iv: ['D69B508C69E0C3B8', '2BCAE1A04782568A'],
+      cis: [[0x23, 0x42, 'E4869A3F2D15C6B2DD75372E2A63FF7A', 'C02AF0C709CABD29378C8754ECE429A8', '68D0102E1FD90D20C5A30F68A2BFB5D7', '687DA66CCF1FC090'],
+        [0xEF, 0xAC, 'F7D4A7537032A981FA7AE5D7694C75EB', '2CB77192B9652751186061D0A699263B', '9E460A4E246DA1F63232DF90C31A3862', '7B22649CB4FE0E30']] },
+    { name: '§10.2 (opportunistic, LTK 0, HPA, debug key at Peripheral)', priv: '3F49F6D4A3C55F3874C9B3E3D2103F504AFF607BEB40B7995899B8A6CD3C1ABD',
+      peerX: '19738C7195050BBEC56E99668EF09DFDD16F207B9EA3543682DD352C94CFD5DD', peerY: '84BF2C00F08AF272093EDC1C8379622F70B0289C4C803AD3DBF58883FE9DDBC8',
+      ecdhss: 'D333560D8FB01E44CE8452FDFCD6AECE35E4086B8C44B30E0C6A88FA95BAAB6B', ltk: '00000000000000000000000000000000', aa: '2B1908AA', hpa: '7E4DFD99ED',
+      pduC: '84BF2C00F08AF272093EDC1C8379622F70B0289C4C803AD3DBF58883FE9DDBC819738C7195050BBEC56E99668EF09DFDD16F207B9EA3543682DD352C94CFD5DD00AB4A75F8B00E541ADC374A3636D8521103',
+      pduP: 'DC809C49652AEB6D63329ABF5A52155C766345C28FED3024741C8ED01589D28B20B003D2F297BE2C5E2C83A7E9F9A5B9EFF49111ACF4FDDBCC0301480E359DE6000BD5171D9F323AAA41F5CDAB54E39A2700',
+      k2: '7A66CE5F1E0F9CDB7CE1687303735C07', cm: 'F535103447E4C226C0A7DCDDDC079B1E', len: 173, derived: '0CCBD81F46D8523E7CF13BD7CC455379',
+      ts: ['4CB68E0C69E2E05B02204A834DE98B70', '5CB5DFD4CA88A10D66CE8D0E710E5388'], sk: ['D4B99ECF4653BAAF106A14B1AEF4B335', '0864ABE8F08E062E96DF670E09CAAF8B'], iv: ['CD1ABD234B0E600F', 'C82A67F14E21DB56'], cis: [] },
+  ];
+  const lo = (s) => s.toLowerCase();
+  for (const e of EKS) {
+    eq(X(ec.dhKey(H(e.priv), H(e.peerX), H(e.peerY))), lo(e.ecdhss), 'EKS ' + e.name + ' ECDHSS (P-256 from 7장)');
+    const r = f.eksAclStart(H(e.ecdhss), H(e.ltk), H(e.aa), e.hpa ? H(e.hpa) : [], H(e.pduC), H(e.pduP));
+    eq(X(r.k2), lo(e.k2), 'EKS ' + e.name + ' k2(ECDHSS)');
+    eq(r.transcript.length, e.len, 'EKS ' + e.name + ' AA||HPA||PDU_C||PDU_P length');
+    eq(X(r.cm), lo(e.cm), 'EKS ' + e.name + ' AES-CMAC_0(transcript)');
+    eq(X(r.derived), lo(e.derived), 'EKS ' + e.name + ' initial derived secret');
+    let ts = r.traffic;
+    e.ts.forEach((want, n) => {
+      if (n) ts = f.eksK3(ts);
+      eq(X(ts), lo(want), `EKS ${e.name} ACL traffic secret ${n}`);
+      const [skN, ivN] = f.eksKv12(ts);
+      eq([X(skN), X(ivN)], [lo(e.sk[n]), lo(e.iv[n])], `EKS ${e.name} ACL session key / IV ${n}`);
+    });
+    let d = r.derived;
+    e.cis.forEach(([cig, cis, nd, cts, csk, civ], n) => {
+      const [d2, t2] = f.eksCis(d, cig, cis); d = d2;
+      const [k, v] = f.eksKv12(t2);
+      eq([X(d2), X(t2), X(k), X(v)], [nd, cts, csk, civ].map(lo), `EKS ${e.name} CIS ${n + 1}`);
+    });
+  }
+  // AES-CMAC: RFC 4493 시험 벡터 (빈 메시지, 16바이트)
+  const rk = H('2b7e151628aed2a6abf7158809cf4f3c');
+  eq(X(f.aesCmac(rk, [])), 'bb1d6929e95937287fa37d129b756746', 'AES-CMAC RFC 4493 example 1');
+  eq(X(f.aesCmac(rk, H('6bc1bee22e409f96e93d7e117393172a'))), '070a16b46b4d4144f79bdd9dd04a287c', 'AES-CMAC RFC 4493 example 2');
 }
 
 // ---------------------------------------------------------------- 07 smp
@@ -406,7 +480,8 @@ const bitsStr = (s) => s.replace(/\s/g, '').split('').map(Number);
 
 // ---------------------------------------------------------------- 14 isoal
 {
-  const f = load('isoal', ['unframedParams', 'unframedPdus', 'segHeader', 'segmentableOk', 'unsegmentedMaxPdu', 'cisLatency', 'bigLatencyUnframed', 'segmentStream'], 'const MAX_DRIFT = 100e-6;');
+  const f = load('isoal', ['unframedParams', 'unframedPdus', 'segHeader', 'segmentableOk', 'unsegmentedMaxPdu', 'cisLatency', 'bigLatencyUnframed', 'segmentStream', 'transitionPayloads'], 'const MAX_DRIFT = 100e-6;');
+  eq([f.transitionPayloads(2, 3), f.transitionPayloads(1, 1), f.transitionPayloads(1, 4)], [4, 0, 3], 'IPU transition payloads BN_old x (FT_old - 1) (Part B §4.5.13.8)');
   eq(f.unframedParams(10, 20, 100, 60), { uspi: 2, upps: 2, bn: 4 }, 'USPI 2, UPPS 2, BN 4');
   ok(f.unframedParams(7.5, 10, 40, 40) === null, '7.5 ms SDU into 10 ms ISO: unframed impossible');
   eq(f.unframedPdus(100, 40, 4).map((p) => [p.llid, p.len]), [[1, 40], [1, 40], [0, 20], [1, 0]], 'fragments + LLID + padding (§2.1)');
@@ -639,8 +714,9 @@ const bitsStr = (s) => s.replace(/\s/g, '').split('').map(Number);
   const src = read('debugging'), errLine = src.slice(src.indexOf('  const ERR ='), src.indexOf('\n', src.indexOf('  const ERR =')));
   const f = load('debugging', ['decodeH4', 'supervisionOk', 'instantPassed', 'notifyMax'], errLine);
   const ERR = vm.runInContext(errLine + ';ERR', vm.createContext({}));
-  // [Vol 1] Part F Table 1.1: 0x00~0x48 중 예약 3개와 이전 사용 1개를 뺀 69개
-  eq(Object.keys(ERR).length, 69, '오류 코드 69개');
+  // [Vol 1] Part F Table 1.1 (Core 7.0): 0x00~0x4B 중 예약 3개와 이전 사용 1개를 뺀 72개
+  eq(Object.keys(ERR).length, 72, '오류 코드 72개');
+  eq([ERR[0x49], ERR[0x4a], ERR[0x4b]].join('|'), 'Invalid Packet Format|Invalid Public Key|Debug Key Not Allowed', '7.0의 새 오류 코드 0x49~0x4B');
   eq([ERR[0x08], ERR[0x0c], ERR[0x06], ERR[0x28], ERR[0x3d], ERR[0x23], ERR[0x2a], ERR[0x1f], ERR[0x48]].join('|'), 'Connection Timeout|Command Disallowed|PIN or Key Missing|Instant Passed|Connection Terminated due to MIC Failure|LMP Error Transaction Collision / LL Procedure Collision|Different Transaction Collision|Unspecified Error|Insufficient Channels', 'Part F의 이름');
   ok(!(0x2b in ERR) && !(0x31 in ERR) && !(0x33 in ERR) && !(0x3f in ERR), '예약·이전 사용 코드는 없음');
   // 해석기

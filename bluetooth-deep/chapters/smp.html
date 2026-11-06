@@ -5,19 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <title>SMP 완전판: P-256에서 LTK까지 · BluetoothBook 심화</title>
-<meta name="description" content="LE Secure Connections 페어링을 함수 하나하나 따라간다. P-256 ECDH와 공개 키 검증, f4 약속값, g2 숫자 비교와 패스키 20라운드, f5로 만드는 MacKey와 LTK, f6 확인값, 레거시 c1·s1, 클래식과 키를 넘겨 쓰는 h6·h7(CTKD)까지 Core 6.3 부록 D의 샘플로 검증한다.">
+<meta name="description" content="LE Secure Connections 페어링을 함수 하나하나 따라간다. P-256 ECDH와 공개 키 검증, f4 약속값, g2 숫자 비교와 패스키 20라운드, f5로 만드는 MacKey와 LTK, f6 확인값, 레거시 c1·s1, 클래식과 키를 넘겨 쓰는 h6·h7(CTKD)까지 Core 7.0 부록 D의 샘플로 검증한다.">
 <link rel="canonical" href="https://connbook.yalex-k.com/bluetooth-deep/chapters/smp.html">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="BluetoothBook 심화">
 <meta property="og:title" content="SMP 완전판: P-256에서 LTK까지 · BluetoothBook 심화">
-<meta property="og:description" content="LE Secure Connections 페어링을 함수 하나하나 따라간다. P-256 ECDH와 공개 키 검증, f4 약속값, g2 숫자 비교와 패스키 20라운드, f5로 만드는 MacKey와 LTK, f6 확인값, 레거시 c1·s1, 클래식과 키를 넘겨 쓰는 h6·h7(CTKD)까지 Core 6.3 부록 D의 샘플로 검증한다.">
+<meta property="og:description" content="LE Secure Connections 페어링을 함수 하나하나 따라간다. P-256 ECDH와 공개 키 검증, f4 약속값, g2 숫자 비교와 패스키 20라운드, f5로 만드는 MacKey와 LTK, f6 확인값, 레거시 c1·s1, 클래식과 키를 넘겨 쓰는 h6·h7(CTKD)까지 Core 7.0 부록 D의 샘플로 검증한다.">
 <meta property="og:url" content="https://connbook.yalex-k.com/bluetooth-deep/chapters/smp.html">
 <meta property="og:image" content="https://connbook.yalex-k.com/bluetooth-deep/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"SMP 완전판: P-256에서 LTK까지","name":"SMP 완전판: P-256에서 LTK까지 · BluetoothBook 심화","url":"https://connbook.yalex-k.com/bluetooth-deep/chapters/smp.html","mainEntityOfPage":"https://connbook.yalex-k.com/bluetooth-deep/chapters/smp.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":7,"image":"https://connbook.yalex-k.com/bluetooth-deep/og.png","dateModified":"2026-10-20","isPartOf":{"@type":"Book","@id":"https://connbook.yalex-k.com/bluetooth-deep/#book","name":"BluetoothBook 심화 — 프로토콜 스택을 끝까지 따라가는 블루투스 교과서","url":"https://connbook.yalex-k.com/bluetooth-deep/"},"publisher":{"@type":"Organization","name":"BluetoothBook 심화","url":"https://connbook.yalex-k.com/bluetooth-deep/"},"description":"LE Secure Connections 페어링을 함수 하나하나 따라간다. P-256 ECDH와 공개 키 검증, f4 약속값, g2 숫자 비교와 패스키 20라운드, f5로 만드는 MacKey와 LTK, f6 확인값, 레거시 c1·s1, 클래식과 키를 넘겨 쓰는 h6·h7(CTKD)까지 Core 6.3 부록 D의 샘플로 검증한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook 심화","item":"https://connbook.yalex-k.com/bluetooth-deep/"},{"@type":"ListItem","position":2,"name":"07 SMP 완전판: P-256에서 LTK까지","item":"https://connbook.yalex-k.com/bluetooth-deep/chapters/smp.html"}]}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"SMP 완전판: P-256에서 LTK까지","name":"SMP 완전판: P-256에서 LTK까지 · BluetoothBook 심화","url":"https://connbook.yalex-k.com/bluetooth-deep/chapters/smp.html","mainEntityOfPage":"https://connbook.yalex-k.com/bluetooth-deep/chapters/smp.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":7,"image":"https://connbook.yalex-k.com/bluetooth-deep/og.png","dateModified":"2026-11-06","isPartOf":{"@type":"Book","@id":"https://connbook.yalex-k.com/bluetooth-deep/#book","name":"BluetoothBook 심화 — 프로토콜 스택을 끝까지 따라가는 블루투스 교과서","url":"https://connbook.yalex-k.com/bluetooth-deep/"},"publisher":{"@type":"Organization","name":"BluetoothBook 심화","url":"https://connbook.yalex-k.com/bluetooth-deep/"},"description":"LE Secure Connections 페어링을 함수 하나하나 따라간다. P-256 ECDH와 공개 키 검증, f4 약속값, g2 숫자 비교와 패스키 20라운드, f5로 만드는 MacKey와 LTK, f6 확인값, 레거시 c1·s1, 클래식과 키를 넘겨 쓰는 h6·h7(CTKD)까지 Core 7.0 부록 D의 샘플로 검증한다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook 심화","item":"https://connbook.yalex-k.com/bluetooth-deep/"},{"@type":"ListItem","position":2,"name":"07 SMP 완전판: P-256에서 LTK까지","item":"https://connbook.yalex-k.com/bluetooth-deep/chapters/smp.html"}]}]}</script>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -196,6 +196,21 @@
     <p class="spec-ref">h6·h7: <b>[Vol 3] Part H §2.2.10·§2.2.11</b> · LTK → 링크 키: <b>§2.4.2.4</b> · 링크 키 → LTK: <b>§2.4.2.5</b> · CTKD 개요: <b>§2.3.5.7</b> · 샘플: <b>Appendix D.6, D.8~D.12</b></p>
   </section>
 
+  <!-- ============================================================ -->
+  <section id="nonpaired">
+    <h2>7.0: SMP 없이 링크를 잠그는 길, TAK와 LE 보안 모드 4</h2>
+    <p>지금까지 본 SMP는 두 기기가 서로를 확인하고 LTK를 만들어 저장하는 장치다. 7.0은 SMP를 아예 거치지 않는 <b>페어링 없는 보안 모델</b>을 더했다. 상위 계층 사양(앱 프로파일)이 자기 방식으로 상대를 인증하고 키를 합의해, 128비트 강도의 <b><span class="term">TAK</span></b><span class="en">(Transient Application Key)</span>를 <span class="term">호스트</span>에 건넨다. 호스트는 이 TAK를 LTK 자리에 넣어 암호화 시작 절차(6장)를 돌리고, 절차가 끝나면 TAK를 버린다. 그 연결에서는 SMP의 페어링·키 생성·본딩이 쓰이지 않는다. 예전 방식(EDIV·Rand가 있는 시작 절차)을 쓰면 EDIV와 Rand는 0이다.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>LE 보안 모드 4</th><th>키</th><th>인증</th><th>막는 것</th></tr></thead>
+      <tbody>
+        <tr><td>레벨 1</td><td>EKS 기회적 암호화: LTK = 0, ECDH만 (6장)</td><td>없음</td><td>엿듣기</td></tr>
+        <tr><td>레벨 2</td><td>상위 사양이 만든 TAK</td><td>상위 사양이 맡음 (대역 안·밖)</td><td>엿듣기, 그리고 상위 사양이 막는다면 끼어들기</td></tr>
+      </tbody>
+    </table></div>
+    <p>책임이 어디로 옮겨 갔는지가 핵심이다. SMP에서는 숫자 비교·패스키·OOB가 끼어들기를 막았다. 모드 4 레벨 2에서는 그 일을 TAK를 만드는 상위 사양이 맡는다. 사양은 상위 사양이 상대 인증, 키 합의 중 끼어들기 방어, 128비트 강도 비밀 만들기, TAK를 호스트에 건네는 정책을 책임지라고 적고, 끼어들기를 막지 않는 상위 사양은 엿듣기만 막을 수 있다고 못 박는다. 이런 연결에서 <span class="term">GATT</span> <span class="term">특성</span>이나 <span class="term">L2CAP</span> <span class="term">서비스</span>를 열어 줄지도 상위 프로파일이 정한다.</p>
+    <p class="spec-ref">페어링 없는 보안 모델과 TAK의 성질·상위 사양의 책임: <b>[Vol 1] Part A §5.4.7</b> · LE 보안 모드 4의 두 레벨: <b>[Vol 3] Part C §10.2.6</b> · 모드 4에서 서비스 요청 받기·보내기: <b>§10.3.3·§10.3.4</b> · TAK로 암호화 시작, EDIV·Rand 0, 호스트가 TAK 폐기: <b>§10.6.2</b></p>
+  </section>
+
   <div class="callout related"><strong>다른 책에서</strong><ul><li><a href="../../bluetooth/chapters/security.html">BluetoothBook 08장 · 페어링과 보안</a> — 입출력 능력 표와 숫자 비교의 원리</li></ul></div>
 
   <section class="keypoints" id="summary">
@@ -205,6 +220,7 @@
       <li>f4 = CMAC<sub>X</sub>(U‖V‖Z), g2 = CMAC<sub>X</sub>(U‖V‖Y) mod 2³²(화면은 mod 10⁶), f5는 SALT로 T를 만든 뒤 카운터 0·1로 두 키, f6은 IOcap와 주소까지 묶는다.</li>
       <li>디버그 키는 개인 키가 공개되어 있어 한쪽만 써도 LTK가 드러난다. 양산 기기에서 꺼 두고, 받으면 거부할 수 있다.</li>
       <li>레거시 c1·s1은 TK만 알면 다시 계산된다. 방어는 SC Only·보안 모드 1 레벨 4.</li>
+      <li>7.0의 LE 보안 모드 4는 SMP 없이 잠근다. 레벨 1은 EKS 기회적 암호화(인증 없음), 레벨 2는 상위 사양이 인증하고 만든 TAK를 LTK 자리에 넣는다. 끼어들기 방어는 그 상위 사양의 책임이다.</li>
       <li>CTKD: CT2 = 1이면 h7, 아니면 h6로 중간 키를 거쳐 LTK ↔ 링크 키. 유도한 키는 원래 키의 보안 속성을 물려받는다.</li>
     </ol>
   </section>

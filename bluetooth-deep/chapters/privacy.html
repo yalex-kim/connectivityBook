@@ -5,19 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <title>프라이버시와 필터링: 해석 목록과 필터 수용 목록 · BluetoothBook 심화</title>
-<meta name="description" content="주소 네 가지와 신원 주소, RPA를 만들고 푸는 ah, 컨트롤러의 해석 목록과 네트워크·기기 프라이버시 모드, 필터 수용 목록과 광고·스캔·연결 필터 정책, 지정 광고의 TargetA, RPA를 바꾸는 시점까지 Core 6.3의 규칙과 부록 D 샘플로 따라간다.">
+<meta name="description" content="주소 네 가지와 신원 주소, RPA를 만들고 푸는 ah, 컨트롤러의 해석 목록과 네트워크·기기 프라이버시 모드, 필터 수용 목록과 광고·스캔·연결 필터 정책, 지정 광고의 TargetA, RPA를 바꾸는 시점까지 Core 7.0의 규칙과 부록 D 샘플로 따라간다.">
 <link rel="canonical" href="https://connbook.yalex-k.com/bluetooth-deep/chapters/privacy.html">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="BluetoothBook 심화">
 <meta property="og:title" content="프라이버시와 필터링: 해석 목록과 필터 수용 목록 · BluetoothBook 심화">
-<meta property="og:description" content="주소 네 가지와 신원 주소, RPA를 만들고 푸는 ah, 컨트롤러의 해석 목록과 네트워크·기기 프라이버시 모드, 필터 수용 목록과 광고·스캔·연결 필터 정책, 지정 광고의 TargetA, RPA를 바꾸는 시점까지 Core 6.3의 규칙과 부록 D 샘플로 따라간다.">
+<meta property="og:description" content="주소 네 가지와 신원 주소, RPA를 만들고 푸는 ah, 컨트롤러의 해석 목록과 네트워크·기기 프라이버시 모드, 필터 수용 목록과 광고·스캔·연결 필터 정책, 지정 광고의 TargetA, RPA를 바꾸는 시점까지 Core 7.0의 규칙과 부록 D 샘플로 따라간다.">
 <meta property="og:url" content="https://connbook.yalex-k.com/bluetooth-deep/chapters/privacy.html">
 <meta property="og:image" content="https://connbook.yalex-k.com/bluetooth-deep/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"프라이버시와 필터링: 해석 목록과 필터 수용 목록","name":"프라이버시와 필터링: 해석 목록과 필터 수용 목록 · BluetoothBook 심화","url":"https://connbook.yalex-k.com/bluetooth-deep/chapters/privacy.html","mainEntityOfPage":"https://connbook.yalex-k.com/bluetooth-deep/chapters/privacy.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":8,"image":"https://connbook.yalex-k.com/bluetooth-deep/og.png","dateModified":"2026-10-20","isPartOf":{"@type":"Book","@id":"https://connbook.yalex-k.com/bluetooth-deep/#book","name":"BluetoothBook 심화 — 프로토콜 스택을 끝까지 따라가는 블루투스 교과서","url":"https://connbook.yalex-k.com/bluetooth-deep/"},"publisher":{"@type":"Organization","name":"BluetoothBook 심화","url":"https://connbook.yalex-k.com/bluetooth-deep/"},"description":"주소 네 가지와 신원 주소, RPA를 만들고 푸는 ah, 컨트롤러의 해석 목록과 네트워크·기기 프라이버시 모드, 필터 수용 목록과 광고·스캔·연결 필터 정책, 지정 광고의 TargetA, RPA를 바꾸는 시점까지 Core 6.3의 규칙과 부록 D 샘플로 따라간다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook 심화","item":"https://connbook.yalex-k.com/bluetooth-deep/"},{"@type":"ListItem","position":2,"name":"08 프라이버시와 필터링: 해석 목록과 필터 수용 목록","item":"https://connbook.yalex-k.com/bluetooth-deep/chapters/privacy.html"}]}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","headline":"프라이버시와 필터링: 해석 목록과 필터 수용 목록","name":"프라이버시와 필터링: 해석 목록과 필터 수용 목록 · BluetoothBook 심화","url":"https://connbook.yalex-k.com/bluetooth-deep/chapters/privacy.html","mainEntityOfPage":"https://connbook.yalex-k.com/bluetooth-deep/chapters/privacy.html","inLanguage":"ko","isAccessibleForFree":true,"learningResourceType":"interactive textbook chapter","position":8,"image":"https://connbook.yalex-k.com/bluetooth-deep/og.png","dateModified":"2026-11-06","isPartOf":{"@type":"Book","@id":"https://connbook.yalex-k.com/bluetooth-deep/#book","name":"BluetoothBook 심화 — 프로토콜 스택을 끝까지 따라가는 블루투스 교과서","url":"https://connbook.yalex-k.com/bluetooth-deep/"},"publisher":{"@type":"Organization","name":"BluetoothBook 심화","url":"https://connbook.yalex-k.com/bluetooth-deep/"},"description":"주소 네 가지와 신원 주소, RPA를 만들고 푸는 ah, 컨트롤러의 해석 목록과 네트워크·기기 프라이버시 모드, 필터 수용 목록과 광고·스캔·연결 필터 정책, 지정 광고의 TargetA, RPA를 바꾸는 시점까지 Core 7.0의 규칙과 부록 D 샘플로 따라간다."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BluetoothBook 심화","item":"https://connbook.yalex-k.com/bluetooth-deep/"},{"@type":"ListItem","position":2,"name":"08 프라이버시와 필터링: 해석 목록과 필터 수용 목록","item":"https://connbook.yalex-k.com/bluetooth-deep/chapters/privacy.html"}]}]}</script>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -165,9 +165,9 @@
   <!-- ============================================================ -->
   <section id="timing">
     <h2>언제 바꾸나: 주소 변경 주기와 데이터</h2>
-    <p><span class="term">GAP</span>은 주소를 바꾸는 최대 간격 T<sub>GAP</sub>(private_addr_int)로 <b>15분</b>을 권한다. 바꾸는 시점이 정확히 15분마다면, 오래 지켜보는 관찰자는 “15분 전 사라진 주소와 지금 나타난 주소가 같은 기기”라고 짝지을 수 있다. 6.1부터는 <span class="term">HCI</span> 명령 [v2]로 최소·최대를 주고 그 사이에서 매번 무작위로 고르게 했고, 기본값도 8~15분 사이 무작위다. 광고 데이터가 바뀐다면 주소 변경과 같은 순간에 바꿔야, 옛 주소와 새 주소를 데이터로 잇지 못한다.</p>
+    <p><span class="term">GAP</span>은 주소를 바꾸는 최대 간격 T<sub>GAP</sub>(private_addr_int)로 <b>15분</b>을 권한다. 바꾸는 시점이 정확히 15분마다면, 오래 지켜보는 관찰자는 “15분 전 사라진 주소와 지금 나타난 주소가 같은 기기”라고 짝지을 수 있다. 6.1부터는 <span class="term">HCI</span> 명령 [v2]로 최소·최대를 주고 그 사이에서 매번 무작위로 고르게 했고, 기본값도 8~15분 사이 무작위다. 광고 데이터가 바뀐다면 주소 변경과 같은 순간에 바꿔야, 옛 주소와 새 주소를 데이터로 잇지 못한다. 7.0은 이것을 컨트롤러에 맡기는 기능(Data-change-driven RPA updates)을 더했다. 호스트가 요청하면 컨트롤러는 광고 데이터나 <span class="term">스캔 응답</span> 데이터가 바뀔 때마다 새 RPA를 만든다.</p>
     <div class="callout tip"><strong>펌웨어 점검표</strong><p>① 본딩한 상대를 해석 목록과 필터 수용 목록에 함께 넣었나(신원 주소로). ② 해석을 켜 둔 상태에서 목록을 바꾸려다 Command Disallowed가 나지 않나(광고·스캔·연결 시도 중에는 해석을 끄고 바꾼다). ③ RPA를 쓰지 않는 옛 기기는 IRK 0 레코드나 기기 프라이버시 모드로. ④ 광고 데이터의 식별자를 주소 변경에 맞춰 바꾸나.</p></div>
-    <p class="spec-ref">T<sub>GAP</sub>(private_addr_int) 15분, 데이터 변경과 주소 변경 맞추기: <b>[Vol 3] Part C §10.8.2·Appendix A</b> · RPA 시간 범위와 [v1]·[v2] 기본값: <b>[Vol 4] Part E §7.8.45</b> · 6.1 무작위 RPA 갱신: <b>[Vol 1] Part C §15.1</b></p>
+    <p class="spec-ref">T<sub>GAP</sub>(private_addr_int) 15분, 데이터 변경과 주소 변경 맞추기: <b>[Vol 3] Part C §10.8.2·Appendix A</b> · RPA 시간 범위와 [v1]·[v2] 기본값: <b>[Vol 4] Part E §7.8.45</b> · 6.1 무작위 RPA 갱신: <b>[Vol 1] Part C §15.1</b> · 7.0 데이터가 바뀔 때 RPA 갱신: <b>[Vol 6] Part B §6.1.1·§4.6.66</b></p>
   </section>
 
   <div class="callout related"><strong>다른 책에서</strong><ul><li><a href="../../bluetooth/chapters/security.html">BluetoothBook 08장 · 페어링과 보안</a> — RPA와 IRK의 기본</li><li><a href="../../bluetooth/chapters/advertising.html">BluetoothBook 05장 · 광고와 스캔</a> — 광고 PDU의 AdvA·TargetA</li></ul></div>
