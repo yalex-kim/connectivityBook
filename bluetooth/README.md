@@ -23,14 +23,14 @@ python3 -m http.server 8000   # 저장소 루트에서 → http://localhost:8000
 |---|---|---|---|
 | 01 | chapters/intro.html | 블루투스란 무엇인가 | 주변 기기의 클래식/LE, Core 변경 이력 1.2~7.0, 스택 탐색 |
 | 02 | chapters/radio.html | 2.4 GHz 전파와 데시벨 | 대역 지도와 LE 채널 번호, dBm 사다리, 링크 버짓, 다중 경로 페이딩 |
-| 03 | chapters/phy.html | 비트를 전파에 싣기: GFSK와 PHY | GFSK 파형, 잡음 속 BER·PER, EDR 성좌도, LE Coded 부호기, PHY 비교, HDT(공개 초안) 미리 보기 |
+| 03 | chapters/phy.html | 비트를 전파에 싣기: GFSK와 PHY | GFSK 파형, 잡음 속 BER·PER, EDR 성좌도, LE Coded 부호기, PHY 비교, 7.0 HDT 부호기·성좌점(LTS 예제 데이터 검증) |
 | 04 | chapters/hopping.html | 주파수 도약과 공존 | Wi-Fi 옆 고정/도약/AFH, 채널 선택 알고리즘 #1·#2(사양 샘플 검증) |
 | 05 | chapters/advertising.html | 광고와 스캔 | 31바이트 AD 구조 만들기, 발견 시간 분포 |
 | 06 | chapters/connection.html | 연결: 약속된 시각의 짧은 만남 | 연결 파라미터 규칙(6.2 SCI), 패킷·CRC·화이트닝(사양 샘플 검증), SN/NESN, 처리량 |
 | 07 | chapters/gatt.html | GATT: 데이터를 담는 메뉴판 | 심박계 GATT 서버 탐색, 알림 vs 표시, ATT_MTU 쪼개기 |
-| 08 | chapters/security.html | 페어링과 보안 | 페어링 방식 판정(Table 2.8), 실제 P-256 + g2 숫자 비교, AES-128 RPA |
+| 08 | chapters/security.html | 페어링과 보안 | 페어링 방식 판정(Table 2.8), 실제 P-256 + g2 숫자 비교, AES-128 RPA, 7.0의 EKS·TAK |
 | 09 | chapters/power.html | 전력: 코인 전지로 몇 년 | 연결 이벤트 전류 파형·창 넓히기, 배터리 수명 계산기 |
-| 10 | chapters/audio.html | 블루투스 오디오 | 코덱 비트레이트와 링크 여유, 지연 예산, CIS 재전송과 플러시 |
+| 10 | chapters/audio.html | 블루투스 오디오 | 코덱 비트레이트와 링크 여유, 지연 예산, CIS 재전송과 플러시, 7.0 HDT·IPU |
 | 11 | chapters/location.html | 위치 찾기: RSSI에서 채널 사운딩까지 | RSSI 거리 오차, AoA 위상차와 모호성, 채널 사운딩 PBR + RTT |
 | 12 | chapters/mesh.html | 메시와 사물 인터넷 | 관리된 플러딩(릴레이·TTL), PAwR 전자 가격표 시간표 |
 | 13 | chapters/coexistence.html | 공존: 2.4 GHz를 나눠 쓰는 법 | 대역 옆 LTE와 필터·격리·차단 한도, LTE TDD 프레임 위 슬롯 정렬(순수 TDM·하이브리드), WCI-2 메시지 만들기, PTA 우선순위 |

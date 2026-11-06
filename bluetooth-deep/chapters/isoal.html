@@ -131,6 +131,25 @@
     <p class="spec-ref">대역 조건과 비분할 Max_IPP, 45바이트 예: <b>[Vol 6] Part G §2.2</b> · 프레임 있는 경우 지연(10.6/10 → 20.6 ms): <b>§3.2.1</b> · 프레임 없는 경우 지연(10/20 → 10 ms): <b>§3.2.2</b></p>
   </section>
 
+  <!-- ============================================================ -->
+  <section id="ipu">
+    <h2>7.0: CIS를 끊지 않고 바꾸기 (IPU)</h2>
+    <p>6.3까지 <span class="term">CIS</span>의 파라미터는 “CIS가 살아 있는 동안 바뀌지 않는다”였다. 전파가 나빠져 더 튼튼한 <span class="term">PHY</span>로 내리거나, 음악에서 통화로 바뀌어 비트레이트와 지연을 바꾸려면 CIS를 끊고 다시 만들어야 했고, 그동안 소리가 끊겼다. Core 7.0의 <b>CIS 파라미터 갱신</b><span class="en">(LE Isochronous Parameter Update, IPU)</span>은 미리 정해 둔 설정 사이를 정해진 이벤트에서 갈아타게 한다.</p>
+    <ul>
+      <li><b>설정 미리 등록하기</b>: <span class="term">센트럴</span>은 CIS를 만든 뒤 <code>LL_CIG_CONFIG_REQ</code>로 다른 설정(PHY, ISO_Interval, Max_SDU, BN·<span class="term">FT</span>·<span class="term">NSE</span>, Max_Packet_Payload, 전송 지연 등)을 Config_ID 하나에 묶어 <span class="term">페리페럴</span>에 등록해 둔다. <span class="term">호스트</span>가 붙이는 번호는 0x01~0x7F, <span class="term">컨트롤러</span>가 스스로 만드는 번호는 0x80~0xFF다. 전송 지연이 같은 설정끼리는 TL_Group으로 묶는다.</li>
+      <li><b><span class="term">instant</span>에 갈아타기</b>: <code>LL_CIS_UPDATE_REQ</code>가 Config_ID와 CIS별 instant(1~16,384 CIS 이벤트 뒤)를 알리면, 두 쪽이 그 이벤트부터 새 설정을 쓴다. 앵커 포인트만 AO(µs)만큼 옮기는 것도 같은 절차다. 페리페럴은 <code>LL_CIS_PERIPHERAL_UPDATE_REQ</code>로 요청할 수 있다.</li>
+      <li><b>바꿀 수 없는 것</b>: SDU 간격과 프레임 방식(Framing_Mode)은 바꾸지 못한다. 한 CIS가 <span class="term">GFSK</span> PHY와 <span class="term">HDT</span> PHY 사이를 오가는 설정도 만들 수 없다. Max_SDU를 바꾸거나 전송 지연이 다른 TL_Group으로 가려면 두 호스트가 그 기능을 지원해야 한다.</li>
+    </ul>
+    <p>까다로운 것은 갈아타는 순간에 이미 떠 있던 페이로드다. instant 전에 기준 앵커 포인트가 있고 플러시 시점(이전 설정 기준)이 instant 뒤인 페이로드를 <b>전환 페이로드</b>라 하고, 그 수는 <b>BN<sub>old</sub> × (FT<sub>old</sub> − 1)</b>이다. FT가 1이면 매 이벤트 안에서 끝나니 전환 페이로드가 없다. 전환 페이로드의 동기 시점이 새 설정의 첫 페이로드보다 늦으면 잘라 맞추고, 전송 지연 그룹이 바뀌거나 Max_Packet_Payload가 줄어드는 경우에는 instant 바로 앞 이벤트에서 플러시한다. 이 장의 지연 계산(위 절)이 설정마다 따로 성립하고, 그 경계를 규칙으로 이어 붙인 것이다.</p>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">BN 2, FT 3인 CIS를 IPU로 BN 1, FT 1인 설정으로 바꾼다. instant를 넘어가는 전환 페이로드는 몇 개인가?</p><p class="wi-hint">전환 페이로드 수는 이전 설정만으로 정해진다.</p><div class="opts">
+      <button class="opt">0개</button>
+      <button class="opt">2개</button>
+      <button class="opt" data-correct>4개</button>
+      <button class="opt">6개</button>
+    </div><div class="quiz-exp">BN<sub>old</sub> × (FT<sub>old</sub> − 1) = 2 × 2 = 4. 이벤트마다 새 페이로드 2개가 들어오고 각각 최대 3이벤트 동안 보낼 수 있으니, instant 직전 두 이벤트에서 들어온 4개가 아직 기한이 남아 있다.</div></div>
+    <p class="spec-ref">CIS 파라미터(6.3의 “바뀌지 않는다” 문장 삭제): <b>[Vol 6] Part B §4.5.13.1</b> · CIG 설정과 Config_ID·TL_Group: <b>§4.5.14</b> · 설정 정의·갱신·삭제 절차: <b>§5.1.36~§5.1.38</b> · 바꿀 수 없는 것(SDU 간격, Framing_Mode, GFSK↔HDT): <b>§5.1.36</b> · instant 1~16,384와 AO: <b>§5.1.37·§5.1.37.2</b> · 전환 페이로드와 플러시: <b>§4.5.13.8</b> · 기능 비트: <b>§4.6.64·§4.6.65</b> · 7.0 새 기능: <b>[Vol 1] Part C §18.1</b></p>
+  </section>
+
   <div class="callout related"><strong>다른 책에서</strong><ul><li><a href="../../bluetooth/chapters/audio.html">BluetoothBook 10장 · 블루투스 오디오</a> — CIS·BIS, LC3, 지연 예산</li></ul></div>
 
   <section class="keypoints" id="summary">
@@ -141,6 +160,7 @@
       <li>분할 모드는 SDU를 나누고 섞어 담는다(필수), 비분할 모드는 SDU를 통째로(선택). 5바이트가 남지 않으면 새 SDU를 시작하지 않는다.</li>
       <li>분할 모드: BN × (Max_IPP − 2) ≥ F × (5 + Max_SDU). 비분할: Max_IPP = ⌈…⌉ × 5 + Max_SDU.</li>
       <li>전송 지연(CIS C→P): 프레임 없음 CIG_Sync_Delay + FT × ISO − SDU, 프레임 있음 CIG_Sync_Delay + FT × ISO + (분할이면 SDU 간격).</li>
+      <li>7.0의 IPU: 미리 등록한 CIG 설정(Config_ID) 사이를 instant에 갈아탄다. SDU 간격·프레임 방식은 못 바꾸고, 전환 페이로드 BN<sub>old</sub> × (FT<sub>old</sub> − 1)개는 따로 정한 플러시 규칙을 따른다.</li>
     </ol>
   </section>
 
@@ -191,6 +211,8 @@
   /** 비분할 모드 Max_IPP. [Vol 6] Part G §2.2 */
   function unsegmentedMaxPdu(sduInt, isoInt, bn, maxSdu) { return Math.ceil((isoInt / sduInt) * (1 + MAX_DRIFT) / bn) * 5 + maxSdu; }
   /** CIS(C→P) 전송 지연. mode: "unframed" | "segmentable" | "unsegmented". [Vol 6] Part G §3.2 */
+  /** IPU의 전환 페이로드 수: BN_old × (FT_old − 1). [Vol 6] Part B §4.5.13.8 */
+  function transitionPayloads(bnOld, ftOld) { return bnOld * (ftOld - 1); }
   function cisLatency(mode, cigSyncDelay, ft, isoInt, sduInt) {
     if (mode === "unframed") return cigSyncDelay + ft * isoInt - sduInt;
     return cigSyncDelay + ft * isoInt + (mode === "segmentable" ? sduInt : 0);

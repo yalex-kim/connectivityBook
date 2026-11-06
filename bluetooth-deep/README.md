@@ -11,15 +11,15 @@
 | 03 | chapters/scheduling.html | 링크 계층 상태 기계와 스케줄링 | 서브레이팅·지연 규칙(사양의 21번째 이벤트 예, 그림 4.43·4.44), 스케줄러 모델의 겹침 없음 |
 | 04 | chapters/procedures.html | 링크 계층 제어 절차: instant와 충돌 | [Vol 6] Part C §4.3.1·§4.3.2 완전한 패킷(공중 비트), instant·충돌 규칙 사례 |
 | 05 | chapters/extadv.html | 광고 끝까지: 확장 광고, PAwR | §4.2.1 레거시 광고, §4.2.2 AUX_ADV_IND(샘플 CRC 불일치 기록), PAwR 규칙 |
-| 06 | chapters/encryption.html | 링크 계층 암호화: 세션 키와 AES-CCM | [Vol 6] Part C §1의 샘플 패킷 4개(B·X·A·S 블록까지) + OpenSSL AES-CCM |
-| 07 | chapters/smp.html | SMP 완전판: P-256에서 LTK까지 | [Vol 3] Part H 부록 D.1~D.12, c1·s1 예, 디버그 키, OpenSSL ECDH |
+| 06 | chapters/encryption.html | 링크 계층 암호화: 세션 키와 AES-CCM | [Vol 6] Part C §1의 샘플 패킷 4개(B·X·A·S 블록까지) + OpenSSL AES-CCM, 7.0 EKS 키 계단(Part C §10)과 HDT MIC 8·16바이트(§11) |
+| 07 | chapters/smp.html | SMP 완전판: P-256에서 LTK까지 | [Vol 3] Part H 부록 D.1~D.12, c1·s1 예, 디버그 키, OpenSSL ECDH, 7.0 TAK·LE 보안 모드 4 |
 | 08 | chapters/privacy.html | 프라이버시와 필터링 | 부록 D.7(ah), 해석·필터 규칙 사례, OpenSSL AES |
 | 09 | chapters/bigsec.html | BIG 보안과 BIS | [Vol 6] Part C §5(BIS 접근 주소 31개)·§6(h8, “Børne House” → GSK) |
 | 10 | chapters/l2cap.html | L2CAP: 채널, 신호, 크레딧 흐름 제어 | K-frame 분할·크레딧·재설정 규칙 사례(무작위 400개) |
 | 11 | chapters/gatt.html | ATT/GATT 심화: EATT, 큐 쓰기, Database Hash | Database Hash 붙이는 규칙(§7.3.1의 예), Robust Caching 전이, AES-CMAC 시험 벡터 |
 | 12 | chapters/baseband.html | Classic 기저대역: 도약 커널, 접근 코드, HEC·CRC·FEC | 도약 6,144개(기본 + AFH 세 가지 × 세 주소), 동기어 130개, HEC 20개, CRC, DH1·DM1 공중 비트, 화이트닝, FEC (Part G §2~§9), ACL 패킷 12종 처리량(Part B Table 6.2·6.8) |
 | 13 | chapters/classicsec.html | Classic 보안: 레거시 PIN에서 Secure Connections까지 | SAFER+ E1·E21·E22·E3 31개, P-192·P-256 ECDH 12개, f1·g·f2·f3·h3·h4·h5 51개, AES-CCM 14개 (Part G §1.2, §7, §10). g P-256 예의 불일치 기록 |
-| 14 | chapters/isoal.html | ISOAL과 등시성 타이밍 | 프레임 없는·있는 PDU 분할, Max_PDU 조건([Vol 6] Part G §2.2의 예 45), CIG·BIG 전송 지연 |
+| 14 | chapters/isoal.html | ISOAL과 등시성 타이밍 | 프레임 없는·있는 PDU 분할, Max_IPP 조건([Vol 6] Part G §2.2의 예 45), CIG·BIG 전송 지연, 7.0 IPU 전환 페이로드 |
 | 15 | chapters/leaudio.html | LE 오디오 프로파일: PACS·ASCS·BAP·CAP (Core 밖) | ASE 상태 전이(ASCS Table 3.2·§5.4), BAP Table 5.2 32개 설정의 비트레이트 재계산 |
 | 16 | chapters/cs.html | Channel Sounding: 위상과 왕복 시간으로 거리 재기 | CS DRBG(h9·f7·f8·f9) 블록 9개, cr1 채널 섞기, hr1 두 바이트 경우, 접근 주소 점수(Part C §8.1.1) |
 | 17 | chapters/direction.html | 방향 찾기: CTE, IQ 표본, 안테나 전환 | IQ 표본 9~82개 규칙, 패턴 반복, 이상적 신호에서 각도 복원 |

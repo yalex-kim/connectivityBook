@@ -142,7 +142,7 @@
       </div>
       <div class="sim-note">입력 칸의 형식: SKD는 “SKD_C SKD_P”, IV는 “IV_C IV_P”, 세 번째 칸은 “헤더 보낸쪽(C 또는 P) 카운터”. 해볼 것: ① 샘플 넷을 차례로 눌러 B·X·A·S 블록이 사양 [Vol 6] Part C §1.2의 값과 같고 마지막 줄이 ✓인지 보자. ② START_ENC_RSP ①과 ②는 페이로드(0x06)가 같은데 암호문이 다르다. 무엇이 다른가(directionBit). ③ LL_DATA ①에서 헤더를 0E → 02로 바꿔도(NESN·SN만 다름) MIC가 그대로다. 0E → 0D(LLID가 바뀜)면 MIC가 바뀐다. 검증 스크립트는 네 샘플의 모든 블록 값과, 무작위 패킷 수백 개를 OpenSSL의 AES-CCM과 맞춰 본다.</div>
     </div>
-    <p class="spec-ref">CCM 블록 B₀·B₁·Aᵢ(Table 2.2~2.4)과 헤더 마스크: <b>[Vol 6] Part E §2.2·§2.3</b> · 블록별 중간값(B, X, A, S)과 결과 패킷: <b>[Vol 6] Part C §1.2</b> · CCM 자체: IETF RFC 3610</p>
+    <p class="spec-ref">CCM 블록 B₀·B₁·Aᵢ(Table 2.2~2.5)과 헤더 마스크: <b>[Vol 6] Part E §2.2·§2.3</b> · 블록별 중간값(B, X, A, S)과 결과 패킷: <b>[Vol 6] Part C §1.2</b> · CCM 자체: IETF RFC 3610</p>
   </section>
 
   <!-- ============================================================ -->
@@ -179,9 +179,38 @@
   <section id="rekey">
     <h2>키 바꾸기, 그리고 등시성 링크의 IV</h2>
     <p>연결을 끊지 않고 새 키를 쓰려면 <b>암호화 일시 정지 절차</b>를 쓴다. 센트럴이 <code>LL_PAUSE_ENC_REQ</code>를 보내고, 페리페럴이 암호화된 <code>LL_PAUSE_ENC_RSP</code>로 답하고, 센트럴이 평문 <code>LL_PAUSE_ENC_RSP</code>를 돌려주면 암호화가 꺼진다. 그 사이에는 데이터 PDU를 보내지 않는다. 바로 이어서 위의 시작 절차를 다시 해 <b>새 <span class="term">SKD</span>와 새 <span class="term">IV</span></b>로 새 세션 키를 만든다. 일시 정지 뒤에 페리페럴의 호스트가 LTK를 주지 못하면 거절이 아니라 연결 종료(0x06)다.</p>
-    <p><span class="term">등시성 채널</span>(14장)에도 같은 CCM을 쓴다. <b><span class="term">CIS</span></b>는 연결된 <span class="term">ACL</span>의 세션 키를 그대로 쓰고, IV는 ACL의 IV에서 아래 32비트만 그 CIS의 <span class="term">접근 주소</span>와 XOR해 만든다. CIS마다 접근 주소가 다르므로 같은 키로도 nonce가 겹치지 않는다. packetCounter 자리에는 CIS의 페이로드 카운터를 쓴다. <b><span class="term">BIS</span></b>는 연결이 없으니 <span class="term">방송 코드</span>(Broadcast_Code)에서 유도한 그룹 세션 키(<span class="term">GSK</span>)를 쓰고, IV 기준값은 BIGInfo에 실린 <span class="term">GIV</span>다(9장).</p>
+    <p><span class="term">등시성 채널</span>(14장)에도 같은 CCM을 쓴다. 7.0의 EKS(아래 절)를 쓰지 않으면 <b><span class="term">CIS</span></b>는 연결된 <span class="term">ACL</span>의 세션 키를 그대로 쓰고, IV는 ACL의 IV에서 아래 32비트만 그 CIS의 <span class="term">접근 주소</span>와 XOR해 만든다. CIS마다 접근 주소가 다르므로 같은 키로도 nonce가 겹치지 않는다. packetCounter 자리에는 CIS의 페이로드 카운터를 쓴다. <b><span class="term">BIS</span></b>는 연결이 없으니 <span class="term">방송 코드</span>(Broadcast_Code)에서 유도한 그룹 세션 키(<span class="term">GSK</span>)를 쓰고, IV 기준값은 BIGInfo에 실린 <span class="term">GIV</span>다(9장).</p>
     <div class="formula">CIS·BIS의 IV: IV[31:0] = IV_base[31:0] ⊕ Access Address · IV[63:32] = IV_base[63:32]</div>
     <p class="spec-ref">암호화 일시 정지: <b>[Vol 6] Part B §5.1.3.2</b> · CIS·BIS의 IV(그림 2.1)와 packetCounter: <b>[Vol 6] Part E §2.1</b> · CIS·BIS의 세션 키: <b>Part E §2.4</b> · GSK 유도(h8): <b>Part E §1.1</b></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="eks">
+    <h2>7.0의 암호화 키 스케줄(EKS): LTK에 ECDH를 섞는다</h2>
+    <p>첫 절의 예측 문제를 다시 보자. 지금까지의 방식에서 세션 키의 비밀은 전부 LTK에서 왔다. 그래서 LTK가 새면 그 연결에서 엿들어 둔 SKD로 세션 키를 바로 계산할 수 있다. Core 7.0의 <b><span class="term">EKS</span></b><span class="en">(Encryption Key Schedule)</span>는 암호화를 시작할 때마다 두 링크 계층이 <b>P-256 공개 키를 주고받아 <span class="term">ECDH</span> 공유 비밀을 새로 만들고</b>, 그 값과 LTK를 함께 <span class="term">AES-CMAC</span> 계단에 넣어 키를 뽑는다. LTK만 알아서는 기록한 공중 패킷으로 세션 키를 만들 수 없고, ECDH 비밀까지 있어야 한다. 두 기기가 모두 EKS를 지원하면 이 방식을 쓰고, 7.0의 <span class="term">HDT</span> <span class="term">PHY</span>(1권 3장)를 지원하는 기기는 EKS도 지원해야 한다.</p>
+    <p>시작 절차의 모양은 그대로다. <code>LL_ENC_REQ</code>·<code>LL_ENC_RSP</code> 대신 <code>LL_ENC_ECDH_REQ</code>·<code>LL_ENC_ECDH_RSP</code>가 공개 키(64바이트)와 무작위 값, 그리고 HDT에서 쓸 MIC 길이 선호(64비트를 허락하는지)를 나르고, 그 뒤의 <code>LL_START_ENC_REQ/RSP</code> 세 번 악수는 같다. 받은 공개 키는 7장처럼 곡선 위의 점인지 검사하고, 자기 공개 키와 X 좌표가 같은 키도 거부한다(0x4A Invalid Public Key). <span class="term">디버그 키</span>를 허락하지 않았는데 디버그 키가 오면 0x4B로 거절한다.</p>
+    <div class="formula">k1(key, info) = AES-CMAC<sub>key</sub>(info ‖ 0x01)<br>k2 = k1(AES-CMAC<sub>0</sub>(ECDH 공유 비밀), “derived hs”)<br>T = AES-CMAC<sub>0</sub>(AA ‖ HPA ‖ PDU_C ‖ PDU_P)  ← 주고받은 ECDH PDU 전체(HPA가 없으면 0x00)<br>파생 비밀 = k1(AES-CMAC<sub>k2</sub>(LTK), “derived ACL”) · 트래픽 비밀 TS = k1(AES-CMAC<sub>k2</sub>(LTK), “traffic ACL” ‖ T)<br><b>SK = k1(TS, “key”) · IV = k1(TS, “iv”)의 아래 8바이트</b></div>
+    <p>계단에는 세 가지 장점이 더 있다. ① 주고받은 PDU 전체(T)가 키에 들어가므로, LTK를 모르는 사람이 중간에서 공개 키나 MIC 길이 선호를 바꾸면 양쪽이 계산한 키가 달라져 암호화된 첫 <code>LL_START_ENC_RSP</code>의 MIC 검사에서 드러난다. ② <b>키 새로 고침</b>: 연결을 멈추지 않고 TS′ = k1(TS, “traffic upd”)로 바꾼 뒤 새 SK·IV를 쓴다. 7.0에서 이름이 바뀐 <b>PHY Update and Encryption Refresh</b> 절차가 이 일을 한다. 암호화를 껐다 켜는 일시 정지(위 절)와 달리 정해진 <span class="term">instant</span>에 새 키로 넘어간다. packetCounter는 그대로 이어지고, 넘어간 뒤 다시 보내는 페이로드는 새 키로 다시 암호화한다. 이 절차는 ACL의 키만 바꾸고 CIS의 키는 건드리지 않는다. ③ <b>CIS마다 다른 키</b>: CIS를 만들 때마다 파생 비밀을 k1 계단으로 한 칸 내려 [새 파생 비밀, CIS 트래픽 비밀] = ee12(이전 파생 비밀, “derived CIS”, CIG_ID ‖ CIS_ID, “traffic CIS”)를 만든다. 예전처럼 ACL의 키를 같이 쓰고 IV만 접근 주소로 바꾸는 것이 아니다.</p>
+    <p>EKS에는 페어링 없이 쓰는 <b><span class="term">기회적 암호화</span></b><span class="en">(opportunistic encryption)</span>도 있다. LTK 자리에 0을 넣고 ECDH만으로 키를 만든다. 상대가 누구인지 확인하지 않으니 끼어들기는 막지 못하지만, 옆에서 엿듣기만 하는 사람은 막는다. 7.0의 <span class="term">GAP</span>은 이것을 <b><span class="term">LE 보안 모드 4</span> 레벨 1</b>(인증 없는 암호화)로 부른다.</p>
+    <div class="sim" id="sim-eks">
+      <div class="sim-head"><span class="sim-tag">WORKBENCH</span><h3>EKS 키 계단: 사양 샘플 두 개를 끝까지</h3></div>
+      <div class="sim-controls" style="border-top:0">
+        <div class="ctrl"><span>사양 샘플</span><div class="seg" id="ek-s"><button data-value="a" class="on">§10.1 LTK + CIS 둘</button><button data-value="b">§10.2 기회적 암호화</button></div></div>
+        <div class="ctrl"><span>키 새로 고침 횟수</span><div class="seg" id="ek-r"><button data-value="0" class="on">0</button><button data-value="1">1</button><button data-value="2">2</button></div></div>
+      </div>
+      <div class="sim-view" style="padding:14px 16px">
+        <div class="blk" id="ek-out"></div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">지금 쓰는 세션 키 SK</span><span class="v" id="ek-sk" style="font-size:12.5px;overflow-wrap:anywhere">—</span></div>
+        <div class="stat"><span class="k">IV</span><span class="v" id="ek-iv" style="overflow-wrap:anywhere">—</span></div>
+        <div class="stat"><span class="k">사양 샘플과 비교</span><span class="v" id="ek-ok">—</span></div>
+      </div>
+      <div class="sim-note">DS = 파생 비밀(derived secret), TS = 트래픽 비밀, T = 주고받은 ECDH PDU의 CMAC. ECDH 공유 비밀은 사양 샘플의 값을 그대로 넣었다(7장의 P-256 계산으로 개인 키 → 공유 비밀까지 같은 값이 나오는 것을 검증 스크립트가 확인한다). 나머지는 모두 이 페이지에서 AES-CMAC로 계산한다. ✓는 사양 [Vol 6] Part C §10에 적힌 값과 같다는 뜻이다. 해볼 것: ① §10.1에서 새로 고침을 1로 바꾸면 TS가 k1(TS, “traffic upd”)로 한 칸 내려가고 SK·IV가 모두 바뀐다. ② §10.1의 CIS 두 개는 같은 ACL에서 나왔지만 서로 다른 키를 쓴다. ③ §10.2는 페어링하지 않은 연결이라 LTK가 0이고, HDT PHY에서 시작해 HPA 5바이트가 들어간다. 사양 샘플은 새로 고침 1번까지 값을 싣고 있다.</div>
+    </div>
+    <p>HDT PHY에서는 MIC도 길어진다. 7.0의 CCM은 MIC 길이 M이 <span class="term">GFSK</span> PHY에서 4, HDT PHY에서 8 또는 16이다. 두 기기가 모두 64비트 MIC를 허락했을 때만 8바이트, 아니면 16바이트를 쓴다. B₀의 첫 바이트는 M에 따라 0x49(M = 4), 0x59(M = 8), 0x79(M = 16)가 되고, B₁의 추가 인증 데이터는 헤더 첫 바이트 대신 2바이트(블록 크기, LLID, 블록 수 Nb)다. 사양의 HDT 샘플(LL_START_ENC_RSP, 260바이트 데이터)도 위 작업대의 같은 SK·IV로 바이트까지 맞는다(검증 스크립트).</p>
+    <div class="callout warn"><strong>디버깅 기능은 제품에서 꺼 둔다</strong><p>암호화된 링크를 스니퍼로 보려면 키가 필요하다. 7.0은 두 가지 디버깅 수단을 표준으로 정했다. ① <code>HCI_Write_Encryption_Key_Debug_Reporting_Mode</code>를 켜면 <span class="term">컨트롤러</span>가 세션 키를 만들 때마다 <code>HCI_Encryption_Key_Debug_Report</code> 이벤트(0x5C)로 세션 키와 IV를 호스트에 알린다. ② <code>HCI_LE_Write_Encryption_Key_Schedule_Debug_Mode</code>로 EKS에 정해진 디버그 키 쌍을 쓰게 하면 디버깅 장비가 링크를 따라갈 수 있다. 둘 다 기본값은 꺼짐이고, 개발·시험용이다. 양산 제품에서 켜 두면 암호화의 의미가 없어진다.</p></div>
+    <p class="spec-ref">CMAC 키 계단(k1·ee12·k2·k3·kv12)과 태그(Table 4.1): <b>[Vol 6] Part E §4·§4.1</b> · ACL 암호화 시작·CIS 키·새로 고침: <b>Part E §4.2.1~§4.2.3</b> · EKS면 IV와 세션 키를 §4.2로: <b>Part E §2.1·§2.4</b> · MIC 길이 M과 B₀·B₁(HDT): <b>Part E §1·§2.2</b> · Encryption Start with Key Schedule, 공개 키 검사, 0x4A·0x4B, MIC 길이 결정: <b>[Vol 6] Part B §5.1.3.1.2</b> · 새로 고침: <b>§5.1.10</b> · 기회적 암호화와 LE 보안 모드 4: <b>[Vol 3] Part C §10.2.6</b> · 디버그 보고: <b>[Vol 4] Part E §7.6.10·§7.7.77</b> · EKS 디버그 키: <b>§7.8.162</b> · 샘플: <b>[Vol 6] Part C §10·§11</b></p>
   </section>
 
   <div class="callout related"><strong>다른 책에서</strong><ul><li><a href="../../bluetooth/chapters/security.html">BluetoothBook 08장 · 페어링과 보안</a> — LTK가 만들어지기까지(이 장의 출발점)</li><li><a href="../../bluetooth/chapters/connection.html">BluetoothBook 06장 · 연결</a> — 헤더의 NESN·SN·MD와 재전송</li></ul></div>
@@ -193,7 +222,8 @@
       <li>CCM nonce 13바이트 = packetCounter(39비트) + directionBit + IV(IV_P ‖ IV_C). 카운터는 새 PDU마다 늘고 재전송에는 그대로다.</li>
       <li>AES-CCM(M = 4, L = 2): B₀·B₁(헤더 첫 바이트, NESN·SN·MD 마스크)·페이로드 블록으로 MIC, A₀으로 MIC 암호화, A₁…로 페이로드 암호화.</li>
       <li>MIC가 틀리면 패킷이 아니라 연결이 끊긴다(0x3D). 같은 nonce를 두 번 쓰면 평문의 XOR이 드러난다.</li>
-      <li>키 교체는 일시 정지 + 재시작. CIS는 ACL의 키, BIS는 GSK를 쓰고, 둘 다 IV 아래 32비트를 접근 주소와 XOR한다.</li>
+      <li>키 교체는 일시 정지 + 재시작. EKS가 없으면 CIS는 ACL의 키, BIS는 GSK를 쓰고, 둘 다 IV 아래 32비트를 접근 주소와 XOR한다.</li>
+      <li>7.0의 EKS: 암호화를 시작할 때마다 링크 계층이 ECDH 공유 비밀을 새로 만들어 LTK와 함께 AES-CMAC 계단(k1)에 넣는다. 끊지 않는 키 새로 고침, CIS마다 다른 키, 페어링 없는 기회적 암호화(LE 보안 모드 4 레벨 1). HDT PHY의 MIC는 8 또는 16바이트.</li>
     </ol>
   </section>
 
@@ -212,6 +242,11 @@
       <div class="quiz-q"><p>같은 패킷을 재전송할 때 packetCounter는?</p><div class="opts">
         <button class="opt">하나 늘린다</button><button class="opt" data-correct>그대로 둔다</button><button class="opt">0으로 되돌린다</button><button class="opt">방향 비트를 뒤집는다</button>
       </div><div class="quiz-exp">[Vol 6] Part E §2.1: “shall not be incremented for retransmissions.” 같은 nonce여야 같은 암호문이 된다.</div></div>
+      <div class="quiz-q"><p>7.0의 EKS를 쓰는 연결에서, 공격자가 공중 패킷을 모두 녹음해 두었다가 나중에 LTK를 손에 넣었다. 녹음한 데이터를 풀 수 있을까?</p><div class="opts">
+        <button class="opt">그렇다. LTK와 공중에 나온 값으로 세션 키를 계산할 수 있다</button>
+        <button class="opt" data-correct>LTK만으로는 안 된다. 세션 키에는 그때 두 링크 계층이 만든 ECDH 공유 비밀도 들어간다</button>
+        <button class="opt">IV만 알면 된다</button>
+      </div><div class="quiz-exp">EKS에서는 k2 = k1(CMAC₀(ECDH 공유 비밀), “derived hs”)가 계단의 열쇠가 되고, LTK는 그 계단에 함께 들어가는 입력이다. 공개 키만 보고 ECDH 공유 비밀을 구할 수는 없다. 반대로 EKS가 없는 예전 방식은 SK = e(LTK, SKD)라서 LTK와 녹음한 SKD로 바로 풀린다. [Vol 6] Part E §4.1·§4.2.1.</div></div>
     </div>
   </section>
 </main>
@@ -247,25 +282,62 @@
   }
   /** AAD: 헤더 첫 바이트에서 NESN(비트 2)·SN(비트 3)·MD(비트 4)를 0으로. [Vol 6] Part E Table 2.3 */
   function aadByte(hdr) { return hdr & 0xe3; }
-  /** AES-CCM(M=4, L=2) 한 PDU. 중간 블록까지 돌려준다. [Vol 6] Part E §2.2·§2.3 */
-  function ccm(sk, nonce, hdr, payload) {
-    const x16 = (a, b) => a.map((v, i) => v ^ b[i]);
-    const B = [[0x49].concat(nonce, [0, payload.length]), [0, 1, aadByte(hdr)].concat(new Array(13).fill(0))];
+  /** AES-CCM(L=2) 한 PDU. 중간 블록까지 돌려준다. hdt = { M: 8|16, aad: [AAD 2바이트] }이면 HDT PHY 형식, 없으면 GFSK(M=4, AAD 1바이트). [Vol 6] Part E §2.2·§2.3 */
+  function ccm(sk, nonce, hdr, payload, hdt) {
+    const x16 = (a, b) => a.map((v, i) => v ^ b[i]), M = hdt ? hdt.M : 4, aad = hdt ? hdt.aad : [aadByte(hdr)];
+    const B = [[0x40 | (((M - 2) / 2) << 3) | 1].concat(nonce, [payload.length >> 8, payload.length & 0xff]), [0, aad.length].concat(aad, new Array(14 - aad.length).fill(0))];
     for (let i = 0; i < payload.length; i += 16) { const c = payload.slice(i, i + 16); while (c.length < 16) c.push(0); B.push(c); }
     const X = []; let x = new Array(16).fill(0);
     B.forEach((b) => { x = aes128(sk, x16(x, b)); X.push(x); });
-    const mic = x.slice(0, 4), nA = Math.ceil(payload.length / 16) + 1, A = [], S = [];
-    for (let i = 0; i < nA; i++) { const a = [0x01].concat(nonce, [0, i]); A.push(a); S.push(aes128(sk, a)); }
+    const mic = x.slice(0, M), nA = Math.ceil(payload.length / 16) + 1, A = [], S = [];
+    for (let i = 0; i < nA; i++) { const a = [0x01].concat(nonce, [i >> 8, i & 0xff]); A.push(a); S.push(aes128(sk, a)); }
     const ks = [].concat(...S.slice(1));
     return { B, X, A, S, mic, cipher: payload.map((p, i) => p ^ ks[i]), encMic: mic.map((m, i) => m ^ S[0][i]) };
   }
   /** 받는 쪽: 복호한 뒤 MIC를 다시 계산해 비교 */
-  function ccmOpen(sk, nonce, hdr, cipher, encMic) {
-    const probe = ccm(sk, nonce, hdr, new Array(cipher.length).fill(0)); // 키스트림만 얻는다
+  function ccmOpen(sk, nonce, hdr, cipher, encMic, hdt) {
+    const probe = ccm(sk, nonce, hdr, new Array(cipher.length).fill(0), hdt); // 키스트림만 얻는다
     const ks = [].concat(...probe.S.slice(1)), plain = cipher.map((c, i) => c ^ ks[i]);
-    const re = ccm(sk, nonce, hdr, plain), ok = re.encMic.every((m, i) => m === encMic[i]);
+    const re = ccm(sk, nonce, hdr, plain, hdt), ok = re.encMic.every((m, i) => m === encMic[i]);
     return { plain, ok };
   }
+  /** HDT PHY의 AAD 2바이트: BlockSize[7:0], 그리고 BlockSize[8]·LLID·Nb. 블록이 하나면 BlockSize 자리는 0. [Vol 6] Part E Table 2.4 */
+  function hdtAad(nb, blockSize, llid) { const bs = nb ? blockSize : 0; return [bs & 0xff, ((bs >> 8) & 1) | (llid << 2) | (nb << 4)]; }
+
+  /* ---------------------------------------------------------------- 7.0 암호화 키 스케줄(EKS) [Vol 6] Part E §4 */
+  /** AES-CMAC (RFC 4493). 바이트 배열, 첫 바이트 = 가장 큰 바이트. [Vol 3] Part H §2.2.5 */
+  function aesCmac(key, msg) {
+    const dbl = (b) => { const o = b.map((v, i) => ((v << 1) | (i < 15 ? b[i + 1] >> 7 : 0)) & 0xff); if (b[0] & 0x80) o[15] ^= 0x87; return o; };
+    const L = aes128(key, new Array(16).fill(0)), K1 = dbl(L), K2 = dbl(K1);
+    const n = Math.max(1, Math.ceil(msg.length / 16)), full = msg.length > 0 && msg.length % 16 === 0;
+    let x = new Array(16).fill(0);
+    for (let i = 0; i < n; i++) {
+      let blk = msg.slice(16 * i, 16 * i + 16);
+      if (i === n - 1) { if (full) blk = blk.map((v, j) => v ^ K1[j]); else { blk = blk.concat([0x80], new Array(15 - blk.length).fill(0)).map((v, j) => v ^ K2[j]); } }
+      x = aes128(key, x.map((v, j) => v ^ blk[j]));
+    }
+    return x;
+  }
+  /** 표 4.1의 태그: UTF-8 문자열 그대로. [Vol 6] Part E Table 4.1 */
+  function eksTag(name) { return Array.from({ hs: "derived hs", da: "derived ACL", dc: "derived CIS", ta: "traffic ACL", tc: "traffic CIS", tr: "traffic upd", sk: "key", iv: "iv" }[name], (c) => c.charCodeAt(0)); }
+  /** k1(key, info) = AES-CMAC_key(info ‖ 0x01). [Vol 6] Part E §4.1.1 */
+  function eksK1(key, info) { return aesCmac(key, info.concat([0x01])); }
+  /** ee12: [파생 비밀, 트래픽 비밀] = [k1(CMAC_key(S), tag), k1(CMAC_key(S), H)]. §4.1.2 */
+  function eksEe12(key, tag, S, H) { const t = aesCmac(key, S); return [eksK1(t, tag), eksK1(t, H)]; }
+  /** k2(ECDHSS) = ee1(0, taghs, ECDHSS, 0). §4.1.3 */
+  function eksK2(ecdhss) { return eksK1(aesCmac(new Array(16).fill(0), ecdhss), eksTag("hs")); }
+  /** k3(TS) = k1(TS, tagtr): 트래픽 비밀 새로 고침. §4.1.4 */
+  function eksK3(ts) { return eksK1(ts, eksTag("tr")); }
+  /** kv12(TS) = [세션 키 k1(TS, tagsk), IV = k1(TS, tagiv) mod 2^64]. §4.1.5 */
+  function eksKv12(ts) { return [eksK1(ts, eksTag("sk")), eksK1(ts, eksTag("iv")).slice(8)]; }
+  /** ACL 암호화 시작: ee12(k2(ECDHSS), tagda, LTK, tagta ‖ CMAC_0(AA ‖ HPA ‖ PDU_C ‖ PDU_P)). HPA가 없으면 0x00 한 바이트. §4.2.1 */
+  function eksAclStart(ecdhss, ltk, aa, hpa, pduC, pduP) {
+    const k2 = eksK2(ecdhss), transcript = aa.concat(hpa.length ? hpa : [0x00], pduC, pduP), cm = aesCmac(new Array(16).fill(0), transcript);
+    const [derived, traffic] = eksEe12(k2, eksTag("da"), ltk, eksTag("ta").concat(cm));
+    return { k2, transcript, cm, derived, traffic };
+  }
+  /** CIS를 만들 때: [새 파생 비밀, CIS 트래픽 비밀] = ee12(이전 파생 비밀, tagdc, CIG_ID ‖ CIS_ID, tagtc). §4.2.2 */
+  function eksCis(derived, cigId, cisId) { return eksEe12(derived, eksTag("dc"), [cigId, cisId], eksTag("tc")); }
 
   /* ================================================================ 사양 샘플 [Vol 6] Part C §1 */
   const H = (s) => (s.replace(/[^0-9a-fA-F]/g, "").match(/../g) || []).map((x) => parseInt(x, 16));
@@ -326,6 +398,51 @@
       BD.stat("tm-act", r.ok ? "호스트로 전달" : "연결 끊음 · 0x3D (MIC Failure)");
     }
     $("tm-bytes").addEventListener("click", (e) => { const b = e.target.closest("button[data-i]"); if (!b) return; const i = +b.dataset.i; if (i === 1) return; air[i] ^= 1; draw(); });
+    draw();
+  })();
+
+  /* ================================================================ 3. EKS 키 계단 [Vol 6] Part C §10 */
+  (function () {
+    const S10 = {
+      a: { ecdhss: "30F75D4293F89F9001EBBD03F384907FE6AF08D9911DC346874090F781B99331", ltk: "57D9E9D98289EAF46BA6AF26682C1FC5", aa: "2B1908AA", hpa: "",
+        pduC: "DC809C49652AEB6D63329ABF5A52155C766345C28FED3024741C8ED01589D28B20B003D2F297BE2C5E2C83A7E9F9A5B9EFF49111ACF4FDDBCC0301480E359DE60040AD7AA97ED353BAE899446438B2273800",
+        pduP: "9F09048A5115053AEDFD7B02B58CA83B64EA9C431C694131A755194944CE3BE68838A5AF78BA899065F019E14C545081D68E49B054EDEE700CAB71C96090ABF700C9159587C4BD1E0E3540D91576624B2300",
+        want: { k2: "D1094D928E90503B2C56A1EA217EA249", cm: "01B9B2EA9845B1D6331C17387B1ADE0E", derived: "705423A8A02A26ACF5682CCDC7AE76AA", ts: ["82C9B230330FA1F79D22FC7EE6DDA457", "8D39F59A79FF3532CD8F2F9801613460"],
+          sk: ["436CF9F3E70CA128B01C2AF3EC97132C", "EC3E690D1C83E34F6D0EF3F13E796674"], iv: ["D69B508C69E0C3B8", "2BCAE1A04782568A"] },
+        cis: [[0x23, 0x42, "E4869A3F2D15C6B2DD75372E2A63FF7A", "68D0102E1FD90D20C5A30F68A2BFB5D7", "687DA66CCF1FC090"], [0xef, 0xac, "F7D4A7537032A981FA7AE5D7694C75EB", "9E460A4E246DA1F63232DF90C31A3862", "7B22649CB4FE0E30"]] },
+      b: { ecdhss: "D333560D8FB01E44CE8452FDFCD6AECE35E4086B8C44B30E0C6A88FA95BAAB6B", ltk: "00000000000000000000000000000000", aa: "2B1908AA", hpa: "7E4DFD99ED",
+        pduC: "84BF2C00F08AF272093EDC1C8379622F70B0289C4C803AD3DBF58883FE9DDBC819738C7195050BBEC56E99668EF09DFDD16F207B9EA3543682DD352C94CFD5DD00AB4A75F8B00E541ADC374A3636D8521103",
+        pduP: "DC809C49652AEB6D63329ABF5A52155C766345C28FED3024741C8ED01589D28B20B003D2F297BE2C5E2C83A7E9F9A5B9EFF49111ACF4FDDBCC0301480E359DE6000BD5171D9F323AAA41F5CDAB54E39A2700",
+        want: { k2: "7A66CE5F1E0F9CDB7CE1687303735C07", cm: "F535103447E4C226C0A7DCDDDC079B1E", derived: "0CCBD81F46D8523E7CF13BD7CC455379", ts: ["4CB68E0C69E2E05B02204A834DE98B70", "5CB5DFD4CA88A10D66CE8D0E710E5388"],
+          sk: ["D4B99ECF4653BAAF106A14B1AEF4B335", "0864ABE8F08E062E96DF670E09CAAF8B"], iv: ["CD1ABD234B0E600F", "C82A67F14E21DB56"] }, cis: [] },
+    };
+    const smp = BD.seg("ek-s", draw), ref = BD.seg("ek-r", draw);
+    const row = (k, v, cls) => `<span class="k">${k.padEnd(7)}</span> <span class="${cls || ""}">${v}</span>\n`;
+    function draw() {
+      const e = S10[smp()], n = +ref(), lo = (h) => h.toUpperCase();
+      let all = true, cnt = 0;
+      const chk = (got, want) => { if (want === undefined) return ""; cnt++; const same = X(got).toUpperCase() === lo(want); all = all && same; return same ? "  ✓" : "  ✗"; };
+      const r = eksAclStart(H(e.ecdhss), H(e.ltk), H(e.aa), H(e.hpa), H(e.pduC), H(e.pduP)), w = e.want;
+      let o = row("ECDHSS", lo(e.ecdhss)) + row("LTK", lo(e.ltk) + (smp() === "b" ? "  (페어링 안 함: 0)" : ""));
+      o += row("k2", X(r.k2) + chk(r.k2, w.k2), "a");
+      o += row("T in", `AA ${lo(e.aa)} ‖ HPA ${e.hpa ? lo(e.hpa) : "00"} ‖ PDU_C ‖ PDU_P = ${r.transcript.length}바이트`);
+      o += row("T", X(r.cm) + chk(r.cm, w.cm), "a");
+      o += row("DS", X(r.derived) + chk(r.derived, w.derived), "a");
+      let ts = r.traffic, sk, iv;
+      for (let k = 0; k <= n; k++) {
+        if (k) { ts = eksK3(ts); o += row("", "↓ k3 = k1(TS, “traffic upd”)"); }
+        [sk, iv] = eksKv12(ts);
+        o += row("TS" + k, X(ts) + chk(ts, w.ts[k]), "b") + row("SK" + k, X(sk) + chk(sk, w.sk[k]), "b") + row("IV" + k, X(iv) + chk(iv, w.iv[k]), "b");
+      }
+      let d = r.derived;
+      e.cis.forEach(([cig, cis, nd, csk, civ], k) => {
+        const [d2, t2] = eksCis(d, cig, cis), [k2, v2] = eksKv12(t2); d = d2;
+        o += row("CIS " + (k + 1), `CIG_ID ‖ CIS_ID = ${BD.hex(cig)}${BD.hex(cis)}`) + row("  DS", X(d2) + chk(d2, nd)) + row("  SK", X(k2) + chk(k2, csk), "a") + row("  IV", X(v2) + chk(v2, civ), "a");
+      });
+      $("ek-out").innerHTML = o;
+      BD.stat("ek-sk", X(sk)); BD.stat("ek-iv", X(iv));
+      BD.stat("ek-ok", cnt ? (all ? `✓ ${cnt}개 모두 일치` : "✗ 다름") : "—");
+    }
     draw();
   })();
 })();

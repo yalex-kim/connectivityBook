@@ -10,6 +10,10 @@ window.BD_TERMS = [
   ["nonce", "CCM nonce", "패킷마다 한 번만 쓰는 13바이트. packetCounter 39비트 + directionBit + IV 8바이트. [Vol 6] Part E Table 2.1", "encryption"],
   ["packetCounter", "packetCounter", "방향마다 따로 세는 39비트 카운터. 암호화 시작 때 0, 새 PDU마다 1씩 늘고 재전송에는 그대로. [Vol 6] Part E §2.1", "encryption"],
   ["MIC", "Message Integrity Check", "CCM이 붙이는 인증값(GFSK PHY 4바이트, HDT PHY 8·16바이트). 헤더 첫 바이트(NESN·SN·MD 제외)와 페이로드를 덮는다. 틀리면 연결이 끊긴다(0x3D). [Vol 6] Part E §1·§2.2", "encryption"],
+  ["EKS", "Encryption Key Schedule", "7.0의 LE 암호화 키 유도. 암호화를 시작할 때마다 링크 계층이 P-256 ECDH 공유 비밀을 만들고 LTK와 함께 AES-CMAC 계단(k1·k2·ee12·kv12)에 넣어 세션 키와 IV를 뽑는다. 끊지 않는 키 새로 고침(k3), CIS마다 다른 키. [Vol 6] Part E §4", "encryption"],
+  ["기회적 암호화", "Opportunistic encryption", "페어링하지 않은 두 기기가 EKS로 LTK = 0과 ECDH만으로 암호화하는 방식. 엿듣기는 막지만 상대를 확인하지 않아 끼어들기는 막지 못한다. LE 보안 모드 4 레벨 1. [Vol 6] Part E §4.2.1 · [Vol 3] Part C §10.2.6", "encryption"],
+  ["LE 보안 모드 4", "LE security mode 4", "7.0에서 더한 페어링 없는 보안 모드. 레벨 1은 기회적 암호화(인증 없음), 레벨 2는 상위 사양이 인증하고 만든 TAK로 암호화. SMP를 쓰지 않고 본딩도 하지 않는다. [Vol 3] Part C §10.2.6", "smp"],
+  ["TAK", "Transient Application Key", "상위 계층 사양이 상대를 인증하고 만들어 호스트에 건네는 128비트 강도의 일회용 키. LTK 자리에 넣어 링크를 암호화하고, 암호화가 시작되면 호스트가 버린다. 끼어들기 방어는 그 상위 사양에 달려 있다. [Vol 1] Part A §5.4.7 · [Vol 3] Part C §10.6.2", "smp"],
   // 07 smp
   ["DHKey", "Diffie-Hellman Key", "P-256 ECDH로 만든 공유 비밀(점의 x 좌표 32바이트). f5의 입력. [Vol 3] Part H §2.3.5.6.1", "smp"],
   ["공개 키 검증", "Public key validation", "받은 P-256 공개 키가 곡선 위의 점인지 확인하는 의무 검사. 실패하면 DHKey Check Failed. [Vol 3] Part H §2.3.5.6.1", "smp"],

@@ -43,7 +43,7 @@
       <li>클래식의 EDR이 위상 변조(π/4-DQPSK, 8DPSK)로 같은 심볼 속도에 2~3배의 비트를 싣는 원리와 대가를 안다.</li>
       <li>LE 1M, LE 2M, LE Coded(S=2, S=8) PHY의 속도·패킷 시간·감도를 비교하고, 컨볼루션 부호와 패턴 매퍼가 하는 일을 직접 돌려 본다.</li>
       <li>속도·거리·전력·충돌 사이에서 PHY를 고르는 기준을 세운다.</li>
-      <li>다음 Core 사양에 들어갈 예정인 HDT(공개 초안)가 같은 원리로 LE를 7.5 Mb/s까지 올리려는 방식을 안다.</li>
+      <li>7.0의 LE HDT PHY가 위상·진폭 변조, 컨볼루션 부호와 펑처링으로 LE를 7.5 Mb/s까지 올리는 방식을 직접 돌려 본다.</li>
     </ul>
   </header>
 
@@ -231,35 +231,65 @@
 
   <!-- ============================================================ -->
   <section id="hdt">
-    <h2>곧 올 PHY: HDT (공개 초안)</h2>
-    <div class="callout warn"><strong>이 절은 Core 7.0 밖의 내용이다</strong><p>HDT는 이 책의 기준인 Core 7.0에도 <b>들어 있지 않다</b>. Bluetooth <span class="term">SIG</span>가 Core 6.2를 바탕으로 만든 <b>공개 초안</b>(Change Request)과 SIG의 소개 글(2026년 7월)을 근거로 쓴다. SIG는 다음 Core 사양에 넣을 예정이라고 밝혔다. 정식 사양이 나오면 수치와 이름이 바뀔 수 있다.</p></div>
-    <p>LE 2M의 2 Mb/s는 6장에서 계산해 보면 앱 처리량 약 1.4 Mb/s가 상한이다. 무손실 오디오나 수백 MB 펌웨어에는 모자란다. <span class="term">HDT</span><span class="en">(High Data Throughput)</span>는 LE에 새 PHY를 더해 최대 <b>7.5 Mb/s</b>까지 올리려는 기능이다. 지금까지 이 장에서 본 생각들이 그대로 다시 쓰인다.</p>
+    <h2>7.0의 새 PHY: LE HDT</h2>
+    <p>LE 2M의 2 Mb/s는 6장에서 계산해 보면 앱 처리량 약 1.4 Mb/s가 상한이다. 무손실 오디오나 수백 MB 펌웨어에는 모자란다. 2026년 11월의 Core 7.0은 다섯 번째 LE PHY인 <b>LE <span class="term">HDT</span></b><span class="en">(High Data Throughput)</span>를 더해 최대 <b>7.5 Mb/s</b>까지 올렸다. 지금까지 이 장에서 본 생각들이 그대로 다시 쓰인다.</p>
     <ul>
-      <li><b>심볼 속도는 그대로, 심볼당 비트를 늘린다</b>: 모든 HDT 속도는 LE 2M과 같은 <b>2 Msym/s</b>로 보낸다. 대신 GFSK가 아니라 QPSK·<span class="term">QAM</span> 계열의 고차 변조를 쓴다. 클래식 EDR이 1 Msym/s에 위상 변조로 2~3 Mb/s를 실은 것과 같은 발상이다(위 성좌도 시뮬레이터). 7.5 Mb/s면 오류 정정 비트를 빼고도 심볼 하나에 평균 3.75비트를 싣는 셈이다.</li>
-      <li><b>모든 속도에 오류 정정</b>: 성좌점이 촘촘할수록 잡음에 약하다. 그래서 LE Coded처럼 컨볼루션 부호 기반의 FEC를 <b>모든 HDT 속도</b>에 쓴다. 속도는 2, 3, 4, 6, 7.5 Mb/s 다섯 단계이고, 변조와 부호율의 조합으로 정해진다.</li>
-      <li><b>패킷마다 속도 바꾸기</b>: 패킷 머리에 그 패킷의 속도가 적혀 있어, 링크가 나빠지면 다음 패킷부터 바로 낮은 속도로 내려간다. PHY를 한번 정하면 오래 유지하고 바꿀 때마다 갱신 절차(6장)를 거치는 지금 방식과 달리, 패킷 단위로 속도를 고르는 것이다(HDT를 쓰기로 처음 합의하는 방법은 정식 사양에서 확인할 부분이다). EDR이 3 → 2 → 1 Mb/s로 내려가던 것을 더 잘게 나눈 셈이다.</li>
-      <li><b>긴 패킷, 블록 단위 확인</b>: 패킷 하나에 약 8,000바이트까지 싣고, 블록마다 오류 검사를 따로 붙여 깨진 블록만 다시 보낸다. 251바이트 페이로드마다 150 µs 틈과 응답이 붙던 오버헤드(6장)를 크게 줄이려는 설계다.</li>
-      <li><b>더 긴 <span class="term">MIC</span></b>: 암호화된 패킷의 무결성 코드를 지금의 32비트에서 64비트·128비트로 키울 수 있다(8장).</li>
+      <li><b>심볼 속도는 그대로, 심볼당 비트를 늘린다</b>: 모든 HDT 속도는 LE 2M과 같은 <b>2 Msym/s</b>(심볼 하나 0.5 µs)로 보낸다. 대신 GFSK가 아니라 <b>π/4 QPSK</b>(심볼당 2비트), <b>8PSK</b>(3비트), <b>16QAM</b>(4비트)을 쓴다. 클래식 EDR이 1 Msym/s에 위상 변조로 2~3 Mb/s를 실은 것과 같은 발상이다(위 성좌도 시뮬레이터). 펄스는 근제곱 상승 코사인 모양이고 16QAM은 <b>진폭</b>까지 바꾸므로 신호 세기가 일정하지 않다. 세기가 일정한 GFSK의 장점(맨 앞 절)은 포기하는 셈이다. 7.0 사양은 HDT를 “GFSK PHY”와 구별해 부른다.</li>
+      <li><b>모든 속도에 오류 정정</b>: 성좌점이 촘촘할수록 잡음에 약하다. 그래서 모든 HDT 속도는 부호율 ½의 <span class="term">컨볼루션 부호</span>(구속장 6, 상태 32개)를 거친다. 그다음 일부 비트를 정해진 무늬로 빼는 <b><span class="term">펑처링</span></b><span class="en">(puncturing)</span>으로 부호율을 2/3·3/4·15/16까지 올린다. LE Coded가 비트를 늘려 튼튼하게 만들었다면, HDT는 덜 늘려 빠르게 만든다.</li>
+      <li><b>패킷마다 속도 바꾸기</b>: 패킷 앞의 <b>제어 헤더</b>는 늘 가장 튼튼한 2 Mb/s(부호율 ½)로 보내고, 그 안의 3비트 <b>RI</b> 칸이 나머지 부분의 속도를 알린다. 링크가 나빠지면 다음 패킷부터 바로 낮은 속도로 내려간다. 재전송도 처음과 다른 속도로 보낼 수 있다. EDR이 3 → 2 → 1 Mb/s 패킷으로 내려가던 것을 더 잘게 나눈 셈이다. HDT로 들어가고 나오는 것은 기존의 <span class="term">PHY 갱신</span> 절차(6장)로 한다.</li>
+      <li><b>긴 패킷, 블록 단위 확인</b>: 패킷 형식은 셋이다. 데이터 없이 확인만 하는 <b>짧은 형식</b>, 페이로드 하나를 통째로 싣는 <b>형식 0</b>, 페이로드를 1~16개 블록으로 나눠 블록마다 32비트 CRC를 붙이는 <b>형식 1</b>이다. 형식 1은 깨진 블록만 다시 보내고, 한 패킷에 페이로드를 최대 4개까지 싣는다. 페이로드 한도는 형식 1을 두 기기가 모두 지원하면 <b>8,175바이트</b>, 아니면 494바이트다(GFSK PHY는 251바이트). 251바이트 페이로드마다 150 µs 틈과 응답이 붙던 오버헤드(6장)를 크게 줄인다.</li>
+      <li><b>새 프리앰블</b>: LE 1M·2M의 8 µs 프리앰블 대신, 4심볼(2 µs)짜리 짧은 훈련열(STS) 9번, 보호 구간 2 µs, 17심볼(8.5 µs)짜리 긴 훈련열(LTS) 2번으로 모두 74심볼, 37 µs를 쓴다. 수신기는 STS로 패킷이 왔음을 알아채고 LTS로 정밀하게 맞춘다. LTS는 자도프-추(Zadoff-Chu) 수열이고, 연결마다 정하는 40비트 HDT 패킷 주소에서 고른 u(1~15)에 따라 모양이 다르다.</li>
+      <li><b>더 긴 <span class="term">MIC</span></b>: 암호화된 HDT 패킷의 무결성 코드는 GFSK의 32비트 대신 64비트 또는 128비트다. HDT를 지원하려면 7.0의 새 암호화 키 스케줄(<span class="term">EKS</span>)도 지원해야 하고, HDT에서 쓰는 <span class="term">LTK</span>는 128비트 강도여야 한다(8장).</li>
     </ul>
+    <div class="table-wrap"><table>
+      <thead><tr><th>이름</th><th>속도</th><th>변조 (비트/심볼)</th><th>부호율</th><th>사양 최소 감도 (BLER 10%)</th><th>지원</th></tr></thead>
+      <tbody>
+        <tr><td>HDT2</td><td class="num">2 Mb/s</td><td>π/4 QPSK (2)</td><td class="num">1/2</td><td class="num">≤ −75 dBm</td><td>필수</td></tr>
+        <tr><td>HDT3</td><td class="num">3 Mb/s</td><td>π/4 QPSK (2)</td><td class="num">3/4</td><td class="num">≤ −72 dBm</td><td>필수</td></tr>
+        <tr><td>HDT4</td><td class="num">4 Mb/s</td><td>8PSK (3)</td><td class="num">2/3</td><td class="num">≤ −69 dBm</td><td>필수</td></tr>
+        <tr><td>HDT6</td><td class="num">6 Mb/s</td><td>16QAM (4)</td><td class="num">3/4</td><td class="num">≤ −65 dBm</td><td>선택</td></tr>
+        <tr><td>HDT7.5</td><td class="num">7.5 Mb/s</td><td>16QAM (4)</td><td class="num">15/16</td><td class="num">≤ −62 dBm</td><td>선택</td></tr>
+      </tbody>
+    </table></div>
+    <p>속도 = 2 Msym/s × 비트/심볼 × 부호율이다. 예를 들어 HDT7.5는 2 × 4 × 15/16 = 7.5다. 표의 감도는 비트 오류율이 아니라 <b>블록 오류율 10%</b>로 정의한다(GFSK PHY는 BER 0.1%). 같은 2 Mb/s인데도 HDT2가 LE 2M(≤ −70 dBm)보다 5 dB 좋은 −75 dBm을 요구하는 것은 주로 오류 정정 덕분이다(오류를 세는 기준도 다르다). 반대로 HDT7.5는 −62 dBm으로, LE 2M보다 8 dB 센 신호가 필요하다. 2장의 링크 버짓으로 따지면 같은 벽 너머에서는 거리가 크게 줄어든다는 뜻이다. HDT를 지원하는 기기는 HDT2·3·4를 모두 지원해야 하고 HDT6·7.5는 선택이다. 또 HDT를 지원하려면 <span class="term">데이터 길이 확장</span>, <span class="term">채널 선택 알고리즘 #2</span>(4장), EKS도 지원해야 한다.</p>
+    <div class="sim" id="sim-hdtmod">
+      <div class="sim-head"><span class="sim-tag">SIMULATOR</span><h3>HDT 송신기: 부호화 → 펑처링 → 성좌점</h3></div>
+      <div class="sim-body side">
+        <div class="sim-view"><canvas id="cv-hdtmod"></canvas></div>
+        <div class="sim-controls">
+          <div class="ctrl"><span>속도</span><div class="seg" id="hm-r"><button data-value="2" class="on">HDT2</button><button data-value="3">HDT3</button><button data-value="4">HDT4</button><button data-value="6">HDT6</button><button data-value="7.5">HDT7.5</button></div></div>
+          <label class="ctrl"><span>보낼 바이트 (16진수)</span><input type="text" id="hm-hex" value="48 44 54 20 37 2E 30" spellcheck="false" autocomplete="off"></label>
+          <label class="ctrl"><span>SNR <output id="hm-snr-out"></output></span><input type="range" id="hm-snr" min="4" max="30" step="0.5" value="16"></label>
+        </div>
+      </div>
+      <div class="sim-readout">
+        <div class="stat"><span class="k">입력 비트 + 종결</span><span class="v" id="hm-in">—</span></div>
+        <div class="stat"><span class="k">부호화 → 펑처링</span><span class="v" id="hm-coded">—</span></div>
+        <div class="stat"><span class="k">심볼 수 · 시간</span><span class="v" id="hm-sym">—</span></div>
+        <div class="stat"><span class="k">잘못 읽힌 심볼</span><span class="v" id="hm-err">—</span></div>
+      </div>
+      <div id="hm-bits" style="font-family:var(--mono);font-size:12px;line-height:1.6;white-space:pre-wrap;word-break:break-all;padding:10px 16px;color:var(--text-dim)"></div>
+      <div class="sim-note">큰 점은 그 변조의 성좌점, 작은 점은 잡음을 겪은 수신 심볼이다. 실제로 보낼 심볼을 사양의 비트 → 심볼 표대로 계산해 쓰고, 표본이 적어 보이지 않도록 같은 심볼 열을 20번 반복해 그렸다. π/4 QPSK는 홀수 번째 심볼이 45° 돌아간 다른 네 점(흐린 점)을 쓴다. 해볼 것: ① SNR을 12 dB로 낮추고 HDT2, HDT4, HDT7.5를 차례로 눌러 보자. QPSK는 거의 틀리지 않지만 8PSK는 몇 %, 16QAM은 열에 하나 꼴로 틀린 심볼(빨강)이 나온다. 점 간격이 좁을수록 같은 잡음에 약하다. ② 같은 입력이라도 HDT3은 HDT2보다 부호화 비트가 3분의 2로 줄어 심볼 수가 적다. 그 대신 부호가 고칠 수 있는 오류가 줄어든다. 단순화: 오류 정정 복호와 화이트닝·CRC는 하지 않았고, 수신 심볼은 가장 가까운 성좌점으로 판정했다.</div>
+    </div>
+    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">HDT가 7.0 사양에 들어왔다. 지금 쓰는 블루투스 6.0 이어폰도 펌웨어 업데이트로 7.5 Mb/s를 쓸 수 있을까?</p><p class="wi-hint">HDT가 바꾸는 것이 소프트웨어(호스트)인지 무선 회로(PHY)인지 생각해 보자(1장의 스택).</p><div class="opts">
+      <button class="opt">그렇다. 블루투스는 펌웨어로 기능이 추가된다</button>
+      <button class="opt" data-correct>아니다. 16QAM 변조와 새 FEC를 처리하는 무선 회로가 필요해 새 칩이 있어야 하고, 상대 기기도 지원해야 한다</button>
+      <button class="opt">휴대폰만 업데이트하면 된다</button>
+    </div><div class="quiz-exp">HDT는 PHY, 즉 컨트롤러의 무선 회로를 바꾸는 기능이다. 1장에서 본 것처럼 선택 기능은 양쪽 기기가 모두 지원해야 쓸 수 있다. 또 HDT7.5를 쓰려면 양쪽이 HDT7.5까지 지원해야 한다. 지원 여부는 기능 교환으로, 받을 수 있는 속도는 HDT 설정 교환 절차로 서로 알린다.</div></div>
     <div class="sim" id="sim-hdt">
-      <div class="sim-head"><span class="sim-tag">PREVIEW</span><h3>HDT 미리 보기: 같은 파일을 보내는 공중 시간</h3></div>
+      <div class="sim-head"><span class="sim-tag">COMPARE</span><h3>같은 파일을 보내는 공중 시간</h3></div>
       <div class="sim-view"><canvas id="cv-hdt"></canvas></div>
       <div class="sim-controls">
         <label class="ctrl"><span>보낼 데이터 <output id="hdt-kb-out"></output></span><input type="range" id="hdt-kb" min="0" max="100" value="60"></label>
       </div>
       <div class="sim-readout">
         <div class="stat"><span class="k">LE 2M (공중 속도만)</span><span class="v" id="hdt-2m">—</span></div>
-        <div class="stat"><span class="k">HDT 7.5 Mb/s (초안)</span><span class="v" id="hdt-75">—</span></div>
+        <div class="stat"><span class="k">HDT7.5 (공중 속도만)</span><span class="v" id="hdt-75">—</span></div>
         <div class="stat"><span class="k">LE 2M 실제 상한 (6장, 약 1.4 Mb/s)</span><span class="v" id="hdt-real">—</span></div>
       </div>
-      <div class="sim-note">막대는 데이터를 공중 속도로 보내는 데 걸리는 시간의 <b>하한</b>이다. 패킷 머리, 응답, 틈, 재전송은 넣지 않았다(HDT 초안의 패킷 형식은 정식 사양에서 확인해 반영할 예정). 맨 아래 막대는 6장 계산기로 구한 LE 2M의 실제 상한이다. 해볼 것: 1 MB 펌웨어를 보내면 LE 2M 실제 상한으로 약 6초, HDT 7.5 Mb/s 공중 속도로 1초 남짓이다. 실제 HDT 처리량은 오버헤드만큼 이보다 낮다. 속도 단계(2·3·4·6·7.5 Mb/s)는 SIG 공개 자료 기준이다.</div>
+      <div class="sim-note">막대는 데이터를 공중 속도로 보내는 데 걸리는 시간의 <b>하한</b>이다. 프리앰블(HDT 37 µs), 헤더, 응답, 틈, 재전송은 넣지 않았다. 맨 아래 막대는 6장 계산기로 구한 LE 2M의 실제 상한이다. 해볼 것: 1 MB 펌웨어를 보내면 LE 2M 실제 상한으로 약 6초, HDT7.5 공중 속도로 1초 남짓이다. 실제 HDT 처리량은 오버헤드만큼 이보다 낮지만, 형식 1의 긴 패킷 덕분에 오버헤드의 비율은 GFSK보다 작다.</div>
     </div>
-    <div class="whatif quiz-q"><div class="wi-head">예측해 보기</div><p class="wi-q">HDT가 정식 사양이 되면, 지금 쓰는 블루투스 6.0 이어폰도 펌웨어 업데이트로 7.5 Mb/s를 쓸 수 있을까?</p><p class="wi-hint">HDT가 바꾸는 것이 소프트웨어(호스트)인지 무선 회로(PHY)인지 생각해 보자(1장의 스택).</p><div class="opts">
-      <button class="opt">그렇다. 블루투스는 펌웨어로 기능이 추가된다</button>
-      <button class="opt" data-correct>아니다. QAM 변조와 새 FEC를 처리하는 무선 회로가 필요해 새 칩이 있어야 하고, 상대 기기도 지원해야 한다</button>
-      <button class="opt">휴대폰만 업데이트하면 된다</button>
-    </div><div class="quiz-exp">HDT는 PHY, 즉 컨트롤러의 무선 회로를 바꾸는 기능이다. 1장에서 본 것처럼 선택 기능은 양쪽 기기가 모두 지원해야 쓸 수 있다. 첫 제품은 정식 채택 뒤 새 칩을 넣은 기기부터 나온다.</div></div>
-    <p class="spec-ref">Core 7.0에도 없음 · Bluetooth SIG, “Introducing Bluetooth High Data Throughput (HDT)” (2026-07-28)과 공개 초안 <b>HDT Change Request</b>(Core 6.2 기반) · 채택 예정: 다음 Core 사양</p>
+    <p class="spec-ref">LE PHY 다섯 가지, HDT 속도와 필수·선택: <b>[Vol 6] Part A §1</b> · 2 Msym/s, 0.5 µs 심볼: <b>§3.6</b> · HDT 감도(Table 4.3, BLER 10%): <b>§4.1.2</b> · 변조 요약(Table 7.1)·PHY 간격: <b>§7·§7.2</b> · π/4 QPSK·8PSK·16QAM 매핑: <b>§7.3.1~§7.3.3</b> · STS·LTS·보호 구간: <b>§7.4.1~§7.4.3</b> · 근제곱 상승 코사인 펄스(β = 0.4): <b>§7.5</b> · 패킷 형식과 제어 헤더(RI): <b>[Vol 6] Part B §2.7·§2.7.1</b> · 블록 1~16개: <b>§2.7.4</b> · PayloadLimit 494·8,175바이트: <b>§2.4</b> · 부호기(K = 6, G0 = 1+x²+x⁴+x⁵, G1 = 1+x+x²+x³+x⁵)와 펑처링 무늬: <b>§3.4.3·§3.4.4</b> · 부호율 표(Table 3.2): <b>§3.4</b> · HDT 지원에 필요한 기능: <b>§4.6.54</b> · LTS 예제: <b>[Vol 6] Part C §9</b> · HDT에서 LTK 128비트 강도: <b>[Vol 3] Part C §10.2.1</b> · HPA와 u: <b>[Vol 6] Part B §2.7.1.1</b> · 7.0 새 기능: <b>[Vol 1] Part C §18.1</b></p>
   </section>
 
   <!-- ============================================================ -->
@@ -273,6 +303,7 @@
         <tr><td>LE 2M</td><td class="num">2 Mb/s</td><td class="num">≤ −70 dBm</td><td>펌웨어 업데이트, 오디오, 가까운 대용량</td><td>감도 몇 dB 손해, 선택 기능</td></tr>
         <tr><td>LE Coded S=2</td><td class="num">500 kb/s</td><td class="num">≤ −75 dBm</td><td>집 전체를 덮는 센서</td><td>패킷 시간 약 2배</td></tr>
         <tr><td>LE Coded S=8</td><td class="num">125 kb/s</td><td class="num">≤ −82 dBm</td><td>마당·주차장·창고, 장거리 비콘</td><td>패킷 시간 약 8배, 전력·충돌 증가</td></tr>
+        <tr><td>LE HDT (7.0)</td><td class="num">2~7.5 Mb/s</td><td class="num">≤ −75 ~ −62 dBm</td><td>무손실 오디오, 대용량 전송</td><td>새 칩 필요, 빠를수록 센 신호 필요</td></tr>
       </tbody>
     </table></div>
     <div class="callout analogy"><strong>카페에서 또박또박 말하기</strong><p>시끄러운 카페에서 멀리 앉은 친구에게 말을 전하는 방법은 세 가지다. 더 크게 외치거나(송신 전력), 더 가까이 가거나(거리), <b>한 글자씩 천천히 여러 번 반복해서</b> 말하는 것이다(Coded PHY). 마지막 방법은 목소리를 키우지 않아도 되지만 한 문장에 시간이 오래 걸리고, 그동안 다른 손님의 말과 겹칠 가능성도 커진다. 바로 옆자리 친구에게는 빠르게 말하는 편이 낫다(2M).</p></div>
@@ -290,7 +321,7 @@
       <li>클래식 EDR은 1 Msym/s에 위상 변조로 <b>2 Mb/s(π/4-DQPSK)</b>, <b>3 Mb/s(8DPSK)</b>를 싣는다. 점 간격이 좁아 더 강한 신호가 필요하다. 3-DH5의 최대 처리량은 2,178.1 kb/s다.</li>
       <li>LE PHY는 넷: <b>1M</b>(필수), <b>2M</b>(시간 절반), <b>Coded S=2</b>(500 kb/s), <b>S=8</b>(125 kb/s). Coded는 부호율 ½·K=4 컨볼루션 부호와 패턴 매퍼로 비트를 퍼뜨려 감도를 높인다(사양 최소 −75/−82 dBm).</li>
       <li>가까우면 2M이 가장 경제적이고, 멀면 Coded가 닿는다. 느린 PHY는 전력과 충돌 기회를 늘린다.</li>
-      <li><b>HDT</b>(공개 초안, Core 7.0에도 없음)는 2 Msym/s에 QPSK·QAM 계열 변조와 FEC를 더해 2~7.5 Mb/s를 패킷마다 골라 쓰는 새 LE PHY다. 새 무선 회로가 필요하다.</li>
+      <li>7.0의 <b>LE HDT</b>는 2 Msym/s에 π/4 QPSK·8PSK·16QAM과 부호율 ½ 컨볼루션 부호 + 펑처링을 더해 <b>2·3·4·6·7.5 Mb/s</b>를 패킷마다 골라 쓴다. 빠를수록 센 신호가 필요하다(−75 → −62 dBm). 새 무선 회로가 필요하다.</li>
     </ol>
   </section>
 
@@ -327,6 +358,12 @@
       <div class="quiz-q"><p>Core 7.0 사양이 LE Coded S=8 수신기에 요구하는 최소 감도는?</p><div class="opts">
         <button class="opt">≤ −70 dBm</button><button class="opt">≤ −75 dBm</button><button class="opt" data-correct>≤ −82 dBm</button><button class="opt">≤ −104 dBm</button>
       </div><div class="quiz-exp">[Vol 6] Part A Table 4.2: 비부호화 −70, S=2 −75, S=8 −82 dBm. −104 dBm 같은 값은 좋은 상용 칩의 실제 성능이다.</div></div>
+      <div class="quiz-q"><p>7.0의 HDT7.5가 7.5 Mb/s를 내는 조합은?</p><div class="opts">
+        <button class="opt">심볼 속도를 7.5 Msym/s로 올리고 GFSK를 그대로 쓴다</button>
+        <button class="opt" data-correct>2 Msym/s × 16QAM(심볼당 4비트) × 부호율 15/16</button>
+        <button class="opt">2 Msym/s × 8PSK(심볼당 3비트), 오류 정정 없음</button>
+        <button class="opt">1 Msym/s × 16QAM × 부호율 1/2을 두 채널에 동시에</button>
+      </div><div class="quiz-exp">모든 HDT 속도는 LE 2M과 같은 2 Msym/s다. 2 × 4 × 15/16 = 7.5. 부호율 ½ 컨볼루션 부호의 출력에서 30비트마다 14비트를 빼는 펑처링으로 15/16을 만든다. [Vol 6] Part A Table 7.1, Part B Table 3.2·3.5.</div></div>
     </div>
   </section>
 </main>
@@ -544,13 +581,120 @@
     }
     draw();
   })();
-  /* ================================================================ 6. HDT 미리 보기 (공개 초안) */
+  /* ================================================================ 6. LE HDT (Core 7.0) */
+  /** HDT 속도 이름 → 변조·심볼당 비트·부호율·RI. [Vol 6] Part A Table 7.1, Part B Table 3.2 */
+  const HDT_RATES = {
+    2: { mod: "qpsk", bps: 2, cr: [1, 2], ri: 1 }, 3: { mod: "qpsk", bps: 2, cr: [3, 4], ri: 2 }, 4: { mod: "8psk", bps: 3, cr: [2, 3], ri: 3 },
+    6: { mod: "16qam", bps: 4, cr: [3, 4], ri: 4 }, 7.5: { mod: "16qam", bps: 4, cr: [15, 16], ri: 5 },
+  };
+  /** HDT 컨볼루션 부호기: 부호율 1/2, 구속장 6, G0 = 1+x^2+x^4+x^5, G1 = 1+x+x^2+x^3+x^5, 종결 0 다섯 개를 붙인다. a0이 먼저. [Vol 6] Part B §3.4.3 */
+  function hdtFecEncode(bits) {
+    const s = [0, 0, 0, 0, 0, 0], out = []; // s[1]이 가장 최근 비트
+    [...bits, 0, 0, 0, 0, 0].forEach((b) => {
+      out.push(b ^ s[2] ^ s[4] ^ s[5], b ^ s[1] ^ s[2] ^ s[3] ^ s[5]);
+      for (let k = 5; k > 1; k--) s[k] = s[k - 1];
+      s[1] = b;
+    });
+    return out;
+  }
+  /** 펑처링: 부호기 출력에 무늬를 되풀이해 0인 자리를 뺀다. [Vol 6] Part B §3.4.4·Table 3.5 */
+  function hdtPuncture(coded, cr) {
+    const pat = { "1/2": [1, 1], "2/3": [1, 1, 0, 1], "3/4": [1, 1, 0, 1, 0, 1], "15/16": [1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1] }[cr]; // 1 = 남김. Table 3.5
+    return coded.filter((_, i) => pat[i % pat.length]);
+  }
+  /** 비트 → 복소 심볼 [re, im]. π/4 QPSK는 홀수 번째 심볼이 다른 표를 쓴다. 16QAM은 √10으로 정규화. [Vol 6] Part A §7.3.1~§7.3.3 */
+  function hdtMap(bits, mod) {
+    const E = (a) => [Math.cos(a * Math.PI), Math.sin(a * Math.PI)]; // 각도는 π 단위
+    const Q_EVEN = [0.25, 0.75, -0.25, -0.75], Q_ODD = [0.5, 1, 0, -0.5]; // (b0,b1) = 00, 01, 10, 11
+    const PSK8 = [0, 0.25, 0.75, 0.5, -0.25, -0.5, -1, -0.75]; // (b0,b1,b2) = 000 … 111
+    const QAM = [[-3, -3], [-3, -1], [-3, 3], [-3, 1], [-1, -3], [-1, -1], [-1, 3], [-1, 1], [3, -3], [3, -1], [3, 3], [3, 1], [1, -3], [1, -1], [1, 3], [1, 1]];
+    const n = mod === "qpsk" ? 2 : mod === "8psk" ? 3 : 4, b = bits.slice();
+    while (b.length % n) b.push(0); // 마지막 심볼은 0으로 채운다
+    const out = [];
+    for (let k = 0; k * n < b.length; k++) {
+      let v = 0; for (let i = 0; i < n; i++) v = (v << 1) | b[k * n + i];
+      if (mod === "qpsk") out.push(E((k % 2 ? Q_ODD : Q_EVEN)[v]));
+      else if (mod === "8psk") out.push(E(PSK8[v]));
+      else out.push([QAM[v][0] / Math.sqrt(10), QAM[v][1] / Math.sqrt(10)]);
+    }
+    return out;
+  }
+  /** 긴 훈련열(LTS) 17심볼의 위상 φ (심볼 = e^(jπφ/17), 0 ≤ φ < 34). x_u(k) = e^(−jπuk(k+1)/17) × e^(j2πp/17). [Vol 6] Part A §7.4.2 */
+  function hdtLtsPhi(u) {
+    const P = [2, 7, 12, 12, 4, 13, 8, 14, 15, 13, 12, 10, 5, 15, 14, 0][u - 1]; // Table 7.7
+    const out = [];
+    for (let k = 0; k < 17; k++) out.push((((-u * k * (k + 1) + 2 * P) % 34) + 34) % 34);
+    return out;
+  }
+  /** 프리앰블 74심볼의 φ: STS(−1, −j, j, 1) 9번, 보호 구간(LTS 끝 4심볼), LTS 2번. [Vol 6] Part A §7.4 */
+  function hdtPreamblePhi(u) {
+    const lts = hdtLtsPhi(u), sts = [17, 25.5, 8.5, 0], out = [];
+    for (let i = 0; i < 9; i++) out.push(...sts);
+    return out.concat(lts.slice(13), lts, lts);
+  }
+  /** HDT 패킷 주소(40비트)에서 LTS의 u를 고른다: u = HPA[31:0] mod 15 + 1. [Vol 6] Part B §2.7.1.1 */
+  function hdtU(hpa) { return Number(BigInt(hpa) % 0x100000000n % 15n) + 1; }
   /** 데이터를 공중 속도로 보내는 시간의 하한(ms). 헤더·응답·재전송 제외 */
   function idealAirtimeMs(bytes, mbps) { return (bytes * 8) / (mbps * 1000); }
+  /** 변조의 성좌점 목록. π/4 QPSK는 [짝수 번째 표, 홀수 번째 표] */
+  function hdtRefPoints(mod) {
+    const n = mod === "qpsk" ? 2 : mod === "8psk" ? 3 : 4, bitsOf = (v) => Array.from({ length: n }, (_, i) => (v >> (n - 1 - i)) & 1);
+    const vals = Array.from({ length: 1 << n }, (_, v) => v);
+    if (mod === "qpsk") return [vals.map((v) => hdtMap(bitsOf(v), mod)[0]), vals.map((v) => hdtMap([0, 0, ...bitsOf(v)], mod)[1])];
+    return [vals.map((v) => hdtMap(bitsOf(v), mod)[0])];
+  }
+  (function () {
+    const rate = BT.seg("hm-r", draw), snr = BT.range("hm-snr", (v) => v.toFixed(1) + " dB", draw), hexIn = $("hm-hex");
+    hexIn.addEventListener("input", draw);
+    let res = { err: 0 };
+    const bitsOf = () => {
+      const by = (hexIn.value.match(/[0-9a-fA-F]{2}/g) || []).slice(0, 32).map((h) => parseInt(h, 16));
+      const bits = []; by.forEach((v) => { for (let i = 0; i < 8; i++) bits.push((v >> i) & 1); }); // LSB 먼저(링크 계층과 같다)
+      return { by, bits };
+    };
+    const run = () => {
+      const R = HDT_RATES[+rate()], { by, bits } = bitsOf();
+      const coded = hdtFecEncode(bits), punct = hdtPuncture(coded, R.cr.join("/")), sym = hdtMap(punct, R.mod);
+      return { R, by, bits, coded, punct, sym };
+    };
+    const cv = BT.canvas($("cv-hdtmod"), (ctx, w, h) => {
+      const P = BT.palette(), { R, sym } = run(), cx = w / 2, cy = h / 2, S = Math.min(w, h) * 0.36;
+      ctx.strokeStyle = P.grid; ctx.beginPath(); ctx.moveTo(cx - S * 1.3, cy); ctx.lineTo(cx + S * 1.3, cy); ctx.moveTo(cx, cy - S * 1.3); ctx.lineTo(cx, cy + S * 1.3); ctx.stroke();
+      if (R.mod !== "16qam") { ctx.beginPath(); ctx.arc(cx, cy, S, 0, 7); ctx.stroke(); }
+      const scale = R.mod === "16qam" ? S / (3 / Math.sqrt(10)) * 0.92 : S;
+      const ref = hdtRefPoints(R.mod);
+      const sg = Math.sqrt(1 / (2 * Math.pow(10, snr() / 10))), r = BT.rng(7);
+      const randn = () => { let u = 0, v = 0; while (!u) u = r(); while (!v) v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+      let err = 0, n = 0;
+      for (let rep = 0; rep < 20; rep++) sym.forEach((p, k) => {
+        const x = p[0] + sg * randn(), y = p[1] + sg * randn();
+        const cand = R.mod === "qpsk" ? ref[k % 2] : ref[0];
+        let best = 0, bd = 1e9; cand.forEach((c, ci) => { const d = (c[0] - x) ** 2 + (c[1] - y) ** 2; if (d < bd) { bd = d; best = ci; } });
+        const e = Math.abs(cand[best][0] - p[0]) + Math.abs(cand[best][1] - p[1]) > 1e-9; if (e) err++; n++;
+        ctx.fillStyle = e ? P.bad : P.accent; ctx.globalAlpha = e ? 0.95 : 0.3;
+        ctx.beginPath(); ctx.arc(cx + x * scale, cy - y * scale, e ? 2.6 : 1.7, 0, 7); ctx.fill();
+      });
+      ctx.globalAlpha = 1;
+      ref.forEach((set, si) => set.forEach((c) => { ctx.fillStyle = si ? P.dim : P.text; ctx.globalAlpha = si ? 0.6 : 1; ctx.beginPath(); ctx.arc(cx + c[0] * scale, cy - c[1] * scale, si ? 4 : 5.5, 0, 7); ctx.fill(); }));
+      ctx.globalAlpha = 1;
+      res = { err, n };
+    }, { aspect: 0.8, minHeight: 260, maxHeight: 360 });
+    function draw() {
+      cv.redraw();
+      const { R, by, bits, coded, punct, sym } = run();
+      BT.stat("hm-in", `${bits.length} + 5`);
+      BT.stat("hm-coded", `${coded.length} → ${punct.length}`);
+      BT.stat("hm-sym", `${sym.length} · ${(sym.length * 0.5).toFixed(1)} µs`);
+      BT.stat("hm-err", `<span style="color:var(${res.err ? "--bad" : "--ok"})">${res.err} / ${res.n}</span>`);
+      const name = { qpsk: "π/4 QPSK", "8psk": "8PSK", "16qam": "16QAM" }[R.mod];
+      $("hm-bits").textContent = `RI = 0b${R.ri.toString(2).padStart(3, "0")} · ${name} · 심볼당 ${R.bps}비트 · 부호율 ${R.cr.join("/")} · 입력 ${by.length}바이트\n펑처링 뒤 비트: ${punct.slice(0, 96).join("")}${punct.length > 96 ? "…" : ""}`;
+    }
+    draw();
+  })();
   (function () {
     const kbOf = (v) => Math.round(Math.pow(10, (v / 100) * 4)); // 1 KB ~ 10 MB
     const kb = BT.range("hdt-kb", (v) => { const k = kbOf(v); return k >= 1000 ? (k / 1000).toFixed(1) + " MB" : k + " KB"; }, draw);
-    const ROWS = [["LE 1M", 1, false], ["LE 2M", 2, false], ["HDT 3", 3, true], ["HDT 4", 4, true], ["HDT 6", 6, true], ["HDT 7.5", 7.5, true], ["LE 2M 실제 상한", 1.4, false]];
+    const ROWS = [["LE 1M", 1, false], ["LE 2M", 2, false], ["HDT2", 2, true], ["HDT3", 3, true], ["HDT4", 4, true], ["HDT6", 6, true], ["HDT7.5", 7.5, true], ["LE 2M 실제 상한", 1.4, false]];
     const fmt = (ms) => (ms >= 1000 ? (ms / 1000).toFixed(2) + " s" : ms.toFixed(ms < 10 ? 2 : 0) + " ms");
     const cv = BT.canvas($("cv-hdt"), (ctx, w, h) => {
       const P = BT.palette(), bytes = kbOf(kb()) * 1000, L = 108, Rr = w - 70, top = 8, rh = (h - top - 6) / ROWS.length, mx = idealAirtimeMs(bytes, 1);
@@ -561,7 +705,7 @@
         ctx.fillRect(L, y + 5, bw, rh - 10); ctx.globalAlpha = 1;
         BT.text(ctx, fmt(t), L + bw + 6, y + rh / 2, { size: 11, mono: true, color: P.dim });
       });
-    }, { aspect: 0.42, minHeight: 220, maxHeight: 300 });
+    }, { aspect: 0.46, minHeight: 240, maxHeight: 320 });
     function draw() {
       const bytes = kbOf(kb()) * 1000;
       BT.stat("hdt-2m", fmt(idealAirtimeMs(bytes, 2)));

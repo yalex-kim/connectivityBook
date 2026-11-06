@@ -12,7 +12,7 @@
   const CHAPTERS = [
     { slug: "intro",       num: "01", part: "시작하기",     title: "블루투스란 무엇인가",               desc: "선을 없애려던 작은 무전기. 이름의 유래, 클래식과 저전력(LE), 호스트와 컨트롤러로 나뉜 프로토콜 스택을 한눈에.", tags: ["기초", "sim"] },
     { slug: "radio",       num: "02", part: "시작하기",     title: "2.4 GHz 전파와 데시벨",             desc: "전자레인지와 같은 대역을 쓰는 이유. 파장 12 cm, dBm 계산, 거리·벽·몸이 깎는 신호, 링크 버짓과 RSSI.", tags: ["무선", "sim"] },
-    { slug: "phy",         num: "03", part: "시작하기",     title: "비트를 전파에 싣기: GFSK와 PHY",     desc: "주파수를 살짝 올리고 내려 0과 1을 보낸다. GFSK, EDR의 위상 변조, LE 1M·2M·Coded PHY의 속도와 거리 교환.", tags: ["무선", "sim"] },
+    { slug: "phy",         num: "03", part: "시작하기",     title: "비트를 전파에 싣기: GFSK와 PHY",     desc: "주파수를 살짝 올리고 내려 0과 1을 보낸다. GFSK, EDR의 위상 변조, LE 1M·2M·Coded PHY의 속도와 거리 교환, 7.0의 최대 7.5 Mb/s HDT.", tags: ["무선", "sim"] },
     { slug: "hopping",     num: "04", part: "연결의 원리",  title: "주파수 도약과 공존",               desc: "79개·40개 채널을 옮겨 다니며 간섭을 피한다. 적응형 도약(AFH), 채널 선택 알고리즘 #1·#2, Wi-Fi와 함께 살기.", tags: ["무선", "sim"] },
     { slug: "advertising", num: "05", part: "연결의 원리",  title: "광고와 스캔: 나 여기 있어요",        desc: "광고 채널 37·38·39, 광고 간격과 무작위 지연, 31바이트 광고 데이터, 확장 광고, 발견에 걸리는 시간.", tags: ["LE", "sim"] },
     { slug: "connection",  num: "06", part: "연결의 원리",  title: "연결: 약속된 시각의 짧은 만남",      desc: "연결 이벤트와 연결 간격, 페리페럴 지연과 감독 타임아웃, 패킷 해부, SN/NESN 재전송, 처리량 계산.", tags: ["LE", "sim"] },

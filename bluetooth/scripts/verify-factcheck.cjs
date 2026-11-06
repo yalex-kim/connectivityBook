@@ -21,7 +21,7 @@ function fn(src, name) {
 }
 /** 함수 여러 개를 한 컨텍스트에 올린다 */
 function load(chapter, names, prelude = '') {
-  const src = read(chapter), ctx = vm.createContext({ Math, Array, Number, String });
+  const src = read(chapter), ctx = vm.createContext({ Math, Array, Number, String, BigInt });
   vm.runInContext(prelude + '\n' + names.map((n) => fn(src, n)).join('\n') + '\nthis.__f = {' + names.join(',') + '};', ctx);
   return ctx.__f;
 }
@@ -65,8 +65,41 @@ const bitsStr = (s) => s.replace(/\s/g, '').split('').map(Number);
   eq(f.airtimeUs('s8', 2 + 255), 17040, 'longest coded S=8 packet');
   ok(f.berNoncoherentFsk(9) / f.berNoncoherentFsk(11) > 8, 'BER grows ~10x for 2 dB');
   close(f.packetErrorRate(0.001, 376), 1 - Math.pow(0.999, 376), 1e-12, 'PER formula');
-  const h = load('phy', ['idealAirtimeMs']);
-  close(h.idealAirtimeMs(1e6, 7.5), 1066.67, 0.01, 'HDT preview: 1 MB at 7.5 Mb/s');
+  const h = load('phy', ['idealAirtimeMs', 'hdtFecEncode', 'hdtPuncture', 'hdtMap', 'hdtLtsPhi', 'hdtPreamblePhi', 'hdtU']);
+  close(h.idealAirtimeMs(1e6, 7.5), 1066.67, 0.01, 'HDT: 1 MB at 7.5 Mb/s');
+  // [Vol 6] Part B §3.4.3: 임펄스 응답 = 생성 다항식, 종결 0 다섯 개
+  eq(h.hdtFecEncode([1]), [1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1], 'HDT FEC impulse response = G0 1+x^2+x^4+x^5, G1 1+x+x^2+x^3+x^5');
+  eq(h.hdtFecEncode([1, 0, 1, 1]).length, 18, 'HDT FEC: (n + 5) x 2 bits');
+  // Table 3.5와 Table 3.2: 남는 비율 → 부호율, 2 Msym/s × 비트/심볼 × 부호율 = 속도
+  const coded = Array.from({ length: 600 }, (_, i) => i % 2);
+  [['1/2', 2, 2, 2], ['3/4', 2, 3, 3], ['2/3', 3, 4, 4], ['3/4', 4, 6, 6], ['15/16', 4, 7.5, 7.5]].forEach(([cr, bps, rate]) => {
+    const kept = h.hdtPuncture(coded, cr).length / 600, [a, b] = cr.split('/').map(Number);
+    close(0.5 / kept, a / b, 1e-9, `HDT puncture ${cr}`);
+    close(2 * bps * (a / b), rate, 1e-9, `HDT${rate} = 2 Msym/s x ${bps} x ${cr}`);
+  });
+  // [Vol 6] Part A §7.3.1~§7.3.3의 예
+  const cx = (a) => [Math.cos(a * Math.PI), Math.sin(a * Math.PI)], r10 = Math.sqrt(10);
+  const near = (got, exp, msg) => close(got.flat().reduce((m, v, i) => Math.max(m, Math.abs(v - exp.flat()[i])), 0), 0, 1e-12, msg);
+  near(h.hdtMap([0, 0, 1, 0, 1, 1, 0, 0], 'qpsk'), [cx(0.25), [1, 0], cx(-0.75), [0, 1]], 'pi/4 QPSK example (e^jpi/4, 1, e^-j3pi/4, j)');
+  near(h.hdtMap([0, 0, 1, 0, 1, 1], '8psk'), [cx(0.25), cx(0.5)], '8PSK example (e^jpi/4, e^jpi/2)');
+  near(h.hdtMap([0, 0, 1, 0, 1, 1, 0, 0], '16qam'), [[-3 / r10, 3 / r10], [1 / r10, -3 / r10]], '16QAM example ((-3+3j)/sqrt10, (1-3j)/sqrt10)');
+  close(h.hdtMap(Array.from({ length: 64 }, (_, i) => ((i >> 2) >> (3 - (i % 4))) & 1), '16qam').reduce((e, p) => e + p[0] ** 2 + p[1] ** 2, 0) / 16, 1, 1e-12, '16QAM unit average energy');
+  // [Vol 6] Part C §9: u = 1~16의 LTS 위상 (심볼 = e^(jπφ/17))
+  const LTS = ['4 2 32 26 18 8 30 16 0 16 30 8 18 26 32 2 4', '14 10 2 24 8 22 32 4 6 4 32 22 8 24 2 10 14', '24 18 6 22 32 2 0 26 12 26 0 2 32 22 6 18 24',
+    '24 16 0 10 12 6 26 4 8 4 26 6 12 10 0 16 24', '8 32 12 16 10 28 2 0 22 0 2 28 10 16 12 32 8', '26 14 24 22 8 16 12 30 2 30 12 16 8 22 24 14 26',
+    '16 2 8 0 12 10 28 32 22 32 28 10 12 0 8 2 16', '28 12 14 0 4 26 32 22 30 22 32 26 4 0 14 12 28', '30 12 10 24 20 32 26 2 28 2 26 32 20 24 10 12 30',
+    '26 6 0 8 30 32 14 10 20 10 14 32 30 8 0 6 26', '24 2 26 28 8 0 4 20 14 20 4 0 8 28 26 2 24', '20 30 16 12 18 0 26 28 6 28 26 0 18 12 16 30 20',
+    '10 18 0 24 22 28 8 30 26 30 8 28 22 24 0 18 10', '30 2 14 32 22 18 20 28 8 28 20 18 22 32 14 2 30', '28 32 6 18 0 20 10 4 2 4 10 20 0 18 6 32 28',
+    '0 2 6 12 20 30 8 22 4 22 8 30 20 12 6 2 0'];
+  LTS.forEach((row, i) => eq(h.hdtLtsPhi(i + 1), row.split(' ').map(Number), `HDT LTS u=${i + 1} (Part C §9)`));
+  // Part C §9의 프리앰블 74심볼 (PJ = 8.5, NJ = 25.5)
+  const pre = (str) => str.split(/\s+/).map((v) => (v === 'PJ' ? 8.5 : v === 'NJ' ? 25.5 : Number(v)));
+  const STS9 = Array(9).fill('17 NJ PJ 0').join(' ');
+  eq(h.hdtPreamblePhi(10), pre(STS9 + ' 8 0 6 26 26 6 0 8 30 32 14 10 20 10 14 32 30 8 0 6 26 26 6 0 8 30 32 14 10 20 10 14 32 30 8 0 6 26'), 'HDT preamble u=10 (74 symbols)');
+  eq(h.hdtPreamblePhi(15), pre(STS9 + ' 18 6 32 28 28 32 6 18 0 20 10 4 2 4 10 20 0 18 6 32 28 28 32 6 18 0 20 10 4 2 4 10 20 0 18 6 32 28'), 'HDT preamble u=15 (74 symbols)');
+  eq(h.hdtPreamblePhi(1).length * 0.5, 37, 'HDT preamble 37 us');
+  // [Vol 6] Part B §2.7.1.1: u = HPA[31:0] mod 15 + 1 (1~15)
+  eq([h.hdtU('0x0000000000'), h.hdtU('0xFF0000000E'), h.hdtU('0x00FFFFFFFF')], [1, 15, 1], 'HDT u from HPA');
   close(h.idealAirtimeMs(1e6, 1.4), 5714.29, 0.01, 'LE 2M practical ceiling: 1 MB');
 }
 
