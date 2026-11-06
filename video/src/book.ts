@@ -339,3 +339,43 @@ export function triangulate(D: number, alpha: number, beta: number): { x: number
   const ta = Math.tan(alpha), tb = Math.tan(beta), y = (D * ta * tb) / (ta + tb);
   return { x: y / ta, y };
 }
+
+/* ---------------------------------------------------------------- 심화 10편 HDT: 책 3장 phy.html의 함수 그대로 (Core 7.0 [Vol 6] Part A §7, Part B §3.4) */
+/** HDT 부호기: 부호율 1/2, 구속장 6, G0 = 1+x^2+x^4+x^5, G1 = 1+x+x^2+x^3+x^5, 종결 0 다섯 개 */
+export function hdtFecEncode(bits: number[]): number[] {
+  const s = [0, 0, 0, 0, 0, 0], out: number[] = [];
+  [...bits, 0, 0, 0, 0, 0].forEach((b) => {
+    out.push(b ^ s[2] ^ s[4] ^ s[5], b ^ s[1] ^ s[2] ^ s[3] ^ s[5]);
+    for (let k = 5; k > 1; k--) s[k] = s[k - 1];
+    s[1] = b;
+  });
+  return out;
+}
+/** 펑처링 무늬(1 = 남김). Table 3.5 */
+export const HDT_PUNCTURE: Record<string, number[]> = { "1/2": [1, 1], "2/3": [1, 1, 0, 1], "3/4": [1, 1, 0, 1, 0, 1], "15/16": [1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1] };
+export function hdtPuncture(coded: number[], cr: string): number[] { const pat = HDT_PUNCTURE[cr]; return coded.filter((_, i) => pat[i % pat.length]); }
+/** 비트 → 복소 심볼 [re, im] (π/4 QPSK는 홀수 번째가 다른 표, 16QAM은 √10으로 정규화) */
+export function hdtMap(bits: number[], mod: "qpsk" | "8psk" | "16qam"): [number, number][] {
+  const E = (a: number): [number, number] => [Math.cos(a * Math.PI), Math.sin(a * Math.PI)];
+  const Q_EVEN = [0.25, 0.75, -0.25, -0.75], Q_ODD = [0.5, 1, 0, -0.5], PSK8 = [0, 0.25, 0.75, 0.5, -0.25, -0.5, -1, -0.75];
+  const QAM = [[-3, -3], [-3, -1], [-3, 3], [-3, 1], [-1, -3], [-1, -1], [-1, 3], [-1, 1], [3, -3], [3, -1], [3, 3], [3, 1], [1, -3], [1, -1], [1, 3], [1, 1]];
+  const n = mod === "qpsk" ? 2 : mod === "8psk" ? 3 : 4, b = bits.slice();
+  while (b.length % n) b.push(0);
+  const out: [number, number][] = [];
+  for (let k = 0; k * n < b.length; k++) {
+    let v = 0; for (let i = 0; i < n; i++) v = (v << 1) | b[k * n + i];
+    if (mod === "qpsk") out.push(E((k % 2 ? Q_ODD : Q_EVEN)[v]));
+    else if (mod === "8psk") out.push(E(PSK8[v]));
+    else out.push([QAM[v][0] / Math.sqrt(10), QAM[v][1] / Math.sqrt(10)]);
+  }
+  return out;
+}
+/** HDT 다섯 단계: 이름, 변조, 비트/심볼, 부호율, 사양 최소 감도(dBm, BLER 10%) */
+export const HDT_RATES: { name: string; mbps: number; mod: "qpsk" | "8psk" | "16qam"; bps: number; cr: string; sens: number }[] = [
+  { name: "HDT2", mbps: 2, mod: "qpsk", bps: 2, cr: "1/2", sens: -75 }, { name: "HDT3", mbps: 3, mod: "qpsk", bps: 2, cr: "3/4", sens: -72 },
+  { name: "HDT4", mbps: 4, mod: "8psk", bps: 3, cr: "2/3", sens: -69 }, { name: "HDT6", mbps: 6, mod: "16qam", bps: 4, cr: "3/4", sens: -65 },
+  { name: "HDT7.5", mbps: 7.5, mod: "16qam", bps: 4, cr: "15/16", sens: -62 },
+];
+/* ---------------------------------------------------------------- 심화 11편 IPU: 책 심화 14장 isoal.html */
+/** 전환 페이로드 수: BN_old × (FT_old − 1). [Vol 6] Part B §4.5.13.8 */
+export function transitionPayloads(bnOld: number, ftOld: number): number { return bnOld * (ftOld - 1); }

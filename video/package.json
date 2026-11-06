@@ -29,7 +29,9 @@
     "thumbnail:privacy": "remotion still PrivacyThumbnail out/youtube-privacy/thumbnail.png",
     "thumbnail:sync": "remotion still SyncThumbnail out/youtube-sync/thumbnail.png",
     "thumbnail:direction": "remotion still DirectionThumbnail out/youtube-direction/thumbnail.png",
-    "thumbnail:pin": "remotion still PinThumbnail out/youtube-pin/thumbnail.png"
+    "thumbnail:pin": "remotion still PinThumbnail out/youtube-pin/thumbnail.png",
+    "thumbnail:hdt": "remotion still HdtThumbnail out/youtube-hdt/thumbnail.png",
+    "thumbnail:ipu": "remotion still IpuThumbnail out/youtube-ipu/thumbnail.png"
   },
   "dependencies": {
     "@react-three/fiber": "9.8.2",
