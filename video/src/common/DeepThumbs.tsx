@@ -193,3 +193,38 @@ export const PinThumbnail: React.FC = () => {
   );
 };
 export type { Vec };
+
+/* 10. HDT: 한 칸에 쌓이는 비트(1 → 4) */
+const HCAM: Cam = { pos: [2, 9, 20], look: [3, 3.4, 0], fov: 40 };
+export const HdtThumbnail: React.FC = () => {
+  useFont();
+  const cols = [C.accent, C.warn, C.accent2, DEEP];
+  return (
+    <DeepCard no={10} shift={330} lines={<>블루투스 7.0은<br />어떻게<br />{hi("빨라")}졌을까?</>}>
+      <Scene3D cam={HCAM}>
+        <Ground light={[2, 14, 8]} />
+        {[1, 2, 3, 4].map((n, i) => <group key={n} position={[-2 + i * 3.4, 0, 0]}>
+          <mesh position={[0, 0.25, 0]}><boxGeometry args={[2.8, 0.5, 3]} />{mat("#1e293b")}</mesh>
+          {Array.from({ length: n }, (_, k) => <mesh key={k} position={[0, 1.05 + k * 1.15, 0]}><boxGeometry args={[1.7, 1, 1.7]} />{mat(cols[i], 0.8)}</mesh>)}
+        </group>)}
+      </Scene3D>
+    </DeepCard>
+  );
+};
+/* 11. IPU: 끊기지 않고 이어지는 두 레인과 전환 깃발 */
+const UCAM: Cam = { pos: [0, 12, 18], look: [2, 1, 0], fov: 42 };
+export const IpuThumbnail: React.FC = () => {
+  useFont();
+  return (
+    <DeepCard no={11} shift={560} lines={<>이어폰 연결 설정,<br />끊지 않고<br />{hi("바꿀")} 수 있을까?</>}>
+      <Scene3D cam={UCAM}>
+        <Ground light={[0, 14, 8]} />
+        {[-1.8, 1.8].map((z) => <group key={z}>
+          {Array.from({ length: 4 }, (_, i) => <mesh key={i} position={[-4.4 + i * 1.8, 0.8, z]}><boxGeometry args={[1, 1.4, 2]} />{mat(C.accent2, 0.6)}</mesh>)}
+          {Array.from({ length: 4 }, (_, i) => <mesh key={"n" + i} position={[3.4 + i * 2.6, 1.1, z]}><boxGeometry args={[1.3, 2, 2]} />{mat(DEEP, 0.8)}</mesh>)}
+        </group>)}
+        <mesh position={[2, 2.6, 0]}><boxGeometry args={[0.2, 5.2, 6]} />{mat("#ffffff", 1.4)}</mesh>
+      </Scene3D>
+    </DeepCard>
+  );
+};

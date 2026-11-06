@@ -28,7 +28,7 @@ const big = V.simulate(20000, false), lossHop = big.filter((e) => e.hit).length 
 assert.ok(Math.abs(lossHop - 31 / 74) < 0.02, `무작위 도약 손실 ${lossHop}`);
 assert.equal(V.simulate(2000, true).filter((e) => e.hit).length, 0, "적응형 도약은 손실 0");
 // 대본: say와 caption의 문장 수가 같고, say에 숫자가 없고, 나레이션 음성(durations.json)이 지금 문장으로 만든 것인지
-for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt", "pairing", "power", "audio", "locate", "scheduling", "instant", "hopping", "gattcache", "encrypt", "privacy", "sync", "direction", "pin"]) {
+for (const video of ["afh", "discover", "twokinds", "range", "connection", "gatt", "pairing", "power", "audio", "locate", "scheduling", "instant", "hopping", "gattcache", "encrypt", "privacy", "sync", "direction", "pin", "hdt", "ipu"]) {
   const src = fs.readFileSync(new URL(`../src/${video}/script.ts`, import.meta.url), "utf8");
   const dur = JSON.parse(fs.readFileSync(new URL(`../src/${video}/durations.json`, import.meta.url), "utf8"));
   const voiced = Object.keys(dur).length > 0; // 무음판 단계면 음성 검사는 건너뛴다
@@ -350,3 +350,33 @@ for (const [w, d, v] of [[[6], 0.5, "13.5"], [[1, 6, 11], 0.5, "41.9"], [[1, 6, 
 const run = V.simulate(600, false).filter((e) => e.hit).length / 600;
 assert.ok(Math.abs(run - 31 / 74) < 0.05, `누적 그래프 끝값 ${(run * 100).toFixed(1)}%`);
 console.log(`book check ok: ${n + 4} checks, 31/37 덮임, 긴 시뮬레이션 손실 ${(lossHop * 100).toFixed(1)}%, 영상 그래프 끝값 ${(run * 100).toFixed(1)}%`);
+
+// 심화 10편 HDT: 3장(phy.html)의 함수와 같은 값, 표의 수치
+{
+  const ph = fs.readFileSync(new URL("../../bluetooth/chapters/phy.html", import.meta.url), "utf8");
+  const pf = (name) => { const i = ph.indexOf(`  function ${name}(`); let d = 0, j = ph.indexOf("{", i); for (; j < ph.length; j++) { if (ph[j] === "{") d++; else if (ph[j] === "}" && --d === 0) break; } return ph.slice(i, j + 1); };
+  const c = vm.createContext({ Math }); vm.runInContext(["hdtFecEncode", "hdtPuncture", "hdtMap"].map(pf).join("\n") + "\nthis.B = { hdtFecEncode, hdtPuncture, hdtMap };", c);
+  const r = V.rng(7);
+  for (let t = 0; t < 50; t++) {
+    const bits = Array.from({ length: 8 + t * 3 }, () => (r() < 0.5 ? 1 : 0)), enc = V.hdtFecEncode(bits);
+    const J = JSON.stringify;
+    assert.equal(J(enc), J(c.B.hdtFecEncode(bits)));
+    for (const cr of ["1/2", "2/3", "3/4", "15/16"]) assert.equal(J(V.hdtPuncture(enc, cr)), J(c.B.hdtPuncture(enc, cr)));
+    for (const m of ["qpsk", "8psk", "16qam"]) assert.equal(J(V.hdtMap(bits, m)), J(c.B.hdtMap(bits, m)));
+    n += 8;
+  }
+  for (const h of V.HDT_RATES) { const [a, b] = h.cr.split("/").map(Number); assert.ok(Math.abs(2 * h.bps * a / b - h.mbps) < 1e-9, h.name); assert.ok(ph.includes(`≤ ${String(h.sens).replace("-", "−")} dBm`), `${h.name} 감도가 책 표에 있음`); n += 2; }
+  for (const t of ["1.4 Mb/s", "8,175바이트", "37 µs", "−75 → −62 dBm"]) { assert.ok(ph.includes(t), `phy.html에 ${t}`); n++; }
+  const cn = fs.readFileSync(new URL("../../bluetooth/chapters/audio.html", import.meta.url), "utf8");
+  assert.ok(cn.includes("1,411 kb/s")); n++;
+  console.log("hdt: 책 3장 함수·수치 확인");
+}
+// 심화 11편 IPU: 심화 14장(isoal.html)
+{
+  const iso = fs.readFileSync(new URL("../../bluetooth-deep/chapters/isoal.html", import.meta.url), "utf8");
+  const i = iso.indexOf("  function transitionPayloads("), line = iso.slice(i, iso.indexOf("\n", i));
+  const c = vm.createContext({}); vm.runInContext(line + "\nthis.f = transitionPayloads;", c);
+  for (const [bn, ft] of [[2, 3], [1, 1], [3, 2]]) { assert.equal(V.transitionPayloads(bn, ft), c.f(bn, ft)); n++; }
+  for (const t of ["SDU 간격과 프레임 방식(Framing_Mode)은 바꾸지 못한다", "LL_CIS_PERIPHERAL_UPDATE_REQ", "BN<sub>old</sub> × (FT<sub>old</sub> − 1)", "CIS가 살아 있는 동안 바뀌지 않는다"]) { assert.ok(iso.includes(t), `isoal.html에 ${t}`); n++; }
+  console.log(`ipu: 전환 페이로드 예 ${V.transitionPayloads(2, 3)}개`);
+}
