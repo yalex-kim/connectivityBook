@@ -20,6 +20,7 @@ export const YOUTUBE = {
   ] as [string, string][],
   sources: ["Bluetooth Core Specification 7.0 — [Vol 6] Part A §1·§3.6·§4.1.2·§7(HDT PHY), [Vol 6] Part B §2.7(패킷 형식)·§3.4(부호화·펑처링)"],
   credits: ["나레이션: Typecast AI 음성(예슬)", "만든 도구: Remotion, three.js"],
-  cards: [] as { scene: SceneId; sentence: number; video: string; teaser: string; message: string }[],
+  /** 오른쪽 위 카드(올린 뒤 0:00에 단 것): 심화 9편 보안 총정리로 */
+  cards: [{ scene: "hook" as SceneId, sentence: 0, video: "https://youtu.be/xezlVTl1930", teaser: "지난 영상 보기", message: "심화 9편: 블루투스는 어떻게 엿듣기와 끼어들기를 막을까?" }],
   tags: ["블루투스", "Bluetooth", "블루투스 7.0", "Bluetooth 7.0", "HDT", "High Data Throughput", "BLE", "블루투스 심화", "ConnectivityBook"],
 };
