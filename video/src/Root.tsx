@@ -44,6 +44,12 @@ import { PrivacyThumbnail } from "./privacy/Thumbnail";
 import { Sync } from "./sync/Sync";
 import { framesFor as syncFrames } from "./sync/timing";
 import { SyncThumbnail } from "./sync/Thumbnail";
+import { Hdt } from "./hdt/Hdt";
+import { framesFor as hdtFrames } from "./hdt/timing";
+import { HdtThumbnail } from "./hdt/Thumbnail";
+import { Ipu } from "./ipu/Ipu";
+import { framesFor as ipuFrames } from "./ipu/timing";
+import { IpuThumbnail } from "./ipu/Thumbnail";
 import { Direction } from "./direction/Direction";
 import { framesFor as directionFrames } from "./direction/timing";
 import { DirectionThumbnail } from "./direction/Thumbnail";
@@ -97,6 +103,12 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="Sync" component={Sync} defaultProps={{ voice: false }} durationInFrames={syncFrames(false)} fps={30} width={1920} height={1080} />
     <Composition id="SyncVoice" component={Sync} defaultProps={{ voice: true }} durationInFrames={syncFrames(true)} fps={30} width={1920} height={1080} />
     <Composition id="SyncThumbnail" component={SyncThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
+    <Composition id="Hdt" component={Hdt} defaultProps={{ voice: false }} durationInFrames={hdtFrames(false)} fps={30} width={1920} height={1080} />
+    <Composition id="HdtVoice" component={Hdt} defaultProps={{ voice: true }} durationInFrames={hdtFrames(true)} fps={30} width={1920} height={1080} />
+    <Composition id="HdtThumbnail" component={HdtThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
+    <Composition id="Ipu" component={Ipu} defaultProps={{ voice: false }} durationInFrames={ipuFrames(false)} fps={30} width={1920} height={1080} />
+    <Composition id="IpuVoice" component={Ipu} defaultProps={{ voice: true }} durationInFrames={ipuFrames(true)} fps={30} width={1920} height={1080} />
+    <Composition id="IpuThumbnail" component={IpuThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
     <Composition id="Direction" component={Direction} defaultProps={{ voice: false }} durationInFrames={directionFrames(false)} fps={30} width={1920} height={1080} />
     <Composition id="DirectionVoice" component={Direction} defaultProps={{ voice: true }} durationInFrames={directionFrames(true)} fps={30} width={1920} height={1080} />
     <Composition id="DirectionThumbnail" component={DirectionThumbnail} durationInFrames={1} fps={30} width={1920} height={1080} />
